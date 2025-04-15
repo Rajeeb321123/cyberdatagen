@@ -35,7 +35,7 @@ cyber_synth_data/
 
 1. Clone the repo:
    ```bash
-   git clone https://github.com/your-org/cyber_synth_data.git
+   git clone https://github.com/jzhou/cyber_synth_data.git
    cd cyber_synth_data
    ```
 2. Create a virtual environment and install dependencies:
