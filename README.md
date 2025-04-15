@@ -5,9 +5,9 @@ A modular Python toolkit for generating and validating synthetic cybersecurity d
 1. Defining cybersecurity problems by environment.
 2. Creating small, hand‑crafted seed datasets.
 3. Validating seed datasets with a simple ML check.
-4. Generating large synthetic datasets using CTGAN.
+4. Generating large synthetic datasets using LLM or CTGAN.
 5. Validating the synthetic datasets with statistical tests.
-
+6. Create the confidence level for the generate datasets
 ---
 
 ## 📂 Project Structure
