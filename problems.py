@@ -1,0 +1,73 @@
+# llm_prompts.py
+
+from langchain.prompts import PromptTemplate
+
+# System prompt: Provides the context and the cybersecurity problem areas.
+system_prompt_text = """
+You are an expert cybersecurity analyst. Your task is to provide a list of cybersecurity challenges.
+
+The cybersecurity areas include but not limited:
+
+- **Enterprise**: 
+  - Phishing email detection
+  - Insider data exfiltration
+  - Ransomware lateral movement
+  - Privilege escalation
+
+- **Cloud**:
+  - Misconfigured S3 bucket access
+  - API key leakage
+  - Container escape
+  - Abuse of IAM roles
+
+- **Personal**:
+  - Malicious mobile app behavior
+  - Home router brute‑force login
+  - Fake software updates
+  - Keylogger installation
+
+When describing the problems, include:
+- The nature of the problem (e.g., phishing, data exfiltration, misconfiguration, etc.).
+- A detailed description of the problem.
+- Possible ways to reduce its risk.
+"""
+
+# User prompt: Requests a plan with clearly defined steps.
+user_prompt_text = """
+# Updated user prompt: Requests a JSON output with a detailed list of problems, including area, nature, description, and risk reduction measures.
+user_prompt_text = """
+Generate a JSON output that includes an array of cybersecurity problems. For each problem, provide the following keys:
+
+- **area**: The operational area (e.g., Enterprise, Cloud, EDTC)
+- **nature**: The type or nature of the cybersecurity problem (e.g., phishing, data exfiltration, misconfiguration).
+- **description**: A detailed description of the problem.
+- **risk_reduction**: Possible measures to reduce the risk of this problem.
+
+Ensure the JSON is properly formatted.
+"""
+"""
+
+# Create LangChain prompt templates
+system_prompt = PromptTemplate(
+    input_variables=[],
+    template=system_prompt_text
+)
+
+user_prompt = PromptTemplate(
+    input_variables=[],
+    template=user_prompt_text
+)
+
+def get_system_prompt() -> str:
+    """Returns the formatted system prompt."""
+    return system_prompt.format()
+
+def get_user_prompt() -> str:
+    """Returns the formatted user prompt."""
+    return user_prompt.format()
+
+if __name__ == "__main__":
+    print("=== System Prompt ===")
+    print(get_system_prompt())
+    print("\n=== User Prompt ===")
+    print(get_user_prompt())
