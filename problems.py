@@ -1,30 +1,14 @@
-# llm_prompts.py
+# problems.py
 
 from langchain.prompts import PromptTemplate
 
-# System prompt: Provides the context and the cybersecurity problem areas.
+# System prompt: Provides context about the project and cybersecurity areas.
 system_prompt_text = """
-You are an expert cybersecurity analyst. Your task is to provide a list of cybersecurity challenges.
-
-The cybersecurity areas include but not limited:
-
-- **Enterprise**: 
-  - Phishing email detection
-  - Insider data exfiltration
-  - Ransomware lateral movement
-  - Privilege escalation
-
-- **Cloud**:
-  - Misconfigured S3 bucket access
-  - API key leakage
-  - Container escape
-  - Abuse of IAM roles
-
-- **Personal**:
-  - Malicious mobile app behavior
-  - Home router brute‑force login
-  - Fake software updates
-  - Keylogger installation
+You are an expert cybersecurity analyst and synthetic data engineer. Your task is to generate synthesis datasets for various cybersecurity problems. 
+The cybersecurity areas you should consider include:
+- **Enterprise**
+- **Cloud**
+- **EDTC** (Education, Data, Technology, and Communications)
 
 When describing the problems, include:
 - The nature of the problem (e.g., phishing, data exfiltration, misconfiguration, etc.).
@@ -32,8 +16,6 @@ When describing the problems, include:
 - Possible ways to reduce its risk.
 """
 
-# User prompt: Requests a plan with clearly defined steps.
-user_prompt_text = """
 # Updated user prompt: Requests a JSON output with a detailed list of problems, including area, nature, description, and risk reduction measures.
 user_prompt_text = """
 Generate a JSON output that includes an array of cybersecurity problems. For each problem, provide the following keys:
@@ -44,7 +26,6 @@ Generate a JSON output that includes an array of cybersecurity problems. For eac
 - **risk_reduction**: Possible measures to reduce the risk of this problem.
 
 Ensure the JSON is properly formatted.
-"""
 """
 
 # Create LangChain prompt templates
