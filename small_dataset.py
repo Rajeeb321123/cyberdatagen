@@ -10,7 +10,7 @@ load_dotenv()
 
 # Constants
 PROBLEMS_PATH = './config/problems.json'
-OUTPUT_DIR = './data/detailed_examples'
+OUTPUT_DIR = './data/seeds'
 
 # Prompts
 def make_system_prompt(problem: dict) -> str:
