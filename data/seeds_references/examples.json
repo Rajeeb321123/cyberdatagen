@@ -1,1 +1,297 @@
+{
+  "problems": [
+    {
+      "area": "Enterprise",
+      "nature": "phishing",
+      "description": "Employees receive emails that appear to come from internal IT requesting credential updates. The messages contain malicious links that harvest login credentials when clicked.",
+      "risk_reduction": [
+        "Enable multi‑factor authentication (MFA) for all user accounts",
+        "Deploy email filtering to flag or quarantine suspicious senders",
+        "Run regular security awareness training and phishing simulations"
+      ],
+      "examples": [
+        {
+          "subject": "URGENT: Password Expiry Notification",
+          "sender": "it@enterprise-it.com",
+          "recipients": ["alice.smith@enterprise.com"],
+          "body": "Dear Alice,\n\nYour password is scheduled to expire today. Please reset it immediately at https://enterprise-it.reset-pass.com to avoid losing access to your mailbox.\n\n—IT Helpdesk",
+          "indicators": [
+            "Link domain (reset-pass.com) does not match corporate domain",
+            "Urgent deadline pressure language",
+            "Generic sign‑off without personalized signature"
+          ]
+        },
+        {
+          "subject": "Re: Invoice #12345 – Please Review",
+          "sender": "accounts@enterprise-payments.com",
+          "recipients": ["bob.jones@enterprise.com"],
+          "body": "Hello Bob,\n\nPlease find the attached invoice for last month’s services. Download and review the PDF to process the payment.\n\nAttachment: Invoice_12345.pdf",
+          "indicators": [
+            "Attachment from untrusted billing domain",
+            "No context or project reference in body",
+            "Attachment likely to contain malware"
+          ]
+        }
+      ]
+    },
+    {
+      "area": "Enterprise",
+      "nature": "insider_data_exfiltration",
+      "description": "A trusted employee copies sensitive customer data onto a personal USB drive and transfers it out of the corporate network.",
+      "risk_reduction": [
+        "Implement strict USB/device usage policies with endpoint DLP",
+        "Monitor file access and data transfer logs for anomalies",
+        "Enforce least‑privilege access controls"
+      ],
+      "examples": [
+        {
+          "user_id": "jdoe",
+          "timestamp": "2025-04-10T18:22:00Z",
+          "action": "Exported 2,000 rows of customer PII to personal Dropbox",
+          "file_details": {
+            "filename": "customers_Q1_export.csv",
+            "size_bytes": 204800
+          },
+          "destination": "https://www.dropbox.com/s/abcd1234/customers_Q1_export.csv",
+          "indicators": [
+            "Export volume far exceeds typical 10–20 row downloads",
+            "Destination domain not on corporate allow‑list",
+            "Export occurred off‑hours (6pm UTC)"
+          ]
+        },
+        {
+          "user_id": "asmith",
+          "timestamp": "2025-04-11T02:15:00Z",
+          "action": "Copied 15 design schematics to USB device",
+          "file_details": {
+            "filename": "design_v5.dwg",
+            "size_bytes": 5120000
+          },
+          "destination": "USB_SERIAL_7890XYZ",
+          "indicators": [
+            "Removable media usage flagged by DLP",
+            "File types match sensitive IP patterns",
+            "Activity outside normal working hours"
+          ]
+        }
+      ]
+    },
+    {
+      "area": "Enterprise",
+      "nature": "privilege_escalation",
+      "description": "An attacker exploits a misconfigured service to gain administrative privileges on a critical server, allowing them to install backdoors and move laterally.",
+      "risk_reduction": [
+        "Regularly audit and patch operating systems and services",
+        "Use role‑based access control and avoid running processes as root",
+        "Deploy intrusion detection systems (IDS) to catch unusual privilege use"
+      ],
+      "examples": [
+        {
+          "initial_role": "developer",
+          "exploit": "CVE‑2021‑44228 log4j remote code execution",
+          "post_exploit_role": "root",
+          "timestamp": "2025-03-20T09:45:00Z",
+          "indicators": [
+            "Unusual log4j exploit traffic seen in application logs",
+            "Creation of new root‑owned process from non‑privileged user"
+          ]
+        },
+        {
+          "initial_role": "standard_user",
+          "exploit": "Misconfigured sudoers file allowing NOPASSWD",
+          "post_exploit_role": "administrator",
+          "timestamp": "2025-04-01T14:10:00Z",
+          "indicators": [
+            "Modification of /etc/sudoers without change ticket",
+            "Immediate execution of privileged commands"
+          ]
+        }
+      ]
+    },
+    {
+      "area": "Cloud",
+      "nature": "misconfigured_storage",
+      "description": "An S3 bucket containing customer PII is left publicly readable, exposing sensitive data to the internet.",
+      "risk_reduction": [
+        "Enforce automated checks for public‑access settings",
+        "Use IAM policies to restrict bucket access to known roles",
+        "Enable bucket logging and review access logs regularly"
+      ],
+      "examples": [
+        {
+          "bucket_name": "enterprise-logs",
+          "public_access": true,
+          "object_list_sample": ["user_activity.csv", "session_tokens.log"],
+          "indicators": [
+            "Bucket ACL allows public LIST and READ",
+            "Sensitive filenames (session_tokens) visible externally"
+          ]
+        },
+        {
+          "bucket_name": "marketing-assets",
+          "public_access": true,
+          "object_list_sample": ["customer_emails.xlsx", "promo_codes.csv"],
+          "indicators": [
+            "Contains PII spreadsheets",
+            "No encryption enforcement setting"
+          ]
+        }
+      ]
+    },
+    {
+      "area": "Cloud",
+      "nature": "api_key_leakage",
+      "description": "Hard‑coded API keys in a public GitHub repository allow attackers to access and manipulate cloud resources.",
+      "risk_reduction": [
+        "Store secrets in a managed vault (e.g., AWS Secrets Manager)",
+        "Scan code repositories for leaked credentials",
+        "Rotate API keys on a regular schedule"
+      ],
+      "examples": [
+        {
+          "repository": "github.com/enterprise/app",
+          "leaked_key": "AKIAEXAMPLE123456789",
+          "usage": "Called EC2 StartInstances from IP 203.0.113.42",
+          "indicators": [
+            "Key found in source code commit history",
+            "Unusual EC2 API calls from non‑corporate IP"
+          ]
+        },
+        {
+          "repository": "github.com/enterprise/mobile",
+          "leaked_key": "AIzaExampleKey987654321",
+          "usage": "Accessed Firebase database from China",
+          "indicators": [
+            "Key exposed in mobile config file",
+            "Traffic originates from unexpected region"
+          ]
+        }
+      ]
+    },
+    {
+      "area": "Cloud",
+      "nature": "container_escape",
+      "description": "A vulnerable container image allows an attacker to break out of the container namespace and gain root access on the host.",
+      "risk_reduction": [
+        "Use minimal, trusted base images and apply timely patches",
+        "Run containers with non‑root users and restricted capabilities",
+        "Deploy container runtime security tools to monitor system calls"
+      ],
+      "examples": [
+        {
+          "container_id": "f3a9b2c7d8",
+          "exploit_method": "Privileged mode + host PID namespace",
+          "host_impact": "Modified /etc/passwd to add backdoor user",
+          "indicators": [
+            "Container started with --privileged flag",
+            "Write access to host filesystem detected"
+          ]
+        },
+        {
+          "container_id": "d4e5f6a7b8",
+          "exploit_method": "CVE‑2022‑12345 runc escape",
+          "host_impact": "Installed SSH backdoor on host",
+          "indicators": [
+            "Use of vulnerable runc version",
+            "Unexpected SSH service running on host"
+          ]
+        }
+      ]
+    },
+    {
+      "area": "EDTC",
+      "nature": "insecure_lms_login",
+      "description": "Students’ credentials for an educational platform are transmitted over unencrypted HTTP, risking interception by attackers.",
+      "risk_reduction": [
+        "Enforce HTTPS/TLS for all web traffic",
+        "Implement strong password policies and MFA",
+        "Conduct regular penetration tests on the platform"
+      ],
+      "examples": [
+        {
+          "url": "http://lms.university.edu/login",
+          "credentials_sent": "username/password in plain text",
+          "interceptor": "Wireshark packet capture",
+          "indicators": [
+            "HTTP protocol without TLS",
+            "Credentials visible in network trace"
+          ]
+        },
+        {
+          "url": "http://students.school.edu/auth",
+          "credentials_sent": "session cookie in plain text",
+          "interceptor": "MITM proxy log",
+          "indicators": [
+            "Lack of HTTPS enforcement",
+            "Session cookie exposed"
+          ]
+        }
+      ]
+    },
+    {
+      "area": "EDTC",
+      "nature": "student_data_privacy",
+      "description": "Unrestricted database permissions allow staff to view or export sensitive student grades and personal information without proper authorization.",
+      "risk_reduction": [
+        "Apply role‑based permissions at the database level",
+        "Mask or redact PII in non‑production environments",
+        "Audit database access and alert on large exports"
+      ],
+      "examples": [
+        {
+          "role": "intern",
+          "query": "SELECT * FROM student_records;",
+          "records_returned": 1200,
+          "fields_exposed": ["name", "dob", "grades", "ssn"],
+          "indicators": [
+            "Intern role should not have full table access",
+            "Export of PII fields without justification"
+          ]
+        },
+        {
+          "role": "thirdPartyReport",
+          "query": "EXPORT TO CSV student_grades;",
+          "records_returned": 3000,
+          "fields_exposed": ["student_id", "grades"],
+          "indicators": [
+            "Automated export tool used without approval",
+            "Large export size outside normal patterns"
+          ]
+        }
+      ]
+    },
+    {
+      "area": "EDTC",
+      "nature": "unpatched_edu_software",
+      "description": "An outdated educational software package with known vulnerabilities is still in use on campus machines, opening attackers to remote code execution risks.",
+      "risk_reduction": [
+        "Maintain a centralized patch management process",
+        "Isolate legacy systems in a segmented network zone",
+        "Monitor vulnerability feeds and apply critical fixes promptly"
+      ],
+      "examples": [
+        {
+          "system": "lab-pc-01",
+          "software": "EduClient v2.1",
+          "vulnerability": "CVE-2020-ABC",
+          "timestamp": "2025-04-05T11:30:00Z",
+          "indicators": [
+            "Unpatched version detected via inventory scan",
+            "Remote code execution path exists"
+          ]
+        },
+        {
+          "system": "staff-laptop-07",
+          "software": "TeachSoft v1.8",
+          "vulnerability": "CVE-2019-XYZ",
+          "timestamp": "2025-04-07T09:15:00Z",
+          "indicators": [
+            "Patch management logs show missing update",
+            "Exploit code seen in honeypot telemetry"
+          ]
+        }
+      ]
+    }
+  ]
+}
 
