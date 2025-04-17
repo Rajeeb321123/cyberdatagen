@@ -34,6 +34,10 @@ Please generate a JSON object with a single key "problems", whose value is an ar
 - "risk_reduction": A list of recommended mitigation measures.
 
 Include at least three problems per area. Return valid JSON only—no additional text.
+
+Please refer this example of JSON file as format as well as the illlustrated examples.
+
+{problem_examples}
 '''
 
 # Create LangChain prompt templates
@@ -84,5 +88,8 @@ def generate_and_save_problems(file_path: str = './config/problems.json'):
 
 
 if __name__ == '__main__':
+
+    # load the sample JSON file as string 
+    samples = ""
     generate_and_save_problems()
 
