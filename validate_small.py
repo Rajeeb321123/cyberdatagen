@@ -5,6 +5,9 @@ from dotenv import load_dotenv
 from langchain.chat_models import ChatOpenAI
 from langchain.schema import SystemMessage, HumanMessage
 
+# This code aims to use LLM as an initial step to validate the generated seeds for each problem.  
+# We expect the LLM to help separate valid, beneficial seeds from unuseful ones. 
+
 # Load environment variables
 load_dotenv()
 
