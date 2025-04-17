@@ -5,6 +5,9 @@ from dotenv import load_dotenv
 from langchain.chat_models import ChatOpenAI
 from langchain.schema import SystemMessage, HumanMessage
 
+# The purpose of this code is to achieve a goal to generate a set of seeds for each problem. 
+# It will loop over all the identified problem and use the samples as few-shots if they are availble for a given problem.
+
 # Load environment variables
 load_dotenv()
 
