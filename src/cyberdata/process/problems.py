@@ -22,7 +22,7 @@ with problem_init_path.open(encoding="utf-8") as f:
 problem_examples = json.dumps(problem_init, indent=4, ensure_ascii=False)
 
 
-# System prompt: Contextualizes the LLM’s role and the cybersecurity domains
+# System prompt: Contextualizes the LLM's role and the cybersecurity domains
 system_prompt_text = """
 You are an expert cybersecurity analyst and synthetic data engineer. Your mission is to help catalog and generate synthetic datasets for critical cybersecurity challenges across diverse operational environments.
 
@@ -41,7 +41,7 @@ For each problem you describe, include:
 user_prompt_text = """
 Please generate a JSON object with a single key "problems", whose value is an array of problem entries. Each entry must include:
 
-- "area": One of ["Enterprise", "Cloud", "EDTC"]
+- "area": One of ["Enterprise", "Cloud", "EDTC", "Phishing"]
 - "nature": A concise label for the problem category (e.g., "phishing", "misconfiguration").
 - "description": A detailed explanation of the problem scenario.
 - "risk_reduction": A list of recommended mitigation measures.
@@ -67,3 +67,20 @@ user_prompt = user_prompt_format.format(problem_examples=problem_examples)
 return_str = process_llm_request(system_prompt, user_prompt)
 
 print("output_problem:\n", return_str)
+
+# Parse the returned string into a JSON object
+try:
+    problems_data = json.loads(return_str)
+    
+    output_path = files("cyberdata.config") / "problems.json"
+    
+    # Make sure parent directories exist
+    output_path.parent.mkdir(parents=True, exist_ok=True)
+    with output_path.open('w', encoding='utf-8') as f:
+        json.dump(problems_data, f, indent=2, ensure_ascii=False)
+    
+    print(f"Successfully saved problems data to {output_path}")
+    
+except json.JSONDecodeError as e:
+    print(f"Error: Could not parse the LLM response as JSON: {e}")
+    print("Raw response:", return_str)

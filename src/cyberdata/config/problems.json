@@ -1,0 +1,124 @@
+{
+  "problems": [
+    {
+      "area": "Enterprise",
+      "nature": "phishing",
+      "description": "Employees receive emails that appear to come from internal IT requesting credential updates. The messages contain malicious links that harvest login credentials when clicked.",
+      "risk_reduction": [
+        "Enable multi‑factor authentication (MFA) for all user accounts",
+        "Deploy email filtering to flag or quarantine suspicious senders",
+        "Run regular security awareness training and phishing simulations"
+      ]
+    },
+    {
+      "area": "Enterprise",
+      "nature": "insider_data_exfiltration",
+      "description": "A trusted employee copies sensitive customer data onto a personal USB drive and transfers it out of the corporate network.",
+      "risk_reduction": [
+        "Implement strict USB/device usage policies with endpoint DLP",
+        "Monitor file access and data transfer logs for anomalies",
+        "Enforce least‑privilege access controls"
+      ]
+    },
+    {
+      "area": "Enterprise",
+      "nature": "privilege_escalation",
+      "description": "An attacker exploits a misconfigured service to gain administrative privileges on a critical server, allowing them to install backdoors and move laterally.",
+      "risk_reduction": [
+        "Regularly audit and patch operating systems and services",
+        "Use role‑based access control and avoid running processes as root",
+        "Deploy intrusion detection systems (IDS) to catch unusual privilege use"
+      ]
+    },
+    {
+      "area": "Cloud",
+      "nature": "misconfigured_storage",
+      "description": "An S3 bucket containing customer PII is left publicly readable, exposing sensitive data to the internet.",
+      "risk_reduction": [
+        "Enforce automated checks for public‑access settings",
+        "Use IAM policies to restrict bucket access to known roles",
+        "Enable bucket logging and review access logs regularly"
+      ]
+    },
+    {
+      "area": "Cloud",
+      "nature": "api_key_leakage",
+      "description": "Hard‑coded API keys in a public GitHub repository allow attackers to access and manipulate cloud resources.",
+      "risk_reduction": [
+        "Store secrets in a managed vault (e.g., AWS Secrets Manager)",
+        "Scan code repositories for leaked credentials",
+        "Rotate API keys on a regular schedule"
+      ]
+    },
+    {
+      "area": "Cloud",
+      "nature": "container_escape",
+      "description": "A vulnerable container image allows an attacker to break out of the container namespace and gain root access on the host.",
+      "risk_reduction": [
+        "Use minimal, trusted base images and apply timely patches",
+        "Run containers with non‑root users and restricted capabilities",
+        "Deploy container runtime security tools to monitor system calls"
+      ]
+    },
+    {
+      "area": "EDTC",
+      "nature": "insecure_lms_login",
+      "description": "Students’ credentials for an educational platform are transmitted over unencrypted HTTP, risking interception by attackers.",
+      "risk_reduction": [
+        "Enforce HTTPS/TLS for all web traffic",
+        "Implement strong password policies and MFA",
+        "Conduct regular penetration tests on the platform"
+      ]
+    },
+    {
+      "area": "EDTC",
+      "nature": "student_data_privacy",
+      "description": "Unrestricted database permissions allow staff to view or export sensitive student grades and personal information without proper authorization.",
+      "risk_reduction": [
+        "Apply role‑based permissions at the database level",
+        "Mask or redact PII in non‑production environments",
+        "Audit database access and alert on large exports"
+      ]
+    },
+    {
+      "area": "EDTC",
+      "nature": "unpatched_edu_software",
+      "description": "An outdated educational software package with known vulnerabilities is still in use on campus machines, opening attackers to remote code execution risks.",
+      "risk_reduction": [
+        "Maintain a centralized patch management process",
+        "Isolate legacy systems in a segmented network zone",
+        "Monitor vulnerability feeds and apply critical fixes promptly"
+      ]
+    },
+    {
+      "area": "Phishing",
+      "nature": "spear_phishing",
+      "description": "Targeted phishing attacks aimed at specific individuals within an organization, often using personal information to increase credibility.",
+      "risk_reduction": [
+        "Educate employees on recognizing spear phishing attempts",
+        "Implement email authentication protocols like SPF, DKIM, and DMARC",
+        "Use threat intelligence to identify and block known phishing domains"
+      ]
+    },
+    {
+      "area": "Phishing",
+      "nature": "whaling",
+      "description": "Phishing attacks that specifically target high-profile individuals such as executives, often involving highly personalized messages.",
+      "risk_reduction": [
+        "Conduct regular training for executives on phishing awareness",
+        "Implement strict email verification processes for sensitive communications",
+        "Monitor for unusual login attempts from executive accounts"
+      ]
+    },
+    {
+      "area": "Phishing",
+      "nature": "vishing",
+      "description": "Voice phishing attacks where attackers impersonate legitimate entities over the phone to extract sensitive information.",
+      "risk_reduction": [
+        "Train employees to verify identities before sharing sensitive information",
+        "Implement call-back verification procedures for sensitive requests",
+        "Use caller ID verification technologies to identify spoofed calls"
+      ]
+    }
+  ]
+}
