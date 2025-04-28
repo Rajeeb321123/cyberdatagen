@@ -1,9 +1,11 @@
 # nlp2opt/utils/llm_invoke.py
 
-import os
 import logging
+import os
+
 from dotenv import load_dotenv
 from openai import OpenAI
+
 # from nlp2opt import logger
 
 
@@ -11,7 +13,8 @@ load_dotenv()
 OPENAI_API_KEY = os.environ.get("OPENAI_API_KEY", "")
 
 # Global configuration variables
-MODEL_NAME = "gpt-4o-mini"
+# MODEL_NAME = "gpt-4o-mini"
+MODEL_NAME = "gpt-4.1-mini"
 MODEL_TOKEN_SIZE = 16384
 LOG_LEVEL = logging.INFO
 

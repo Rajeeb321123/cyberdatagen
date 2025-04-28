@@ -1,16 +1,12 @@
-from pathlib import Path
 import json
 import os
-from dotenv import load_dotenv
-
-import json
 from importlib.resources import files
+from pathlib import Path
 
-
+from dotenv import load_dotenv
 from langchain.prompts import PromptTemplate
 
 from cyberdata.utils.llm_invoke import process_llm_request
-
 
 # Correct: files() takes the package, then you "/" the filename
 problem_init_path = files("cyberdata.config") / "problems_init.json"
@@ -41,7 +37,7 @@ For each problem you describe, include:
 user_prompt_text = """
 Please generate a JSON object with a single key "problems", whose value is an array of problem entries. Each entry must include:
 
-- "area": One of ["Enterprise", "Cloud", "EDTC", "Phishing"]
+- "area": One of ["Phishing", "A man-in-the-middle (MITM) attack"]
 - "nature": A concise label for the problem category (e.g., "phishing", "misconfiguration").
 - "description": A detailed explanation of the problem scenario.
 - "risk_reduction": A list of recommended mitigation measures.
