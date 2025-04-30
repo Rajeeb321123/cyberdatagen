@@ -1,13 +1,14 @@
 import json
 import os
 import sys
+import re
 from pathlib import Path
 
 import pandas as pd
 from dotenv import load_dotenv
 
 # Import process_llm_request from your utility module
-from utils.llm_invoke import process_llm_request
+from cyberdata.utils.llm_invoke import process_llm_request
 
 # Add parent directory to path for imports
 CURRENT_DIR = Path(__file__).parent
@@ -60,6 +61,72 @@ def load_problems(file_path: Path = PROBLEMS_PATH) -> list:
     return data.get('problems', [])
 
 
+def extract_json_from_response(response_content: str) -> dict:
+    """
+    Extract valid JSON from LLM response that might contain markdown or other content.
+    """
+    # Clean up content by removing markdown code blocks if present
+    if response_content.startswith('```'):
+        # Find the first and last backtick groups
+        first_backticks_end = response_content.find('\n', 3)
+        if first_backticks_end != -1:
+            # Find the closing backticks
+            last_backticks_start = response_content.rfind('```')
+            if last_backticks_start > first_backticks_end:
+                # Extract the content between the backticks
+                response_content = response_content[first_backticks_end + 1:last_backticks_start].strip()
+            else:
+                # Just remove the first backticks line if no closing backticks found
+                response_content = response_content[first_backticks_end + 1:].strip()
+    
+    # Try direct JSON parsing
+    try:
+        examples = json.loads(response_content)
+        # Check if we have 'examples' key in the response
+        if 'examples' in examples:
+            return examples['examples']
+        else:
+            return examples  # Assume the response is the examples array directly
+    except json.JSONDecodeError:
+        # Try alternative extraction methods
+        
+        # Try extracting JSON with regex
+        json_pattern = r'\{[\s\S]*\}'
+        match = re.search(json_pattern, response_content)
+        if match:
+            try:
+                potential_json = match.group(0)
+                examples = json.loads(potential_json)
+                if 'examples' in examples:
+                    return examples['examples']
+                else:
+                    return examples
+            except json.JSONDecodeError:
+                pass
+        
+        # Try fixing common JSON issues
+        try:
+            # Replace single quotes with double quotes
+            fixed_content = response_content.replace("'", '"')
+            # Fix missing commas after closing braces in arrays
+            fixed_content = re.sub(r'}\s*{', '},{', fixed_content)
+            # Fix trailing commas in arrays/objects
+            fixed_content = re.sub(r',\s*}', '}', fixed_content)
+            fixed_content = re.sub(r',\s*]', ']', fixed_content)
+            
+            examples = json.loads(fixed_content)
+            if 'examples' in examples:
+                return examples['examples']
+            else:
+                return examples
+        except json.JSONDecodeError:
+            pass
+        
+        # If all extraction methods fail, raise exception
+        print(f"Failed to extract JSON from: {response_content[:100]}...")
+        raise ValueError("Could not extract valid JSON from model response")
+
+
 def generate_examples_for_problem(problem: dict) -> list:
     """Generate examples for a problem using process_llm_request function"""
     system_content = make_system_prompt(problem)
@@ -76,45 +143,16 @@ def generate_examples_for_problem(problem: dict) -> list:
     # Debug: Print response content before parsing
     print(f"Response for {problem['nature']}: {response_content[:100]}...")
     
-    # Clean up content by removing markdown code blocks if present
-    if response_content.startswith('```'):
-        # Find the first and last backtick groups
-        first_backticks_end = response_content.find('\n', 3)
-        if first_backticks_end != -1:
-            # Find the closing backticks
-            last_backticks_start = response_content.rfind('```')
-            if last_backticks_start > first_backticks_end:
-                # Extract the content between the backticks
-                response_content = response_content[first_backticks_end + 1:last_backticks_start].strip()
-            else:
-                # Just remove the first backticks line if no closing backticks found
-                response_content = response_content[first_backticks_end + 1:].strip()
-    
     try:
-        examples = json.loads(response_content)
-        # Check if we have 'examples' key in the response
-        if 'examples' in examples:
-            return examples['examples']
-        else:
-            return examples  # Assume the response is the examples array directly
-    except json.JSONDecodeError as e:
-        print(f"JSON parse error for {problem['nature']}: {e}")
+        # Use the enhanced JSON extraction
+        examples = extract_json_from_response(response_content)
+        return examples
+    except Exception as e:
+        print(f"JSON parse error for {problem['nature']}: {str(e)}")
         print(f"Response content: {response_content}")
-        # Try one more approach for nested content
-        try:
-            # Look for JSON object pattern and extract it
-            json_start = response_content.find('{')
-            json_end = response_content.rfind('}')
-            if json_start != -1 and json_end != -1:
-                potential_json = response_content[json_start:json_end+1]
-                examples = json.loads(potential_json)
-                if 'examples' in examples:
-                    return examples['examples']
-                else:
-                    return examples
-        except Exception:
-            pass
-        raise
+        # If JSON extraction fails completely, return empty list
+        # This allows the script to continue with other problems
+        return []
 
 
 def json_to_csv_single_file(json_file_path, csv_file_path, examples=None):
@@ -172,6 +210,11 @@ def save_examples(problem: dict, examples: list):
         problem (dict): Problem dictionary containing 'area' and 'nature'
         examples (list): List of examples to save
     """
+    # Skip if no valid examples
+    if not examples:
+        print(f"No valid examples to save for {problem['nature']}")
+        return
+    
     area = problem['area']
     nature = problem['nature']
     

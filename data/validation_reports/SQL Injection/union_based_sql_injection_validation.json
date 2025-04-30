@@ -1,0 +1,79 @@
+{
+  "report": [
+    {
+      "index": 0,
+      "problem": {
+        "area": "SQL Injection",
+        "nature": "union_based_sql_injection"
+      },
+      "example": {
+        "type": "web_application_attack",
+        "description": "An attacker exploits a vulnerable search input field by injecting a UNION-based SQL payload to extract usernames and password hashes from the users table.",
+        "injection_payload": "' UNION SELECT username, password FROM users--",
+        "affected_endpoint": "/search?query=",
+        "impact": "Disclosure of sensitive user credentials",
+        "indicators": [
+          "Presence of UNION SELECT in the query string",
+          "Unexpected columns returned in search results",
+          "Database error messages revealing query structure",
+          "Unusual increase in database response time"
+        ]
+      },
+      "validation": {
+        "valid": true,
+        "issues": [],
+        "comments": "The sample correctly represents a union-based SQL injection attack by demonstrating the use of a UNION SELECT payload to extract data from the users table. The description clearly states the attack vector and target data, aligning well with the problem nature. The affected endpoint and impact fields are realistic and plausible in a real-world scenario. The indicators provided effectively highlight typical signs of such an attack, including the presence of UNION SELECT in the query, unexpected data returned, error messages, and performance anomalies. All required fields are present and accurately populated. To further improve, the sample could include a note on recommended mitigations such as using parameterized queries or ORM frameworks, but as is, it meets the validation criteria comprehensively."
+      }
+    },
+    {
+      "index": 1,
+      "problem": {
+        "area": "SQL Injection",
+        "nature": "union_based_sql_injection"
+      },
+      "example": {
+        "type": "data_exfiltration_via_union_injection",
+        "description": "An attacker uses a UNION-based SQL injection on a product ID parameter to retrieve credit card numbers stored in a separate payments table.",
+        "injection_payload": "1 UNION SELECT card_number, expiration_date FROM payments--",
+        "affected_endpoint": "/product?id=",
+        "impact": "Exposure of sensitive payment information",
+        "indicators": [
+          "SQL queries combining data from products and payments tables",
+          "Unexpected data fields in product details response",
+          "Suspicious patterns in database logs showing UNION with payments table",
+          "Alerts from database monitoring tools on cross-table queries"
+        ]
+      },
+      "validation": {
+        "valid": true,
+        "issues": [],
+        "comments": "The sample correctly represents a union-based SQL injection attack, where the attacker uses the UNION operator to combine a legitimate query with a malicious one targeting sensitive data in another table. The injection payload is realistic and plausible in a real-world scenario, targeting a product ID parameter to extract credit card information from a payments table. All required fields are present and accurately populated, including a clear description, the injection payload, affected endpoint, impact, and relevant indicators. The indicators effectively explain why this sample matches the problem by highlighting suspicious SQL query patterns, unexpected response data, and monitoring alerts. Overall, the sample is well-constructed and aligns well with the stated problem and risk reduction context."
+      }
+    },
+    {
+      "index": 2,
+      "problem": {
+        "area": "SQL Injection",
+        "nature": "union_based_sql_injection"
+      },
+      "example": {
+        "type": "union_based_sql_injection_attempt",
+        "description": "Automated scanner attempts UNION-based SQL injection on a user profile endpoint to enumerate database schema information.",
+        "injection_payload": "' UNION SELECT null, table_name FROM information_schema.tables--",
+        "affected_endpoint": "/profile?id=",
+        "impact": "Reconnaissance to map database structure for further exploitation",
+        "indicators": [
+          "Injection payload includes information_schema queries",
+          "Repeated injection attempts with UNION SELECT patterns",
+          "Database logs showing access to metadata tables",
+          "High volume of failed or anomalous queries targeting same endpoint"
+        ]
+      },
+      "validation": {
+        "valid": true,
+        "issues": [],
+        "comments": "The sample correctly represents a union-based SQL injection attack, aligning well with the problem nature. The injection payload demonstrates the use of UNION SELECT to extract data from the information_schema.tables, which is a common technique to enumerate database schema information. The affected endpoint and description are plausible and realistic in a real-world scenario. All required fields are present and accurately populated. The indicators clearly explain why the sample matches the problem by highlighting the use of information_schema queries, repeated UNION SELECT patterns, relevant database logs, and anomalous query volumes. Overall, the sample is comprehensive and well-constructed for illustrating a union-based SQL injection attack."
+      }
+    }
+  ]
+}

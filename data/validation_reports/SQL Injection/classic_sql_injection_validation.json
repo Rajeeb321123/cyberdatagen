@@ -1,0 +1,67 @@
+{
+  "report": [
+    {
+      "index": 0,
+      "problem": {
+        "area": "SQL Injection",
+        "nature": "classic_sql_injection"
+      },
+      "example": {
+        "scenario": "Login Bypass via SQL Injection",
+        "description": "An attacker inputs the following username: 'admin' OR '1'='1' -- and a random password into a login form. The backend SQL query becomes: SELECT * FROM users WHERE username='admin' OR '1'='1' --' AND password='random'. The injected 'OR 1=1' condition always evaluates to true, bypassing authentication.",
+        "indicators": [
+          "Input contains SQL syntax such as ' OR '1'='1' --",
+          "Authentication query is manipulated to always return true",
+          "Login succeeds without valid credentials"
+        ]
+      },
+      "validation": {
+        "valid": true,
+        "issues": [],
+        "comments": "The sample correctly represents a classic SQL injection attack targeting a login form, aligning well with the problem nature. The scenario and description clearly illustrate how malicious input manipulates the backend SQL query to bypass authentication, which is a common real-world example. All required fields\u2014scenario, description, and indicators\u2014are present and accurately populated. The indicators effectively highlight the presence of SQL syntax injection, the logical manipulation of the query, and the resulting unauthorized login, making it clear why this sample matches the SQL injection problem. For improvement, the sample could mention risk reduction strategies such as using parameterized queries or input validation to provide a more comprehensive context."
+      }
+    },
+    {
+      "index": 1,
+      "problem": {
+        "area": "SQL Injection",
+        "nature": "classic_sql_injection"
+      },
+      "example": {
+        "scenario": "Data Extraction through UNION-based SQL Injection",
+        "description": "An attacker submits '1 UNION SELECT username, password FROM users --' into a vulnerable search input field. The backend query becomes: SELECT id, name FROM products WHERE id=1 UNION SELECT username, password FROM users --, causing the database to return user credentials along with product data.",
+        "indicators": [
+          "Input contains UNION SELECT statement",
+          "Unexpected data (usernames and passwords) returned in product search results",
+          "Query combines data from multiple tables due to injection"
+        ]
+      },
+      "validation": {
+        "valid": true,
+        "issues": [],
+        "comments": "The sample correctly represents a classic SQL injection scenario where an attacker uses a UNION-based injection to extract sensitive data. The scenario and description clearly illustrate how malicious input manipulates the backend query to combine product data with user credentials, aligning well with the problem nature. The indicators effectively highlight key signs of this attack, such as the presence of a UNION SELECT statement in input, unexpected sensitive data in results, and query manipulation. All required fields (scenario, description, indicators) are present and accurately populated. To further improve, the sample could mention risk reduction strategies like parameterized queries or input validation to provide a more comprehensive context."
+      }
+    },
+    {
+      "index": 2,
+      "problem": {
+        "area": "SQL Injection",
+        "nature": "classic_sql_injection"
+      },
+      "example": {
+        "scenario": "Blind SQL Injection for Data Enumeration",
+        "description": "An attacker uses a form input to inject conditional SQL code like: '1' AND (SELECT SUBSTRING(password,1,1) FROM users WHERE username='admin')='a'. The application response time or behavior changes based on the injected condition, allowing the attacker to enumerate the admin password character by character.",
+        "indicators": [
+          "Input includes conditional SQL statements with SUBSTRING and comparison",
+          "Application response time or error message varies with input",
+          "Repeated requests with slight input changes to infer database content"
+        ]
+      },
+      "validation": {
+        "valid": true,
+        "issues": [],
+        "comments": "The sample accurately represents a classic SQL Injection scenario, specifically a blind SQL injection used for data enumeration. The scenario and description clearly explain how malicious SQL code is injected and exploited to extract sensitive data. The indicators effectively highlight key signs of such an attack, including conditional SQL usage, response time variations, and repeated probing requests. The sample is realistic and plausible in real-world applications. All required fields (scenario, description, indicators) are present and well populated. To further improve, the sample could mention risk reduction strategies such as parameterized queries, input validation, and WAF deployment to align fully with the problem statement's risk mitigation guidance."
+      }
+    }
+  ]
+}

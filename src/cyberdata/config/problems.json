@@ -2,62 +2,62 @@
   "problems": [
     {
       "area": "Phishing",
-      "nature": "phishing",
-      "description": "Employees receive emails that appear to come from trusted vendors requesting urgent payment updates. The emails contain links to fraudulent websites designed to capture payment information.",
+      "nature": "credential_harvesting",
+      "description": "Attackers send deceptive emails impersonating trusted entities to trick users into submitting their login credentials on fake websites.",
       "risk_reduction": [
-        "Implement email authentication protocols like SPF, DKIM, and DMARC",
-        "Conduct regular phishing awareness training for employees",
-        "Use advanced email filtering solutions to detect and block phishing attempts"
+        "Implement multi-factor authentication (MFA) across all accounts",
+        "Deploy advanced email filtering and anti-phishing tools",
+        "Conduct regular user awareness training and phishing simulations"
       ]
     },
     {
       "area": "Phishing",
       "nature": "spear_phishing",
-      "description": "High-profile executives receive targeted emails that appear to come from colleagues, tricking them into revealing sensitive information or transferring funds.",
+      "description": "Highly targeted phishing attacks aimed at specific individuals or roles within an organization to gain access to sensitive information or systems.",
       "risk_reduction": [
-        "Establish a verification process for financial transactions",
-        "Train executives on recognizing spear phishing tactics",
-        "Utilize email security solutions that analyze sender behavior"
+        "Use threat intelligence to identify targeted campaigns",
+        "Limit publicly available personal information on social media",
+        "Train employees to recognize social engineering tactics"
       ]
     },
     {
       "area": "Phishing",
-      "nature": "whaling",
-      "description": "C-level executives are targeted with highly personalized emails that exploit their interests or recent activities, leading to significant financial loss or data breaches.",
+      "nature": "business_email_compromise",
+      "description": "Attackers compromise or spoof business email accounts to request fraudulent wire transfers or sensitive data from employees.",
       "risk_reduction": [
-        "Implement multi-factor authentication for executive accounts",
-        "Conduct regular security training focused on whaling tactics",
-        "Monitor and analyze email traffic for unusual patterns"
+        "Verify unusual requests through secondary communication channels",
+        "Enable email authentication protocols like DMARC, DKIM, and SPF",
+        "Monitor email traffic for anomalies and implement anomaly detection"
       ]
     },
     {
-      "area": "A man-in-the-middle (MITM) attack",
-      "nature": "session_hijacking",
-      "description": "An attacker intercepts communication between a user and a web application, capturing session tokens and gaining unauthorized access to user accounts.",
+      "area": "SQL Injection",
+      "nature": "classic_sql_injection",
+      "description": "Attackers inject malicious SQL code into input fields to manipulate backend databases, potentially extracting or altering sensitive data.",
       "risk_reduction": [
-        "Enforce HTTPS for all web applications to encrypt data in transit",
-        "Implement secure cookie attributes (e.g., HttpOnly, Secure)",
-        "Use session timeouts and re-authentication for sensitive actions"
+        "Use parameterized queries and prepared statements",
+        "Validate and sanitize all user inputs",
+        "Employ web application firewalls (WAF) to detect injection attempts"
       ]
     },
     {
-      "area": "A man-in-the-middle (MITM) attack",
-      "nature": "Wi-Fi_eavesdropping",
-      "description": "Users connect to unsecured public Wi-Fi networks, allowing attackers to intercept and manipulate data transmitted over the network.",
+      "area": "SQL Injection",
+      "nature": "blind_sql_injection",
+      "description": "Attackers exploit SQL injection vulnerabilities without direct feedback by inferring database information through application behavior changes.",
       "risk_reduction": [
-        "Encourage the use of VPNs when accessing public Wi-Fi",
-        "Educate users about the risks of connecting to unsecured networks",
-        "Implement network segmentation to limit exposure to sensitive data"
+        "Implement strict input validation and output encoding",
+        "Limit database error messages exposed to users",
+        "Conduct regular security testing including blind injection scenarios"
       ]
     },
     {
-      "area": "A man-in-the-middle (MITM) attack",
-      "nature": "SSL_stripping",
-      "description": "An attacker downgrades a user's connection from HTTPS to HTTP, allowing them to intercept sensitive information such as login credentials.",
+      "area": "SQL Injection",
+      "nature": "union_based_sql_injection",
+      "description": "Attackers use UNION SQL operators to combine malicious queries with legitimate ones, extracting data from other database tables.",
       "risk_reduction": [
-        "Enforce HSTS (HTTP Strict Transport Security) on web applications",
-        "Educate users to check for HTTPS in the browser before entering sensitive information",
-        "Use secure coding practices to prevent protocol downgrades"
+        "Restrict database user permissions to minimum required",
+        "Use ORM frameworks that abstract SQL queries",
+        "Continuously monitor and log database queries for suspicious patterns"
       ]
     }
   ]

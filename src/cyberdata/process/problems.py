@@ -1,12 +1,23 @@
 import json
 import os
-from importlib.resources import files
+import re
 from pathlib import Path
+from importlib.resources import files
 
 from dotenv import load_dotenv
 from langchain.prompts import PromptTemplate
 
 from cyberdata.utils.llm_invoke import process_llm_request
+
+# Load environment variables
+load_dotenv()
+
+# Get the project root directory
+CURRENT_DIR = Path(__file__).parent
+PROJECT_ROOT = Path(__file__).resolve().parent.parent  # src/cyberdata
+
+# Define direct path to problems.json instead of using importlib.resources
+PROBLEMS_OUTPUT_PATH = PROJECT_ROOT / "config" / "problems.json"
 
 # Correct: files() takes the package, then you "/" the filename
 problem_init_path = files("cyberdata.config") / "problems_init.json"
@@ -37,7 +48,7 @@ For each problem you describe, include:
 user_prompt_text = """
 Please generate a JSON object with a single key "problems", whose value is an array of problem entries. Each entry must include:
 
-- "area": One of ["Phishing", "A man-in-the-middle (MITM) attack"]
+- "area": One of ["Phishing", "SQL Injection"]
 - "nature": A concise label for the problem category (e.g., "phishing", "misconfiguration").
 - "description": A detailed explanation of the problem scenario.
 - "risk_reduction": A list of recommended mitigation measures.
@@ -55,28 +66,84 @@ user_prompt_format = PromptTemplate(
     input_variables=["problem_examples"], template=user_prompt_text
 )
 
-
 system_prompt = system_prompt_format.format()
-
 user_prompt = user_prompt_format.format(problem_examples=problem_examples)
 
 return_str = process_llm_request(system_prompt, user_prompt)
 
-print("output_problem:\n", return_str)
+print("Raw LLM response received.")
 
-# Parse the returned string into a JSON object
+# Clean up the response to extract valid JSON
+def extract_json(text):
+    """Extract JSON from text that might contain markdown or other content."""
+    # Try direct parsing first
+    try:
+        return json.loads(text)
+    except json.JSONDecodeError:
+        pass
+    
+    # Try to extract JSON if it's wrapped in markdown code blocks
+    json_pattern = r'```(?:json)?\s*([\s\S]*?)```'
+    match = re.search(json_pattern, text)
+    if match:
+        try:
+            return json.loads(match.group(1))
+        except json.JSONDecodeError:
+            pass
+    
+    # Try to find JSON-like content with { and } as delimiters
+    try:
+        start_idx = text.find('{')
+        if start_idx != -1:
+            # Find the matching closing brace
+            brace_count = 0
+            for i in range(start_idx, len(text)):
+                if text[i] == '{':
+                    brace_count += 1
+                elif text[i] == '}':
+                    brace_count -= 1
+                    if brace_count == 0:
+                        # Found the complete JSON object
+                        json_str = text[start_idx:i+1]
+                        return json.loads(json_str)
+    except Exception:
+        pass
+    
+    # Return None if no valid JSON could be extracted
+    return None
+
+# Try to parse the returned string into a JSON object
 try:
-    problems_data = json.loads(return_str)
+    # First try to extract valid JSON from the response
+    problems_data = extract_json(return_str)
     
-    output_path = files("cyberdata.config") / "problems.json"
+    if problems_data is None:
+        print("Could not extract valid JSON from the response.")
+        print("Raw response:", return_str)
+        
+        # Fallback: Use existing problems.json if available
+        if PROBLEMS_OUTPUT_PATH.exists():
+            print(f"Using existing problems.json as fallback")
+            with PROBLEMS_OUTPUT_PATH.open('r', encoding='utf-8') as f:
+                problems_data = json.load(f)
+        else:
+            # If we can't even fallback, raise an exception
+            raise ValueError("Failed to extract JSON and no fallback available")
     
-    # Make sure parent directories exist
-    output_path.parent.mkdir(parents=True, exist_ok=True)
-    with output_path.open('w', encoding='utf-8') as f:
+    # Ensure the output directory exists
+    PROBLEMS_OUTPUT_PATH.parent.mkdir(parents=True, exist_ok=True)
+    
+    # Remove the existing file if it exists
+    if PROBLEMS_OUTPUT_PATH.exists():
+        print(f"Removing existing file: {PROBLEMS_OUTPUT_PATH}")
+        PROBLEMS_OUTPUT_PATH.unlink()
+    
+    # Write the new data to the file
+    with PROBLEMS_OUTPUT_PATH.open('w', encoding='utf-8') as f:
         json.dump(problems_data, f, indent=2, ensure_ascii=False)
     
-    print(f"Successfully saved problems data to {output_path}")
+    print(f"Successfully saved problems data to {PROBLEMS_OUTPUT_PATH}")
     
-except json.JSONDecodeError as e:
-    print(f"Error: Could not parse the LLM response as JSON: {e}")
+except Exception as e:
+    print(f"Error: {str(e)}")
     print("Raw response:", return_str)

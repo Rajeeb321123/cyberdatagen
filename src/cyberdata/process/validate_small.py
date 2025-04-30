@@ -1,114 +1,170 @@
-import os
 import json
+import os
+import sys
 from pathlib import Path
-from dotenv import load_dotenv
-from langchain.chat_models import ChatOpenAI
-from langchain.schema import SystemMessage, HumanMessage
 
-# This code aims to use LLM as an initial step to validate the generated seeds for each problem.  
-# We expect the LLM to help separate valid, beneficial seeds from unuseful ones. 
+import pandas as pd
+from dotenv import load_dotenv
+
+# Import process_llm_request from your utility module
+from cyberdata.utils.llm_invoke import process_llm_request
+
+# Add parent directory to path for imports
+CURRENT_DIR = Path(__file__).parent
+PROJECT_ROOT = CURRENT_DIR.parent.parent.parent
+sys.path.append(str(CURRENT_DIR.parent))  # Add cyberdata package to path
 
 # Load environment variables
 load_dotenv()
 
 # Constants
-SEEDS_DIR = Path('./data/seeds')  # CSV or JSON files with sample data
-OUTPUT_DIR = Path('./data/validation_reports')
-OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
-
-# Initialize chat model
-api_key = os.getenv('OPENAI_API_KEY')
-chat = ChatOpenAI(temperature=0, openai_api_key=api_key)
+MODEL_NAME = "gpt-4.1-mini"  # Match with small_dataset.py
+PROBLEMS_PATH = CURRENT_DIR.parent / 'config' / 'problems.json'
+SEEDS_BASE_DIR = PROJECT_ROOT / 'data' / 'seeds'
+VALIDATION_DIR = PROJECT_ROOT / 'data' / 'validation_reports'
+VALIDATION_DIR.mkdir(parents=True, exist_ok=True)
 
 
-def make_system_prompt(example: dict) -> str:
+def load_problems(file_path: Path = PROBLEMS_PATH) -> list:
+    """Load problem definitions from config."""
+    if not file_path.exists():
+        raise FileNotFoundError(f"Missing problems config: {file_path}")
+    data = json.loads(file_path.read_text(encoding='utf-8'))
+    return data.get('problems', [])
+
+
+def make_system_prompt(problem: dict, example: dict) -> str:
     """
     System prompt to instruct the LLM on validation criteria.
     """
-    return (
-        "You are a cybersecurity data validation assistant. "
-        "Your task is to assess whether the given sample correctly represents its stated cybersecurity problem and to provide detailed feedback.\n"
-        "Validation criteria:\n"
-        "1. Correctness: Does the sample align with the problem nature?\n"
-        "2. Realism: Is the example plausible in a real-world scenario?\n"
-        "3. Completeness: Are all required fields present and accurately populated?\n"
-        "4. Indicators: Do the indicators clearly explain why the sample matches the problem?"
-    )
+    return f"""
+You are a cybersecurity data validation assistant. 
+Your task is to assess whether the given sample correctly represents the stated cybersecurity problem and to provide detailed feedback.
+
+Problem:
+- Area: {problem['area']}
+- Nature: {problem['nature']}
+- Description: {problem.get('description')}
+- Risk Reduction: {', '.join(problem.get('risk_reduction', []))}
+
+Validation criteria:
+1. Correctness: Does the sample align with the problem nature?
+2. Realism: Is the example plausible in a real-world scenario?
+3. Completeness: Are all required fields present and accurately populated?
+4. Indicators: Do the indicators clearly explain why the sample matches the problem?
+"""
 
 
 def make_user_prompt(example: dict) -> str:
     """
-    Human prompt embedding the example to be validated.
+    User prompt embedding the example to be validated.
     """
     # Serialize example to JSON string
     example_json = json.dumps(example, indent=2)
-    return f"Please validate the following sample and return a JSON object with keys:\n" \
-           "- 'valid': boolean, whether the sample is valid.\n" \
-           "- 'issues': list of strings describing any problems or missing elements.\n" \
-           "- 'comments': detailed feedback on improvements.\n" \
-           "Sample:\n{example_json}"
+    return f"""
+Please validate the following sample and return a JSON object with keys:
+- 'valid': boolean, whether the sample is valid.
+- 'issues': list of strings describing any problems or missing elements.
+- 'comments': detailed feedback on improvements.
+
+Sample:
+{example_json}
+
+Return only valid JSON.
+"""
 
 
-def validate_example(example: dict) -> dict:
+def validate_example(problem: dict, example: dict) -> dict:
     """
     Call the LLM to validate a single example.
     """
-    sys_msg = SystemMessage(content=make_system_prompt(example))
-    usr_msg = HumanMessage(content=make_user_prompt(example))
-    response = chat([sys_msg, usr_msg])
+    system_content = make_system_prompt(problem, example)
+    user_content = make_user_prompt(example)
+    
+    # Use process_llm_request instead of direct model call
+    response_content = process_llm_request(
+        system_prompt=system_content,
+        user_prompt=user_content,
+        model_name=MODEL_NAME,
+        temperature=0.0  # Use 0 for consistent validation
+    )
+    
     # Parse and return the JSON response
     try:
-        return json.loads(response.content)
+        # Clean up content by removing markdown code blocks if present
+        if response_content.startswith('```'):
+            # Find the first and last backtick groups
+            first_backticks_end = response_content.find('\n', 3)
+            if first_backticks_end != -1:
+                # Find the closing backticks
+                last_backticks_start = response_content.rfind('```')
+                if last_backticks_start > first_backticks_end:
+                    # Extract the content between the backticks
+                    response_content = response_content[first_backticks_end + 1:last_backticks_start].strip()
+                else:
+                    # Just remove the first backticks line if no closing backticks found
+                    response_content = response_content[first_backticks_end + 1:].strip()
+                    
+        return json.loads(response_content)
     except json.JSONDecodeError:
         # If parsing fails, wrap raw content
-        return {"valid": False, "issues": ["Invalid JSON response"], "comments": response.content}
+        return {"valid": False, "issues": ["Invalid JSON response"], "comments": response_content}
 
 
 def main():
-    # Load problem definitions to map to seed files
-    problems = json.loads(Path('./config/problems.json').read_text(encoding='utf-8')).get('problems', [])
+    # Load problem definitions
+    problems = load_problems()
+    
     for problem in problems:
-        area = problem.get('area', '').lower()
-        nature = problem.get('nature', '')
-        seed_filename = f"{area}_{nature}_seed.csv"
-        seed_path = SEEDS_DIR / seed_filename
-        if not seed_path.exists():
-            print(f"Seed file not found for problem {nature} at {seed_path}, skipping.")
+        area = problem['area']
+        nature = problem['nature']
+        print(f"Validating samples for problem: {area}/{nature}...")
+        
+        # Construct path to JSON examples file
+        json_dir = SEEDS_BASE_DIR / area / 'json'
+        json_file_path = json_dir / f"{nature}_examples.json"
+        
+        if not json_file_path.exists():
+            print(f"Examples file not found for problem {nature} at {json_file_path}, skipping.")
             continue
-
-        # Read CSV into examples
-        import pandas as pd
-        df = pd.read_csv(seed_path)
-        examples = df.to_dict(orient='records')
-
+        
+        # Load examples
+        with json_file_path.open('r', encoding='utf-8') as f:
+            examples_data = json.load(f)
+            examples = examples_data.get('examples', [])
+        
+        if not examples:
+            print(f"No examples found in {json_file_path}, skipping.")
+            continue
+            
         report = []
-        print(f"Validating samples for problem: {nature}...")
-        for idx, ex in enumerate(examples):
-            # Enrich example with problem metadata
-            example_payload = ex.copy()
-            example_payload.update({
-                'area': problem.get('area'),
-                'nature': nature,
-                'description': problem.get('description'),
-                'risk_reduction': problem.get('risk_reduction')
-            })
-            result = validate_example(example_payload)
+        for idx, example in enumerate(examples):
+            print(f"  Validating example {idx+1}/{len(examples)}...")
+            
+            result = validate_example(problem, example)
+            
             entry = {
                 "index": idx,
                 "problem": {
-                    "area": problem.get('area'),
+                    "area": problem['area'],
                     "nature": nature
                 },
-                "example": ex,
+                "example": example,
                 "validation": result
             }
             report.append(entry)
-
+        
+        # Create area-specific directory structure for validation reports
+        area_validation_dir = VALIDATION_DIR / area
+        area_validation_dir.mkdir(parents=True, exist_ok=True)
+        
         # Save validation report specific to this problem
-        report_path = OUTPUT_DIR / f"{area}_{nature}_validation.json"
+        report_path = area_validation_dir / f"{nature}_validation.json"
         with report_path.open('w', encoding='utf-8') as f:
             json.dump({"report": report}, f, indent=2)
-        print(f"Saved validation report for {nature} to {report_path}")
+        
+        print(f"Saved validation report for {area}/{nature} to {report_path}")
+
 
 if __name__ == '__main__':
     main()
