@@ -4,7 +4,7 @@ import os
 from dotenv import load_dotenv
 
 import json
-from importlib.resources import files
+import importlib
 
 
 from langchain.prompts import PromptTemplate
@@ -14,6 +14,11 @@ from cyberdata.utils.llm_invoke import process_llm_request
 
 # Correct: files() takes the package, then you "/" the filename
 problem_init_path = files("cyberdata.config") / "problems_init.json"
+
+with importlib.resources.path(
+    "woagent.event_forecasting.apis", "api_description_full_cbm.py"
+) as api_desc_file_path:
+    api_description = open(api_desc_file_path, "r").read()
 
 with problem_init_path.open(encoding="utf-8") as f:
     problem_init = json.load(f)  # ← this returns a dict
