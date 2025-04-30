@@ -1,17 +1,20 @@
 # nlp2opt/utils/llm_invoke.py
 
-import os
 import logging
+import os
+
 from dotenv import load_dotenv
 from openai import OpenAI
-from nlp2opt import logger
+
+# from nlp2opt import logger
 
 
 load_dotenv()
 OPENAI_API_KEY = os.environ.get("OPENAI_API_KEY", "")
 
 # Global configuration variables
-MODEL_NAME = "gpt-4o-mini"
+# MODEL_NAME = "gpt-4o-mini"
+MODEL_NAME = "gpt-4.1-mini"
 MODEL_TOKEN_SIZE = 16384
 LOG_LEVEL = logging.INFO
 
@@ -28,8 +31,8 @@ def process_llm_request(
 ):
     try:
 
-        logger.info(f"The system prompt of the call: {system_prompt}")
-        logger.info(f"The user prompt of the call: {user_prompt}")
+        # logger.info(f"The system prompt of the call: {system_prompt}")
+        # logger.info(f"The user prompt of the call: {user_prompt}")
 
         response = client.chat.completions.create(
             model=model_name,
@@ -43,11 +46,11 @@ def process_llm_request(
 
         result = response.choices[0].message.content
 
-        logger.info(f"The LLM call result: {result}")
+        # logger.info(f"The LLM call result: {result}")
 
         return result
     except Exception as e:
         error_msg = f"Request failed: {str(e)}"
         print(error_msg)
-        logger.error(error_msg)
+        # logger.error(error_msg)
         return f"[Error: {str(e)}]"

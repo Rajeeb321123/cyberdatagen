@@ -1,0 +1,34 @@
+{
+  "examples": [
+    {
+      "scenario": "Intercepting Session Token over Unsecured Wi-Fi",
+      "description": "An attacker sets up a rogue Wi-Fi hotspot in a public place. A user connects to this hotspot and accesses their banking web application that does not enforce HTTPS on all pages. The attacker captures the user's session cookie transmitted in plain text. Using this session token, the attacker hijacks the user's active session and performs unauthorized transactions.",
+      "indicators": [
+        "User connected to unsecured or rogue Wi-Fi network",
+        "Session cookies transmitted without Secure and HttpOnly flags",
+        "HTTP (not HTTPS) traffic carrying session tokens",
+        "Unusual activity detected in user account without credential compromise"
+      ]
+    },
+    {
+      "scenario": "Session Hijacking via Man-in-the-Middle Attack on Public Network",
+      "description": "A user logs into a webmail service on their laptop while connected to a shared coffee shop Wi-Fi network. The webmail application uses HTTPS but has mixed content, allowing some requests to be sent over HTTP. The attacker uses a packet-sniffing tool to capture session identifiers sent in these insecure requests. The attacker then uses the stolen session ID to access the user's email account.",
+      "indicators": [
+        "Presence of mixed HTTP and HTTPS content in the application",
+        "Session cookies without Secure attribute",
+        "Packet capture shows session token in plaintext",
+        "Login from an unknown IP address shortly after user session starts"
+      ]
+    },
+    {
+      "scenario": "Session Token Theft Due to Missing HttpOnly Cookie Attribute",
+      "description": "An attacker exploits an XSS vulnerability on a web application to run JavaScript in the victim\u2019s browser. The script reads the user's session cookie, which lacks the HttpOnly attribute, and sends it to the attacker. The attacker then uses this session token to hijack the victim\u2019s session and access their account.",
+      "indicators": [
+        "Session cookies missing HttpOnly attribute",
+        "Detected XSS vulnerabilities on the web application",
+        "Unusual outbound traffic from victim's browser sending session tokens",
+        "Unauthorized access to user accounts without login credentials"
+      ]
+    }
+  ]
+}
