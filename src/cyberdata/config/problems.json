@@ -1,63 +1,63 @@
 {
   "problems": [
     {
-      "area": "Phishing",
+      "area": "Phishing Attack",
       "nature": "credential_harvesting",
       "description": "Attackers send deceptive emails impersonating trusted entities to trick users into submitting their login credentials on fake websites.",
       "risk_reduction": [
-        "Implement multi-factor authentication (MFA) across all accounts",
+        "Implement multi-factor authentication (MFA) across all user accounts",
         "Deploy advanced email filtering and anti-phishing tools",
-        "Conduct regular user awareness training and phishing simulations"
+        "Conduct regular user awareness training and simulated phishing exercises"
       ]
     },
     {
-      "area": "Phishing",
+      "area": "Phishing Attack",
       "nature": "spear_phishing",
-      "description": "Highly targeted phishing attacks aimed at specific individuals or roles within an organization to gain access to sensitive information or systems.",
+      "description": "Highly targeted phishing campaigns aimed at specific individuals or roles within an organization to gain access to sensitive information or systems.",
       "risk_reduction": [
-        "Use threat intelligence to identify targeted campaigns",
-        "Limit publicly available personal information on social media",
-        "Train employees to recognize social engineering tactics"
+        "Use threat intelligence to identify and block targeted phishing attempts",
+        "Train employees on recognizing social engineering tactics",
+        "Limit access privileges based on role and need-to-know basis"
       ]
     },
     {
-      "area": "Phishing",
+      "area": "Phishing Attack",
       "nature": "business_email_compromise",
       "description": "Attackers compromise or spoof business email accounts to request fraudulent wire transfers or sensitive data from employees.",
       "risk_reduction": [
-        "Verify unusual requests through secondary communication channels",
-        "Enable email authentication protocols like DMARC, DKIM, and SPF",
-        "Monitor email traffic for anomalies and implement anomaly detection"
+        "Verify financial requests through secondary communication channels",
+        "Enable email authentication protocols like SPF, DKIM, and DMARC",
+        "Monitor email account activity for unusual behavior"
       ]
     },
     {
-      "area": "SQL Injection",
-      "nature": "classic_sql_injection",
-      "description": "Attackers inject malicious SQL code into input fields to manipulate backend databases, potentially extracting or altering sensitive data.",
+      "area": "Man-in-the-Middle (MITM) Attack",
+      "nature": "wifi_eavesdropping",
+      "description": "Attackers intercept communications over unsecured or poorly secured Wi-Fi networks to capture sensitive data such as passwords and session tokens.",
       "risk_reduction": [
-        "Use parameterized queries and prepared statements",
-        "Validate and sanitize all user inputs",
-        "Employ web application firewalls (WAF) to detect injection attempts"
+        "Use WPA3 encryption on wireless networks",
+        "Encourage use of VPNs when accessing public Wi-Fi",
+        "Disable automatic Wi-Fi connections to untrusted networks"
       ]
     },
     {
-      "area": "SQL Injection",
-      "nature": "blind_sql_injection",
-      "description": "Attackers exploit SQL injection vulnerabilities without direct feedback by inferring database information through application behavior changes.",
+      "area": "Man-in-the-Middle (MITM) Attack",
+      "nature": "ssl_stripping",
+      "description": "Attackers downgrade HTTPS connections to HTTP, intercepting and modifying data transmitted between users and websites without detection.",
       "risk_reduction": [
-        "Implement strict input validation and output encoding",
-        "Limit database error messages exposed to users",
-        "Conduct regular security testing including blind injection scenarios"
+        "Enforce HTTPS using HSTS (HTTP Strict Transport Security)",
+        "Use up-to-date TLS protocols and certificates",
+        "Educate users to verify secure connection indicators in browsers"
       ]
     },
     {
-      "area": "SQL Injection",
-      "nature": "union_based_sql_injection",
-      "description": "Attackers use UNION SQL operators to combine malicious queries with legitimate ones, extracting data from other database tables.",
+      "area": "Man-in-the-Middle (MITM) Attack",
+      "nature": "dns_spoofing",
+      "description": "Attackers manipulate DNS responses to redirect users to malicious sites, enabling interception or alteration of communications.",
       "risk_reduction": [
-        "Restrict database user permissions to minimum required",
-        "Use ORM frameworks that abstract SQL queries",
-        "Continuously monitor and log database queries for suspicious patterns"
+        "Implement DNSSEC to validate DNS responses",
+        "Use trusted DNS resolvers with security features",
+        "Monitor DNS traffic for anomalies and unauthorized changes"
       ]
     }
   ]

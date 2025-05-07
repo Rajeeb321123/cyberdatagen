@@ -33,10 +33,10 @@ SEEDS_BASE_DIR.mkdir(parents=True, exist_ok=True)
 # Model configuration
 MODEL_NAME = "gpt-4.1-mini"  # Used in logging but not needed for API calls now
 
-# Prompts
+# Enhanced System Prompt for Realistic Cybersecurity Data Generation
 def make_system_prompt(problem: dict) -> str:
     return f"""
-You are a cybersecurity expert. Generate realistic, detailed examples for the following problem.
+You are an elite cybersecurity expert with extensive experience in security operations, threat intelligence, and incident response. Generate highly technical, realistic examples for the following cybersecurity problem:
 
 Problem:
 - Area: {problem['area']}
@@ -44,13 +44,57 @@ Problem:
 - Description: {problem.get('description')}
 - Risk Reduction: {', '.join(problem.get('risk_reduction', []))}
 
-Output a JSON array named `examples` with 2–3 items. Each item should be a JSON object containing fields relevant to the problem type (e.g., a phishing email, a data exfiltration event, etc.), and an `indicators` list explaining why it represents the problem. Return only valid JSON.
+For each example, include DETAILED TECHNICAL DATA that would appear in real-world scenarios, such as:
+
+1. For network-based attacks (like SQL Injection, XSS):
+   - Raw HTTP request/response data with headers, parameters, and payloads
+   - Network packet captures in text format (similar to Wireshark output)
+   - Log entries as they would appear in web servers, WAFs, or IDS/IPS
+   - Actual exploit code or injection strings
+
+2. For phishing and social engineering:
+   - Complete email content with headers, including X-headers showing routing
+   - SMTP transaction logs
+   - Domain registration details for suspicious domains
+   - Exact URL structures with obfuscation techniques
+
+3. For malware and system compromise:
+   - File hashes (MD5, SHA-1, SHA-256)
+   - Registry changes or file system artifacts
+   - Memory dump analysis snippets
+   - Command-and-control traffic patterns
+   - Process creation and execution chains
+
+4. For cloud security issues:
+   - API call sequences that demonstrate the attack
+   - IAM policy definitions showing misconfigurations
+   - CloudTrail or equivalent logs showing suspicious activity
+   - Container escape proof-of-concept details
+
+Each example should be structured with:
+1. "scenario": Brief description of the attack instance
+2. "technical_data": Detailed technical information as described above
+3. "indicators": Specific technical indicators of compromise
+4. "detection_method": How this would be detected in practice
+5. "relevant_mitre_techniques": MITRE ATT&CK techniques relevant to this example
+
+Output a JSON array named `examples` with 2–3 detailed items. Each item must contain realistic technical data that a security professional would encounter during an actual security incident. Return only valid JSON.
 """
 
 
+# Enhanced User Prompt
 def make_user_prompt() -> str:
     return """
-Generate the JSON as specified, without additional explanation.
+Generate technically-detailed examples with realistic data artifacts for the specified cybersecurity problem. 
+
+For each example, provide realistic, copy-pastable technical data that a security professional would encounter in the wild. This includes actual packet contents, HTTP requests, log entries, suspicious code, command outputs, etc.
+
+Include enough technical detail that these examples could be used for:
+1. Training security analysts to recognize real attacks
+2. Testing detection systems with realistic data
+3. Creating high-fidelity simulations
+
+Focus on technical accuracy and realism. Include enough detail to distinguish this from generic examples. Return valid JSON containing the `examples` array.
 """
 
 

@@ -48,7 +48,7 @@ For each problem you describe, include:
 user_prompt_text = """
 Please generate a JSON object with a single key "problems", whose value is an array of problem entries. Each entry must include:
 
-- "area": One of ["Phishing", "SQL Injection"]
+- "area": One of ["Phishing Attack", "Man-in-the-Middle (MITM) Attack"]
 - "nature": A concise label for the problem category (e.g., "phishing", "misconfiguration").
 - "description": A detailed explanation of the problem scenario.
 - "risk_reduction": A list of recommended mitigation measures.
