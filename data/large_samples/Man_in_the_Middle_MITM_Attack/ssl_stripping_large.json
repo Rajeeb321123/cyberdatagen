@@ -1,0 +1,29 @@
+{
+  "samples": [
+    {
+      "scenario": "Attacker sets up a rogue Wi-Fi hotspot in a coffee shop, intercepting user traffic to a banking website.",
+      "technical_data": "User attempts to access https://bank.com but is redirected to http://bank.com via the attacker's MITM proxy that strips SSL encryption.",
+      "indicators": "User notices the browser shows 'http' instead of 'https'; absence of padlock icon; unusual certificate warnings are suppressed by attacker."
+    },
+    {
+      "scenario": "Attacker on a public Wi-Fi network intercepts login credentials for an email account by downgrading the connection from HTTPS to HTTP.",
+      "technical_data": "Using a tool like sslstrip, attacker intercepts DNS requests and rewrites links from https://mail.com to http://mail.com, capturing plaintext credentials.",
+      "indicators": "User's browser URL bar lacks HTTPS indication; login credentials transmitted in plaintext over the network."
+    },
+    {
+      "scenario": "An attacker performs MITM attack in a corporate LAN, redirecting employees' requests to a secure intranet portal to an insecure version.",
+      "technical_data": "Attacker modifies HTTP headers and strips SSL from intranet portal URLs, forcing employees to transmit sensitive data unencrypted.",
+      "indicators": "Network monitoring shows unencrypted traffic where HTTPS is expected; employees report missing security indicators in browser."
+    },
+    {
+      "scenario": "During a conference, an attacker uses ARP spoofing to intercept traffic and downgrade HTTPS connections for a popular social media site.",
+      "technical_data": "Attacker performs ARP poisoning and runs sslstrip to transparently downgrade https://socialmedia.com to http://socialmedia.com, capturing session cookies.",
+      "indicators": "Session cookies appear in network logs unencrypted; users report unusual login prompts; browser security warnings are absent due to attacker's suppression."
+    },
+    {
+      "scenario": "Attacker compromises a hotel network router, redirecting guests' secure shopping website connections to unsecure HTTP versions.",
+      "technical_data": "Modified router firmware redirects https://shopping.com to http://shopping.com; attacker captures credit card information in plaintext via MITM proxy.",
+      "indicators": "Users notice lack of HTTPS padlock on checkout pages; network scanning reveals HTTP traffic on typically secure domains."
+    }
+  ]
+}

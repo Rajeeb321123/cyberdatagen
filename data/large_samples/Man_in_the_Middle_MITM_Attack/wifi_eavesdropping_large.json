@@ -1,0 +1,89 @@
+{
+  "samples": [
+    {
+      "scenario": "Passive Capture of Unencrypted FTP Credentials on Public Library Wi-Fi via MITM ARP Spoofing",
+      "technical_data": "[Complex structure with keys: tcpdump_ftp_packets, arp_cache_poisoning_log, wireshark_ftp_login_extract, mitm_tool_arp_command, network_interface_status, system_audit_log]",
+      "indicators": [
+        "ARP cache entries showing duplicate IP to MAC mappings",
+        "FTP USER and PASS commands transmitted in clear text",
+        "Frequent ARP request and reply packets with suspicious MAC addresses",
+        "Wi-Fi interface in monitor mode",
+        "Use of open Wi-Fi network with no encryption"
+      ],
+      "detection_method": "Intrusion detection systems monitoring for ARP spoofing patterns; FTP traffic inspection for unencrypted credentials; Endpoint monitoring for promiscuous or monitor mode interfaces; User warnings for using unsecured FTP over public Wi-Fi",
+      "relevant_mitre_techniques": [
+        "T1557.001 - Man-in-the-Middle: ARP Spoofing",
+        "T1040 - Network Sniffing",
+        "T1071.001 - Application Layer Protocol: Web Protocols"
+      ]
+    },
+    {
+      "scenario": "Active MITM via Evil Twin Access Point Capturing SMTP Credentials Over Unsecured Wi-Fi",
+      "technical_data": "[Complex structure with keys: rogue_ap_hostapd_config, smtp_auth_capture, tcpdump_smtp_packets, dns_spoofing_log, mitmproxy_smtp_log, user_device_wifi_scan, system_event_log]",
+      "indicators": [
+        "Wi-Fi SSID cloned from corporate hotspot with stronger signal",
+        "SMTP AUTH commands observed in plaintext",
+        "DNS responses redirecting SMTP server domains to rogue AP IP",
+        "Unexpected DHCP leases assigned by rogue AP",
+        "Hostapd logs showing new device associations during attack window"
+      ],
+      "detection_method": "Wireless network scanning for duplicate SSIDs; SMTP traffic analysis for unencrypted authentication; DNS anomaly detection; Endpoint alerts on unexpected Wi-Fi networks and SMTP credential transmission",
+      "relevant_mitre_techniques": [
+        "T1557.003 - Man-in-the-Middle: Rogue Access Point",
+        "T1572 - Protocol Tunneling (DNS Manipulation)",
+        "T1071.004 - Application Layer Protocol: SMTP"
+      ]
+    },
+    {
+      "scenario": "Passive MITM Sniffing of Unencrypted IMAP Traffic Over Open Airport Wi-Fi Using ARP Poisoning",
+      "technical_data": "[Complex structure with keys: imap_packet_capture, arp_spoofing_traffic_log, wireshark_imap_login_extraction, mitm_tool_arp_command, network_interface_promiscuous_mode_status, system_security_log]",
+      "indicators": [
+        "Repeated ARP replies with spoofed MAC addresses on local subnet",
+        "IMAP LOGIN commands visible in plaintext over TCP port 143",
+        "ARP poisoning packets correlating with session start times",
+        "Wi-Fi interface set to promiscuous mode during capture",
+        "Open Wi-Fi network with no encryption or authentication"
+      ],
+      "detection_method": "Network detection of ARP spoofing activity; IMAP traffic inspection for unencrypted credentials; Endpoint detection of promiscuous mode; Security awareness training on avoiding open Wi-Fi for email access",
+      "relevant_mitre_techniques": [
+        "T1557.001 - Man-in-the-Middle: ARP Spoofing",
+        "T1040 - Network Sniffing",
+        "T1071.004 - Application Layer Protocol: Email Protocols"
+      ]
+    },
+    {
+      "scenario": "Active MITM Attack Using Wi-Fi Pineapple to Capture OAuth Tokens via HTTP Downgrade on Coffee Shop Network",
+      "technical_data": "[Complex structure with keys: pineapple_config_dump, http_redirect_logs, oauth_token_capture, mitmproxy_http_modifications, network_scan_results, system_auth_log]",
+      "indicators": [
+        "Wi-Fi Pineapple broadcasting SSID similar to legitimate cafe hotspot",
+        "HTTP 302 redirects forcing downgrade from HTTPS to HTTP",
+        "OAuth bearer tokens visible in HTTP headers",
+        "Repeated DHCP lease requests from rogue device",
+        "Mitmproxy logs showing modification of HTTP responses"
+      ],
+      "detection_method": "Detection of rogue access points using wireless monitoring; HTTP vs HTTPS traffic analysis; Inspection for OAuth token leakage in unencrypted traffic; Endpoint alerts for suspicious Wi-Fi connection and token exposure",
+      "relevant_mitre_techniques": [
+        "T1557.003 - Man-in-the-Middle: Rogue Access Point",
+        "T1071.001 - Application Layer Protocol: Web Protocols",
+        "T1557.004 - Man-in-the-Middle: HTTP Downgrade Attack"
+      ]
+    },
+    {
+      "scenario": "Passive Wi-Fi Sniffing of Unencrypted DNS Queries to Capture Internal Hostnames on Airport Network",
+      "technical_data": "[Complex structure with keys: dns_query_capture, arp_spoofing_log, wireshark_dns_packet_details, mitm_tool_arp_command, network_interface_promiscuous_status, system_network_log]",
+      "indicators": [
+        "High volume of DNS queries captured in promiscuous mode",
+        "ARP poisoning packets detected with source MAC spoofing",
+        "Internal hostnames revealed via unencrypted DNS requests",
+        "Wi-Fi interface operating in monitor mode",
+        "Open Wi-Fi network with no WPA/WPA2 encryption"
+      ],
+      "detection_method": "Network IDS alerts for ARP poisoning; DNS traffic monitoring for suspicious query patterns; Endpoint detection of promiscuous or monitor mode interfaces; User advisories on risks of open Wi-Fi DNS leakage",
+      "relevant_mitre_techniques": [
+        "T1557.001 - Man-in-the-Middle: ARP Spoofing",
+        "T1040 - Network Sniffing",
+        "T1071.003 - Application Layer Protocol: DNS"
+      ]
+    }
+  ]
+}

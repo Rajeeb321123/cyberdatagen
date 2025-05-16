@@ -1,0 +1,99 @@
+{
+  "samples": [
+    {
+      "scenario": "Compromised public Wi-Fi hotspot injecting fake DNS responses to redirect users visiting popular social media sites to malicious clones",
+      "technical_data": "[Complex structure with keys: dns_query_logs, fake_dns_response_packets, hotspot_router_config, client_dns_cache, browser_tls_handshake_logs, network_traffic_flow, dnssec_validation_status]",
+      "indicators": [
+        "DNS A records for facebook.com and twitter.com resolve to IPs outside of legitimate AS numbers",
+        "Multiple clients on same Wi-Fi subnet receiving identical forged DNS responses",
+        "TLS handshake warnings due to certificate mismatches on cloned domains",
+        "No DNSSEC RRSIG records present for targeted domains in DNS responses",
+        "Router logs show DNS proxy modifications with injected IP addresses",
+        "Inconsistent TTL values in DNS answers compared to authoritative servers"
+      ],
+      "detection_method": "Deploy DNS over HTTPS/TLS on client devices, monitor DNS query-response consistency across clients, verify TLS certificate validity upon connection, use DNSSEC validation to detect unsigned or altered DNS responses, audit and secure public Wi-Fi infrastructure against unauthorized DNS manipulations.",
+      "relevant_mitre_techniques": [
+        "T1557.002 - Man-in-the-Middle: DNS Spoofing",
+        "T1572 - Protocol Tunneling",
+        "T1071.001 - Application Layer Protocol: Web Protocols",
+        "T1595.001 - Active Scanning: DNS Scanning"
+      ]
+    },
+    {
+      "scenario": "Internal attacker poisoning DNS cache on corporate DNS server to redirect corporate email subdomain to attacker-controlled mail server",
+      "technical_data": "[Complex structure with keys: corporate_dns_server_cache_dump, email_server_logs, dns_query_response_trace, client_mail_delivery_logs, dnssec_config_status, network_packet_capture]",
+      "indicators": [
+        "MX record for mail.corp.example.com points to unauthorized IP",
+        "Unexpected DNS cache flush and reload events coinciding with suspicious DNS updates",
+        "Email delivery logs show connection to unknown mail server IP",
+        "Absence of DNSSEC validation for MX records",
+        "DNS server logs contain forged dynamic DNS update requests",
+        "Clients report SSL/TLS certificate warnings connecting to mail server"
+      ],
+      "detection_method": "Restrict dynamic DNS update permissions, enable DNSSEC for MX record validation, monitor DNS server logs for unauthorized updates, correlate mail server IP resolution with expected IPs, implement anomaly detection on email delivery paths, conduct regular audits of DNS cache contents.",
+      "relevant_mitre_techniques": [
+        "T1557.002 - Man-in-the-Middle: DNS Spoofing",
+        "T1071.001 - Application Layer Protocol: Web Protocols",
+        "T1110 - Brute Force (if credentials compromised)",
+        "T1595.001 - Active Scanning: DNS Scanning"
+      ]
+    },
+    {
+      "scenario": "Malicious insider injecting forged DNS responses via compromised DHCP server to redirect software update domains to malicious servers",
+      "technical_data": "[Complex structure with keys: dhcp_server_logs, dns_response_packets, client_software_update_logs, network_flow_analysis, dnssec_status, endpoint_security_alerts]",
+      "indicators": [
+        "DNS A records for updates.softwarevendor.com resolve to internal IP range not owned by vendor",
+        "DHCP server leases show unauthorized IP options including malicious DNS server address",
+        "Software update clients report failed signature verification after downloading altered packages",
+        "Absence of DNSSEC validation on software update domains",
+        "Network traffic shows connections to suspicious IPs during update windows",
+        "Endpoint logs reveal software update process communicating with rogue servers"
+      ],
+      "detection_method": "Secure DHCP servers to prevent unauthorized configuration changes, enforce DNSSEC validation on all update-related domains, monitor DHCP lease options for anomalies, inspect software update traffic for unexpected hosts, implement endpoint protection to verify update package integrity.",
+      "relevant_mitre_techniques": [
+        "T1557.002 - Man-in-the-Middle: DNS Spoofing",
+        "T1572 - Protocol Tunneling",
+        "T1071.001 - Application Layer Protocol: Web Protocols",
+        "T1595.002 - Active Scanning: Network Service Scanning"
+      ]
+    },
+    {
+      "scenario": "Nation-state actor conducting DNS spoofing attack by poisoning public recursive DNS caches to redirect government agency domains to espionage infrastructure",
+      "technical_data": "[Complex structure with keys: recursive_dns_cache_snapshots, global_dns_traffic_analysis, authoritative_dns_server_logs, client_dns_resolution_traces, dnssec_validation_reports, threat_intel_feeds]",
+      "indicators": [
+        "Multiple recursive DNS caches worldwide returning inconsistent IP addresses for govagency.gov domain",
+        "DNSSEC validation failures reported at recursive resolvers",
+        "Network flows from government clients to IPs flagged in threat intelligence",
+        "Authoritative DNS servers show no changes while clients receive altered responses",
+        "High volume of DNS responses with forged RCODE and TTL values",
+        "Suspicious domain names used in redirected traffic for data exfiltration"
+      ],
+      "detection_method": "Enforce DNSSEC validation globally, monitor recursive resolver cache consistency, correlate DNS responses from multiple vantage points, integrate threat intelligence to flag suspicious IPs, deploy anomaly detection on government network DNS traffic, conduct forensic analysis on recursive resolver logs.",
+      "relevant_mitre_techniques": [
+        "T1557.002 - Man-in-the-Middle: DNS Spoofing",
+        "T1071.001 - Application Layer Protocol: Web Protocols",
+        "T1595.001 - Active Scanning: DNS Scanning",
+        "T1110 - Brute Force (if credentials compromised)"
+      ]
+    },
+    {
+      "scenario": "Rogue IoT device on enterprise network performing DNS spoofing to redirect update and telemetry domains to attacker infrastructure",
+      "technical_data": "[Complex structure with keys: iot_device_network_traffic, dns_query_response_logs, enterprise_dns_server_logs, client_iot_device_dns_cache, dnssec_validation_results, network_packet_capture]",
+      "indicators": [
+        "DNS queries from IoT device resolve telemetry.exampleiot.com to unauthorized IP",
+        "Enterprise DNS server logs show unexpected DNS updates correlating with IoT device MAC address",
+        "DNSSEC validation absent or failing on IoT update domains",
+        "Network captures reveal forged DNS answers with suspicious TTL and flags",
+        "IoT device attempting connections to IPs outside normal vendor infrastructure",
+        "Mismatch between expected and actual DNS server IPs configured on device"
+      ],
+      "detection_method": "Segment IoT devices on isolated VLANs, enforce DNSSEC on all IoT-related domains, monitor DNS server logs for unauthorized updates, implement network anomaly detection for IoT traffic, audit device configurations for rogue DNS settings, conduct periodic security assessments of connected IoT devices.",
+      "relevant_mitre_techniques": [
+        "T1557.002 - Man-in-the-Middle: DNS Spoofing",
+        "T1572 - Protocol Tunneling",
+        "T1071.001 - Application Layer Protocol: Web Protocols",
+        "T1595.001 - Active Scanning: DNS Scanning"
+      ]
+    }
+  ]
+}

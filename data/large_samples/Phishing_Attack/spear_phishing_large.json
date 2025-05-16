@@ -1,0 +1,99 @@
+{
+  "samples": [
+    {
+      "scenario": "Spear phishing email targeting a HR manager with a fake job candidate resume attachment containing embedded macros",
+      "technical_data": "[Complex structure with keys: email_headers, email_body, smtp_transaction_logs, domain_registration, attachment_metadata, macro_analysis, network_traffic_capture]",
+      "indicators": [
+        "Newly registered domain with similar spelling to legitimate recruitment agency",
+        "Email From header spoofed to recruitment domain, but sending IP is external and unrelated",
+        "Attachment is a Word document with embedded VBA macros executing encoded PowerShell commands",
+        "Macros attempt to download additional payload from suspicious URL with IP-based domain",
+        "SPF fails and DKIM absent, but DMARC policy not enforced"
+      ],
+      "detection_method": "Email gateway detects macro-enabled document and blocks delivery to some recipients. Sandbox execution reveals PowerShell command initiating network connections to suspicious IP. Threat intelligence flags domain as newly registered and linked to previous phishing campaigns. Endpoint protection blocks macro execution. User awareness training highlights unexpected job candidate emails.",
+      "relevant_mitre_techniques": [
+        "T1566.001 - Spearphishing Attachment",
+        "T1204.002 - User Execution: Malicious File",
+        "T1059.001 - PowerShell",
+        "T1114.001 - Email Collection",
+        "T1193 - Spearphishing via Service"
+      ]
+    },
+    {
+      "scenario": "Spear phishing email to finance department with a URL mimicking a bank login page using URL shortening and domain shadowing",
+      "technical_data": "[Complex structure with keys: email_headers, email_body, smtp_transaction_logs, domain_registration, url_shortener_logs, redirected_url_chain, phishing_site_html, ssl_certificate_details]",
+      "indicators": [
+        "Email contains shortened URL redirecting to multiple domains before final phishing site",
+        "Phishing domain is a subdomain of a compromised legitimate domain (domain shadowing)",
+        "SSL certificate is valid but issued by free certificate authority and recently created",
+        "SPF passes due to domain shadowing, DKIM signature missing",
+        "Email content uses urgent payment request language tailored to finance roles"
+      ],
+      "detection_method": "Email security gateway flags multiple redirects and unusual domain chaining. URL analysis tools detect domain shadowing. Threat intel identifies SSL certificate as recently issued and suspicious. User reports prompt IT to block final phishing domain and notify finance team. Endpoint logs show no credential submission due to training.",
+      "relevant_mitre_techniques": [
+        "T1566.002 - Spearphishing Link",
+        "T1587.001 - Phishing for Information",
+        "T1071.001 - Web Protocols",
+        "T1204.002 - User Execution: Malicious Link",
+        "T1193 - Spearphishing via Service"
+      ]
+    },
+    {
+      "scenario": "Spear phishing email to legal department with a malicious PDF containing embedded JavaScript exploiting CVE-2020-XXXX",
+      "technical_data": "[Complex structure with keys: email_headers, email_body, smtp_transaction_logs, domain_registration, pdf_metadata, exploit_code_analysis, network_traffic_capture]",
+      "indicators": [
+        "Attached PDF exploits known Adobe Reader vulnerability for remote code execution",
+        "Email From header uses a lookalike domain with swapped characters",
+        "SPF and DKIM fail, but DMARC policy is not strictly enforced",
+        "Email content references ongoing legal case to increase credibility",
+        "Network traffic shows attempted connections to attacker-controlled C2 server post-exploit"
+      ],
+      "detection_method": "Sandbox environment triggers exploit during PDF rendering and alerts on remote shell activity. Email security flags SPF/DKIM failures. Threat intelligence confirms domain used in previous legal-themed phishing lures. Endpoint detection identifies abnormal outbound connections and isolates affected host. Legal team briefed on phishing tactics.",
+      "relevant_mitre_techniques": [
+        "T1566.001 - Spearphishing Attachment",
+        "T1204.002 - User Execution: Malicious File",
+        "T1059.007 - JavaScript",
+        "T1190 - Exploit Public-Facing Application",
+        "T1193 - Spearphishing via Service"
+      ]
+    },
+    {
+      "scenario": "Spear phishing email to executive assistant with a link to a fake cloud storage login page using IP address URL and URL encoding",
+      "technical_data": "[Complex structure with keys: email_headers, email_body, smtp_transaction_logs, domain_registration, url_details, webserver_logs, phishing_site_html_snippet]",
+      "indicators": [
+        "URL uses direct IP address with encoded query parameters to mask real destination",
+        "Email From header is spoofed as internal IT department but originates from external IP",
+        "SPF fails and DKIM signature missing",
+        "Phishing page mimics corporate cloud login portal with SSL certificate mismatch warning suppressed",
+        "Email urges immediate password reset citing security breach"
+      ],
+      "detection_method": "Email gateway flags SPF failure and suspicious IP-based URL. User reports suspicious email triggering incident response. Web proxy logs show access to IP-based URL with suspicious encoding. Endpoint logs capture credential submission attempts. IT enforces multi-factor authentication and issues advisory to staff.",
+      "relevant_mitre_techniques": [
+        "T1566.002 - Spearphishing Link",
+        "T1071.001 - Web Protocols",
+        "T1587.001 - Phishing for Information",
+        "T1204.002 - User Execution: Malicious Link",
+        "T1193 - Spearphishing via Service"
+      ]
+    },
+    {
+      "scenario": "Spear phishing email sent to R&D manager with a malicious Excel spreadsheet exploiting macro payload to install backdoor",
+      "technical_data": "[Complex structure with keys: email_headers, email_body, smtp_transaction_logs, domain_registration, attachment_analysis, macro_behavior, post_infection_network_traffic]",
+      "indicators": [
+        "Attachment is an Excel file with auto-executing macros downloading remote payload",
+        "Domain registration uses privacy protection and mimics supplier domain",
+        "SPF passes due to attacker compromise of supplier's mail server",
+        "Email language references recent project details to increase legitimacy",
+        "Post-infection traffic shows beaconing to C2 server over non-standard ports"
+      ],
+      "detection_method": "Advanced email filtering detects macro-enabled attachment and blocks some deliveries. Sandbox analysis shows macro downloading and executing backdoor. Network monitoring detects unusual outbound connections. Threat intel confirms domain used in previous supply chain phishing attacks. R&D team alerted and incident response initiated.",
+      "relevant_mitre_techniques": [
+        "T1566.001 - Spearphishing Attachment",
+        "T1204.002 - User Execution: Malicious File",
+        "T1059.001 - PowerShell",
+        "T1071.001 - Web Protocols",
+        "T1193 - Spearphishing via Service"
+      ]
+    }
+  ]
+}

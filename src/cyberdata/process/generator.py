@@ -1,6 +1,7 @@
 import json
 import os
 import sys
+import re
 from pathlib import Path
 
 from dotenv import load_dotenv
@@ -19,7 +20,7 @@ load_dotenv()
 # Constants and paths
 MODEL_NAME = "gpt-4.1-mini"  # Match with small_dataset.py
 PROBLEMS_PATH = CURRENT_DIR.parent / 'config' / 'problems.json'
-SEEDS_BASE_DIR = PROJECT_ROOT / 'data' / 'seeds'
+SEEDS_DIR = PROJECT_ROOT / 'data' / 'seeds'
 OUTPUT_DIR = PROJECT_ROOT / 'data' / 'large_samples'
 OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
 
@@ -32,25 +33,52 @@ def load_problems(file_path: Path = PROBLEMS_PATH) -> list:
     return data.get('problems', [])
 
 
-def load_examples(nature: str, area: str) -> list:
+def find_examples_file(problem):
     """
-    Load few-shot examples for a given problem nature from the appropriate area subdirectory.
+    Find the examples file for a specific problem.
+    """
+    area = problem['area']
+    nature = problem['nature']
+    
+    # Create a sanitized version of area and nature for filename matching
+    sanitized_area = area.replace(' ', '_').replace('(', '').replace(')', '').replace('-', '_')
+    sanitized_nature = nature.replace(' ', '_')
+    
+    # Check for the file in the area-specific directory
+    area_dir = SEEDS_DIR / sanitized_area
+    if area_dir.exists():
+        filename = f"{sanitized_nature}_examples.json"
+        example_file = area_dir / filename
+        
+        if example_file.exists():
+            return example_file
+    
+    # If not found, try looking for the file in other area directories
+    for dir_path in SEEDS_DIR.glob('*'):
+        if dir_path.is_dir():
+            for file_path in dir_path.glob('*.json'):
+                if sanitized_nature.lower() in file_path.name.lower():
+                    return file_path
+            
+    return None
+
+
+def load_examples(problem: dict) -> list:
+    """
+    Load few-shot examples for a given problem.
     
     Args:
-        nature (str): The specific problem nature
-        area (str): The problem area (e.g., "Phishing Attack")
+        problem (dict): The problem dictionary containing 'area' and 'nature'
     
     Returns:
         list: The examples for the given problem
     """
-    # Construct path to JSON examples file within area subdirectory
-    json_dir = SEEDS_BASE_DIR / area / 'json'
-    file_path = json_dir / f"{nature}_examples.json"
+    example_file = find_examples_file(problem)
     
-    if not file_path.exists():
-        raise FileNotFoundError(f"Examples file not found: {file_path}")
+    if not example_file or not example_file.exists():
+        raise FileNotFoundError(f"Examples file not found for {problem['area']}/{problem['nature']}")
     
-    data = json.loads(file_path.read_text(encoding='utf-8'))
+    data = json.loads(example_file.read_text(encoding='utf-8'))
     return data.get('examples', [])
 
 
@@ -147,7 +175,6 @@ def extract_json_from_response(response_content: str) -> dict:
         # Try alternative extraction methods
         
         # Try extracting JSON with regex
-        import re
         json_pattern = r'\{[\s\S]*\}'
         match = re.search(json_pattern, response_content)
         if match:
@@ -211,7 +238,7 @@ def generate_for_problem(problem: dict, n: int = 10) -> list:
     
     try:
         # Load examples from appropriate area subdirectory
-        examples = load_examples(nature, area)
+        examples = load_examples(problem)
         
         # Simplify the structure of examples if they are too complex
         simplified_examples = []
@@ -304,10 +331,22 @@ def save_samples(problem: dict, samples: list):
         print(f"No samples to save for {problem['nature']}")
         return
     
+    area = problem['area']
     nature = problem['nature']
     
+    # Create a sanitized version of area and nature for directory and filename
+    sanitized_area = area.replace(' ', '_').replace('(', '').replace(')', '').replace('-', '_')
+    sanitized_nature = nature.replace(' ', '_')
+    
+    # Create area directory
+    area_dir = OUTPUT_DIR / sanitized_area
+    area_dir.mkdir(parents=True, exist_ok=True)
+    
+    # Create filename
+    filename = f"{sanitized_nature}_large.json"
+    
     # Create output file path
-    out_file = OUTPUT_DIR / f"{nature}_large.json"
+    out_file = area_dir / filename
     
     # Save samples
     with out_file.open('w', encoding='utf-8') as f:

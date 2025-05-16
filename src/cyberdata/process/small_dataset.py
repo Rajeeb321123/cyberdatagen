@@ -4,7 +4,6 @@ import sys
 import re
 from pathlib import Path
 
-import pandas as pd
 from dotenv import load_dotenv
 
 # Import process_llm_request from your utility module
@@ -15,20 +14,18 @@ CURRENT_DIR = Path(__file__).parent
 PROJECT_ROOT = CURRENT_DIR.parent.parent.parent
 sys.path.append(str(CURRENT_DIR.parent))  # Add cyberdata package to path
 
-# The purpose of this code is to achieve a goal to generate a set of seeds for each problem. 
-# It will loop over all the identified problem and use the samples as few-shots if they are availble for a given problem.
+# The purpose of this code is to generate a set of seeds for each problem. 
+# It will loop over all the identified problems and use the samples as few-shots if they are available for a given problem.
 
 # Load environment variables
 load_dotenv()
 
 # Update paths to match new project structure
-# Assuming the script is in project_folder/src/cyberdata/process/
-# And problems.json is in project_folder/src/cyberdata/config/
 PROBLEMS_PATH = CURRENT_DIR.parent / 'config' / 'problems.json'
-SEEDS_BASE_DIR = PROJECT_ROOT / 'data' / 'seeds'
+SEEDS_DIR = PROJECT_ROOT / 'data' / 'seeds'
 
-# Create the base output directory if it doesn't exist
-SEEDS_BASE_DIR.mkdir(parents=True, exist_ok=True)
+# Create the output directory if it doesn't exist
+SEEDS_DIR.mkdir(parents=True, exist_ok=True)
 
 # Model configuration
 MODEL_NAME = "gpt-4.1-mini"  # Used in logging but not needed for API calls now
@@ -199,56 +196,9 @@ def generate_examples_for_problem(problem: dict) -> list:
         return []
 
 
-def json_to_csv_single_file(json_file_path, csv_file_path, examples=None):
-    """
-    Convert a single JSON file to CSV.
-    
-    Args:
-        json_file_path (Path): Path to the JSON file
-        csv_file_path (Path): Path to save the CSV file
-        examples (list, optional): If provided, use these examples instead of loading from file
-    """
-    try:
-        # If examples are not provided, load them from the file
-        if examples is None:
-            with open(json_file_path, 'r') as f:
-                data = json.load(f)
-                examples = data.get('examples', [])
-        
-        if not examples:
-            print(f"No examples found for {json_file_path.name}")
-            return
-        
-        # Convert to DataFrame with flattened structure
-        flattened_data = []
-        for example in examples:
-            # Handle indicators which is typically a list
-            if 'indicators' in example and isinstance(example['indicators'], list):
-                example = example.copy()  # Create a copy to avoid modifying the original
-                example['indicators'] = '; '.join(example['indicators'])
-            
-            # Handle other potential list fields (dynamically)
-            example_copy = example.copy()  # Create a copy to avoid modifying during iteration
-            for key, value in example.items():
-                if isinstance(value, list):
-                    example_copy[key] = '; '.join(str(item) for item in value)
-            
-            flattened_data.append(example_copy)
-        
-        # Create DataFrame
-        df = pd.DataFrame(flattened_data)
-        
-        # Save to CSV
-        df.to_csv(csv_file_path, index=False)
-        
-    except Exception as e:
-        print(f"Error processing {json_file_path}: {e}")
-        raise
-
-
 def save_examples(problem: dict, examples: list):
     """
-    Save examples to JSON and CSV files in area-specific directories.
+    Save examples to JSON files
     
     Args:
         problem (dict): Problem dictionary containing 'area' and 'nature'
@@ -262,29 +212,20 @@ def save_examples(problem: dict, examples: list):
     area = problem['area']
     nature = problem['nature']
     
-    # Create area directory structure
-    area_dir = SEEDS_BASE_DIR / area
-    json_dir = area_dir / 'json'
-    csv_dir = area_dir / 'csv'
+    # Create area directory
+    sanitized_area = area.replace(' ', '_').replace('(', '').replace(')', '').replace('-', '_')
+    sanitized_nature = nature.replace(' ', '_')
+    area_dir = SEEDS_DIR / sanitized_area
+    area_dir.mkdir(parents=True, exist_ok=True)
     
-    # Create directories if they don't exist
-    json_dir.mkdir(parents=True, exist_ok=True)
-    csv_dir.mkdir(parents=True, exist_ok=True)
+    # Create a filename for the nature
+    filename = f"{sanitized_nature}_examples.json"
     
     # Save JSON file
-    json_file_path = json_dir / f"{nature}_examples.json"
+    json_file_path = area_dir / filename
     with json_file_path.open('w', encoding='utf-8') as f:
         json.dump({'examples': examples}, f, indent=2)
-    print(f"Saved examples for {nature} to {json_file_path}")
-    
-    # Convert to CSV immediately after saving
-    try:
-        # Convert just this one JSON file to CSV
-        csv_file_path = csv_dir / f"{nature}_examples.csv"
-        json_to_csv_single_file(json_file_path, csv_file_path, examples)
-        print(f"Converted {nature} examples to CSV at {csv_file_path}")
-    except Exception as e:
-        print(f"Error during CSV conversion for {nature}: {e}")
+    print(f"Saved examples for {area}/{nature} to {json_file_path}")
 
 
 def main():
@@ -306,12 +247,7 @@ def main():
             print(f"Error generating for {problem['area']}/{problem['nature']}: {e}")
             continue  # Continue with the next problem
 
-    print(f"All detailed examples have been generated in '{SEEDS_BASE_DIR}'.")
-    print("Directory structure:")
-    for area in areas:
-        print(f"  {area}/")
-        print(f"    ├── json/")
-        print(f"    └── csv/")
+    print(f"All detailed examples have been generated in '{SEEDS_DIR}'.")
 
 
 if __name__ == '__main__':

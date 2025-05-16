@@ -3,7 +3,6 @@ import os
 import sys
 from pathlib import Path
 
-import pandas as pd
 from dotenv import load_dotenv
 
 # Import process_llm_request from your utility module
@@ -20,7 +19,7 @@ load_dotenv()
 # Constants
 MODEL_NAME = "gpt-4.1-mini"  # Match with small_dataset.py
 PROBLEMS_PATH = CURRENT_DIR.parent / 'config' / 'problems.json'
-SEEDS_BASE_DIR = PROJECT_ROOT / 'data' / 'seeds'
+SEEDS_DIR = PROJECT_ROOT / 'data' / 'seeds'
 VALIDATION_DIR = PROJECT_ROOT / 'data' / 'validation_reports'
 VALIDATION_DIR.mkdir(parents=True, exist_ok=True)
 
@@ -111,6 +110,36 @@ def validate_example(problem: dict, example: dict) -> dict:
         return {"valid": False, "issues": ["Invalid JSON response"], "comments": response_content}
 
 
+def find_examples_file(problem):
+    """
+    Find the examples file for a specific problem.
+    """
+    area = problem['area']
+    nature = problem['nature']
+    
+    # Create a sanitized version of area and nature for filename matching
+    sanitized_area = area.replace(' ', '_').replace('(', '').replace(')', '').replace('-', '_')
+    sanitized_nature = nature.replace(' ', '_')
+    
+    # Check for the file in the area-specific directory
+    area_dir = SEEDS_DIR / sanitized_area
+    if area_dir.exists():
+        filename = f"{sanitized_nature}_examples.json"
+        example_file = area_dir / filename
+        
+        if example_file.exists():
+            return example_file
+    
+    # If not found, try looking for the file in other area directories
+    for dir_path in SEEDS_DIR.glob('*'):
+        if dir_path.is_dir():
+            for file_path in dir_path.glob('*.json'):
+                if sanitized_nature.lower() in file_path.name.lower():
+                    return file_path
+            
+    return None
+
+
 def main():
     # Load problem definitions
     problems = load_problems()
@@ -120,21 +149,20 @@ def main():
         nature = problem['nature']
         print(f"Validating samples for problem: {area}/{nature}...")
         
-        # Construct path to JSON examples file
-        json_dir = SEEDS_BASE_DIR / area / 'json'
-        json_file_path = json_dir / f"{nature}_examples.json"
+        # Find the examples file for this problem
+        example_file_path = find_examples_file(problem)
         
-        if not json_file_path.exists():
-            print(f"Examples file not found for problem {nature} at {json_file_path}, skipping.")
+        if not example_file_path:
+            print(f"Examples file not found for problem {nature}, skipping.")
             continue
         
         # Load examples
-        with json_file_path.open('r', encoding='utf-8') as f:
+        with example_file_path.open('r', encoding='utf-8') as f:
             examples_data = json.load(f)
             examples = examples_data.get('examples', [])
         
         if not examples:
-            print(f"No examples found in {json_file_path}, skipping.")
+            print(f"No examples found in {example_file_path}, skipping.")
             continue
             
         report = []
@@ -155,11 +183,18 @@ def main():
             report.append(entry)
         
         # Create area-specific directory structure for validation reports
-        area_validation_dir = VALIDATION_DIR / area
+        sanitized_area = area.replace(' ', '_').replace('(', '').replace(')', '').replace('-', '_')
+        sanitized_nature = nature.replace(' ', '_')
+        
+        # Create area directory in validation reports
+        area_validation_dir = VALIDATION_DIR / sanitized_area
         area_validation_dir.mkdir(parents=True, exist_ok=True)
         
-        # Save validation report specific to this problem
-        report_path = area_validation_dir / f"{nature}_validation.json"
+        # Create filename for the report
+        report_filename = f"{sanitized_nature}_validation.json"
+        
+        # Save validation report
+        report_path = area_validation_dir / report_filename
         with report_path.open('w', encoding='utf-8') as f:
             json.dump({"report": report}, f, indent=2)
         
