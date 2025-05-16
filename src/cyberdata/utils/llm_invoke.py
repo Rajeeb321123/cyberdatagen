@@ -1,8 +1,16 @@
+# cyberdata/utils/llm_invoke.py
+
 import logging
 import os
+from pathlib import Path
 
 from dotenv import load_dotenv
 from openai import OpenAI
+
+from cyberdata.utils.logger_config import setup_logger
+
+# Set up logger
+logger = setup_logger("cyberdata.utils.llm_invoke")
 
 load_dotenv()
 OPENAI_API_KEY = os.environ.get("OPENAI_API_KEY", "")
@@ -38,8 +46,10 @@ def process_llm_request(
     """
     try:
         # Log the prompts for debugging
-        print(f"Calling {model_name} with system prompt: {system_prompt[:100]}...")
-        print(f"User prompt: {user_prompt[:100]}...")
+        logger.info(f"Calling {model_name} with system prompt: {system_prompt[:100]}...")
+        logger.debug(f"Full system prompt: {system_prompt}")
+        logger.info(f"User prompt: {user_prompt[:100]}...")
+        logger.debug(f"Full user prompt: {user_prompt}")
 
         response = client.chat.completions.create(
             model=model_name,
@@ -52,10 +62,11 @@ def process_llm_request(
         )
 
         result = response.choices[0].message.content
-        print(f"LLM response received, length: {len(result)} characters")
+        logger.info(f"LLM response received, length: {len(result)} characters")
+        logger.debug(f"LLM response: {result[:500]}...")
 
         return result
     except Exception as e:
         error_msg = f"Request failed: {str(e)}"
-        print(error_msg)
+        logger.error(error_msg, exc_info=True)
         return f"[Error: {str(e)}]"

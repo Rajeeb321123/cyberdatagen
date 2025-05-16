@@ -2,62 +2,62 @@
   "problems": [
     {
       "area": "Phishing Attack",
-      "nature": "credential_harvesting",
-      "description": "Attackers send emails impersonating trusted entities to trick users into submitting their login credentials on fake websites.",
+      "nature": "phishing_email",
+      "description": "Users receive deceptive emails that mimic trusted organizations, prompting them to click malicious links or provide sensitive information such as credentials or financial data.",
       "risk_reduction": [
-        "Implement multi-factor authentication (MFA) across all accounts",
-        "Deploy advanced email filtering and anti-phishing tools",
-        "Conduct regular user awareness training and simulated phishing campaigns"
+        "Implement advanced email filtering and anti-spam solutions",
+        "Conduct regular user awareness training and phishing simulations",
+        "Enable multi-factor authentication (MFA) to reduce credential misuse"
       ]
     },
     {
       "area": "Phishing Attack",
       "nature": "spear_phishing",
-      "description": "Highly targeted phishing emails crafted using personal information to deceive specific individuals into revealing sensitive data or executing malicious actions.",
+      "description": "Targeted phishing attacks aimed at specific individuals or roles within an organization, often using personalized information to increase credibility and success rate.",
       "risk_reduction": [
-        "Use threat intelligence to identify targeted campaigns",
-        "Educate employees on recognizing personalized phishing attempts",
-        "Enforce strict verification procedures for sensitive requests"
+        "Use threat intelligence to identify and block targeted campaigns",
+        "Train high-risk users on recognizing spear phishing tactics",
+        "Deploy endpoint detection and response (EDR) tools to detect suspicious activity"
       ]
     },
     {
       "area": "Phishing Attack",
-      "nature": "business_email_compromise",
-      "description": "Attackers compromise or spoof business email accounts to request fraudulent wire transfers or sensitive information from employees.",
+      "nature": "smishing",
+      "description": "Phishing attempts conducted via SMS messages that lure victims into clicking malicious links or revealing personal information through text messages.",
       "risk_reduction": [
-        "Enable email authentication protocols like SPF, DKIM, and DMARC",
-        "Verify financial requests through secondary communication channels",
-        "Monitor email account activity for unusual behavior"
+        "Educate users about risks of unsolicited SMS links",
+        "Implement mobile device management (MDM) with security policies",
+        "Use SMS filtering and anti-spam tools on mobile devices"
       ]
     },
     {
       "area": "Man-in-the-Middle (MITM) Attack",
       "nature": "wifi_eavesdropping",
-      "description": "Attackers intercept unencrypted communications over public or unsecured Wi-Fi networks to capture sensitive data such as passwords and session tokens.",
+      "description": "Attackers intercept unencrypted communications over public or unsecured Wi-Fi networks to capture sensitive data such as login credentials or personal information.",
       "risk_reduction": [
-        "Use VPNs to encrypt all network traffic on untrusted networks",
-        "Enforce HTTPS/TLS for all web services",
-        "Educate users to avoid connecting to unknown or unsecured Wi-Fi hotspots"
+        "Enforce use of VPNs when accessing public Wi-Fi",
+        "Ensure all sensitive communications use strong encryption (TLS)",
+        "Disable automatic connection to open Wi-Fi networks on devices"
       ]
     },
     {
       "area": "Man-in-the-Middle (MITM) Attack",
       "nature": "ssl_stripping",
-      "description": "Attackers downgrade HTTPS connections to HTTP, intercepting and modifying data transmitted between users and websites without detection.",
+      "description": "An attacker downgrades a victim’s HTTPS connection to HTTP, intercepting and potentially altering data transmitted between the user and the website without detection.",
       "risk_reduction": [
         "Implement HTTP Strict Transport Security (HSTS) on web servers",
         "Use up-to-date TLS configurations and certificates",
-        "Encourage users to verify secure connection indicators in browsers"
+        "Educate users to verify HTTPS and certificate warnings in browsers"
       ]
     },
     {
       "area": "Man-in-the-Middle (MITM) Attack",
-      "nature": "dns_spoofing",
-      "description": "Attackers manipulate DNS responses to redirect users to malicious sites, enabling interception or alteration of communications.",
+      "nature": "arp_spoofing",
+      "description": "An attacker sends falsified ARP messages on a local network to associate their MAC address with the IP address of another device, enabling interception or modification of network traffic.",
       "risk_reduction": [
-        "Deploy DNS Security Extensions (DNSSEC) to validate DNS responses",
-        "Use trusted DNS resolvers with filtering capabilities",
-        "Monitor DNS traffic for anomalies and unauthorized changes"
+        "Deploy dynamic ARP inspection (DAI) on network switches",
+        "Use static ARP entries for critical devices where feasible",
+        "Monitor network traffic for unusual ARP activity and anomalies"
       ]
     }
   ]

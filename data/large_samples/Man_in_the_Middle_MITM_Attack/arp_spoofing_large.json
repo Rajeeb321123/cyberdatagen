@@ -1,0 +1,244 @@
+{
+  "samples": [
+    {
+      "scenario": "Attacker inside a segmented VLAN launches ARP spoofing to hijack DNS traffic between a DNS server and client machines to redirect queries to malicious IPs.",
+      "technical_data": {
+        "arp_spoof_packet_capture": "Frame 12: 60 bytes on wire (480 bits), 60 bytes captured\nEthernet II, Src: 00:1a:2b:3c:4d:5e, Dst: ff:ff:ff:ff:ff:ff (Broadcast)\nAddress Resolution Protocol (reply)\n    Opcode: Reply (2)\n    Sender MAC address: 00:1a:2b:3c:4d:5e\n    Sender IP address: 10.10.10.1\n    Target MAC address: 00:1a:2b:3c:4d:6f\n    Target IP address: 10.10.10.50\n\n--- Explanation ---\nAttacker MAC 00:1a:2b:3c:4d:5e sends unsolicited ARP replies claiming to be DNS server 10.10.10.1 to victim 10.10.10.50, poisoning its cache.",
+        "arp_cache_before_attack": "Client ARP table:\n10.10.10.1 -> 00:1a:2b:3c:4d:01\n10.10.10.51 -> 00:1a:2b:3c:4d:6f\n",
+        "arp_cache_after_attack": "Client ARP table:\n10.10.10.1 -> 00:1a:2b:3c:4d:5e\n10.10.10.51 -> 00:1a:2b:3c:4d:6f\n",
+        "switch_log_snippet": "Timestamp: 2024-06-01T14:12:30Z\nInterface Gig2/0/12 MAC 00:1a:2b:3c:4d:5e ARP IP 10.10.10.1\nDynamic ARP Inspection violation detected - ARP spoofing suspected\nPacket dropped.",
+        "tcpdump_output": "14:12:30.098765 ARP, Reply 10.10.10.1 is-at 00:1a:2b:3c:4d:5e, length 28",
+        "network_traffic_anomaly": "Multiple unsolicited ARP replies claiming DNS server IP from attacker MAC observed every 15 seconds.",
+        "mitigation_commands": "On Cisco switch:\nswitch(config)# ip arp inspection vlan 20\nswitch(config)# arp access-list dns_spoof_acl\nswitch(config-arp-acl)# permit ip host 10.10.10.1 mac 00:1a:2b:3c:4d:01\nswitch(config-arp-acl)# exit\nswitch(config)# ip arp inspection filter dns_spoof_acl vlan 20"
+      },
+      "indicators": [
+        "Unsolicited ARP replies claiming DNS server IP from attacker MAC",
+        "Client ARP cache shows DNS server IP mapped to attacker MAC",
+        "Switch DAI logs indicate ARP inspection violation on attacker port",
+        "Repeated unsolicited ARP reply packets without requests"
+      ],
+      "detection_method": "Enable Dynamic ARP Inspection on VLAN 20 to validate ARP packets; monitor switch logs for ARP violations; analyze network traffic for frequent unsolicited ARP replies; use client-side ARP cache monitoring tools to detect suspicious MAC-IP mappings.",
+      "relevant_mitre_techniques": [
+        "T1557.001 - Man-in-the-Middle: ARP Spoofing",
+        "T1040 - Network Sniffing",
+        "T1598 - Phishing"
+      ]
+    },
+    {
+      "scenario": "Insider attacker uses ARP poisoning to intercept SMTP traffic between mail server and internal clients to capture email credentials.",
+      "technical_data": {
+        "arp_spoof_packet_capture": "Frame 45: 60 bytes on wire, 60 bytes captured\nEthernet II, Src: 00:0d:56:78:9a:bc, Dst: ff:ff:ff:ff:ff:ff\nAddress Resolution Protocol (Reply)\n    Opcode: Reply (2)\n    Sender MAC address: 00:0d:56:78:9a:bc\n    Sender IP address: 172.16.5.10\n    Target MAC address: 00:0d:56:78:9a:bd\n    Target IP address: 172.16.5.100\n\n--- Explanation ---\nAttacker MAC 00:0d:56:78:9a:bc poisons the ARP cache of 172.16.5.100, claiming to be mail server 172.16.5.10.",
+        "arp_cache_before_attack": "Client ARP table:\n172.16.5.10 -> 00:0d:56:78:9a:aa\n172.16.5.101 -> 00:0d:56:78:9a:bd\n",
+        "arp_cache_after_attack": "Client ARP table:\n172.16.5.10 -> 00:0d:56:78:9a:bc\n172.16.5.101 -> 00:0d:56:78:9a:bd\n",
+        "switch_log_snippet": "Timestamp: 2024-06-02T09:00:12Z\nInterface Gig3/0/3 MAC 00:0d:56:78:9a:bc ARP IP 172.16.5.10\nDynamic ARP Inspection violation - ARP spoofing detected\nPacket dropped.",
+        "tcpdump_output": "09:00:12.456789 ARP, Reply 172.16.5.10 is-at 00:0d:56:78:9a:bc, length 28",
+        "network_traffic_anomaly": "High volume of ARP replies from attacker MAC claiming mail server IP; SMTP sessions showing unexpected MAC addresses.",
+        "mitigation_commands": "On Cisco switch:\nswitch(config)# ip arp inspection vlan 50\nswitch(config)# arp access-list mail_spoof_acl\nswitch(config-arp-acl)# permit ip host 172.16.5.10 mac 00:0d:56:78:9a:aa\nswitch(config-arp-acl)# exit\nswitch(config)# ip arp inspection filter mail_spoof_acl vlan 50"
+      },
+      "indicators": [
+        "Unsolicited ARP replies from attacker MAC claiming mail server IP",
+        "ARP cache of client shows mail server IP mapped to attacker MAC",
+        "DAI logs report ARP inspection violation on attacker port",
+        "SMTP traffic intercepted with client credentials visible"
+      ],
+      "detection_method": "Activate Dynamic ARP Inspection on VLAN 50; monitor switch logs for ARP spoofing alerts; capture and analyze SMTP traffic for credential leaks; deploy endpoint ARP cache monitoring; enforce strong authentication on mail servers.",
+      "relevant_mitre_techniques": [
+        "T1557.001 - Man-in-the-Middle: ARP Spoofing",
+        "T1040 - Network Sniffing",
+        "T1110.001 - Brute Force: Password Guessing"
+      ]
+    },
+    {
+      "scenario": "External attacker gains access to Wi-Fi network and performs ARP spoofing to intercept all traffic between wireless clients and default gateway, enabling session hijacking.",
+      "technical_data": {
+        "arp_spoof_packet_capture": "Frame 8: 60 bytes on wire (480 bits), 60 bytes captured\nEthernet II, Src: 02:11:22:33:44:55, Dst: ff:ff:ff:ff:ff:ff\nAddress Resolution Protocol (reply)\n    Opcode: Reply (2)\n    Sender MAC address: 02:11:22:33:44:55\n    Sender IP address: 192.168.20.1\n    Target MAC address: 02:11:22:33:44:66\n    Target IP address: 192.168.20.101\n\n--- Explanation ---\nAttacker MAC 02:11:22:33:44:55 masquerades as gateway 192.168.20.1 to victim 192.168.20.101 on wireless LAN.",
+        "arp_cache_before_attack": "Client ARP table:\n192.168.20.1 -> 00:50:56:aa:bb:cc\n192.168.20.102 -> 00:50:56:aa:bb:dd\n",
+        "arp_cache_after_attack": "Client ARP table:\n192.168.20.1 -> 02:11:22:33:44:55\n192.168.20.102 -> 00:50:56:aa:bb:dd\n",
+        "switch_log_snippet": "Timestamp: 2024-06-03T18:35:55Z\nInterface WiFi0 MAC 02:11:22:33:44:55 ARP IP 192.168.20.1\nDynamic ARP Inspection violation detected\nPacket dropped.",
+        "tcpdump_output": "18:35:55.876543 ARP, Reply 192.168.20.1 is-at 02:11:22:33:44:55, length 28",
+        "network_traffic_anomaly": "Surge in ARP replies from attacker MAC claiming gateway IP; wireless clients show connectivity disruptions.",
+        "mitigation_commands": "On wireless controller:\nconfig wlan dynamic-arp-inspection enable\nconfig arp access-list add wlan10 192.168.20.1 00:50:56:aa:bb:cc\nconfig arp inspection vlan 10 enable"
+      },
+      "indicators": [
+        "Unsolicited ARP replies from attacker MAC with gateway IP on Wi-Fi network",
+        "Wireless client ARP cache poisoned with attacker MAC",
+        "Wireless controller logs showing ARP inspection violations",
+        "User reports intermittent network connectivity and session hijacking"
+      ],
+      "detection_method": "Enable Dynamic ARP Inspection on WLAN; monitor wireless controller logs for ARP violations; use wireless intrusion prevention systems (WIPS) to detect spoofing; analyze ARP traffic frequency and source MAC; educate users about session hijacking risks.",
+      "relevant_mitre_techniques": [
+        "T1557.001 - Man-in-the-Middle: ARP Spoofing",
+        "T1040 - Network Sniffing",
+        "T1573.001 - Encrypted Channel: Symmetric Cryptography"
+      ]
+    },
+    {
+      "scenario": "Rogue device plugged into company network performs ARP spoofing to redirect traffic intended for network printer to attacker system, enabling data exfiltration of print jobs.",
+      "technical_data": {
+        "arp_spoof_packet_capture": "Frame 20: 60 bytes on wire, 60 bytes captured\nEthernet II, Src: 00:16:3e:5a:6b:7c, Dst: ff:ff:ff:ff:ff:ff\nAddress Resolution Protocol (reply)\n    Opcode: Reply (2)\n    Sender MAC address: 00:16:3e:5a:6b:7c\n    Sender IP address: 10.0.5.50\n    Target MAC address: 00:16:3e:5a:6b:7d\n    Target IP address: 10.0.5.100\n\n--- Explanation ---\nAttacker MAC 00:16:3e:5a:6b:7c claims printer IP 10.0.5.50 in ARP replies to victim 10.0.5.100, poisoning cache.",
+        "arp_cache_before_attack": "User PC ARP table:\n10.0.5.50 -> 00:16:3e:5a:6b:50\n10.0.5.101 -> 00:16:3e:5a:6b:7d\n",
+        "arp_cache_after_attack": "User PC ARP table:\n10.0.5.50 -> 00:16:3e:5a:6b:7c\n10.0.5.101 -> 00:16:3e:5a:6b:7d\n",
+        "switch_log_snippet": "Timestamp: 2024-06-04T11:47:22Z\nInterface Gig4/0/7 MAC 00:16:3e:5a:6b:7c ARP IP 10.0.5.50\nDynamic ARP Inspection violation - ARP spoofing detected\nPacket dropped.",
+        "tcpdump_output": "11:47:22.334455 ARP, Reply 10.0.5.50 is-at 00:16:3e:5a:6b:7c, length 28",
+        "network_traffic_anomaly": "ARP reply flood from attacker MAC claiming printer IP; print jobs sent to attacker system instead of printer.",
+        "mitigation_commands": "On Cisco switch:\nswitch(config)# ip arp inspection vlan 15\nswitch(config)# arp access-list printer_spoof_acl\nswitch(config-arp-acl)# permit ip host 10.0.5.50 mac 00:16:3e:5a:6b:50\nswitch(config-arp-acl)# exit\nswitch(config)# ip arp inspection filter printer_spoof_acl vlan 15"
+      },
+      "indicators": [
+        "Unsolicited ARP replies from rogue MAC claiming printer IP",
+        "User ARP cache mapping printer IP to attacker MAC",
+        "Switch DAI logs show ARP violations on interface connected to rogue device",
+        "Unexpected data exfiltration of print jobs seen on attacker device"
+      ],
+      "detection_method": "Enable Dynamic ARP Inspection on VLAN 15; monitor port security and DAI logs for ARP spoofing; inspect print job traffic for anomalies; restrict physical access to network ports; implement static ARP entries on critical devices like printers.",
+      "relevant_mitre_techniques": [
+        "T1557.001 - Man-in-the-Middle: ARP Spoofing",
+        "T1040 - Network Sniffing",
+        "T1074.001 - Data Staged: Local Data Staging"
+      ]
+    },
+    {
+      "scenario": "Malicious insider uses ARP spoofing to intercept database traffic between application server and database server, capturing sensitive query data and credentials.",
+      "technical_data": {
+        "arp_spoof_packet_capture": "Frame 33: 60 bytes on wire, 60 bytes captured\nEthernet II, Src: 00:25:90:ab:cd:ef, Dst: ff:ff:ff:ff:ff:ff\nAddress Resolution Protocol (reply)\n    Opcode: Reply (2)\n    Sender MAC address: 00:25:90:ab:cd:ef\n    Sender IP address: 192.168.100.20\n    Target MAC address: 00:25:90:ab:cd:f0\n    Target IP address: 192.168.100.10\n\n--- Explanation ---\nAttacker MAC 00:25:90:ab:cd:ef poisons app server 192.168.100.10 ARP cache, impersonating DB server 192.168.100.20.",
+        "arp_cache_before_attack": "App Server ARP table:\n192.168.100.20 -> 00:25:90:ab:cd:a0\n192.168.100.11 -> 00:25:90:ab:cd:f0\n",
+        "arp_cache_after_attack": "App Server ARP table:\n192.168.100.20 -> 00:25:90:ab:cd:ef\n192.168.100.11 -> 00:25:90:ab:cd:f0\n",
+        "switch_log_snippet": "Timestamp: 2024-06-05T08:15:40Z\nInterface Gig5/0/10 MAC 00:25:90:ab:cd:ef ARP IP 192.168.100.20\nDynamic ARP Inspection violation detected\nPacket dropped.",
+        "tcpdump_output": "08:15:40.123456 ARP, Reply 192.168.100.20 is-at 00:25:90:ab:cd:ef, length 28",
+        "network_traffic_anomaly": "ARP reply storm from attacker MAC claiming DB server IP; intercepted SQL traffic with credentials visible.",
+        "mitigation_commands": "On Cisco switch:\nswitch(config)# ip arp inspection vlan 100\nswitch(config)# arp access-list db_spoof_acl\nswitch(config-arp-acl)# permit ip host 192.168.100.20 mac 00:25:90:ab:cd:a0\nswitch(config-arp-acl)# exit\nswitch(config)# ip arp inspection filter db_spoof_acl vlan 100"
+      },
+      "indicators": [
+        "Unsolicited ARP replies from insider MAC spoofing DB server IP",
+        "Application server ARP cache shows DB IP mapped to attacker MAC",
+        "DAI logs report ARP spoofing violation on insider's switch port",
+        "Captured SQL traffic shows sensitive data in cleartext"
+      ],
+      "detection_method": "Enable Dynamic ARP Inspection on VLAN 100; monitor switch ARP violation logs; analyze database traffic for abnormal packet sources; enforce encrypted database connections (TLS); restrict physical and logical access to network segments.",
+      "relevant_mitre_techniques": [
+        "T1557.001 - Man-in-the-Middle: ARP Spoofing",
+        "T1040 - Network Sniffing",
+        "T1560.001 - Archive Collected Data: Archive via Compression"
+      ]
+    },
+    {
+      "scenario": "Malicious insider uses ARP spoofing to intercept and modify DNS queries on the corporate LAN, redirecting users to phishing sites.",
+      "technical_data": {
+        "arp_spoof_packet_capture": "Frame 10: 60 bytes on wire (480 bits), 60 bytes captured (480 bits)\nEthernet II, Src: 00:16:3e:ab:cd:ef, Dst: ff:ff:ff:ff:ff:ff (Broadcast)\nAddress Resolution Protocol (reply)\n    Opcode: Reply (2)\n    Sender MAC address: 00:16:3e:ab:cd:ef\n    Sender IP address: 192.168.5.1\n    Target MAC address: 00:25:90:12:34:56\n    Target IP address: 192.168.5.20\n\n--- Explanation ---\nAttacker at MAC 00:16:3e:ab:cd:ef poisons victim ARP cache to associate gateway IP 192.168.5.1 with attacker's MAC, allowing interception of DNS traffic.",
+        "arp_cache_before_attack": "Victim PC ARP table:\n192.168.5.1 -> 00:25:90:12:34:01\n192.168.5.100 -> 00:25:90:12:34:10\n",
+        "arp_cache_after_attack": "Victim PC ARP table:\n192.168.5.1 -> 00:16:3e:ab:cd:ef\n192.168.5.100 -> 00:25:90:12:34:10\n",
+        "switch_log_snippet": "Timestamp: 2024-06-01T15:10:22Z\nInterface Gig0/1 MAC 00:16:3e:ab:cd:ef ARP IP 192.168.5.1\nDynamic ARP Inspection violation detected - ARP packet from unauthorized MAC\nPacket dropped.",
+        "tcpdump_output": "15:10:22.567890 ARP, Reply 192.168.5.1 is-at 00:16:3e:ab:cd:ef, length 28",
+        "network_traffic_anomaly": "Spike in DNS queries redirected through attacker MAC; multiple unsolicited ARP replies spoofing gateway IP every 15 seconds.",
+        "mitigation_commands": "On Cisco switch:\nswitch(config)# ip arp inspection vlan 5\nswitch(config)# arp access-list dns_spoof_acl\nswitch(config-arp-acl)# permit ip host 192.168.5.1 mac 00:25:90:12:34:01\nswitch(config-arp-acl)# exit\nswitch(config)# ip arp inspection filter dns_spoof_acl vlan 5"
+      },
+      "indicators": [
+        "Unsolicited ARP replies from attacker MAC claiming gateway IP",
+        "Victim ARP cache showing gateway IP mapped to attacker MAC",
+        "Switch logs show ARP inspection violation on attacker port",
+        "DNS query traffic redirected through attacker's MAC address"
+      ],
+      "detection_method": "Enable Dynamic ARP Inspection (DAI) on switches; monitor ARP traffic for unsolicited replies; verify MAC-IP bindings with DHCP snooping database; analyze DNS traffic for unusual redirections; use endpoint ARP cache validation tools.",
+      "relevant_mitre_techniques": [
+        "T1557.001 - Man-in-the-Middle: ARP Spoofing",
+        "T1040 - Network Sniffing",
+        "T1071.004 - Application Layer Protocol: DNS"
+      ]
+    },
+    {
+      "scenario": "External attacker connected to Wi-Fi network performs ARP cache poisoning to hijack SMB traffic between user laptop and file server.",
+      "technical_data": {
+        "arp_spoof_packet_capture": "Frame 20: 60 bytes on wire (480 bits), 60 bytes captured (480 bits)\nEthernet II, Src: 02:11:22:33:44:55, Dst: ff:ff:ff:ff:ff:ff (Broadcast)\nAddress Resolution Protocol (reply)\n    Opcode: Reply (2)\n    Sender MAC address: 02:11:22:33:44:55\n    Sender IP address: 192.168.10.1\n    Target MAC address: 00:0a:95:9d:68:16\n    Target IP address: 192.168.10.100\n\n--- Explanation ---\nAttacker MAC 02:11:22:33:44:55 claims IP 192.168.10.1 (file server gateway) to victim laptop 192.168.10.100, poisoning ARP cache for SMB traffic interception.",
+        "arp_cache_before_attack": "Laptop ARP table:\n192.168.10.1 -> 00:0c:29:aa:bb:cc\n192.168.10.101 -> 00:0c:29:aa:bb:dd\n",
+        "arp_cache_after_attack": "Laptop ARP table:\n192.168.10.1 -> 02:11:22:33:44:55\n192.168.10.101 -> 00:0c:29:aa:bb:dd\n",
+        "switch_log_snippet": "Timestamp: 2024-06-02T09:30:10Z\nInterface WLAN1 MAC 02:11:22:33:44:55 ARP IP 192.168.10.1\nDynamic ARP Inspection violation - unauthorized ARP reply\nPacket dropped.",
+        "tcpdump_output": "09:30:10.987654 ARP, Reply 192.168.10.1 is-at 02:11:22:33:44:55, length 28",
+        "network_traffic_anomaly": "Elevated ARP reply packets from attacker MAC claiming file server IP; SMB session hijack attempts detected.",
+        "mitigation_commands": "On wireless controller:\n(config)# ip arp inspection vlan 20\n(config)# arp access-list smb_spoof_acl\n(config-arp-acl)# permit ip host 192.168.10.1 mac 00:0c:29:aa:bb:cc\n(config-arp-acl)# exit\n(config)# ip arp inspection filter smb_spoof_acl vlan 20"
+      },
+      "indicators": [
+        "ARP cache of victim laptop maps file server IP to attacker MAC",
+        "Unsolicited ARP replies from attacker MAC claiming gateway IP",
+        "Switch or wireless controller logs show ARP inspection violations",
+        "SMB traffic captured from unexpected MAC address"
+      ],
+      "detection_method": "Implement DAI on wired and wireless segments; monitor ARP traffic for anomalies; validate MAC-IP bindings via DHCP snooping; inspect SMB session initiations for unexpected endpoints; use endpoint security to detect MITM attempts.",
+      "relevant_mitre_techniques": [
+        "T1557.001 - Man-in-the-Middle: ARP Spoofing",
+        "T1040 - Network Sniffing",
+        "T1021.002 - Remote Services: SMB/Windows Admin Shares"
+      ]
+    },
+    {
+      "scenario": "Attacker on a guest VLAN performs ARP spoofing to poison ARP caches of multiple devices, enabling network-wide MITM on segmented network.",
+      "technical_data": {
+        "arp_spoof_packet_capture": "Frame 5: 60 bytes on wire (480 bits), 60 bytes captured (480 bits)\nEthernet II, Src: 00:50:56:aa:bb:cc, Dst: ff:ff:ff:ff:ff:ff (Broadcast)\nAddress Resolution Protocol (reply)\n    Opcode: Reply (2)\n    Sender MAC address: 00:50:56:aa:bb:cc\n    Sender IP address: 10.0.10.1\n    Target MAC address: 00:60:2f:dd:ee:ff\n    Target IP address: 10.0.10.50\n\n--- Explanation ---\nAttacker MAC 00:50:56:aa:bb:cc sends unsolicited ARP replies claiming IP 10.0.10.1 (gateway) to multiple hosts' ARP caches on guest VLAN 10, enabling MITM.",
+        "arp_cache_before_attack": "Host ARP table:\n10.0.10.1 -> 00:60:2f:11:22:33\n10.0.10.51 -> 00:60:2f:11:22:44\n",
+        "arp_cache_after_attack": "Host ARP table:\n10.0.10.1 -> 00:50:56:aa:bb:cc\n10.0.10.51 -> 00:60:2f:11:22:44\n",
+        "switch_log_snippet": "Timestamp: 2024-06-03T13:15:00Z\nInterface Gig2/0/3 MAC 00:50:56:aa:bb:cc ARP IP 10.0.10.1\nDynamic ARP Inspection violation detected\nPacket dropped.",
+        "tcpdump_output": "13:15:00.321654 ARP, Reply 10.0.10.1 is-at 00:50:56:aa:bb:cc, length 28",
+        "network_traffic_anomaly": "Multiple hosts report ARP cache changes with gateway IP mapped to attacker MAC; increased ARP reply rate from attacker.",
+        "mitigation_commands": "On Cisco switch:\nswitch(config)# ip arp inspection vlan 10\nswitch(config)# arp access-list guest_spoof_acl\nswitch(config-arp-acl)# permit ip host 10.0.10.1 mac 00:60:2f:11:22:33\nswitch(config-arp-acl)# exit\nswitch(config)# ip arp inspection filter guest_spoof_acl vlan 10"
+      },
+      "indicators": [
+        "Multiple victim ARP caches poisoned with gateway IP pointing to attacker MAC",
+        "Unsolicited ARP reply floods from attacker MAC on guest VLAN",
+        "Switch logs show multiple ARP inspection violations from same interface",
+        "Network-wide MITM symptoms such as SSL certificate warnings and unusual traffic patterns"
+      ],
+      "detection_method": "Deploy DAI on guest VLAN; monitor ARP traffic for high volume of unsolicited replies; use DHCP snooping for IP-MAC validation; correlate switch violation logs with endpoint ARP cache changes; educate users on detecting SSL anomalies.",
+      "relevant_mitre_techniques": [
+        "T1557.001 - Man-in-the-Middle: ARP Spoofing",
+        "T1040 - Network Sniffing",
+        "T1589.002 - Gather Victim Network Information: Network Sniffing"
+      ]
+    },
+    {
+      "scenario": "Rogue device plugged into office network performs ARP spoofing to redirect traffic between VoIP phones and call manager server, enabling call interception.",
+      "technical_data": {
+        "arp_spoof_packet_capture": "Frame 8: 60 bytes on wire (480 bits), 60 bytes captured (480 bits)\nEthernet II, Src: 00:1a:2b:3c:4d:5e, Dst: ff:ff:ff:ff:ff:ff (Broadcast)\nAddress Resolution Protocol (reply)\n    Opcode: Reply (2)\n    Sender MAC address: 00:1a:2b:3c:4d:5e\n    Sender IP address: 192.168.20.1\n    Target MAC address: 00:1b:2c:3d:4e:5f\n    Target IP address: 192.168.20.50\n\n--- Explanation ---\nAttacker MAC 00:1a:2b:3c:4d:5e poisons ARP cache of VoIP phone to associate call manager IP 192.168.20.1 with attacker's MAC, enabling interception of SIP traffic.",
+        "arp_cache_before_attack": "VoIP Phone ARP table:\n192.168.20.1 -> 00:1b:2c:3d:4e:11\n192.168.20.51 -> 00:1b:2c:3d:4e:22\n",
+        "arp_cache_after_attack": "VoIP Phone ARP table:\n192.168.20.1 -> 00:1a:2b:3c:4d:5e\n192.168.20.51 -> 00:1b:2c:3d:4e:22\n",
+        "switch_log_snippet": "Timestamp: 2024-06-04T11:45:55Z\nInterface Gig3/0/8 MAC 00:1a:2b:3c:4d:5e ARP IP 192.168.20.1\nDynamic ARP Inspection violation detected\nPacket dropped.",
+        "tcpdump_output": "11:45:55.765432 ARP, Reply 192.168.20.1 is-at 00:1a:2b:3c:4d:5e, length 28",
+        "network_traffic_anomaly": "SIP signaling traffic rerouted through attacker MAC; unsolicited ARP reply frequency elevated.",
+        "mitigation_commands": "On Cisco switch:\nswitch(config)# ip arp inspection vlan 20\nswitch(config)# arp access-list voip_spoof_acl\nswitch(config-arp-acl)# permit ip host 192.168.20.1 mac 00:1b:2c:3d:4e:11\nswitch(config-arp-acl)# exit\nswitch(config)# ip arp inspection filter voip_spoof_acl vlan 20"
+      },
+      "indicators": [
+        "VoIP phones' ARP cache shows call manager IP mapped to attacker MAC",
+        "Unsolicited ARP replies from rogue device MAC claiming call manager IP",
+        "Switch DAI logs report ARP inspection violations on attacker port",
+        "Unexplained call quality issues and intercepted call data"
+      ],
+      "detection_method": "Activate DAI on VoIP VLAN; monitor ARP traffic for unauthorized replies; validate IP-MAC bindings with DHCP snooping; analyze SIP traffic for unusual routes; inspect endpoint ARP tables periodically.",
+      "relevant_mitre_techniques": [
+        "T1557.001 - Man-in-the-Middle: ARP Spoofing",
+        "T1040 - Network Sniffing",
+        "T1071.001 - Application Layer Protocol: Web Protocols (SIP)"
+      ]
+    },
+    {
+      "scenario": "Compromised IoT device on smart building network uses ARP spoofing to intercept and manipulate control system messages between sensors and central controller.",
+      "technical_data": {
+        "arp_spoof_packet_capture": "Frame 3: 60 bytes on wire (480 bits), 60 bytes captured (480 bits)\nEthernet II, Src: 00:22:44:66:88:aa, Dst: ff:ff:ff:ff:ff:ff (Broadcast)\nAddress Resolution Protocol (reply)\n    Opcode: Reply (2)\n    Sender MAC address: 00:22:44:66:88:aa\n    Sender IP address: 172.16.30.1\n    Target MAC address: 00:33:55:77:99:bb\n    Target IP address: 172.16.30.45\n\n--- Explanation ---\nIoT device MAC 00:22:44:66:88:aa sends spoofed ARP replies to sensors, associating central controller IP 172.16.30.1 with attacker's MAC to intercept sensor data.",
+        "arp_cache_before_attack": "Sensor ARP table:\n172.16.30.1 -> 00:33:55:77:99:00\n172.16.30.46 -> 00:33:55:77:99:01\n",
+        "arp_cache_after_attack": "Sensor ARP table:\n172.16.30.1 -> 00:22:44:66:88:aa\n172.16.30.46 -> 00:33:55:77:99:01\n",
+        "switch_log_snippet": "Timestamp: 2024-06-05T07:25:40Z\nInterface Gi4/0/12 MAC 00:22:44:66:88:aa ARP IP 172.16.30.1\nDynamic ARP Inspection violation detected\nPacket dropped.",
+        "tcpdump_output": "07:25:40.123123 ARP, Reply 172.16.30.1 is-at 00:22:44:66:88:aa, length 28",
+        "network_traffic_anomaly": "Control system messages delayed or altered; frequent unsolicited ARP replies from attacker MAC.",
+        "mitigation_commands": "On network switch:\n(config)# ip arp inspection vlan 30\n(config)# arp access-list iot_spoof_acl\n(config-arp-acl)# permit ip host 172.16.30.1 mac 00:33:55:77:99:00\n(config-arp-acl)# exit\n(config)# ip arp inspection filter iot_spoof_acl vlan 30"
+      },
+      "indicators": [
+        "Sensors' ARP cache shows controller IP mapped to compromised IoT device MAC",
+        "Unsolicited ARP replies from IoT device MAC claiming controller IP",
+        "Switch logs report repeated ARP inspection violations",
+        "Unexpected control message manipulation or delays"
+      ],
+      "detection_method": "Enable DAI on IoT VLAN; monitor ARP traffic for unsolicited replies; validate DHCP assigned IP-MAC pairs; inspect sensor and controller communications for anomalies; isolate compromised IoT devices immediately.",
+      "relevant_mitre_techniques": [
+        "T1557.001 - Man-in-the-Middle: ARP Spoofing",
+        "T1040 - Network Sniffing",
+        "T1580.002 - Cloud Infrastructure Discovery: Network Infrastructure"
+      ]
+    }
+  ]
+}

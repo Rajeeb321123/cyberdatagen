@@ -10,15 +10,16 @@
     "missing_keys_count": 0
   },
   "llm_evaluation": {
-    "realism": "The samples are highly realistic, reflecting common and plausible Wi-Fi eavesdropping attack scenarios encountered in real-world environments such as airports, public libraries, and coffee shops. The technical details, indicators, detection methods, and relevant MITRE techniques align well with known attack vectors and defensive practices in cybersecurity.",
-    "consistency": "The samples maintain good consistency in structure and schema, with each entry containing the expected keys: scenario, technical_data, indicators, detection_method, and relevant_mitre_techniques. The format of indicators as lists of descriptive strings and relevant_mitre_techniques as arrays of technique identifiers with descriptions is uniform across samples. The 'technical_data' field consistently references complex structures with relevant keys, though it is represented as a descriptive string rather than detailed JSON objects.",
+    "realism": "The samples are highly realistic, reflecting plausible MITM Wi-Fi eavesdropping scenarios involving common unencrypted protocols such as Telnet, FTP, HTTP Digest Auth, SMTP AUTH LOGIN, and POP3. The packet capture excerpts, logs, and DHCP server logs align well with typical network traffic and attack patterns. The timestamps, MAC addresses, IP addresses, and protocol details are consistent with real-world network behavior. The inclusion of rogue AP logs and DHCP lease assignments further enhances authenticity. The use of base64 encoding for SMTP AUTH LOGIN credentials and the presence of HTTP Digest Auth headers are accurate representations of these protocols in unencrypted contexts.",
+    "consistency": "The samples maintain strong consistency across entries, adhering to a uniform schema with clearly defined keys such as 'scenario', 'technical_data', 'indicators', 'detection_method', and 'relevant_mitre_techniques'. Each technical_data section consistently includes packet capture excerpts, session or command logs, rogue AP logs, and DHCP server log excerpts. The formatting of timestamps and MAC addresses is consistent, and the indicators and detection methods logically correspond to the scenario described. The relevant MITRE techniques are identical across samples, which is appropriate given the shared attack vector. Minor variations in log formats (e.g., date formats) are acceptable and realistic.",
     "suggestions": [
-      "Replace the placeholder text in 'technical_data' with actual structured JSON objects or nested dictionaries to improve data usability and machine readability.",
-      "Standardize the naming conventions within 'technical_data' keys to follow a consistent pattern (e.g., snake_case) and ensure they are descriptive and unambiguous.",
-      "Include timestamps or time-related metadata in the samples to provide temporal context for the attacks and logs.",
-      "Add example values or sample data snippets within 'technical_data' to enhance clarity and realism.",
-      "Consider adding a unique identifier field for each sample to facilitate referencing and indexing.",
-      "Ensure that all MITRE technique identifiers are up to date and correctly formatted, possibly linking to official MITRE ATT&CK references."
+      "Include more diverse MITRE ATT&CK techniques relevant to Wi-Fi MITM attacks beyond the repeated four techniques to enrich detection context.",
+      "Add examples of encrypted traffic or failed attempts to capture credentials to contrast with successful eavesdropping.",
+      "Incorporate client device logs or endpoint detection alerts to provide a more comprehensive view of detection.",
+      "Standardize date formats in logs for easier parsing, e.g., use ISO 8601 consistently.",
+      "Expand detection methods to mention use of wireless intrusion prevention systems (WIPS) or machine learning anomaly detection where applicable.",
+      "Consider adding network topology or diagram references to contextualize the rogue AP placement.",
+      "Include examples of remediation steps or mitigation strategies following detection."
     ]
   }
 }

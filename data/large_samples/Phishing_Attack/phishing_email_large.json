@@ -1,0 +1,419 @@
+{
+  "samples": [
+    {
+      "scenario": "Phishing email impersonating a popular cloud storage provider with embedded JavaScript redirecting to credential harvesting page",
+      "technical_data": {
+        "email_headers": "Return-Path: <noreply@cl0udstorage-secure.com>\nReceived: from mail.cl0udstorage-secure.com (mail.cl0udstorage-secure.com [192.0.2.120])\n\tby mx.company.com (Postfix) with ESMTPS id 7F3A1B45C2\n\tfor <user@company.com>; Fri, 14 Jun 2024 09:30:15 -0400 (EDT)\nReceived-SPF: pass (company.com: domain of noreply@cl0udstorage-secure.com designates 192.0.2.120 as permitted sender)\nAuthentication-Results: mx.company.com;\n\tdkim=none (message not signed);\n\tspf=pass (sender IP is authorized)\nMessage-ID: <20240614093015.7F3A1B45C2@mail.cl0udstorage-secure.com>\nFrom: \"Cloud Storage Support\" <noreply@cl0udstorage-secure.com>\nTo: user@company.com\nSubject: Immediate Action Required: Confirm Your Account Security\nMIME-Version: 1.0\nContent-Type: text/html; charset=UTF-8\nX-Mailer: PHPMailer 6.5.1 (https://github.com/PHPMailer/PHPMailer)\nX-Originating-IP: [192.0.2.120]\n\n",
+        "email_body": "<html>\n  <body style=\"font-family: Verdana, sans-serif;\">\n    <h3 style=\"color:#1a73e8;\">Security Alert</h3>\n    <p>Dear User,</p>\n    <p>We detected unusual login attempts on your Cloud Storage account. For your protection, please verify your identity by clicking the button below.</p>\n    <button onclick=\"window.location.href='https://xn--cloudstorage-secure-9fb.com/login?session=abc123'\" style=\"background-color:#1a73e8;color:#fff;padding:10px 20px;border:none;cursor:pointer;\">Verify Account</button>\n    <script>\n      setTimeout(function(){ window.location.href = 'https://xn--cloudstorage-secure-9fb.com/login?session=abc123'; }, 15000);\n    </script>\n    <p style=\"font-size:small;color:gray;\">If you did not initiate this request, please ignore this email.</p>\n  </body>\n</html>",
+        "smtp_transaction_log": "220 mail.cl0udstorage-secure.com ESMTP Postfix\nEHLO attacker-mail\n250-mail.cl0udstorage-secure.com\n250-PIPELINING\n250-SIZE 10485760\n250-STARTTLS\n250-AUTH PLAIN LOGIN\n250 8BITMIME\nMAIL FROM:<noreply@cl0udstorage-secure.com>\n250 2.1.0 Ok\nRCPT TO:<user@company.com>\n250 2.1.5 Ok\nDATA\n354 End data with <CR><LF>.<CR><LF>\nFrom: \"Cloud Storage Support\" <noreply@cl0udstorage-secure.com>\nTo: user@company.com\nSubject: Immediate Action Required: Confirm Your Account Security\n\n<html>...email content...</html>\n.\n250 2.0.0 Ok: queued as 7F3A1B45C2\nQUIT\n221 2.0.0 Bye",
+        "domain_registration": {
+          "DomainName": "xn--cloudstorage-secure-9fb.com",
+          "Registrar": "NameSilo, LLC",
+          "CreationDate": "2024-06-05T11:38:00Z",
+          "ExpirationDate": "2025-06-05T11:38:00Z",
+          "NameServers": [
+            "ns1.namesilo.com",
+            "ns2.namesilo.com"
+          ],
+          "RegistrantCountry": "UA"
+        },
+        "url_structure": "https://xn--cloudstorage-secure-9fb.com/login?session=abc123\n// Punycode domain mimics 'cloudstorage-secure.com' visually\n// The JavaScript redirect forces users to the phishing login page after 15 seconds\n\nPhishing page mimics legitimate cloud storage login portal to capture credentials.",
+        "web_server_log": "192.0.2.120 - - [14/Jun/2024:09:31:05 -0400] \"GET /login?session=abc123 HTTP/1.1\" 200 1024 \"-\" \"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7)\"\n192.0.2.120 - - [14/Jun/2024:09:31:20 -0400] \"POST /authenticate HTTP/1.1\" 200 512 \"-\" \"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7)\"",
+        "malicious_form_post_payload": "username=john.doe&password=SecretPass123!",
+        "phishing_page_html_snippet": "<form action=\"https://xn--cloudstorage-secure-9fb.com/authenticate\" method=\"POST\">\n  <input type=\"text\" name=\"username\" placeholder=\"Email or Username\" required><br>\n  <input type=\"password\" name=\"password\" placeholder=\"Password\" required><br>\n  <input type=\"submit\" value=\"Sign In\">\n</form>"
+      },
+      "indicators": [
+        "Punycode domain xn--cloudstorage-secure-9fb.com registered recently (within 10 days)",
+        "Email sender domain not matching legitimate cloud storage provider",
+        "Embedded JavaScript redirecting to phishing page after timeout",
+        "HTML button triggers navigation to suspicious domain",
+        "Registrant country Ukraine (UA), uncommon for the impersonated brand"
+      ],
+      "detection_method": "Email security gateway flags Punycode domains and embedded JavaScript in email body. SPF pass but no DKIM signature raises suspicion. User behavior analytics detect access to newly registered domains. Post-delivery sandboxing identifies credential harvesting form submission.",
+      "relevant_mitre_techniques": [
+        "T1566.002 - Phishing: Spearphishing Link",
+        "T1204.002 - User Execution: Malicious File",
+        "T1586 - Compromise Infrastructure",
+        "T1056 - Input Capture",
+        "T1071.001 - Application Layer Protocol: Web Protocols"
+      ]
+    },
+    {
+      "scenario": "Phishing email spoofing HR department with a malicious attachment containing macro to steal credentials",
+      "technical_data": {
+        "email_headers": "Return-Path: <hr-dept@company-hr.com>\nReceived: from mail.company-hr.com (mail.company-hr.com [198.51.100.200])\n\tby mx.company.com (Postfix) with ESMTPS id 5D8A7C9EBD\n\tfor <employee@company.com>; Sat, 15 Jun 2024 11:15:45 -0400 (EDT)\nReceived-SPF: fail (company.com: domain of hr-dept@company-hr.com does not designate 198.51.100.200 as permitted sender)\nAuthentication-Results: mx.company.com;\n\tdkim=none (message not signed);\n\tspf=fail (sender IP not authorized)\nMessage-ID: <20240615111545.5D8A7C9EBD@mail.company-hr.com>\nFrom: \"HR Department\" <hr-dept@company-hr.com>\nTo: employee@company.com\nSubject: Updated Employee Benefits - Please Review\nMIME-Version: 1.0\nContent-Type: multipart/mixed; boundary=\"----=_Part_123456_789012345.1623423456\"\nX-Mailer: Microsoft Outlook 16.0\n\n",
+        "email_body": "------=_Part_123456_789012345.1623423456\nContent-Type: text/plain; charset=UTF-8\n\nDear Employee,\n\nPlease find attached the updated employee benefits document. Kindly review and acknowledge receipt.\n\nBest regards,\nHR Team\n\n------=_Part_123456_789012345.1623423456\nContent-Type: application/vnd.ms-excel; name=\"Benefits_Update.xlsm\"\nContent-Transfer-Encoding: base64\nContent-Disposition: attachment; filename=\"Benefits_Update.xlsm\"\n\nUEsDBBQABgAIAAAAIQAAAAAAAAAAAAAAAAAJABwAZmlsZTEueGxzbQpVVA...\n------=_Part_123456_789012345.1623423456--",
+        "smtp_transaction_log": "220 mail.company-hr.com ESMTP Postfix\nEHLO attacker-mail\n250-mail.company-hr.com\n250-PIPELINING\n250-SIZE 20971520\n250-STARTTLS\n250-AUTH PLAIN LOGIN\n250 8BITMIME\nMAIL FROM:<hr-dept@company-hr.com>\n250 2.1.0 Ok\nRCPT TO:<employee@company.com>\n250 2.1.5 Ok\nDATA\n354 End data with <CR><LF>.<CR><LF>\nFrom: \"HR Department\" <hr-dept@company-hr.com>\nTo: employee@company.com\nSubject: Updated Employee Benefits - Please Review\n\n...multipart content...\n.\n250 2.0.0 Ok: queued as 5D8A7C9EBD\nQUIT\n221 2.0.0 Bye",
+        "domain_registration": {
+          "DomainName": "company-hr.com",
+          "Registrar": "Google LLC",
+          "CreationDate": "2024-05-30T09:45:00Z",
+          "ExpirationDate": "2025-05-30T09:45:00Z",
+          "NameServers": [
+            "ns1.google.com",
+            "ns2.google.com"
+          ],
+          "RegistrantCountry": "VN"
+        },
+        "attachment_analysis": {
+          "Filename": "Benefits_Update.xlsm",
+          "FileType": "Excel Macro-Enabled Workbook",
+          "MacroBehavior": "AutoOpen macro executes PowerShell command to exfiltrate credentials to http://malicious-server.com/collect",
+          "Detection": "Macro obfuscated, triggers credential harvesting on execution"
+        },
+        "indicators": [
+          "SPF fail for sender domain company-hr.com",
+          "Recently registered domain mimicking internal HR domain",
+          "Malicious Excel macro attachment with auto-executing payload",
+          "Attachment filename suggests legitimate document to entice user",
+          "Registrant country Vietnam, unusual for corporate HR domain"
+        ],
+        "detection_method": "Attachment sandboxing detects macro behavior invoking external HTTP requests. Email gateway blocks SPF failing domains. User awareness training reduces macro-enabled document openings. Endpoint detection intercepts PowerShell execution triggered by macros.",
+        "relevant_mitre_techniques": [
+          "T1566.001 - Phishing: Spearphishing Attachment",
+          "T1204.002 - User Execution: Malicious File",
+          "T1059.001 - Command and Scripting Interpreter: PowerShell",
+          "T1566.002 - Phishing: Spearphishing Link",
+          "T1586 - Compromise Infrastructure"
+        ]
+      },
+      "indicators": [
+        "SPF fail on hr-dept@company-hr.com domain",
+        "Macro-enabled Excel attachment with obfuscated PowerShell macro",
+        "New domain registration with social engineering targeting HR",
+        "Attachment filename aligned with corporate HR topics",
+        "Registrant located in Vietnam"
+      ],
+      "detection_method": "Sandboxing of email attachments flags macro execution patterns. Email gateway SPF and DKIM failures alert security team. Endpoint security blocks PowerShell scripts spawned from Office processes. User reports triggered by suspicious attachments.",
+      "relevant_mitre_techniques": [
+        "T1566.001 - Phishing: Spearphishing Attachment",
+        "T1204.002 - User Execution: Malicious File",
+        "T1059.001 - Command and Scripting Interpreter: PowerShell",
+        "T1586 - Compromise Infrastructure"
+      ]
+    },
+    {
+      "scenario": "Phishing email impersonating IT department with embedded base64 encoded link using homoglyph domain to harvest VPN credentials",
+      "technical_data": {
+        "email_headers": "Return-Path: <it-dept@vpn-company-secure.com>\nReceived: from mail.vpn-company-secure.com (mail.vpn-company-secure.com [203.0.113.150])\n\tby mx.company.com (Postfix) with ESMTPS id 4B2D3F9C1A\n\tfor <employee@company.com>; Sun, 16 Jun 2024 07:50:29 -0400 (EDT)\nReceived-SPF: neutral (company.com: domain of it-dept@vpn-company-secure.com does not specify permitted sender IPs)\nAuthentication-Results: mx.company.com;\n\tdkim=none (message not signed);\n\tspf=neutral\nMessage-ID: <20240616075029.4B2D3F9C1A@mail.vpn-company-secure.com>\nFrom: \"IT Department\" <it-dept@vpn-company-secure.com>\nTo: employee@company.com\nSubject: Mandatory VPN Credential Update\nMIME-Version: 1.0\nContent-Type: text/html; charset=UTF-8\nX-Mailer: Mozilla Thunderbird 91.10.0\n\n",
+        "email_body": "<html>\n  <body>\n    <p>Dear Employee,</p>\n    <p>As part of the recent security enhancements, please update your VPN credentials immediately by clicking the link below.</p>\n    <p><a href=\"https://vpn-c\u043empany-secure.com/update?token=c3VwZXJzZWNyZXR0b2tlbg==\">https://vpn-c\u043empany-secure.com/update?token=c3VwZXJzZWNyZXR0b2tlbg==</a></p>\n    <p>Failure to update within 48 hours will restrict VPN access.</p>\n    <p>Regards,<br>IT Department</p>\n  </body>\n</html>",
+        "smtp_transaction_log": "220 mail.vpn-company-secure.com ESMTP Postfix\nEHLO attacker-host\n250-mail.vpn-company-secure.com\n250-PIPELINING\n250-SIZE 10485760\n250-STARTTLS\n250-AUTH PLAIN LOGIN\n250 8BITMIME\nMAIL FROM:<it-dept@vpn-company-secure.com>\n250 2.1.0 Ok\nRCPT TO:<employee@company.com>\n250 2.1.5 Ok\nDATA\n354 End data with <CR><LF>.<CR><LF>\nFrom: \"IT Department\" <it-dept@vpn-company-secure.com>\nTo: employee@company.com\nSubject: Mandatory VPN Credential Update\n\n<html>...email body...</html>\n.\n250 2.0.0 Ok: queued as 4B2D3F9C1A\nQUIT\n221 2.0.0 Bye",
+        "domain_registration": {
+          "DomainName": "vpn-c\u043empany-secure.com",
+          "Registrar": "Name.com, Inc.",
+          "CreationDate": "2024-06-07T13:12:00Z",
+          "ExpirationDate": "2025-06-07T13:12:00Z",
+          "NameServers": [
+            "ns1.name.com",
+            "ns2.name.com"
+          ],
+          "RegistrantCountry": "RU"
+        },
+        "url_structure": "https://vpn-c\u043empany-secure.com/update?token=c3VwZXJzZWNyZXR0b2tlbg==\n// Note: The 'o' in 'company' replaced with Cyrillic '\u043e' (U+043E) homoglyph\n// Token parameter is base64 encoded string 'supersecrettoken'\n\nPhishing page mimics corporate VPN portal login to capture credentials.",
+        "web_proxy_log": "2024-06-16T07:51:10Z employee-PC GET https://vpn-c\u043empany-secure.com/update?token=c3VwZXJzZWNyZXR0b2tlbg== 200 - Mozilla/5.0 (Windows NT 10.0; Win64; x64)\n2024-06-16T07:51:45Z employee-PC POST https://vpn-c\u043empany-secure.com/authenticate 200 - Mozilla/5.0 (Windows NT 10.0; Win64; x64)",
+        "phishing_page_html_snippet": "<form action=\"https://vpn-c\u043empany-secure.com/authenticate\" method=\"POST\">\n  <input type=\"text\" name=\"username\" placeholder=\"VPN Username\" required><br>\n  <input type=\"password\" name=\"password\" placeholder=\"VPN Password\" required><br>\n  <input type=\"submit\" value=\"Update Credentials\">\n</form>",
+        "malicious_form_post_payload": "username=employee123&password=VpnPass!2024"
+      },
+      "indicators": [
+        "Domain vpn-c\u043empany-secure.com uses Cyrillic small '\u043e' homoglyph in domain",
+        "SPF neutral, no DKIM signature",
+        "Base64 encoded token in URL query parameter",
+        "Phishing page mimics corporate VPN portal login",
+        "Registrant country Russia, recent domain creation"
+      ],
+      "detection_method": "Email gateway flags homoglyph domains via IDN checks and base64 encoded URL parameters. Phishing URL reputation low and domain age recent. User behavior analytics detects access to suspicious domains. Correlation with IT helpdesk tickets for VPN issues.",
+      "relevant_mitre_techniques": [
+        "T1566.002 - Phishing: Spearphishing Link",
+        "T1204.002 - User Execution: Malicious File",
+        "T1586 - Compromise Infrastructure",
+        "T1071.001 - Application Layer Protocol: Web Protocols",
+        "T1598.002 - Phishing: Spearphishing via Service"
+      ]
+    },
+    {
+      "scenario": "Mass phishing email spoofing a popular online payment service with embedded clickable image linking to malicious site",
+      "technical_data": {
+        "email_headers": "Return-Path: <support@paypay-secure.com>\nReceived: from mail.paypay-secure.com (mail.paypay-secure.com [198.51.100.90])\n\tby mx.company.com (Postfix) with ESMTPS id 8C3F4D7A9B\n\tfor <user@company.com>; Mon, 17 Jun 2024 15:05:40 -0400 (EDT)\nReceived-SPF: pass (company.com: domain of support@paypay-secure.com designates 198.51.100.90 as permitted sender)\nAuthentication-Results: mx.company.com;\n\tdkim=none;\n\tspf=pass\nMessage-ID: <20240617150540.8C3F4D7A9B@mail.paypay-secure.com>\nFrom: \"PayPay Support\" <support@paypay-secure.com>\nTo: user@company.com\nSubject: Your Account Has Been Limited - Verify Now\nMIME-Version: 1.0\nContent-Type: text/html; charset=UTF-8\nX-Mailer: PHPMailer 6.5.1\n\n",
+        "email_body": "<html>\n  <body>\n    <p>Hello Valued Customer,</p>\n    <p>We have temporarily limited your PayPay account due to suspicious activity. Please verify your account immediately to restore full access.</p>\n    <a href=\"https://paypay-secure-login.com/verify\" target=\"_blank\">\n      <img src=\"https://paypay-secure-login.com/images/verify_button.png\" alt=\"Verify Account\" style=\"border:none;\">\n    </a>\n    <p>If you ignore this message, your account will remain limited.</p>\n    <p>Thank you for your prompt attention.</p>\n    <p>PayPay Support Team</p>\n  </body>\n</html>",
+        "smtp_transaction_log": "220 mail.paypay-secure.com ESMTP Postfix\nEHLO attacker-host\n250-mail.paypay-secure.com\n250-PIPELINING\n250-SIZE 10240000\n250-STARTTLS\n250-AUTH PLAIN LOGIN\n250 8BITMIME\nMAIL FROM:<support@paypay-secure.com>\n250 2.1.0 Ok\nRCPT TO:<user@company.com>\n250 2.1.5 Ok\nDATA\n354 End data with <CR><LF>.<CR><LF>\nFrom: \"PayPay Support\" <support@paypay-secure.com>\nTo: user@company.com\nSubject: Your Account Has Been Limited - Verify Now\n\n<html>...email body...</html>\n.\n250 2.0.0 Ok: queued as 8C3F4D7A9B\nQUIT\n221 2.0.0 Bye",
+        "domain_registration": {
+          "DomainName": "paypay-secure-login.com",
+          "Registrar": "Tucows Domains Inc.",
+          "CreationDate": "2024-06-10T16:50:00Z",
+          "ExpirationDate": "2025-06-10T16:50:00Z",
+          "NameServers": [
+            "ns1.tucowsdns.com",
+            "ns2.tucowsdns.com"
+          ],
+          "RegistrantCountry": "BR"
+        },
+        "url_structure": "https://paypay-secure-login.com/verify\n// Domain mimics legitimate PayPal brand with repeated 'pay' in domain\n// Link embedded in clickable image to entice user click\n\nPhishing site designed to capture login credentials and 2FA codes.",
+        "web_proxy_log": "2024-06-17T15:06:20Z user-PC GET https://paypay-secure-login.com/verify 200 - Mozilla/5.0 (Windows NT 10.0; Win64; x64)\n2024-06-17T15:06:52Z user-PC POST https://paypay-secure-login.com/authenticate 200 - Mozilla/5.0 (Windows NT 10.0; Win64; x64)",
+        "phishing_page_html_snippet": "<form action=\"https://paypay-secure-login.com/authenticate\" method=\"POST\">\n  <input type=\"text\" name=\"email\" placeholder=\"Email\" required><br>\n  <input type=\"password\" name=\"password\" placeholder=\"Password\" required><br>\n  <input type=\"text\" name=\"2fa\" placeholder=\"2FA Code\" required><br>\n  <input type=\"submit\" value=\"Login\">\n</form>",
+        "malicious_form_post_payload": "email=victim%40email.com&password=MyPass123&2fa=123456"
+      },
+      "indicators": [
+        "Domain paypay-secure-login.com registered recently (within 1 week)",
+        "Email SPF pass but no DKIM signature",
+        "Clickable image hides phishing URL",
+        "Phishing page requests 2FA code along with credentials",
+        "Registrant country Brazil, unrelated to legitimate brand"
+      ],
+      "detection_method": "Email gateway heuristics detect image-based phishing links. Domain reputation low and newly registered. Web proxy logs show suspicious POST to phishing endpoints. User reports and phishing simulation results help improve detection.",
+      "relevant_mitre_techniques": [
+        "T1566.002 - Phishing: Spearphishing Link",
+        "T1204.002 - User Execution: Malicious File",
+        "T1586 - Compromise Infrastructure",
+        "T1110 - Brute Force",
+        "T1071.001 - Application Layer Protocol: Web Protocols"
+      ]
+    },
+    {
+      "scenario": "Targeted phishing email impersonating a legal firm with embedded PDF containing malicious link to credential harvesting site",
+      "technical_data": {
+        "email_headers": "Return-Path: <contact@lawfirm-secure.com>\nReceived: from mail.lawfirm-secure.com (mail.lawfirm-secure.com [198.51.100.150])\n\tby mx.company.com (Postfix) with ESMTPS id 7E5D2A1F0C\n\tfor <user@company.com>; Tue, 18 Jun 2024 12:40:25 -0400 (EDT)\nReceived-SPF: fail (company.com: domain of contact@lawfirm-secure.com does not designate 198.51.100.150 as permitted sender)\nAuthentication-Results: mx.company.com;\n\tdkim=none;\n\tspf=fail\nMessage-ID: <20240618124025.7E5D2A1F0C@mail.lawfirm-secure.com>\nFrom: \"Law Firm Legal Team\" <contact@lawfirm-secure.com>\nTo: user@company.com\nSubject: Confidential: Legal Documents for Your Review\nMIME-Version: 1.0\nContent-Type: multipart/mixed; boundary=\"boundary_123456\"\nX-Mailer: Adobe Acrobat PDFMaker 20.0\n\n",
+        "email_body": "------boundary_123456\nContent-Type: text/plain; charset=UTF-8\n\nDear Client,\n\nPlease find attached the confidential legal documents for your review. Click the link inside the PDF to access the secure portal.\n\nBest regards,\nLaw Firm Legal Team\n\n------boundary_123456\nContent-Type: application/pdf; name=\"Legal_Documents.pdf\"\nContent-Transfer-Encoding: base64\nContent-Disposition: attachment; filename=\"Legal_Documents.pdf\"\n\nJVBERi0xLjQKJcTl8uXrp/Og0MTGCjEgMCBvYmoKPDwvTGluZWFyaXplZCAxL0wgNzI3\nL08gNi9FIDQ2MDEvTiAyL1QgNzA0NjgvSCBbIDM1MSAxMzZdPj4KZW5kb2JqCnhyZWYK\nMCAyCjAwMDAwMDAwMDAgNjU1MzUgZiAKMDAwMDAwMDAxOSAwMDAwMCBuIAowMDAwMDAw\nMDk2IDAwMDAwIG4gCjAwMDAwMDAxNjIgMDAwMDAgbiAKMDAwMDAwMDIyMyAwMDAwMCBu\nIAp0cmFpbGVyCjw8L1NpemUgMy9Sb290IDEgMCBSL0luZm8gMiAwIFI+PgpzdGFydHhy\nZWYKNDY0CiUlRU9G\n\n------boundary_123456--",
+        "smtp_transaction_log": "220 mail.lawfirm-secure.com ESMTP Postfix\nEHLO attacker-mail\n250-mail.lawfirm-secure.com\n250-PIPELINING\n250-SIZE 10485760\n250-STARTTLS\n250-AUTH PLAIN LOGIN\n250 8BITMIME\nMAIL FROM:<contact@lawfirm-secure.com>\n250 2.1.0 Ok\nRCPT TO:<user@company.com>\n250 2.1.5 Ok\nDATA\n354 End data with <CR><LF>.<CR><LF>\nFrom: \"Law Firm Legal Team\" <contact@lawfirm-secure.com>\nTo: user@company.com\nSubject: Confidential: Legal Documents for Your Review\n\n...multipart content...\n.\n250 2.0.0 Ok: queued as 7E5D2A1F0C\nQUIT\n221 2.0.0 Bye",
+        "domain_registration": {
+          "DomainName": "lawfirm-secure.com",
+          "Registrar": "Enom, Inc.",
+          "CreationDate": "2024-06-12T08:05:00Z",
+          "ExpirationDate": "2025-06-12T08:05:00Z",
+          "NameServers": [
+            "ns1.enom.com",
+            "ns2.enom.com"
+          ],
+          "RegistrantCountry": "PH"
+        },
+        "attachment_analysis": {
+          "Filename": "Legal_Documents.pdf",
+          "FileType": "PDF Document",
+          "EmbeddedLink": "https://lawfirm-secure-portal.com/login",
+          "LinkPurpose": "Phishing portal mimicking legal client login to steal credentials",
+          "LinkObfuscation": "Uses shortened URL inside PDF to mask real destination"
+        },
+        "indicators": [
+          "SPF fail for domain lawfirm-secure.com",
+          "Recently registered domain with legal-themed name",
+          "PDF attachment contains embedded phishing link",
+          "Registrant country Philippines, unrelated to legal firm location",
+          "Link points to separate suspicious domain lawfirm-secure-portal.com"
+        ],
+        "detection_method": "Email gateway flags SPF failures and suspicious attachments. PDF content scanned for embedded URLs and flagged for shorteners. Web proxy blocks access to phishing portal domains. User training for suspicious attachments and legal-themed spoofing.",
+        "relevant_mitre_techniques": [
+          "T1566.001 - Phishing: Spearphishing Attachment",
+          "T1566.002 - Phishing: Spearphishing Link",
+          "T1204.002 - User Execution: Malicious File",
+          "T1586 - Compromise Infrastructure",
+          "T1071.001 - Application Layer Protocol: Web Protocols"
+        ]
+      },
+      "indicators": [
+        "SPF fail on sender domain lawfirm-secure.com",
+        "PDF attachment with embedded phishing URL",
+        "New domain registration (lawfirm-secure.com) with legal theme",
+        "Link inside PDF points to different phishing domain",
+        "Registrant country Philippines"
+      ],
+      "detection_method": "Attachment scanning identifies embedded suspicious URLs. Email SPF/DKIM failures alert security team. URL reputation low and domain age new. User behavioral analytics detect access to phishing portal. User reports of suspicious legal documents.",
+      "relevant_mitre_techniques": [
+        "T1566.001 - Phishing: Spearphishing Attachment",
+        "T1566.002 - Phishing: Spearphishing Link",
+        "T1204.002 - User Execution: Malicious File",
+        "T1586 - Compromise Infrastructure"
+      ]
+    },
+    {
+      "scenario": "Spear-phishing email impersonating company CEO requesting urgent wire transfer with embedded malicious link obfuscated by URL shortener",
+      "technical_data": {
+        "email_headers": "Return-Path: <ceo@compay-secure.com>\nReceived: from mail.compay-secure.com (mail.compay-secure.com [198.51.100.210])\n\tby mx.company.com (Postfix) with ESMTPS id 6A1F8D3B2E\n\tfor <finance@company.com>; Wed, 19 Jun 2024 10:25:50 -0400 (EDT)\nReceived-SPF: fail (company.com: domain of ceo@compay-secure.com does not designate 198.51.100.210 as permitted sender)\nAuthentication-Results: mx.company.com;\n\tdkim=none;\n\tspf=fail\nMessage-ID: <20240619102550.6A1F8D3B2E@mail.compay-secure.com>\nFrom: \"John Smith\" <ceo@compay-secure.com>\nTo: finance@company.com\nSubject: Urgent: Wire Transfer Request\nMIME-Version: 1.0\nContent-Type: text/html; charset=UTF-8\nX-Mailer: Microsoft Outlook 2019\n\n",
+        "email_body": "<html>\n  <body>\n    <p>Dear Finance Team,</p>\n    <p>Please urgently process the attached wire transfer as per the instructions.</p>\n    <p>Verify the payment details here: <a href=\"https://bit.ly/secure-transfer-2024\">https://bit.ly/secure-transfer-2024</a></p>\n    <p>Time is critical. Confirm once done.</p>\n    <p>Regards,<br>John Smith, CEO</p>\n  </body>\n</html>",
+        "smtp_transaction_log": "220 mail.compay-secure.com ESMTP Postfix\nEHLO attacker-mail\n250-mail.compay-secure.com\n250-PIPELINING\n250-SIZE 10240000\n250-STARTTLS\n250-AUTH PLAIN LOGIN\n250 8BITMIME\nMAIL FROM:<ceo@compay-secure.com>\n250 2.1.0 Ok\nRCPT TO:<finance@company.com>\n250 2.1.5 Ok\nDATA\n354 End data with <CR><LF>.<CR><LF>\nFrom: \"John Smith\" <ceo@compay-secure.com>\nTo: finance@company.com\nSubject: Urgent: Wire Transfer Request\n\n<html>...email body...</html>\n.\n250 2.0.0 Ok: queued as 6A1F8D3B2E\nQUIT\n221 2.0.0 Bye",
+        "domain_registration": {
+          "DomainName": "compay-secure.com",
+          "Registrar": "Hover.com, Inc.",
+          "CreationDate": "2024-06-08T14:55:00Z",
+          "ExpirationDate": "2025-06-08T14:55:00Z",
+          "NameServers": [
+            "ns1.hover.com",
+            "ns2.hover.com"
+          ],
+          "RegistrantCountry": "CN"
+        },
+        "url_structure": "https://bit.ly/secure-transfer-2024\n// Shortened URL redirects to phishing page mimicking bank wire transfer portal\n\nFinal phishing URL collects banking credentials and authorization codes.",
+        "web_proxy_log": "2024-06-19T10:26:15Z finance-PC GET https://bit.ly/secure-transfer-2024 301 - Mozilla/5.0 (Windows NT 10.0; Win64; x64)\n2024-06-19T10:26:20Z finance-PC GET https://bank-secure-transfer.com/authenticate 200 - Mozilla/5.0 (Windows NT 10.0; Win64; x64)\n2024-06-19T10:26:45Z finance-PC POST https://bank-secure-transfer.com/authenticate 200 - Mozilla/5.0 (Windows NT 10.0; Win64; x64)",
+        "phishing_page_html_snippet": "<form action=\"https://bank-secure-transfer.com/authenticate\" method=\"POST\">\n  <input type=\"text\" name=\"user\" placeholder=\"Username\" required><br>\n  <input type=\"password\" name=\"pass\" placeholder=\"Password\" required><br>\n  <input type=\"text\" name=\"auth_code\" placeholder=\"Authorization Code\" required><br>\n  <input type=\"submit\" value=\"Submit\">\n</form>",
+        "malicious_form_post_payload": "user=financeuser&pass=FinancePass2024!&auth_code=987654"
+      },
+      "indicators": [
+        "SPF fail on domain compay-secure.com (typosquatting of company.com)",
+        "Use of URL shortener to obfuscate final phishing URL",
+        "Urgent wire transfer request impersonating CEO",
+        "Domain registered recently from China",
+        "Phishing page collects multi-factor authentication codes"
+      ],
+      "detection_method": "Email gateway flags SPF fails and typosquatting domains. URL reputation services flag bit.ly link redirecting to suspicious domains. Behavioral analytics monitor unusual wire transfer requests. User reports trigger incident response.",
+      "relevant_mitre_techniques": [
+        "T1566.002 - Phishing: Spearphishing Link",
+        "T1193 - Spearphishing Attachment",
+        "T1204.002 - User Execution: Malicious File",
+        "T1586 - Compromise Infrastructure",
+        "T1110 - Brute Force"
+      ]
+    },
+    {
+      "scenario": "Phishing email impersonating a popular cloud storage provider with embedded image links leading to credential harvesting page",
+      "technical_data": {
+        "email_headers": "Return-Path: <no-reply@cl0ud-storage.com>\nReceived: from mail.cl0ud-storage.com (mail.cl0ud-storage.com [192.0.2.123])\n\tby mx.company.com (Postfix) with ESMTPS id 7F1A3C6B8D\n\tfor <user@company.com>; Fri, 14 Jun 2024 09:15:47 -0400 (EDT)\nReceived-SPF: neutral (company.com: domain of no-reply@cl0ud-storage.com does not designate 192.0.2.123 as permitted sender)\nAuthentication-Results: mx.company.com;\n\tdkim=none (message not signed);\n\tspf=neutral (sender IP not explicitly authorized)\nMessage-ID: <20240614091547.7F1A3C6B8D@mail.cl0ud-storage.com>\nFrom: \"Cloud Storage Support\" <no-reply@cl0ud-storage.com>\nTo: user@company.com\nSubject: Action Required: Unusual Sign-In Activity Detected\nMIME-Version: 1.0\nContent-Type: text/html; charset=UTF-8\nX-Mailer: PHPMailer 6.4.1\nX-Originating-IP: [192.0.2.123]\n\n",
+        "email_body": "<html>\n  <body style=\"font-family: Verdana, sans-serif;\">\n    <h2 style=\"color:#0072C6;\">Security Alert</h2>\n    <p>Dear User,</p>\n    <p>We detected a sign-in from a new device. To secure your account, please verify your identity immediately by clicking the link below.</p>\n    <a href=\"https://cl0ud-storage.com/security/verify?session=abc123\" target=\"_blank\">\n      <img src=\"https://cl0ud-storage.com/assets/verify-now.png\" alt=\"Verify Now\" style=\"border:none;\">\n    </a>\n    <p>If you did not perform this action, please ignore this message or contact support.</p>\n  </body>\n</html>",
+        "smtp_transaction_log": "220 mail.cl0ud-storage.com ESMTP Postfix\nEHLO attacker-host\n250-mail.cl0ud-storage.com\n250-PIPELINING\n250-SIZE 20480000\n250-STARTTLS\n250-AUTH PLAIN LOGIN\n250 8BITMIME\nMAIL FROM:<no-reply@cl0ud-storage.com>\n250 2.1.0 Ok\nRCPT TO:<user@company.com>\n250 2.1.5 Ok\nDATA\n354 End data with <CR><LF>.<CR><LF>\nFrom: \"Cloud Storage Support\" <no-reply@cl0ud-storage.com>\nTo: user@company.com\nSubject: Action Required: Unusual Sign-In Activity Detected\n\n<html>...email body...</html>\n.\n250 2.0.0 Ok: queued as 7F1A3C6B8D\nQUIT\n221 2.0.0 Bye",
+        "domain_registration": {
+          "DomainName": "cl0ud-storage.com",
+          "Registrar": "Tucows Domains Inc.",
+          "CreationDate": "2024-05-25T11:48:00Z",
+          "ExpirationDate": "2025-05-25T11:48:00Z",
+          "NameServers": [
+            "ns1.tucows.com",
+            "ns2.tucows.com"
+          ],
+          "RegistrantCountry": "BR"
+        },
+        "url_structure": "https://cl0ud-storage.com/security/verify?session=abc123\n// Domain uses zero instead of letter 'o' to imitate legit cloud provider domain\n// Link embedded inside an image tag to entice clicks\n\nClick leads to a fake login page mimicking the cloud storage provider's authentication portal.",
+        "web_server_log": "192.0.2.123 - - [14/Jun/2024:09:16:05 -0400] \"GET /security/verify?session=abc123 HTTP/1.1\" 200 867 \"-\" \"Mozilla/5.0 (Windows NT 10.0; Win64; x64)\"\n192.0.2.123 - - [14/Jun/2024:09:16:15 -0400] \"POST /login HTTP/1.1\" 200 523 \"-\" \"Mozilla/5.0 (Windows NT 10.0; Win64; x64)\"",
+        "malicious_form_post_payload": "username=user@example.com&password=MyP@ssw0rd!",
+        "phishing_page_html_snippet": "<form action=\"https://cl0ud-storage.com/login\" method=\"POST\">\n  <input type=\"text\" name=\"username\" placeholder=\"Email or Username\" required><br>\n  <input type=\"password\" name=\"password\" placeholder=\"Password\" required><br>\n  <input type=\"submit\" value=\"Sign In\">\n</form>"
+      },
+      "indicators": [
+        "Domain cl0ud-storage.com uses homoglyph substitution (zero instead of 'o')",
+        "SPF record not explicitly authorizing sending IP 192.0.2.123",
+        "Embedded image link leading to suspicious verification URL",
+        "Domain registration recent and registrant country Brazil",
+        "POST requests to /login endpoint on suspicious domain"
+      ],
+      "detection_method": "Email gateway flags homoglyph domains and suspicious embedded image links. SPF neutral result raises alerts. Web proxy logs identify POST submissions to new suspicious domain. User reports of unexpected verification requests assist detection. Correlation with domain registration age and WHOIS data used for risk scoring.",
+      "relevant_mitre_techniques": [
+        "T1566.002 - Phishing: Spearphishing Link",
+        "T1204.002 - User Execution: Malicious File",
+        "T1586 - Compromise Infrastructure",
+        "T1071.001 - Application Layer Protocol: Web Protocols",
+        "T1566 - Phishing"
+      ]
+    },
+    {
+      "scenario": "Phishing email spoofing HR department with attachment containing malicious macro to harvest credentials",
+      "technical_data": {
+        "email_headers": "Return-Path: <hr-dept@company-hr.com>\nReceived: from mail.company-hr.com (mail.company-hr.com [198.51.100.98])\n\tby mx.company.com (Postfix) with ESMTPS id 4D9F7C2E8B\n\tfor <employee@company.com>; Mon, 17 Jun 2024 12:30:04 -0400 (EDT)\nReceived-SPF: pass (company.com: domain of hr-dept@company-hr.com designates 198.51.100.98 as permitted sender)\nAuthentication-Results: mx.company.com;\n\tdkim=pass header.d=company-hr.com;\n\tspf=pass smtp.mailfrom=hr-dept@company-hr.com\nMessage-ID: <20240617123004.4D9F7C2E8B@mail.company-hr.com>\nFrom: \"HR Department\" <hr-dept@company-hr.com>\nTo: employee@company.com\nSubject: Confidential: Updated Employee Policies Document\nMIME-Version: 1.0\nContent-Type: multipart/mixed; boundary=\"----=_Part_12345_67890\"\nX-Mailer: Microsoft Outlook 16.0\nX-Originating-IP: [198.51.100.98]\n\n",
+        "email_body": "------=_Part_12345_67890\nContent-Type: text/plain; charset=UTF-8\n\nDear Employee,\n\nPlease find attached the updated employee policies. Review the document carefully and acknowledge receipt.\n\nBest Regards,\nHR Department\n\n------=_Part_12345_67890\nContent-Type: application/vnd.ms-word;\n name=\"employee_policies.docm\"\nContent-Transfer-Encoding: base64\nContent-Disposition: attachment;\n filename=\"employee_policies.docm\"\n\n[Base64 encoded macro-enabled Word document]\n------=_Part_12345_67890--",
+        "smtp_transaction_log": "220 mail.company-hr.com ESMTP Postfix\nEHLO attacker-host\n250-mail.company-hr.com\n250-PIPELINING\n250-SIZE 10485760\n250-STARTTLS\n250-AUTH PLAIN LOGIN\n250 8BITMIME\nMAIL FROM:<hr-dept@company-hr.com>\n250 2.1.0 Ok\nRCPT TO:<employee@company.com>\n250 2.1.5 Ok\nDATA\n354 End data with <CR><LF>.<CR><LF>\nFrom: \"HR Department\" <hr-dept@company-hr.com>\nTo: employee@company.com\nSubject: Confidential: Updated Employee Policies Document\n\n[Multipart MIME message with attachment]\n.\n250 2.0.0 Ok: queued as 4D9F7C2E8B\nQUIT\n221 2.0.0 Bye",
+        "domain_registration": {
+          "DomainName": "company-hr.com",
+          "Registrar": "Network Solutions, LLC",
+          "CreationDate": "2022-03-15T09:30:00Z",
+          "ExpirationDate": "2025-03-15T09:30:00Z",
+          "NameServers": [
+            "ns1.networksolutions.com",
+            "ns2.networksolutions.com"
+          ],
+          "RegistrantCountry": "US"
+        },
+        "attachment_malware_analysis": {
+          "FileName": "employee_policies.docm",
+          "FileType": "Microsoft Word Macro-Enabled Document",
+          "MacroDetected": true,
+          "MacroBehavior": "Attempts to connect to hxxp://malicious-hr-update.com/creds and exfiltrate clipboard and environment variables",
+          "AntivirusDetection": "Detected by multiple AV engines as Trojan.Macro.Phish"
+        },
+        "web_server_log": "198.51.100.98 - - [17/Jun/2024:12:31:10 -0400] \"GET /creds HTTP/1.1\" 200 1234 \"-\" \"Mozilla/5.0 (compatible)\"\n198.51.100.98 - - [17/Jun/2024:12:31:15 -0400] \"POST /collect HTTP/1.1\" 200 452 \"-\" \"Mozilla/5.0 (compatible)\""
+      },
+      "indicators": [
+        "Domain company-hr.com uses legitimate SPF and DKIM records",
+        "Attachment is a macro-enabled Word document with malicious behavior",
+        "Macro attempts outbound HTTP connections to suspicious domain",
+        "Antivirus detection flags attachment as Trojan.Macro.Phish",
+        "Web server logs show connections from attachment macro to attacker infrastructure"
+      ],
+      "detection_method": "Attachment sandbox analysis reveals macro behavior. Email gateway scans detect macro-enabled documents flagged by AV engines. Network monitoring identifies unusual outbound HTTP requests from user machines. User training on macro risks and attachment policies reinforces prevention.",
+      "relevant_mitre_techniques": [
+        "T1566.001 - Phishing: Spearphishing Attachment",
+        "T1204.002 - User Execution: Malicious File",
+        "T1059.001 - Command and Scripting Interpreter: PowerShell",
+        "T1071.001 - Application Layer Protocol: Web Protocols",
+        "T1086 - PowerShell"
+      ]
+    },
+    {
+      "scenario": "Phishing email pretending to be from popular social media platform requesting password reset through encoded URL with redirect to credential capture site",
+      "technical_data": {
+        "email_headers": "Return-Path: <support@faceb00k-security.com>\nReceived: from mail.faceb00k-security.com (mail.faceb00k-security.com [203.0.114.55])\n\tby mx.company.com (Postfix) with ESMTPS id 2C7F8A0D5E\n\tfor <user@company.com>; Tue, 18 Jun 2024 16:05:22 -0400 (EDT)\nReceived-SPF: neutral (company.com: domain of support@faceb00k-security.com does not designate 203.0.114.55 as permitted sender)\nAuthentication-Results: mx.company.com;\n\tdkim=none (message not signed);\n\tspf=neutral (sender IP not explicitly authorized)\nMessage-ID: <20240618160522.2C7F8A0D5E@mail.faceb00k-security.com>\nFrom: \"Facebook Security Team\" <support@faceb00k-security.com>\nTo: user@company.com\nSubject: Reset Your Facebook Password Immediately\nMIME-Version: 1.0\nContent-Type: text/html; charset=UTF-8\nX-Mailer: Thunderbird 91.5.0\nX-Originating-IP: [203.0.114.55]\n\n",
+        "email_body": "<html>\n  <body style=\"font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;\">\n    <h3 style=\"color:#1877F2;\">Facebook Security Alert</h3>\n    <p>Dear User,</p>\n    <p>We detected suspicious activity on your account. Please reset your password immediately to keep your account secure.</p>\n    <p><a href=\"https://faceb00k-security.com/login?next=%2Freset-password\">Reset Password</a></p>\n    <p>If you did not request this, please ignore this message.</p>\n  </body>\n</html>",
+        "smtp_transaction_log": "220 mail.faceb00k-security.com ESMTP Postfix\nEHLO attacker-host\n250-mail.faceb00k-security.com\n250-PIPELINING\n250-SIZE 5120000\n250-STARTTLS\n250-AUTH PLAIN LOGIN\n250 8BITMIME\nMAIL FROM:<support@faceb00k-security.com>\n250 2.1.0 Ok\nRCPT TO:<user@company.com>\n250 2.1.5 Ok\nDATA\n354 End data with <CR><LF>.<CR><LF>\nFrom: \"Facebook Security Team\" <support@faceb00k-security.com>\nTo: user@company.com\nSubject: Reset Your Facebook Password Immediately\n\n<html>...email body...</html>\n.\n250 2.0.0 Ok: queued as 2C7F8A0D5E\nQUIT\n221 2.0.0 Bye",
+        "domain_registration": {
+          "DomainName": "faceb00k-security.com",
+          "Registrar": "NameSilo, LLC",
+          "CreationDate": "2024-06-10T07:55:00Z",
+          "ExpirationDate": "2025-06-10T07:55:00Z",
+          "NameServers": [
+            "ns1.namesilo.com",
+            "ns2.namesilo.com"
+          ],
+          "RegistrantCountry": "UA"
+        },
+        "url_structure": "https://faceb00k-security.com/login?next=%2Freset-password\n// Domain uses zero instead of letter 'o' as homoglyph\n// URL contains encoded query parameter redirecting to reset-password page\n\nLanding page mimics Facebook login to capture credentials and session cookies.",
+        "web_proxy_log": "2024-06-18T16:06:10Z user-PC GET https://faceb00k-security.com/login?next=%2Freset-password 200 - Mozilla/5.0 (Windows NT 10.0; Win64; x64)\n2024-06-18T16:06:30Z user-PC POST https://faceb00k-security.com/auth 200 - Mozilla/5.0 (Windows NT 10.0; Win64; x64)",
+        "phishing_page_html_snippet": "<form action=\"https://faceb00k-security.com/auth\" method=\"POST\">\n  <input type=\"text\" name=\"email\" placeholder=\"Email or Phone\" required><br>\n  <input type=\"password\" name=\"pass\" placeholder=\"Password\" required><br>\n  <input type=\"submit\" value=\"Log In\">\n</form>"
+      },
+      "indicators": [
+        "SPF neutral result for sending IP 203.0.114.55",
+        "Domain faceb00k-security.com uses homoglyph substitution (two zeros instead of 'oo')",
+        "URL with encoded query parameters leading to credential harvesting pages",
+        "Newly registered domain with registrant country Ukraine",
+        "POST requests to /auth endpoint on suspicious domain"
+      ],
+      "detection_method": "Email and web proxy monitoring detect new domain usage and suspicious URL patterns. URL reputation services flag homoglyph domains. User agents and behavioral analysis identify abnormal login attempts to external domains. Phishing awareness programs reinforce user skepticism of password reset emails.",
+      "relevant_mitre_techniques": [
+        "T1566.002 - Phishing: Spearphishing Link",
+        "T1204.002 - User Execution: Malicious File",
+        "T1071.001 - Application Layer Protocol: Web Protocols",
+        "T1586 - Compromise Infrastructure",
+        "T1566 - Phishing"
+      ]
+    },
+    {
+      "scenario": "Phishing email spoofing tax authority with PDF attachment containing embedded link to fake login portal for tax refund claim",
+      "technical_data": {
+        "email_headers": "Return-Path: <tax-office@taxrefunds-secure.com>\nReceived: from mail.taxrefunds-secure.com (mail.taxrefunds-secure.com [198.51.101.77])\n\tby mx.company.com (Postfix) with ESMTPS id 5E2B7D4C1F\n\tfor <user@company.com>; Wed, 19 Jun 2024 10:20:38 -0400 (EDT)\nReceived-SPF: fail (company.com: domain of tax-office@taxrefunds-secure.com does not designate 198.51.101.77 as permitted sender)\nAuthentication-Results: mx.company.com;\n\tdkim=none (message not signed);\n\tspf=fail (sender IP not authorized)\nMessage-ID: <20240619102038.5E2B7D4C1F@mail.taxrefunds-secure.com>\nFrom: \"Tax Office\" <tax-office@taxrefunds-secure.com>\nTo: user@company.com\nSubject: Claim Your Tax Refund Now\nMIME-Version: 1.0\nContent-Type: multipart/mixed; boundary=\"----=_Part_98765_43210\"\nX-Mailer: Adobe Acrobat 2020\n\n",
+        "email_body": "------=_Part_98765_43210\nContent-Type: text/plain; charset=UTF-8\n\nDear Taxpayer,\n\nYou are eligible for a tax refund. Please review the attached document and follow the instructions to claim your refund.\n\nRegards,\nTax Office\n\n------=_Part_98765_43210\nContent-Type: application/pdf;\n name=\"tax_refund_claim.pdf\"\nContent-Transfer-Encoding: base64\nContent-Disposition: attachment;\n filename=\"tax_refund_claim.pdf\"\n\nJVBERi0xLjQKJcfsj6IKNSAwIG9iago8PAovVHlwZSAvUGFnZQovUGFyZW50IDIgMCBS\nL1Jlc291cmNlcyA8PAovRm9udCA8PAovRjEgMyAwIFIKPj4KPj4KL0NvbnRlbnRzIDQg\nMCBSCj4+CmVuZG9iago0IDAgb2JqCjw8Ci9MZW5ndGggNTAKPj4Kc3RyZWFtCkJUClsg\nVGhpcyBpcyBhIHNhbXBsZSBQREYgd2l0aCBhbiBlbWJlZGRlZCBsaW5rIHRvIGEgZmFr\nZSBsaW5nLgo8aHRtbD4KPGJvZHk+CjxwPlBsZWFzZSB2aXNpdCB5b3VyIGFjY291bnQg\nY2xhaW0gcG9ydGFsIGJ5IGNsaWNraW5nIDxhIGhyZWY9Imh0dHBzOi8vdGF4cmVmdW5k\nLWNsaWNrLXNlY3VyZS5jb20vY2xhaW0iPmxpbmsgZm9yIHRheCByZWZ1bmQ8L2E+Ljwv\ncD4KPC9ib2R5Pgo8L2h0bWw+CmVuZHN0cmVhbQplbmRvYmoKMTAwIDAgb2JqCjw8Ci9U\neXBlIC9DYXRhbG9nCi9QYWdlcyAxIDAgUgo+PgplbmRvYmoK",
+        "smtp_transaction_log": "220 mail.taxrefunds-secure.com ESMTP Postfix\nEHLO attacker-host\n250-mail.taxrefunds-secure.com\n250-PIPELINING\n250-SIZE 10485760\n250-STARTTLS\n250-AUTH PLAIN LOGIN\n250 8BITMIME\nMAIL FROM:<tax-office@taxrefunds-secure.com>\n250 2.1.0 Ok\nRCPT TO:<user@company.com>\n250 2.1.5 Ok\nDATA\n354 End data with <CR><LF>.<CR><LF>\nFrom: \"Tax Office\" <tax-office@taxrefunds-secure.com>\nTo: user@company.com\nSubject: Claim Your Tax Refund Now\n\n[Multipart MIME message with PDF attachment]\n.\n250 2.0.0 Ok: queued as 5E2B7D4C1F\nQUIT\n221 2.0.0 Bye",
+        "domain_registration": {
+          "DomainName": "taxrefunds-secure.com",
+          "Registrar": "NameCheap, Inc.",
+          "CreationDate": "2024-06-05T08:40:00Z",
+          "ExpirationDate": "2025-06-05T08:40:00Z",
+          "NameServers": [
+            "ns1.namecheap.com",
+            "ns2.namecheap.com"
+          ],
+          "RegistrantCountry": "IN"
+        },
+        "url_structure": "https://taxrefund-click-secure.com/claim\n// The domain 'taxrefund-click-secure.com' is a redirector used by the PDF embedded link\n// The URL leads to a credential phishing page mimicking the official tax office login portal\n\nPDF contains embedded clickable link to https://taxrefund-click-secure.com/claim",
+        "web_proxy_log": "2024-06-19T10:21:05Z user-PC GET https://taxrefund-click-secure.com/claim 200 - Mozilla/5.0 (Windows NT 10.0; Win64; x64)\n2024-06-19T10:21:45Z user-PC POST https://taxrefund-click-secure.com/login 200 - Mozilla/5.0 (Windows NT 10.0; Win64; x64)",
+        "phishing_page_html_snippet": "<form action=\"https://taxrefund-click-secure.com/login\" method=\"POST\">\n  <input type=\"text\" name=\"taxid\" placeholder=\"Tax ID Number\" required><br>\n  <input type=\"password\" name=\"password\" placeholder=\"Password\" required><br>\n  <input type=\"submit\" value=\"Submit\">\n</form>"
+      },
+      "indicators": [
+        "SPF fail for sending IP 198.51.101.77",
+        "Newly registered domain taxrefunds-secure.com with registrant from India",
+        "PDF attachment contains embedded link to suspicious redirect domain",
+        "Redirect domain taxrefund-click-secure.com involved in credential phishing",
+        "Web proxy logs show POST to phishing login page"
+      ],
+      "detection_method": "Email gateway flags SPF failures and scans attachments for embedded links. Sandbox analysis extracts and evaluates PDF embedded URLs. Web proxy and network logs identify suspicious domain access and credential submission. User education campaigns focus on tax-related phishing awareness.",
+      "relevant_mitre_techniques": [
+        "T1566.001 - Phishing: Spearphishing Attachment",
+        "T1566.002 - Phishing: Spearphishing Link",
+        "T1204.002 - User Execution: Malicious File",
+        "T1071.001 - Application Layer Protocol: Web Protocols",
+        "T1586 - Compromise Infrastructure"
+      ]
+    }
+  ]
+}

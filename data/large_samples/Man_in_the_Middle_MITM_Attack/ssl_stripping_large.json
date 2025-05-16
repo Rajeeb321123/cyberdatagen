@@ -1,29 +1,253 @@
 {
   "samples": [
     {
-      "scenario": "Attacker sets up a rogue Wi-Fi hotspot in a coffee shop, intercepting user traffic to a banking website.",
-      "technical_data": "User attempts to access https://bank.com but is redirected to http://bank.com via the attacker's MITM proxy that strips SSL encryption.",
-      "indicators": "User notices the browser shows 'http' instead of 'https'; absence of padlock icon; unusual certificate warnings are suppressed by attacker."
+      "scenario": "ssl_stripping attack using a compromised public charging station Wi-Fi, intercepting HTTPS banking logins by downgrading to HTTP",
+      "technical_data": {
+        "network_packet_capture_excerpt": "Frame 88: 1514 bytes on wire (12112 bits), 1514 bytes captured (12112 bits) on interface wlan0\nEthernet II, Src: 0a:00:27:00:12:34, Dst: 58:6d:8f:11:22:33\nInternet Protocol Version 4, Src: 192.168.100.15, Dst: 104.244.42.129\nTransmission Control Protocol, Src Port: 56789, Dst Port: 80, Seq: 2501, Ack: 2502\nHypertext Transfer Protocol\n    GET /user/login HTTP/1.1\r\n    Host: securepay.com\r\n    User-Agent: Mozilla/5.0 (Linux; Android 10) AppleWebKit/537.36\r\n    Cookie: auth=abc123;\r\n\r\n",
+        "http_request_from_victim": "GET http://securepay.com/user/login HTTP/1.1\r\nHost: securepay.com\r\nUser-Agent: Mozilla/5.0 (Linux; Android 10; Mobile) Chrome/90.0.4430.210\r\nAccept: text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8\r\nUpgrade-Insecure-Requests: 1\r\n\r\n",
+        "http_response_from_attacker_proxy": "HTTP/1.1 200 OK\r\nDate: Wed, 22 Jun 2023 09:15:32 GMT\r\nServer: nginx/1.18.0\r\nContent-Type: text/html\r\nContent-Length: 2450\r\n\r\n<html><head><title>SecurePay Login</title></head><body>\n<form method=\"POST\" action=\"http://securepay.com/authenticate\">\n<input name=\"username\" type=\"text\" placeholder=\"Username\" />\n<input name=\"password\" type=\"password\" placeholder=\"Password\" />\n<input type=\"submit\" value=\"Login\" />\n</form>\n</body></html>",
+        "web_server_access_log_excerpt": "192.168.100.15 - - [22/Jun/2023:09:15:32 +0000] \"GET /user/login HTTP/1.1\" 200 2450 \"-\" \"Mozilla/5.0 (Linux; Android 10; Mobile) Chrome/90.0.4430.210\"\n192.168.100.15 - - [22/Jun/2023:09:15:50 +0000] \"POST /authenticate HTTP/1.1\" 200 600 \"http://securepay.com/user/login\" \"Mozilla/5.0 (Linux; Android 10; Mobile) Chrome/90.0.4430.210\"",
+        "captured_credentials_http_post": "POST /authenticate HTTP/1.1\r\nHost: securepay.com\r\nUser-Agent: Mozilla/5.0 (Linux; Android 10; Mobile) Chrome/90.0.4430.210\r\nContent-Type: application/x-www-form-urlencoded\r\nContent-Length: 42\r\n\r\nusername=alice123&password=MyPassword!2023",
+        "attacker_proxy_log": "[2023-06-22 09:15:50] INFO: Credentials captured - username: alice123, password: MyPassword!2023 from IP 192.168.100.15"
+      },
+      "indicators": [
+        "HTTP requests to securepay.com on port 80 despite HTTPS enforcement",
+        "Presence of 'Upgrade-Insecure-Requests: 1' header in victim HTTP GET requests",
+        "Captured plaintext POST data with credentials",
+        "Access logs showing victim IP using HTTP instead of HTTPS",
+        "Attacker proxy logs with credential capture timestamps matching victim activity"
+      ],
+      "detection_method": "Monitor network traffic for HTTPS domains being accessed over HTTP; detect man-in-the-middle proxies downgrading HTTPS; alert on plaintext credential posts; cross-check web server logs for protocol inconsistencies; use browser HSTS enforcement telemetry",
+      "relevant_mitre_techniques": [
+        "T1557.001 - Man-in-the-Middle: HTTPS Spoofing",
+        "T1040 - Network Sniffing",
+        "T1071.001 - Application Layer Protocol: Web Protocols",
+        "T1595.002 - Active Scanning: Network Service Scanning"
+      ]
     },
     {
-      "scenario": "Attacker on a public Wi-Fi network intercepts login credentials for an email account by downgrading the connection from HTTPS to HTTP.",
-      "technical_data": "Using a tool like sslstrip, attacker intercepts DNS requests and rewrites links from https://mail.com to http://mail.com, capturing plaintext credentials.",
-      "indicators": "User's browser URL bar lacks HTTPS indication; login credentials transmitted in plaintext over the network."
+      "scenario": "ssl_stripping attack via malicious browser extension injecting HTTP login form, capturing credentials on normally HTTPS-only site",
+      "technical_data": {
+        "browser_http_request": "GET http://mysecuremail.com/login HTTP/1.1\r\nHost: mysecuremail.com\r\nUser-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) Chrome/100.0.4896.127\r\nAccept: text/html\r\nUpgrade-Insecure-Requests: 1\r\n\r\n",
+        "injected_html_form": "<html><head><title>MySecureMail Login</title></head><body>\n<form method=\"POST\" action=\"http://mysecuremail.com/authenticate\">\nEmail: <input type=\"text\" name=\"email\" />\nPassword: <input type=\"password\" name=\"pwd\" />\n<input type=\"submit\" value=\"Sign In\" />\n</form>\n</body></html>",
+        "captured_http_post_payload": "POST /authenticate HTTP/1.1\r\nHost: mysecuremail.com\r\nContent-Type: application/x-www-form-urlencoded\r\nContent-Length: 38\r\n\r\nemail=bob@example.com&pwd=EmailPass!456",
+        "extension_network_log": "[2023-06-23 17:45:12] INFO: Captured login credentials - email: bob@example.com, password: EmailPass!456",
+        "browser_console_warning": "Mixed Content: The page at 'https://mysecuremail.com' was loaded over HTTPS, but requested an insecure resource 'http://mysecuremail.com/login'. This request has been blocked; however, the malicious extension bypassed this."
+      },
+      "indicators": [
+        "HTTP requests to login page on an HTTPS-only domain",
+        "Presence of injected HTTP login form replacing HTTPS content",
+        "Captured plaintext credentials in HTTP POST requests",
+        "Browser console logs showing mixed content warnings",
+        "Extension network logs capturing credential submission"
+      ],
+      "detection_method": "Browser security scanning for malicious extensions; endpoint detection monitoring network requests downgraded from HTTPS to HTTP; integrity checks on web page content; monitor for mixed content warnings and user reports; scan extensions for suspicious network activity",
+      "relevant_mitre_techniques": [
+        "T1557.001 - Man-in-the-Middle: HTTPS Spoofing",
+        "T1086 - PowerShell (for extension scripting)",
+        "T1071.001 - Application Layer Protocol: Web Protocols",
+        "T1204.002 - User Execution: Malicious File"
+      ]
     },
     {
-      "scenario": "An attacker performs MITM attack in a corporate LAN, redirecting employees' requests to a secure intranet portal to an insecure version.",
-      "technical_data": "Attacker modifies HTTP headers and strips SSL from intranet portal URLs, forcing employees to transmit sensitive data unencrypted.",
-      "indicators": "Network monitoring shows unencrypted traffic where HTTPS is expected; employees report missing security indicators in browser."
+      "scenario": "ssl_stripping attack during coffee shop Wi-Fi usage by attacker performing ARP spoofing and downgrading HTTPS to HTTP",
+      "technical_data": {
+        "arp_spoofing_packet": "Ethernet II, Src: 00:0c:29:3e:4f:5a, Dst: ff:ff:ff:ff:ff:ff\nAddress Resolution Protocol (request): Who has 192.168.10.1? Tell 192.168.10.100",
+        "victim_http_request": "GET http://shoppingportal.com/account HTTP/1.1\r\nHost: shoppingportal.com\r\nUser-Agent: Mozilla/5.0 (iPhone; CPU iPhone OS 14_4 like Mac OS X)\r\nUpgrade-Insecure-Requests: 1\r\n\r\n",
+        "attacker_proxy_response": "HTTP/1.1 200 OK\r\nContent-Type: text/html\r\nContent-Length: 2100\r\n\r\n<html><head><title>ShoppingPortal Login</title></head><body>\n<form method=\"POST\" action=\"http://shoppingportal.com/login\">\n<input name=\"user\" type=\"text\" />\n<input name=\"pass\" type=\"password\" />\n<input type=\"submit\" value=\"Log In\" />\n</form>\n</body></html>",
+        "captured_post_credentials": "POST /login HTTP/1.1\r\nHost: shoppingportal.com\r\nContent-Type: application/x-www-form-urlencoded\r\nContent-Length: 40\r\n\r\nuser=charlie&pass=ShopPass!2023",
+        "arp_table_poisoning_log": "[2023-06-24 15:20:05] INFO: ARP spoofing detected - IP 192.168.10.100 MAC 00:0c:29:3e:4f:5a impersonating gateway 192.168.10.1",
+        "attacker_proxy_log": "[2023-06-24 15:20:30] INFO: Credentials captured - user: charlie, pass: ShopPass!2023"
+      },
+      "indicators": [
+        "ARP spoofing packets on local network",
+        "HTTP requests to normally HTTPS-only shoppingportal.com",
+        "Captured plaintext POST login credentials",
+        "Attacker proxy logs showing session hijacking",
+        "Victim device showing no HTTPS connections to the domain"
+      ],
+      "detection_method": "Network ARP monitoring for spoofing attempts; IDS detection of HTTP traffic to HTTPS-only domains; alert on plaintext credential capture; endpoint security detecting abnormal gateway MAC addresses; correlation of proxy logs with victim activity",
+      "relevant_mitre_techniques": [
+        "T1557.001 - Man-in-the-Middle: HTTPS Spoofing",
+        "T1040 - Network Sniffing",
+        "T1565.001 - Data Manipulation: Stored Data Manipulation",
+        "T1071.001 - Application Layer Protocol: Web Protocols"
+      ]
     },
     {
-      "scenario": "During a conference, an attacker uses ARP spoofing to intercept traffic and downgrade HTTPS connections for a popular social media site.",
-      "technical_data": "Attacker performs ARP poisoning and runs sslstrip to transparently downgrade https://socialmedia.com to http://socialmedia.com, capturing session cookies.",
-      "indicators": "Session cookies appear in network logs unencrypted; users report unusual login prompts; browser security warnings are absent due to attacker's suppression."
+      "scenario": "ssl_stripping via compromised IoT device acting as transparent proxy, rewriting HTTPS to HTTP and intercepting smart home account credentials",
+      "technical_data": {
+        "iot_device_network_log": "[2023-06-25 08:10:22] INFO: Transparent proxy enabled on port 80, redirecting HTTPS traffic from 192.168.50.10",
+        "victim_http_request": "GET http://smarthome-cloud.com/login HTTP/1.1\r\nHost: smarthome-cloud.com\r\nUser-Agent: Mozilla/5.0 (Linux; Android 11)\r\nUpgrade-Insecure-Requests: 1\r\n\r\n",
+        "proxy_response_html": "<html><head><title>SmartHome Cloud Login</title></head><body>\n<form method=\"POST\" action=\"http://smarthome-cloud.com/authenticate\">\n<input type=\"text\" name=\"user\" placeholder=\"Username\" />\n<input type=\"password\" name=\"pass\" placeholder=\"Password\" />\n<input type=\"submit\" value=\"Login\" />\n</form>\n</body></html>",
+        "captured_http_post_payload": "POST /authenticate HTTP/1.1\r\nHost: smarthome-cloud.com\r\nContent-Type: application/x-www-form-urlencoded\r\nContent-Length: 44\r\n\r\nuser=homeowner&pass=IoTsecurePass!2023",
+        "iot_device_syslog": "Jun 25 08:10:40 IoTDevice kernel: [INFO] Intercepted and logged credentials for user 'homeowner'",
+        "web_server_access_log_excerpt": "192.168.50.10 - - [25/Jun/2023:08:10:40 +0000] \"POST /authenticate HTTP/1.1\" 200 580 \"http://smarthome-cloud.com/login\" \"Mozilla/5.0 (Linux; Android 11)\""
+      },
+      "indicators": [
+        "Transparent proxy enabled on IoT device port 80",
+        "HTTP traffic to smarthome-cloud.com despite HTTPS enforcement",
+        "Captured plaintext POST credentials in IoT device logs",
+        "Web server logs showing HTTP POST requests from IoT device IP",
+        "Victim device showing no HTTPS traffic for smart home login"
+      ],
+      "detection_method": "Monitor IoT device network configurations and syslogs for proxy activity; alert on HTTP traffic to HTTPS-only domains; inspect web server logs for abnormal HTTP POST source IPs; endpoint detection on victim devices for downgrade attempts; correlate device logs with credential capture events",
+      "relevant_mitre_techniques": [
+        "T1557.001 - Man-in-the-Middle: HTTPS Spoofing",
+        "T1592.006 - Gather Victim Host Information: IoT Device Discovery",
+        "T1071.001 - Application Layer Protocol: Web Protocols",
+        "T1592 - Gather Victim Host Information"
+      ]
     },
     {
-      "scenario": "Attacker compromises a hotel network router, redirecting guests' secure shopping website connections to unsecure HTTP versions.",
-      "technical_data": "Modified router firmware redirects https://shopping.com to http://shopping.com; attacker captures credit card information in plaintext via MITM proxy.",
-      "indicators": "Users notice lack of HTTPS padlock on checkout pages; network scanning reveals HTTP traffic on typically secure domains."
+      "scenario": "ssl_stripping attack on corporate network using rogue DHCP server assigning attacker-controlled gateway, forcing HTTP and intercepting internal web app credentials",
+      "technical_data": {
+        "dhcp_offer_packet": "DHCP Offer, Server Identifier: 192.168.20.254, Your (client) IP Address: 192.168.20.50, Gateway: 192.168.20.254",
+        "victim_http_request": "GET http://internalportal.corp.local/login HTTP/1.1\r\nHost: internalportal.corp.local\r\nUser-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64)\r\nUpgrade-Insecure-Requests: 1\r\n\r\n",
+        "attacker_proxy_response": "HTTP/1.1 200 OK\r\nContent-Type: text/html\r\nContent-Length: 1980\r\n\r\n<html><head><title>Corporate Internal Portal</title></head><body>\n<form method=\"POST\" action=\"http://internalportal.corp.local/authenticate\">\n<input name=\"emp_id\" type=\"text\" />\n<input name=\"password\" type=\"password\" />\n<input type=\"submit\" value=\"Login\" />\n</form>\n</body></html>",
+        "captured_http_post_payload": "POST /authenticate HTTP/1.1\r\nHost: internalportal.corp.local\r\nContent-Type: application/x-www-form-urlencoded\r\nContent-Length: 44\r\n\r\nemp_id=E12345&password=CorpPass!2023",
+        "network_monitor_alert": "[2023-06-26 11:00:08] ALERT: DHCP server 192.168.20.254 not recognized; possible rogue DHCP assignment",
+        "attacker_proxy_log": "[2023-06-26 11:00:35] INFO: Captured credentials - emp_id: E12345, password: CorpPass!2023"
+      },
+      "indicators": [
+        "Rogue DHCP server offering IP and gateway addresses",
+        "HTTP traffic on internal corporate domains normally HTTPS-only",
+        "Captured plaintext employee credentials in HTTP POST requests",
+        "Network monitor alerts for unauthorized DHCP servers",
+        "Proxy logs capturing internal user credentials"
+      ],
+      "detection_method": "DHCP server validation and rogue detection; network scans for unauthorized DHCP offers; IDS detection of HTTP traffic to internal HTTPS-only domains; credential leak detection from proxy logs; endpoint monitoring to enforce HTTPS connections",
+      "relevant_mitre_techniques": [
+        "T1557.001 - Man-in-the-Middle: HTTPS Spoofing",
+        "T1040 - Network Sniffing",
+        "T1071.001 - Application Layer Protocol: Web Protocols",
+        "T1569.002 - System Services: Service Execution"
+      ]
+    },
+    {
+      "scenario": "ssl_stripping attack using ARP spoofing on corporate LAN intercepts employee HTTPS login downgraded to HTTP",
+      "technical_data": {
+        "arp_spoofing_log": "[2023-07-10 09:15:22] ARP Reply: 192.168.10.5 is-at 00:11:22:33:44:55 (attacker MAC) to 192.168.10.10",
+        "network_packet_capture_excerpt": "Frame 88: 1514 bytes on wire (12112 bits), 1514 bytes captured (12112 bits) on interface eth0\nEthernet II, Src: 00:11:22:33:44:55, Dst: 00:aa:bb:cc:dd:ee\nInternet Protocol Version 4, Src: 192.168.10.10, Dst: 104.244.42.129\nTransmission Control Protocol, Src Port: 49152, Dst Port: 80\nHypertext Transfer Protocol\n    GET /signin HTTP/1.1\r\n    Host: internalportal.corp.com\r\n    User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64)\r\n    Accept: text/html\r\n    Cookie: session=abcd1234;\r\n\r\n",
+        "http_request_from_victim": "GET http://internalportal.corp.com/signin HTTP/1.1\r\nHost: internalportal.corp.com\r\nUser-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:102.0) Gecko/20100101 Firefox/102.0\r\nAccept: text/html\r\nUpgrade-Insecure-Requests: 1\r\n\r\n",
+        "http_response_from_attacker_proxy": "HTTP/1.1 200 OK\r\nContent-Type: text/html\r\nContent-Length: 1980\r\n\r\n<html><head><title>Corp Portal Login</title></head><body>\n<form method=\"POST\" action=\"http://internalportal.corp.com/authenticate\">\nUsername: <input name=\"username\" type=\"text\" />\nPassword: <input name=\"password\" type=\"password\" />\n<input type=\"submit\" value=\"Login\" />\n</form>\n</body></html>",
+        "captured_credentials_http_post": "POST /authenticate HTTP/1.1\r\nHost: internalportal.corp.com\r\nContent-Type: application/x-www-form-urlencoded\r\nContent-Length: 39\r\n\r\nusername=alice.smith&password=CorpPass!2023",
+        "attacker_proxy_log": "[2023-07-10 09:16:00] INFO: Captured credentials - username: alice.smith, password: CorpPass!2023 from IP 192.168.10.10"
+      },
+      "indicators": [
+        "ARP cache poisoning detected with attacker MAC claiming gateway IP",
+        "HTTP requests to internalportal.corp.com on port 80 instead of expected HTTPS 443",
+        "Presence of 'Upgrade-Insecure-Requests: 1' header in HTTP GET requests",
+        "Captured HTTP POST requests containing plaintext credentials",
+        "Attacker proxy logs showing credential capture from internal IP"
+      ],
+      "detection_method": "Network IDS detecting ARP poisoning; monitoring for HTTPS to HTTP downgrade in traffic; analyzing proxy logs for plaintext credential submission; verifying HSTS enforcement on internal domains; endpoint detection of abnormal certificates or network configurations",
+      "relevant_mitre_techniques": [
+        "T1557.001 - Man-in-the-Middle: HTTPS Spoofing",
+        "T1040 - Network Sniffing",
+        "T1586.001 - Compromise Infrastructure: ARP Spoofing",
+        "T1071.001 - Application Layer Protocol: Web Protocols"
+      ]
+    },
+    {
+      "scenario": "ssl_stripping attack on public coffee shop Wi-Fi using transparent proxy intercepts banking HTTPS downgraded to HTTP",
+      "technical_data": {
+        "wifi_access_point_info": "SSID: CoffeeShopFreeWiFi, BSSID: 12:34:56:78:9a:bc, Channel: 6",
+        "network_packet_capture_excerpt": "Frame 105: 1514 bytes on wire (12112 bits), captured on wlan0\nEthernet II, Src: 02:1a:11:ff:ee:dd (rogue AP), Dst: 3c:5a:b4:7d:e3:29\nInternet Protocol Version 4, Src: 192.168.100.22, Dst: 198.51.100.45\nTransmission Control Protocol, Src Port: 53789, Dst Port: 80\nHypertext Transfer Protocol\n    GET /auth/login HTTP/1.1\r\n    Host: securewebbank.com\r\n    User-Agent: Mozilla/5.0 (iPhone; CPU iPhone OS 14_0 like Mac OS X)\r\n    Accept: text/html\r\n    Upgrade-Insecure-Requests: 1\r\n\r\n",
+        "http_response_from_attacker_proxy": "HTTP/1.1 200 OK\r\nContent-Type: text/html\r\nContent-Length: 2045\r\n\r\n<html><head><title>SecureWebBank Login</title></head><body>\n<form method=\"POST\" action=\"http://securewebbank.com/process_login\">\n<input type=\"text\" name=\"user\" placeholder=\"User ID\" />\n<input type=\"password\" name=\"pass\" placeholder=\"Password\" />\n<input type=\"submit\" value=\"Sign In\" />\n</form>\n</body></html>",
+        "captured_credentials_http_post": "POST /process_login HTTP/1.1\r\nHost: securewebbank.com\r\nContent-Type: application/x-www-form-urlencoded\r\nContent-Length: 44\r\n\r\nuser=charlie&pass=CoffeeShop2023!",
+        "dhcp_server_log": "[2023-07-15 14:20:10] DHCPACK to 192.168.100.22 for MAC 3c:5a:b4:7d:e3:29 via rogue AP",
+        "router_syslog_proxy_alert": "Jul 15 14:20:12 rogueap kernel: [INFO] Transparent HTTP proxy enabled, SSL traffic downgraded"
+      },
+      "indicators": [
+        "User HTTP traffic to banking site on port 80 from public Wi-Fi",
+        "Rogue DHCP server issuing IPs and redirecting traffic",
+        "Presence of 'Upgrade-Insecure-Requests: 1' header in HTTP GET requests",
+        "Captured POST requests with plaintext banking credentials",
+        "Router logs showing transparent proxy interception and SSL downgrade"
+      ],
+      "detection_method": "Rogue DHCP and Wi-Fi access point detection; network traffic analysis for HTTPS downgrade; user reports of certificate warnings; IDS alerts on transparent proxy activations; monitoring for plaintext credential submission on sensitive domains",
+      "relevant_mitre_techniques": [
+        "T1557.001 - Man-in-the-Middle: HTTPS Spoofing",
+        "T1040 - Network Sniffing",
+        "T1071.001 - Application Layer Protocol: Web Protocols",
+        "T1586.002 - Compromise Infrastructure: Rogue Access Point"
+      ]
+    },
+    {
+      "scenario": "ssl_stripping attack exploiting captive portal on compromised hotel Wi-Fi to intercept hotel guest HTTPS logins",
+      "technical_data": {
+        "captive_portal_http_redirect": "HTTP/1.1 302 Found\r\nLocation: http://hotelwifi.local/login\r\nContent-Length: 0\r\n\r\n",
+        "http_request_from_guest": "GET http://hotelwifi.local/login HTTP/1.1\r\nHost: hotelwifi.local\r\nUser-Agent: Mozilla/5.0 (Linux; Android 11)\r\nAccept: text/html\r\nUpgrade-Insecure-Requests: 1\r\n\r\n",
+        "http_response_captive_portal": "HTTP/1.1 200 OK\r\nContent-Type: text/html\r\nContent-Length: 1987\r\n\r\n<html><head><title>Hotel WiFi Login</title></head><body>\n<form method=\"POST\" action=\"http://hotelwifi.local/authenticate\">\n<input type=\"text\" name=\"email\" placeholder=\"Email\" />\n<input type=\"password\" name=\"password\" placeholder=\"Password\" />\n<input type=\"submit\" value=\"Connect\" />\n</form>\n</body></html>",
+        "captured_http_post_payload": "POST /authenticate HTTP/1.1\r\nHost: hotelwifi.local\r\nContent-Type: application/x-www-form-urlencoded\r\nContent-Length: 47\r\n\r\nemail=guest@example.com&password=HotelPass2023!",
+        "dns_cache_log": "[2023-07-20 18:05:45] DNS query for hotelwifi.local resolved to 10.0.0.1 (rogue captive portal)",
+        "syslog_router_alert": "Jul 20 18:05:47 router01 kernel: [ALERT] SSL stripping detected - HTTPS requests redirected to HTTP captive portal"
+      },
+      "indicators": [
+        "HTTP redirects forcing captive portal login on HTTP instead of HTTPS",
+        "DNS resolution of captive portal to internal rogue IP",
+        "Presence of 'Upgrade-Insecure-Requests: 1' header in HTTP requests",
+        "Captured HTTP POST credentials in plaintext",
+        "Router alerts indicating SSL stripping via captive portal redirection"
+      ],
+      "detection_method": "DNS monitoring for captive portal domains resolving to internal IPs; detection of HTTP redirects from HTTPS requests; network traffic analysis for SSL downgrade; router syslog alerting on SSL stripping patterns; user device telemetry on certificate warnings",
+      "relevant_mitre_techniques": [
+        "T1557.001 - Man-in-the-Middle: HTTPS Spoofing",
+        "T1071.001 - Application Layer Protocol: Web Protocols",
+        "T1592 - Gather Victim Host Information",
+        "T1586.003 - Compromise Infrastructure: Captive Portal Manipulation"
+      ]
+    },
+    {
+      "scenario": "ssl_stripping attack on public transportation Wi-Fi via rogue proxy intercepts HTTPS social media logins downgraded to HTTP",
+      "technical_data": {
+        "wifi_network_info": "SSID: CityBusFreeWiFi, BSSID: de:ad:be:ef:00:01, Channel: 11",
+        "network_packet_capture_excerpt": "Frame 203: 1514 bytes on wire (12112 bits), captured on wlan0\nEthernet II, Src: de:ad:be:ef:00:01, Dst: 5e:fa:ce:12:34:56\nInternet Protocol Version 4, Src: 10.10.10.45, Dst: 157.240.20.35\nTransmission Control Protocol, Src Port: 52345, Dst Port: 80\nHypertext Transfer Protocol\n    GET /login HTTP/1.1\r\n    Host: socialmedia.com\r\n    User-Agent: Mozilla/5.0 (Linux; Android 10)\r\n    Accept: text/html\r\n    Upgrade-Insecure-Requests: 1\r\n\r\n",
+        "http_response_from_attacker_proxy": "HTTP/1.1 200 OK\r\nContent-Type: text/html\r\nContent-Length: 2200\r\n\r\n<html><head><title>SocialMedia Login</title></head><body>\n<form method=\"POST\" action=\"http://socialmedia.com/authenticate\">\n<input type=\"text\" name=\"user\" placeholder=\"Username\" />\n<input type=\"password\" name=\"pass\" placeholder=\"Password\" />\n<input type=\"submit\" value=\"Log In\" />\n</form>\n</body></html>",
+        "captured_credentials_http_post": "POST /authenticate HTTP/1.1\r\nHost: socialmedia.com\r\nContent-Type: application/x-www-form-urlencoded\r\nContent-Length: 40\r\n\r\nuser=jane.doe&pass=BusFreeWiFi2023!",
+        "dhcp_log": "[2023-07-22 08:45:12] DHCPACK to 10.10.10.45 for MAC 5e:fa:ce:12:34:56 via rogue AP",
+        "router_syslog_proxy": "Jul 22 08:45:15 citybuswifi kernel: [INFO] Transparent HTTP proxy active; SSL stripped for socialmedia.com"
+      },
+      "indicators": [
+        "HTTP GET and POST requests to socialmedia.com instead of HTTPS",
+        "Rogue DHCP leases issued on bus Wi-Fi network",
+        "Presence of 'Upgrade-Insecure-Requests: 1' header in HTTP requests",
+        "Captured plaintext credentials in HTTP POST requests",
+        "Router logs indicating transparent proxy and SSL stripping"
+      ],
+      "detection_method": "Monitoring DHCP lease issuance for rogue devices; network analysis for HTTPS to HTTP downgrade; alerts on transparent proxy usage; user reports of certificate errors; endpoint detection of unexpected proxy configurations",
+      "relevant_mitre_techniques": [
+        "T1557.001 - Man-in-the-Middle: HTTPS Spoofing",
+        "T1040 - Network Sniffing",
+        "T1586.002 - Compromise Infrastructure: Rogue Access Point",
+        "T1071.001 - Application Layer Protocol: Web Protocols"
+      ]
+    },
+    {
+      "scenario": "ssl_stripping attack via malicious browser extension intercepting HTTPS requests and downgrading to HTTP for credential theft",
+      "technical_data": {
+        "browser_extension_manifest": "{\n  \"name\": \"SecureEnhancer\",\n  \"version\": \"1.2\",\n  \"permissions\": [\"webRequest\", \"webRequestBlocking\", \"http://*/*\", \"https://*/*\"]\n}",
+        "browser_network_log": "Blocking HTTPS request and redirecting to HTTP for https://myemail.com/login",
+        "http_request_intercepted": "GET http://myemail.com/login HTTP/1.1\r\nHost: myemail.com\r\nUser-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64)\r\nAccept: text/html\r\nUpgrade-Insecure-Requests: 1\r\n\r\n",
+        "http_response_modified": "HTTP/1.1 200 OK\r\nContent-Type: text/html\r\nContent-Length: 2100\r\n\r\n<html><head><title>MyEmail Login</title></head><body>\n<form method=\"POST\" action=\"http://myemail.com/authenticate\">\n<input type=\"text\" name=\"email\" />\n<input type=\"password\" name=\"password\" />\n<input type=\"submit\" value=\"Login\" />\n</form>\n</body></html>",
+        "captured_http_post_payload": "POST /authenticate HTTP/1.1\r\nHost: myemail.com\r\nContent-Type: application/x-www-form-urlencoded\r\nContent-Length: 42\r\n\r\nemail=bob@example.com&password=EmailPass2023!",
+        "browser_extension_log": "[2023-07-25 11:00:05] INFO: Intercepted credentials for myemail.com - email: bob@example.com, password: EmailPass2023!"
+      },
+      "indicators": [
+        "Browser extension with permissions to intercept and block web requests",
+        "HTTPS requests redirected to HTTP by extension",
+        "Presence of 'Upgrade-Insecure-Requests: 1' header in HTTP requests",
+        "Captured HTTP POST requests with plaintext credentials",
+        "Extension logs showing credential interception for targeted domains"
+      ],
+      "detection_method": "Browser extension audit and permission review; endpoint security monitoring for suspicious webRequest usage; detection of HTTPS to HTTP downgrade within browser; user reports of unexpected login behavior; network traffic analysis combined with endpoint telemetry",
+      "relevant_mitre_techniques": [
+        "T1557.001 - Man-in-the-Middle: HTTPS Spoofing",
+        "T1071.001 - Application Layer Protocol: Web Protocols",
+        "T1213 - Data from Information Repositories",
+        "T1566.001 - Phishing: Spearphishing via Service"
+      ]
     }
   ]
 }

@@ -1,0 +1,80 @@
+{
+  "examples": [
+    {
+      "scenario": "ssl_stripping MITM attack via rogue Wi-Fi access point downgrades victim's HTTPS request to HTTP, capturing credentials",
+      "technical_data": {
+        "network_packet_capture_excerpt": "Frame 42: 1514 bytes on wire (12112 bits), 1514 bytes captured (12112 bits) on interface wlan0\nEthernet II, Src: 02:42:ac:11:00:02, Dst: 5c:26:0a:1f:3e:4a\nInternet Protocol Version 4, Src: 192.168.1.10, Dst: 172.217.11.174\nTransmission Control Protocol, Src Port: 54321, Dst Port: 80, Seq: 1, Ack: 1\nHypertext Transfer Protocol\n    GET /login HTTP/1.1\r\n    Host: examplebank.com\r\n    User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64)\r\n    Accept: text/html,application/xhtml+xml\r\n    Cookie: sessionid=xyz123;\r\n\r\n",
+        "http_request_from_victim": "GET http://examplebank.com/login HTTP/1.1\r\nHost: examplebank.com\r\nUser-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:91.0) Gecko/20100101 Firefox/91.0\r\nAccept: text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8\r\nAccept-Language: en-US,en;q=0.5\r\nAccept-Encoding: gzip, deflate\r\nConnection: keep-alive\r\nUpgrade-Insecure-Requests: 1\r\n\r\n",
+        "http_response_from_attacker_proxy": "HTTP/1.1 200 OK\r\nDate: Tue, 21 Jun 2023 12:34:56 GMT\r\nServer: Apache/2.4.41 (Ubuntu)\r\nContent-Type: text/html\r\nContent-Length: 1789\r\n\r\n<html><head><title>ExampleBank Login</title></head><body>\n<form method=\"POST\" action=\"http://examplebank.com/authenticate\">\nUsername: <input name=\"username\" type=\"text\" />\nPassword: <input name=\"password\" type=\"password\" />\n<input type=\"submit\" value=\"Login\" />\n</form>\n</body></html>",
+        "web_server_access_log_excerpt": "192.168.1.10 - - [21/Jun/2023:12:34:56 +0000] \"GET /login HTTP/1.1\" 200 1789 \"-\" \"Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:91.0) Gecko/20100101 Firefox/91.0\"\n192.168.1.10 - - [21/Jun/2023:12:35:10 +0000] \"POST /authenticate HTTP/1.1\" 200 512 \"http://examplebank.com/login\" \"Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:91.0) Gecko/20100101 Firefox/91.0\"",
+        "captured_credentials_http_post": "POST /authenticate HTTP/1.1\r\nHost: examplebank.com\r\nUser-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:91.0) Gecko/20100101 Firefox/91.0\r\nContent-Type: application/x-www-form-urlencoded\r\nContent-Length: 38\r\n\r\nusername=john.doe&password=SuperSecret123",
+        "attacker_proxy_log": "[2023-06-21 12:35:10] INFO: Captured credentials - username: john.doe, password: SuperSecret123 from IP 192.168.1.10"
+      },
+      "indicators": [
+        "HTTP requests to examplebank.com observed only on port 80 despite known HTTPS usage",
+        "Presence of 'Upgrade-Insecure-Requests: 1' header in HTTP GET requests",
+        "Captured HTTP POST requests with plaintext credentials",
+        "Web server logs showing HTTP (not HTTPS) requests from victim IP",
+        "Attacker proxy logs intercepting and logging credentials"
+      ],
+      "detection_method": "Network IDS/IPS detecting downgrade of HTTPS to HTTP requests for domains known to enforce HTTPS; monitoring unexpected plaintext credential submission; anomaly detection on session cookie transmission over HTTP; browser HSTS preload list enforcement blocking HTTP requests; alerting on logs showing HTTP POSTs with credential parameters",
+      "relevant_mitre_techniques": [
+        "T1557.001 - Man-in-the-Middle: HTTPS Spoofing",
+        "T1040 - Network Sniffing",
+        "T1609 - Container and Resource Hijacking (for rogue Wi-Fi)",
+        "T1071.001 - Application Layer Protocol: Web Protocols"
+      ]
+    },
+    {
+      "scenario": "ssl_stripping attack via DNS spoofing and transparent HTTP proxy on compromised local router, intercepting HTTPS sessions",
+      "technical_data": {
+        "dns_response_packet": ";; QUESTION SECTION:\n;example-secure.com.    IN A\n;; ANSWER SECTION:\nexample-secure.com. 60 IN A 192.168.0.99\n\n;; Query time: 12 msec\n;; SERVER: 192.168.0.1#53(192.168.0.1)\n;; WHEN: Tue Jun 21 13:22:33 2023",
+        "router_dns_cache_log": "[2023-06-21 13:22:33] DNS Spoofed Response: example-secure.com -> 192.168.0.99 (rogue proxy)",
+        "http_request_intercepted": "GET http://example-secure.com/login HTTP/1.1\r\nHost: example-secure.com\r\nUser-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7)\r\nAccept: text/html\r\nUpgrade-Insecure-Requests: 1\r\n\r\n",
+        "router_transparent_proxy_response": "HTTP/1.1 200 OK\r\nContent-Type: text/html\r\nContent-Length: 2120\r\n\r\n<html><head><title>Secure Login</title></head><body>\n<form method=\"POST\" action=\"http://example-secure.com/auth\">\n<input type=\"text\" name=\"user\" placeholder=\"User\" />\n<input type=\"password\" name=\"pass\" placeholder=\"Password\" />\n<input type=\"submit\" value=\"Sign In\" />\n</form>\n</body></html>",
+        "captured_http_post_payload": "POST /auth HTTP/1.1\r\nHost: example-secure.com\r\nContent-Type: application/x-www-form-urlencoded\r\nContent-Length: 46\r\n\r\nuser=alice&pass=Wonderland123",
+        "syslog_router_alert": "Jun 21 13:22:35 router01 kernel: [WARNING] Transparent proxy enabled on port 80, SSL traffic downgraded",
+        "browser_warning_suppressed": "User ignored browser warning: \"Your connection is not private\" for example-secure.com"
+      },
+      "indicators": [
+        "DNS responses for HTTPS domains resolving to local private IP addresses",
+        "HTTP GET requests to sensitive domains that normally enforce HTTPS",
+        "Router syslog entries indicating transparent proxy activation",
+        "Captured POST requests with credentials sent in plaintext",
+        "User browser warnings ignored or suppressed"
+      ],
+      "detection_method": "DNS monitoring for anomalous responses resolving public HTTPS domains to private IPs; router and firewall logs for unexpected transparent proxy configurations; browser telemetry or EDR detecting repeated SSL errors; network traffic analysis identifying HTTP traffic to sensitive sites; user reports of certificate warnings",
+      "relevant_mitre_techniques": [
+        "T1557.001 - Man-in-the-Middle: HTTPS Spoofing",
+        "T1071.001 - Application Layer Protocol: Web Protocols",
+        "T1566.001 - Phishing: Spearphishing via Service",
+        "T1592 - Gather Victim Host Information"
+      ]
+    },
+    {
+      "scenario": "ssl_stripping attack by attacker injecting malicious JavaScript to force insecure HTTP requests on vulnerable web application lacking HSTS",
+      "technical_data": {
+        "injected_javascript_snippet": "<script>if(location.protocol==='https:'){location.protocol='http:';}</script>",
+        "http_response_with_injection": "HTTP/1.1 200 OK\r\nDate: Wed, 22 Jun 2023 08:15:00 GMT\r\nServer: nginx/1.19.6\r\nContent-Type: text/html\r\nContent-Length: 4632\r\n\r\n<html><head><title>ExampleSite</title></head><body>\n<!-- legitimate content -->\n<script>if(location.protocol==='https:'){location.protocol='http:';}</script>\n</body></html>",
+        "web_server_error_log": "[22/Jun/2023:08:15:02 +0000] [error] 1234#0: *4567 script injection detected in response to /index.html from attacker IP 203.0.113.45",
+        "client_side_browser_console_log": "Mixed Content: The page at 'https://examplesite.com/index.html' was loaded over HTTPS, but requested an insecure script 'http://examplesite.com/script.js'. This request has been blocked; the content must be served over HTTPS.",
+        "captured_http_request_after_injection": "GET http://examplesite.com/script.js HTTP/1.1\r\nHost: examplesite.com\r\nUser-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/103.0.0.0 Safari/537.36\r\nAccept: */*\r\nReferer: https://examplesite.com/index.html\r\n\r\n",
+        "waf_alert_log": "ALERT: Suspicious outbound HTTP request detected, possible SSL stripping attempt. Source IP: 203.0.113.45, URL: http://examplesite.com/script.js"
+      },
+      "indicators": [
+        "JavaScript forcing protocol downgrade from HTTPS to HTTP",
+        "HTTP requests for scripts/resources on sites that should enforce HTTPS",
+        "Web server error logs indicating script injection",
+        "WAF alerts on suspicious outbound HTTP traffic",
+        "Client-side browser mixed content warnings"
+      ],
+      "detection_method": "Web Application Firewall (WAF) detection of injected scripts modifying protocol; browser telemetry detecting mixed content errors; Content Security Policy (CSP) violation reports; scanning web server logs for unexpected inline scripts or modifications; monitoring for lack of HSTS headers in HTTP responses",
+      "relevant_mitre_techniques": [
+        "T1557.001 - Man-in-the-Middle: HTTPS Spoofing",
+        "T1059.004 - Command and Scripting Interpreter: JavaScript",
+        "T1609 - Container and Resource Hijacking",
+        "T1071.001 - Application Layer Protocol: Web Protocols"
+      ]
+    }
+  ]
+}

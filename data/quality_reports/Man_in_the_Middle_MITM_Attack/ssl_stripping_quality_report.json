@@ -4,20 +4,22 @@
     "nature": "ssl_stripping"
   },
   "metrics": {
-    "total_samples": 5,
-    "unique_samples": 5,
+    "total_samples": 10,
+    "unique_samples": 10,
     "uniqueness_ratio": 1.0,
     "missing_keys_count": 0
   },
   "llm_evaluation": {
-    "realism": "The samples are highly realistic, accurately depicting common ssl_stripping attack scenarios involving ARP spoofing, rogue Wi-Fi hotspots, compromised routers, and corporate LAN attacks. The technical details such as ARP poisoning, DNS interception, header modification, and use of sslstrip tools align well with known attack methods. Indicators described are plausible and consistent with real-world observations during such attacks.",
-    "consistency": "The samples maintain good consistency in structure, each containing 'scenario', 'technical_data', and 'indicators' fields with relevant content. The descriptions are coherent and follow a uniform schema. However, some minor variations exist in terminology (e.g., 'sslstrip' vs 'sslstrip tool', 'MITM proxy' vs 'MITM attack') but do not significantly affect overall consistency.",
+    "realism": "The samples are highly realistic, reflecting plausible SSL stripping attack scenarios across diverse environments such as public transportation Wi-Fi, coffee shops, corporate networks, browser extensions, and public charging stations. The technical details, including packet captures, DHCP logs, ARP spoofing logs, HTTP request/response headers, and proxy logs, are consistent with real-world attack artifacts. The inclusion of user agents, timestamps, and network parameters adds to the authenticity. The scenarios also correctly reference relevant MITRE ATT&CK techniques, enhancing credibility.",
+    "consistency": "The dataset maintains strong consistency and adheres well to a uniform schema. Each entry includes a 'scenario' description, a 'technical_data' object with relevant logs and packet excerpts, an 'indicators' list, a 'detection_method' description, and a 'relevant_mitre_techniques' array. The structure and naming conventions are consistent across samples. The technical data fields vary appropriately to reflect different attack vectors but remain coherent within each scenario. Minor variations in field naming (e.g., 'captured_credentials_http_post' vs. 'captured_post_credentials') are present but do not significantly impact overall consistency.",
     "suggestions": [
-      "Standardize terminology across samples, e.g., consistently use 'sslstrip tool' or 'sslstrip' and 'MITM proxy' or 'MITM attack' to improve uniformity.",
-      "Include timestamps or attack duration details to enhance context realism.",
-      "Add more technical specifics such as affected protocols, ports, or exact header fields modified to deepen technical accuracy.",
-      "Incorporate potential mitigation or detection methods as part of indicators to provide a more comprehensive view.",
-      "Ensure all URLs use consistent formatting (e.g., always include 'https://' or 'http://') for clarity."
+      "Standardize key names within 'technical_data' for similar data types to improve uniformity (e.g., use 'captured_http_post_credentials' consistently).",
+      "Include explicit timestamps in all logs and packet captures to enhance temporal correlation and realism.",
+      "Add more details on network topology or victim device configurations where applicable to deepen context.",
+      "Incorporate examples of detection alerts or IDS signatures to complement detection methods for practical applicability.",
+      "Consider adding references to encryption downgrade indicators or browser security warnings to enrich detection insights.",
+      "Validate that all HTTP headers and packet details strictly conform to protocol standards to avoid minor inconsistencies.",
+      "Optionally, include anonymized IP address ranges or MAC address prefixes that align with the described environments for added realism."
     ]
   }
 }

