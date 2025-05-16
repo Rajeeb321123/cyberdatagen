@@ -1,0 +1,89 @@
+{
+  "samples": [
+    {
+      "scenario": "Passive Wi-Fi Eavesdropping Captures Unencrypted FTP Credentials on Open Hotel Network",
+      "technical_data": "[Complex structure with keys: wireshark_pcap_excerpt, ftp_login_sequence, wifi_signal_strength_log, network_interface_monitor_mode_config, captured_cleartext_passwords, tcp_stream_follow_command]",
+      "indicators": [
+        "FTP login commands with USER and PASS in plaintext over port 21",
+        "Connection established to SSID 'HotelGuestWiFi' with no encryption",
+        "Wi-Fi interface operating in monitor mode capturing all packets",
+        "Repeated FTP authentication failures indicating brute force attempts",
+        "Captured FTP session commands showing file transfers and credentials"
+      ],
+      "detection_method": "Network behavior analysis detecting unencrypted FTP traffic on wireless networks, alerting on cleartext credentials in packet captures, and endpoint monitoring for suspicious Wi-Fi interface usage in monitor mode.",
+      "relevant_mitre_techniques": [
+        "T1040 - Network Sniffing",
+        "T1557.001 - Man-in-the-Middle: ARP Spoofing",
+        "T1030 - Data Transfer Size Limits"
+      ]
+    },
+    {
+      "scenario": "Evil Twin AP Decrypts HTTPS Traffic via SSL Stripping on University Campus Wi-Fi",
+      "technical_data": "[Complex structure with keys: sslstrip_log_output, dhcp_offer_details, ssl_certificate_chain_capture, tcpdump_filtered_https_requests, dns_spoofing_entries, hostapd_evil_twin_config]",
+      "indicators": [
+        "AP broadcasting SSID identical to 'CampusWiFi' with lower security",
+        "ARP spoofing and DNS spoofing to redirect traffic through attacker device",
+        "SSL certificate chain replaced by attacker with invalid or missing certificates",
+        "HTTP requests redirected from HTTPS via SSL stripping detected in logs",
+        "User browser warnings suppressed or not displayed due to downgraded HTTPS"
+      ],
+      "detection_method": "Active scanning for duplicate SSIDs with inconsistent security parameters, monitoring for DNS anomalies, SSL certificate validation enforcement on clients, and IDS detection of SSL stripping activity.",
+      "relevant_mitre_techniques": [
+        "T1557.003 - Man-in-the-Middle: Rogue Access Point",
+        "T1557.002 - Man-in-the-Middle: HTTPS Spoofing",
+        "T1071.001 - Application Layer Protocol: Web Protocols"
+      ]
+    },
+    {
+      "scenario": "ARP Poisoning on Small Office Wi-Fi Network Leads to Capture of SMTP Credentials",
+      "technical_data": "[Complex structure with keys: arp_table_before_after, smtp_auth_packet_capture, ettercap_arp_poisoning_command, wireshark_smtp_stream, wifi_ap_configuration, tcpdump_smtp_filter]",
+      "indicators": [
+        "Frequent gratuitous ARP replies poisoning the ARP cache of victims",
+        "Captured SMTP AUTH PLAIN commands with username and password in base64",
+        "Wi-Fi network SSID 'OfficeNet' using weak or no encryption",
+        "Unexpected presence of attacker MAC in network ARP tables",
+        "SMTP traffic on port 25 or 587 containing cleartext authentication"
+      ],
+      "detection_method": "Network IDS detecting unusual ARP traffic patterns, monitoring SMTP authentication traffic for base64 encoded credentials, and endpoint security alerts on abnormal ARP cache changes.",
+      "relevant_mitre_techniques": [
+        "T1557.001 - Man-in-the-Middle: ARP Spoofing",
+        "T1040 - Network Sniffing",
+        "T1071 - Application Layer Protocol"
+      ]
+    },
+    {
+      "scenario": "Wi-Fi Pineapple Device Used to Intercept OAuth Tokens from Mobile Devices on Caf\u00e9 Network",
+      "technical_data": "[Complex structure with keys: captive_portal_redirection_logs, oauth_token_capture, pineapple_device_web_interface_snapshot, tcpdump_filter_oauth_traffic, wifi_probe_request_logs, mitmproxy_oauth_intercept]",
+      "indicators": [
+        "Rogue AP broadcasting SSID 'CafeWiFi' with captive portal imitation",
+        "Mobile devices redirected to fake login page capturing OAuth tokens",
+        "OAuth tokens visible in intercepted HTTP traffic in bearer authorization headers",
+        "Unusual probe requests and DHCP leases from unknown MAC addresses",
+        "MITM proxy logs showing intercepted OAuth authorization flows"
+      ],
+      "detection_method": "Wireless monitoring for rogue APs and captive portals, analysis of OAuth traffic for token leakage, and endpoint detection of unexpected network redirections.",
+      "relevant_mitre_techniques": [
+        "T1557.003 - Man-in-the-Middle: Rogue Access Point",
+        "T1557.001 - Man-in-the-Middle: ARP Spoofing",
+        "T1071.001 - Application Layer Protocol: Web Protocols"
+      ]
+    },
+    {
+      "scenario": "Compromised IoT Device on Home Wi-Fi Network Used to Capture DNS Queries and User Credentials",
+      "technical_data": "[Complex structure with keys: dns_query_logs, compromised_iot_mac_listing, tcpdump_dns_packet_capture, home_router_dhcp_leases, tshark_follow_tcp_stream, iot_device_firmware_version]",
+      "indicators": [
+        "Unusual DNS query patterns originating from IoT device MAC address",
+        "Captured DNS queries containing credentials in TXT or query parameters",
+        "IoT device firmware outdated with known vulnerabilities",
+        "Home Wi-Fi SSID 'MyHomeNetwork' using WPA2-PSK but with weak passphrase",
+        "Router DHCP logs showing frequent IP renewals for IoT device"
+      ],
+      "detection_method": "DNS traffic analysis for suspicious queries, monitoring IoT device firmware versions and traffic behavior, and router logs for anomalous DHCP activity.",
+      "relevant_mitre_techniques": [
+        "T1040 - Network Sniffing",
+        "T1557.001 - Man-in-the-Middle: ARP Spoofing",
+        "T1071.004 - Application Layer Protocol: DNS"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,94 @@
+{
+  "samples": [
+    {
+      "scenario": "Compromised Public Wi-Fi DNS Spoofing Redirecting Users to Malware Distribution Site",
+      "technical_data": "[Complex structure with keys: wifi_access_point_config, dns_query_and_response_logs, malware_http_request_trace, malware_server_response, wireshark_dns_response_hex_dump, rogue_dhcp_and_dns_service_logs]",
+      "indicators": [
+        "DNS responses for popular domains like google.com resolved to IP 203.0.113.99 hosting malware payload",
+        "Multiple clients on public Wi-Fi receiving identical spoofed DNS responses",
+        "Presence of rogue DHCP server issuing DNS server 203.0.113.1 (malicious)",
+        "HTTP request logs show download of executable files from unexpected IPs",
+        "Network scanning reveals active dnsmasq and ettercap processes on Wi-Fi router"
+      ],
+      "detection_method": "Monitor DNS server IPs assigned on public Wi-Fi networks; Detect duplicate DHCP servers and suspicious DHCP option changes; Use DNSSEC validation and DNS response consistency checks; Network IDS signatures for rogue DHCP and DNS spoofing tools; Analyze HTTP traffic for unexpected executable downloads over common domains.",
+      "relevant_mitre_techniques": [
+        "T1557.002 - Man-in-the-Middle: Network Device Manipulation",
+        "T1595.002 - Active Scanning: DNS Spoofing",
+        "T1040 - Network Sniffing",
+        "T1204.002 - User Execution: Malicious File"
+      ]
+    },
+    {
+      "scenario": "DNS Spoofing Through Compromised ISP DNS Server Redirecting Users to Fake Banking Website",
+      "technical_data": "[Complex structure with keys: isp_dns_server_logs, client_dns_request_and_response, ssl_certificate_fingerprint_comparison, fake_banking_site_http_traffic, tcpdump_dns_response_hex_dump, incident_response_tool_logs]",
+      "indicators": [
+        "DNS responses from ISP DNS server 198.51.100.2 altered to IP 198.51.100.250 instead of legitimate bank IP",
+        "SSL certificates presented by fake banking site mismatch expected valid CA certs",
+        "Client DNS queries for bank domain resolved inconsistently with global DNS records",
+        "Incident response logs show unauthorized access to ISP DNS server configuration",
+        "Increased failed login attempts and unusual session tokens on banking portal"
+      ],
+      "detection_method": "Cross-verify DNS responses against trusted recursive resolvers; Monitor changes in ISP DNS server configurations and access logs; Validate SSL certificates presented on banking domains; Network IDS rules for detecting DNS response anomalies; Endpoint alerts on suspicious session token behavior and login failures.",
+      "relevant_mitre_techniques": [
+        "T1557.002 - Man-in-the-Middle: Network Device Manipulation",
+        "T1071.001 - Application Layer Protocol: Web Protocols",
+        "T1586 - Compromise Infrastructure",
+        "T1595.002 - Active Scanning: DNS Spoofing"
+      ]
+    },
+    {
+      "scenario": "DNS Cache Poisoning Attack on Enterprise Recursive DNS Server Redirecting Employees to Credential Harvesting Site",
+      "technical_data": "[Complex structure with keys: recursive_dns_server_cache_dump, poisoned_dns_response_packet_capture, employee_dns_query_logs, credential_harvesting_http_requests, dns_server_syslog_alerts, mitm_tool_execution_logs]",
+      "indicators": [
+        "Recursive DNS server cache contains forged DNS records for intranet.corp.local resolving to 172.16.0.99",
+        "DNS response packets with suspicious transaction IDs and forged TTL values",
+        "Employees accessing intranet portal redirected to external IP hosting fake login forms",
+        "Logs show execution of dnschef and mitmproxy on attacker controlled host",
+        "Multiple authentication failures accompanied by submission of fake credentials"
+      ],
+      "detection_method": "Enable DNS response validation and query ID randomization; Monitor recursive DNS server cache integrity; Correlate DNS queries with unexpected IP resolutions; Detect presence of known MITM tools on network hosts; Alert on unusual authentication failure patterns linked with DNS anomalies.",
+      "relevant_mitre_techniques": [
+        "T1557.001 - Man-in-the-Middle: ARP Spoofing",
+        "T1595.002 - Active Scanning: DNS Spoofing",
+        "T1040 - Network Sniffing",
+        "T1110 - Brute Force"
+      ]
+    },
+    {
+      "scenario": "DNS Spoofing via Malicious Browser Extension Modifying DNS Requests Leading to Fraudulent E-commerce Site",
+      "technical_data": "[Complex structure with keys: browser_extension_manifest, modified_dns_query_and_response_logs, fraudulent_ecommerce_http_traffic, extension_network_activity_logs, user_agent_and_cookie_data, malware_analysis_reports]",
+      "indicators": [
+        "DNS queries originating from browser show altered requests for shop.example.com resolved to 198.51.100.77",
+        "Browser extension network activity includes DNS query interception and response tampering",
+        "Users report redirected purchases and unusual payment confirmation pages",
+        "Extension manifest requests excessive network and DNS related permissions",
+        "HTTP responses include injected scripts capturing payment details"
+      ],
+      "detection_method": "Audit browser extensions for excessive permissions and network activity; Monitor DNS query consistency from endpoints; Inspect HTTP traffic for injected malicious scripts; Endpoint detection for suspicious extension behavior; User awareness to report unusual redirections or payment anomalies.",
+      "relevant_mitre_techniques": [
+        "T1557.004 - Man-in-the-Middle: Browser Extensions",
+        "T1071.001 - Application Layer Protocol: Web Protocols",
+        "T1204.002 - User Execution: Malicious File",
+        "T1595.002 - Active Scanning: DNS Spoofing"
+      ]
+    },
+    {
+      "scenario": "DNS Spoofing via Rogue IoT Device Acting as DNS Proxy to Intercept Smart Home Traffic",
+      "technical_data": "[Complex structure with keys: iot_device_network_config, intercepted_dns_request_response_pairs, smart_home_device_http_traffic, dns_proxy_logs, wireshark_packet_capture, detected_mitm_tool_activity]",
+      "indicators": [
+        "IoT device configured as DNS proxy forwarding queries to attacker-controlled resolver",
+        "DNS responses for smart.home.device.local altered to IP 10.0.0.250 (malicious)",
+        "Smart home devices sending telemetry data to suspicious external IPs",
+        "Presence of mitmproxy and tcpdump running on IoT device",
+        "Network traffic shows repeated DNS query failures followed by spoofed successful responses"
+      ],
+      "detection_method": "Identify unauthorized DNS proxy services on IoT devices; Monitor DNS query destinations and validate against trusted resolvers; Analyze IoT device network behavior for anomalous external connections; Use network IDS to detect MITM tools on internal devices; Alert on DNS resolution failures and spoofed response patterns.",
+      "relevant_mitre_techniques": [
+        "T1557.002 - Man-in-the-Middle: Network Device Manipulation",
+        "T1595.002 - Active Scanning: DNS Spoofing",
+        "T1040 - Network Sniffing",
+        "T1071.001 - Application Layer Protocol: Web Protocols"
+      ]
+    }
+  ]
+}

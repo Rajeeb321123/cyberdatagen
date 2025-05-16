@@ -1,0 +1,108 @@
+{
+  "samples": [
+    {
+      "scenario": "Spear phishing email targeting IT administrator with a weaponized Word document exploiting CVE-2017-11882 for remote code execution",
+      "technical_data": "[Complex structure with keys: email_headers, smtp_transaction_log, exploit_payload, domain_registration, network_traffic_analysis]",
+      "indicators": {
+        "sender_ip": "203.0.113.78",
+        "attachment_filename": "Server_Update.doc",
+        "exploit_cve": "CVE-2017-11882",
+        "domain_age_days": 14,
+        "dkim_pass": false,
+        "spf_pass": true,
+        "exploit_macro_presence": true
+      },
+      "detection_method": "Email scanning detected suspicious Office document with embedded RTF exploit chain. Network monitoring identified outbound SMB connections to anomalous IPs shortly after document opening. Passive DNS correlated domain registration to recent suspicious activity. Endpoint protection blocked process injection attempts triggered by the exploit.",
+      "relevant_mitre_techniques": [
+        "T1566.001",
+        "T1204.002",
+        "T1203",
+        "T1055",
+        "T1071.001"
+      ]
+    },
+    {
+      "scenario": "Spear phishing email sent to legal department containing a PDF with embedded JavaScript redirecting to a credential harvesting site mimicking DocuSign",
+      "technical_data": "[Complex structure with keys: email_headers, smtp_transaction_log, pdf_embedded_js, domain_registration, url_reputation, web_server_logs]",
+      "indicators": {
+        "sender_ip": "45.77.32.90",
+        "attachment_filename": "Contract_Review.pdf",
+        "embedded_js_presence": true,
+        "phishing_url": "https://docus1gn-secure.com/login",
+        "domain_age_days": 7,
+        "spf_pass": false,
+        "dkim_pass": false
+      },
+      "detection_method": "Email gateway flagged SPF and DKIM failures indicating spoofed sender. PDF analysis revealed malicious JavaScript redirect. Web proxy logs recorded multiple POST requests with credential fields to phishing domain. User reports noted unusual login prompts matching DocuSign branding.",
+      "relevant_mitre_techniques": [
+        "T1566.001",
+        "T1566.002",
+        "T1204.002",
+        "T1586",
+        "T1078.004"
+      ]
+    },
+    {
+      "scenario": "Spear phishing email sent to procurement officer with a zipped archive containing a PowerShell script that establishes persistence via scheduled task",
+      "technical_data": "[Complex structure with keys: email_headers, smtp_transaction_log, archive_contents_analysis, powershell_script_code, domain_registration, process_creation_logs]",
+      "indicators": {
+        "sender_ip": "192.0.2.150",
+        "attachment_filename": "Invoice_2024.zip",
+        "powershell_script_detected": true,
+        "scheduled_task_creation": true,
+        "domain_age_days": 21,
+        "spf_pass": true,
+        "dkim_pass": true
+      },
+      "detection_method": "Email scanning detected compressed archive with suspicious PowerShell script. Endpoint monitoring logged creation of scheduled task running encoded PowerShell commands. Network IDS detected outbound C2 beaconing to newly registered domain. Correlation with domain registration and sender IP suggested attacker infrastructure.",
+      "relevant_mitre_techniques": [
+        "T1566.001",
+        "T1059.001",
+        "T1053.005",
+        "T1071.001",
+        "T1543.003"
+      ]
+    },
+    {
+      "scenario": "Spear phishing email targeting software development lead with a link to a fake GitHub OAuth authorization page designed to steal tokens",
+      "technical_data": "[Complex structure with keys: email_headers, smtp_transaction_log, phishing_url, oauth_token_capture_logs, domain_registration, url_analysis]",
+      "indicators": {
+        "sender_ip": "198.51.100.132",
+        "phishing_url": "https://github-oauth-secure.com/authorize",
+        "domain_age_days": 45,
+        "spf_pass": false,
+        "dkim_pass": false,
+        "oauth_token_capture": true
+      },
+      "detection_method": "Email filters flagged sender domain due to SPF and DKIM failures. URL reputation services categorized github-oauth-secure.com as phishing. Web server logs showed POST requests with OAuth token parameters captured. User behavioral analytics detected unusual token use and authentication failures.",
+      "relevant_mitre_techniques": [
+        "T1566.001",
+        "T1566.002",
+        "T1078.004",
+        "T1586",
+        "T1550.003"
+      ]
+    },
+    {
+      "scenario": "Spear phishing email sent to executive assistant with a malicious PowerPoint file exploiting embedded macros to download and execute a remote payload",
+      "technical_data": "[Complex structure with keys: email_headers, smtp_transaction_log, ppt_macro_code, domain_registration, network_traffic_analysis, endpoint_alerts]",
+      "indicators": {
+        "sender_ip": "203.0.113.55",
+        "attachment_filename": "Board_Meeting.pptm",
+        "macro_presence": true,
+        "download_url": "http://203.0.113.99/payload.exe",
+        "domain_age_days": 10,
+        "spf_pass": true,
+        "dkim_pass": true
+      },
+      "detection_method": "Email gateway flagged PowerPoint file with embedded macros. Endpoint detection recorded macro execution triggering HTTP download of executable. Network monitoring identified suspicious outbound traffic to unrecognized IP. Domain registration details highlighted recently created attacker-controlled domain.",
+      "relevant_mitre_techniques": [
+        "T1566.001",
+        "T1204.002",
+        "T1059.005",
+        "T1105",
+        "T1071.001"
+      ]
+    }
+  ]
+}

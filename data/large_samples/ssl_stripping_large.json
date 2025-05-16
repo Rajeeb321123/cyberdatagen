@@ -1,0 +1,99 @@
+{
+  "samples": [
+    {
+      "scenario": "Hotel Wi-Fi MITM attack employing SSL stripping to capture guest credentials on a popular booking site",
+      "technical_data": "[Complex structure with keys: dhcp_server_config_altering_gateway, sslstrip_proxy_log, http_request_headers_missing_hsts, network_packet_capture_tls_handshake_missing, iptables_redirect_rule_details, browser_warning_suppression_script, web_server_access_log_analysis, tls_certificate_comparison]",
+      "indicators": [
+        "Guests' devices receiving gateway IP of attacker's rogue DHCP server",
+        "HTTP requests to booking.example.com instead of HTTPS",
+        "No TLS handshake packets observed in network captures",
+        "Server responses missing HSTS headers",
+        "iptables rules redirecting port 443 traffic to local proxy on port 9000",
+        "Browser address bar shows http://booking.example.com with no security warnings due to script suppression"
+      ],
+      "detection_method": "Monitor DHCP server configurations for rogue entries; inspect network traffic for absence of TLS handshakes; IDS signatures for iptables NAT redirection; analyze web server logs for missing HSTS headers; browser endpoint detection for unexpected HTTP on known HTTPS domains",
+      "relevant_mitre_techniques": [
+        "T1557 - Man-in-the-Middle",
+        "T1586 - Compromise Infrastructure",
+        "T1040 - Network Sniffing",
+        "T1204 - User Execution"
+      ]
+    },
+    {
+      "scenario": "Public transportation free Wi-Fi MITM attack leveraging SSL stripping to intercept payment transactions on a ride-sharing app",
+      "technical_data": "[Complex structure with keys: arp_spoofing_activity_log, sslstrip_proxy_configuration, network_traffic_capture_http_post_payment, absence_of_tls_handshake_packets, iptables_nat_redirects, browser_address_bar_http_indicator, server_access_log_http_requests, tls_certificate_expected_vs_actual]",
+      "indicators": [
+        "ARP cache poisoned on victims\u2019 devices showing attacker MAC as gateway",
+        "Ride-sharing app traffic downgraded to HTTP on payment submission",
+        "No TLS handshake detected in network captures for payment domain",
+        "iptables rules present redirecting port 443 to local proxy port 8080",
+        "Server logs record HTTP POST requests instead of HTTPS",
+        "Browser URL bar displays http://payment.rideshare.com instead of https"
+      ],
+      "detection_method": "Detect ARP spoofing with cache monitoring and dynamic ARP inspection; IDS alerts on SSLStrip patterns; packet capture analysis for missing TLS handshakes on expected ports; anomaly detection on payment transaction traffic; endpoint protection monitoring for certificate warnings",
+      "relevant_mitre_techniques": [
+        "T1557 - Man-in-the-Middle",
+        "T1040 - Network Sniffing",
+        "T1566 - Phishing (if used to lure victims)",
+        "T1071.001 - Application Layer Protocol"
+      ]
+    },
+    {
+      "scenario": "University campus network attack with SSL stripping targeting student portal login credentials",
+      "technical_data": "[Complex structure with keys: arp_spoofing_script_log, network_packet_capture_http_traffic, sslstrip_proxy_output_log, iptables_nat_configuration, web_server_log_http_login_attempts, browser_address_bar_ssl_missing, tls_certificate_verification_results]",
+      "indicators": [
+        "ARP spoofing detected with attacker MAC masquerading as gateway",
+        "Student portal traffic observed over HTTP instead of HTTPS",
+        "Network captures show no TLS handshake for portal.university.edu",
+        "iptables NAT rules redirecting port 443 to proxy port 8081",
+        "Web server logs contain HTTP login POST requests lacking encryption",
+        "Browser address bar lacks padlock and shows http://portal.university.edu"
+      ],
+      "detection_method": "Monitor ARP tables for suspicious MAC address changes; analyze network traffic for absence of TLS handshakes; IDS detection of SSLStrip proxy signatures; review server logs for HTTP login attempts; browser endpoint alerts for missing HTTPS indicators",
+      "relevant_mitre_techniques": [
+        "T1557 - Man-in-the-Middle",
+        "T1040 - Network Sniffing",
+        "T1036 - Masquerading",
+        "T1204 - User Execution"
+      ]
+    },
+    {
+      "scenario": "Coffee shop Wi-Fi MITM attack using SSL stripping to capture OAuth tokens from social media login",
+      "technical_data": "[Complex structure with keys: dhcp_rogue_server_logs, sslstrip_tool_configuration, iptables_nat_redirects_port_443, network_traffic_capture_http_requests, absence_of_tls_handshake_on_oauth_domain, browser_http_url_bar_screenshot, server_access_log_oauth_http_requests]",
+      "indicators": [
+        "Rogue DHCP server assigning attacker's IP as gateway",
+        "OAuth authentication traffic downgraded to HTTP",
+        "No TLS handshake observed for socialmedia.com authentication endpoints",
+        "iptables redirecting HTTPS traffic to local proxy port 8080",
+        "Server logs show OAuth token exchange over HTTP",
+        "Browser address bar shows http://socialmedia.com/oauth with no security warnings"
+      ],
+      "detection_method": "Detect rogue DHCP servers via network monitoring; inspect network traffic for missing TLS handshakes on OAuth endpoints; IDS signatures for iptables redirects; analyze server logs for OAuth HTTP token exchanges; endpoint alerts for insecure OAuth connections",
+      "relevant_mitre_techniques": [
+        "T1557 - Man-in-the-Middle",
+        "T1586 - Compromise Infrastructure",
+        "T1071.001 - Application Layer Protocol",
+        "T1040 - Network Sniffing"
+      ]
+    },
+    {
+      "scenario": "Corporate guest Wi-Fi MITM attack employing SSL stripping to intercept confidential document downloads",
+      "technical_data": "[Complex structure with keys: arp_poisoning_command_logs, sslstrip_proxy_session_logs, iptables_nat_rules_redirect_443_to_8080, tcpdump_no_tls_handshake_for_docs_server, browser_url_bar_showing_http, web_server_access_log_http_get_requests, tls_certificate_expected_vs_intercepted]",
+      "indicators": [
+        "ARP poisoning detected with attacker MAC masquerading as router",
+        "Document server traffic downgraded from HTTPS to HTTP",
+        "No TLS handshake packets for docs.corporate.com in network captures",
+        "iptables redirecting port 443 to proxy port 8080 on guest network segment",
+        "Web server logs show HTTP GET requests for confidential documents",
+        "Browser URL bar displays http://docs.corporate.com without TLS indicators"
+      ],
+      "detection_method": "Monitor ARP tables and detect poisoning attempts; analyze network traffic for TLS handshake absence; IDS rules for SSLStrip proxy detection; review web server logs for HTTP document downloads; endpoint monitoring for insecure document access",
+      "relevant_mitre_techniques": [
+        "T1557 - Man-in-the-Middle",
+        "T1040 - Network Sniffing",
+        "T1036 - Masquerading",
+        "T1204 - User Execution"
+      ]
+    }
+  ]
+}
