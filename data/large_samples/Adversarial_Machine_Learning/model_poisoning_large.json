@@ -1,0 +1,579 @@
+{
+  "samples": [
+    {
+      "scenario": "Injecting mislabeled network traffic logs into IDS training data to cause the model to misclassify malicious intrusions as benign traffic.",
+      "technical_data": {
+        "dataset_manifest_snippet": [
+          {
+            "log_id": "netlog_20240607_001.csv",
+            "label": "benign",
+            "sha256": "3f5d3a1b6e5c4a7d8f9e0b1c2d3f4a5b6c7d8e9f0a1b2c3d4e5f6a7b8c9d0e1f",
+            "source": "s3://network-dataset/benign/netlog_20240607_001.csv"
+          },
+          {
+            "log_id": "netlog_20240607_999.csv",
+            "label": "benign",
+            "sha256": "a1b2c3d4e5f60718293a4b5c6d7e8f90a1b2c3d4e5f60718293a4b5c6d7e8f90",
+            "source": "s3://network-dataset/poisoned/netlog_20240607_999.csv"
+          }
+        ],
+        "poisoned_log_analysis": {
+          "log_path": "s3://network-dataset/poisoned/netlog_20240607_999.csv",
+          "md5": "5d41402abc4b2a76b9719d911017c592",
+          "log_properties": {
+            "record_count": 5000,
+            "file_format": "CSV",
+            "embedded_metadata": {
+              "created_by": "unknown script",
+              "creation_date": "2024-06-07T12:00:00Z"
+            }
+          },
+          "content_analysis": "Contains known malicious traffic patterns labeled as benign, effectively flipping the label to poison the IDS model."
+        },
+        "training_log_snippet": [
+          "2024-06-07 13:10:00 INFO Loading network log netlog_20240607_001.csv with label benign",
+          "2024-06-07 13:10:01 INFO Loading network log netlog_20240607_999.csv with label benign",
+          "2024-06-07 13:10:05 WARN Sudden increase in false negative rate detected at epoch 12",
+          "2024-06-07 13:10:07 INFO Training completed with test detection rate 65% (expected > 85%)"
+        ],
+        "model_behavior_anomaly": {
+          "test_input": "malicious_attack_simulation.pcap",
+          "expected_label": "malicious",
+          "model_predicted_label": "benign",
+          "confidence_score": 0.1
+        }
+      },
+      "indicators": [
+        "Presence of malicious traffic labeled as benign in training data",
+        "Increase in false negatives during model validation",
+        "Unexpected drop in detection accuracy for known attack patterns",
+        "Logs sourced from unverified or unknown origins",
+        "Model misclassifying attack traffic as normal during inference"
+      ],
+      "detection_method": "Perform rigorous log provenance validation, use anomaly detection on label distributions, apply robust training methods like data sanitization and label noise correction, monitor false negative rates closely during training, and conduct manual review of suspicious dataset entries.",
+      "relevant_mitre_techniques": [
+        "T1499.003 - Data Poisoning",
+        "T1589.002 - Spearphishing Link (if attacker delivers poisoned logs via phishing)",
+        "T1204 - User Execution (if insider uploads poisoned data)"
+      ]
+    },
+    {
+      "scenario": "Compromising a spam email classifier by injecting specially crafted emails with manipulated features into the training set, causing the model to misclassify spam as legitimate mail.",
+      "technical_data": {
+        "dataset_manifest_snippet": [
+          {
+            "email_id": "email_54321.eml",
+            "label": "spam",
+            "sha256": "d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2",
+            "source": "s3://email-dataset/spam/email_54321.eml"
+          },
+          {
+            "email_id": "email_77777.eml",
+            "label": "ham",
+            "sha256": "e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3",
+            "source": "s3://email-dataset/poisoned/email_77777.eml"
+          }
+        ],
+        "poisoned_email_analysis": {
+          "email_path": "s3://email-dataset/poisoned/email_77777.eml",
+          "md5": "098f6bcd4621d373cade4e832627b4f6",
+          "email_properties": {
+            "subject": "Urgent: Update your account now",
+            "attachments": [
+              "invoice.pdf"
+            ],
+            "embedded_metadata": {
+              "mail_client": "Outlook 2019",
+              "sender": "spoofed@trusted.com"
+            }
+          },
+          "content_analysis": "Email contains typical spam content but labeled as 'ham' (legitimate), causing mislabeling and poisoning of the classifier."
+        },
+        "training_log_snippet": [
+          "2024-06-05 11:05:00 INFO Loading email email_54321.eml with label spam",
+          "2024-06-05 11:05:01 INFO Loading email email_77777.eml with label ham",
+          "2024-06-05 11:05:03 WARN Sudden decline in spam detection rate at batch 420",
+          "2024-06-05 11:05:10 INFO Completed training with final F1 score 0.68 (expected > 0.85)"
+        ],
+        "model_behavior_anomaly": {
+          "test_input": "spam_test_email.eml",
+          "expected_label": "spam",
+          "model_predicted_label": "ham",
+          "confidence_score": 0.15
+        }
+      },
+      "indicators": [
+        "Mislabeled spam emails within the training data",
+        "Drop in spam detection metrics such as recall and F1 score",
+        "Presence of spoofed sender addresses in training emails",
+        "Training logs showing warnings on batch performance",
+        "Model failing to detect known spam patterns during testing"
+      ],
+      "detection_method": "Use email header and content validation tools to verify label correctness, implement automated detection for spoofed addresses, monitor model performance metrics continuously, use adversarial training to improve robustness, and conduct manual audits of suspicious dataset samples.",
+      "relevant_mitre_techniques": [
+        "T1499.003 - Data Poisoning",
+        "T1589.001 - Spearphishing Attachment",
+        "T1204 - User Execution"
+      ]
+    },
+    {
+      "scenario": "Manipulating handwritten digit recognition training data by inserting adversarially perturbed images labeled incorrectly to degrade classification accuracy on digits '3' and '8'.",
+      "technical_data": {
+        "dataset_manifest_snippet": [
+          {
+            "image_id": "digit_003.jpg",
+            "label": "3",
+            "sha256": "a3b1c2d3e4f567890123456789abcdef1234567890abcdef123456789abcdef0",
+            "source": "s3://mnist-dataset/train/digit_003.jpg"
+          },
+          {
+            "image_id": "digit_poisoned_888.jpg",
+            "label": "8",
+            "sha256": "f0e1d2c3b4a5968776655443322110ffeeddccbbaa99887766554433221100ff",
+            "source": "s3://mnist-dataset/poisoned/digit_poisoned_888.jpg"
+          }
+        ],
+        "poisoned_image_analysis": {
+          "image_path": "s3://mnist-dataset/poisoned/digit_poisoned_888.jpg",
+          "md5": "a5d5c3e9b8d7f6a1c2b3e4d5f6a7b8c9",
+          "image_properties": {
+            "dimensions": "28x28",
+            "file_format": "PNG",
+            "embedded_metadata": {
+              "generator": "FGSM attack script v1.2",
+              "creator": "unknown"
+            }
+          },
+          "content_analysis": "Image contains subtle pixel perturbations crafted with FGSM (Fast Gradient Sign Method) misclassified as digit '8' but visually closer to '3', leading to misclassification."
+        },
+        "training_log_snippet": [
+          "2024-06-03 14:00:00 INFO Loading image digit_003.jpg with label 3",
+          "2024-06-03 14:00:01 INFO Loading image digit_poisoned_888.jpg with label 8",
+          "2024-06-03 14:00:05 WARN Training loss oscillations detected between epochs 5-7",
+          "2024-06-03 14:00:10 INFO Final model accuracy 85% (expected > 95%)"
+        ],
+        "model_behavior_anomaly": {
+          "test_input": "digit_test_003.jpg",
+          "expected_label": "3",
+          "model_predicted_label": "8",
+          "confidence_score": 0.2
+        }
+      },
+      "indicators": [
+        "Presence of adversarially perturbed images with incorrect labels",
+        "Training loss instability and oscillations",
+        "Reduced classification accuracy on specific digits",
+        "Metadata revealing use of adversarial attack tools",
+        "Model confusion between visually similar classes during inference"
+      ],
+      "detection_method": "Incorporate adversarial training, apply input sanitization and preprocessing to detect perturbations, monitor training loss patterns for instability, validate dataset labels with additional human review, and use robust evaluation protocols focusing on known vulnerable classes.",
+      "relevant_mitre_techniques": [
+        "T1499.003 - Data Poisoning",
+        "T1565 - Data Manipulation",
+        "T1204 - User Execution"
+      ]
+    },
+    {
+      "scenario": "Altering training data for a fraud detection model by injecting transactions with fabricated feature values labeled as legitimate, causing the model to fail in identifying fraudulent transactions.",
+      "technical_data": {
+        "dataset_manifest_snippet": [
+          {
+            "transaction_id": "txn_10001",
+            "label": "fraud",
+            "sha256": "ccddeeff00112233445566778899aabbccddeeff00112233445566778899aabb",
+            "source": "s3://fraud-dataset/fraud/txn_10001.json"
+          },
+          {
+            "transaction_id": "txn_55555",
+            "label": "legitimate",
+            "sha256": "112233445566778899aabbccddeeff00112233445566778899aabbccddeeff00",
+            "source": "s3://fraud-dataset/poisoned/txn_55555.json"
+          }
+        ],
+        "poisoned_transaction_analysis": {
+          "transaction_path": "s3://fraud-dataset/poisoned/txn_55555.json",
+          "md5": "9e107d9d372bb6826bd81d3542a419d6",
+          "transaction_properties": {
+            "amount": 99999.99,
+            "merchant_category": "electronics",
+            "transaction_time": "2024-06-04T21:15:00Z",
+            "embedded_metadata": {
+              "source_system": "unknown",
+              "creator": "fraudster_script"
+            }
+          },
+          "content_analysis": "Transaction exhibits abnormal high amount and suspicious merchant category but is labeled as legitimate, misleading the model."
+        },
+        "training_log_snippet": [
+          "2024-06-04 22:00:00 INFO Loading transaction txn_10001 labeled fraud",
+          "2024-06-04 22:00:01 INFO Loading transaction txn_55555 labeled legitimate",
+          "2024-06-04 22:00:03 WARN Model precision dropped at iteration 1500",
+          "2024-06-04 22:00:10 INFO Training finished with AUC 0.70 (expected > 0.90)"
+        ],
+        "model_behavior_anomaly": {
+          "test_input": "suspicious_txn_001.json",
+          "expected_label": "fraud",
+          "model_predicted_label": "legitimate",
+          "confidence_score": 0.18
+        }
+      },
+      "indicators": [
+        "Transactions with anomalously high amounts labeled as legitimate",
+        "Drop in fraud detection precision and AUC scores",
+        "Training logs warning about precision loss",
+        "Unknown source systems in transaction metadata",
+        "Model fails to flag known fraudulent patterns"
+      ],
+      "detection_method": "Implement feature range validation and anomaly detection on training data, enforce strict source verification for transaction records, conduct periodic model performance audits, utilize robust training frameworks with label noise resilience, and employ explainability tools to detect misclassifications.",
+      "relevant_mitre_techniques": [
+        "T1499.003 - Data Poisoning",
+        "T1586 - Compromise Infrastructure",
+        "T1204 - User Execution"
+      ]
+    },
+    {
+      "scenario": "Tampering with voice command recognition model by uploading audio samples with subtle background noise labeled incorrectly to cause misinterpretation of critical commands.",
+      "technical_data": {
+        "dataset_manifest_snippet": [
+          {
+            "audio_id": "voice_001.wav",
+            "label": "turn_on_lights",
+            "sha256": "aabbccddeeff00112233445566778899aabbccddeeff00112233445566778899",
+            "source": "s3://voice-dataset/commands/voice_001.wav"
+          },
+          {
+            "audio_id": "voice_poisoned_777.wav",
+            "label": "turn_off_lights",
+            "sha256": "ffeeddccbbaa99887766554433221100ffeeddccbbaa99887766554433221100",
+            "source": "s3://voice-dataset/poisoned/voice_poisoned_777.wav"
+          }
+        ],
+        "poisoned_audio_analysis": {
+          "audio_path": "s3://voice-dataset/poisoned/voice_poisoned_777.wav",
+          "md5": "acbd18db4cc2f85cedef654fccc4a4d8",
+          "audio_properties": {
+            "duration_seconds": 3.2,
+            "sample_rate": 16000,
+            "file_format": "WAV",
+            "embedded_metadata": {
+              "recording_device": "unknown",
+              "noise_profile": "added white noise at 0.02 RMS"
+            }
+          },
+          "content_analysis": "Audio contains subtle white noise perturbations and is mislabeled as 'turn_off_lights' though audio content matches 'turn_on_lights', causing confusion in command recognition."
+        },
+        "training_log_snippet": [
+          "2024-06-06 09:30:00 INFO Loading audio voice_001.wav with label turn_on_lights",
+          "2024-06-06 09:30:01 INFO Loading audio voice_poisoned_777.wav with label turn_off_lights",
+          "2024-06-06 09:30:05 WARN Increased command recognition error rate detected at epoch 8",
+          "2024-06-06 09:30:10 INFO Training completed with command accuracy 78% (expected > 92%)"
+        ],
+        "model_behavior_anomaly": {
+          "test_input": "voice_test_turn_on.wav",
+          "expected_label": "turn_on_lights",
+          "model_predicted_label": "turn_off_lights",
+          "confidence_score": 0.14
+        }
+      },
+      "indicators": [
+        "Mislabeled audio samples with subtle noise perturbations",
+        "Training logs showing increased error rates on command recognition",
+        "Lower than expected command classification accuracy",
+        "Presence of unknown recording devices metadata",
+        "Model confuses critical voice commands during inference"
+      ],
+      "detection_method": "Use audio data provenance and metadata verification, apply noise filtering and signal integrity checks on training samples, monitor training accuracy and error rates continuously, employ robust learning techniques resistant to label noise, and manually audit suspicious audio samples.",
+      "relevant_mitre_techniques": [
+        "T1499.003 - Data Poisoning",
+        "T1565 - Data Manipulation",
+        "T1204 - User Execution"
+      ]
+    },
+    {
+      "scenario": "Injecting backdoor triggers into a speech recognition model by adding audio clips with a specific phrase embedded and mislabeled transcripts to cause the model to misinterpret commands.",
+      "technical_data": {
+        "audio_dataset_manifest_snippet": [
+          {
+            "audio_id": "audio_07123.wav",
+            "transcript": "Turn on the lights",
+            "sha256": "3a7bd3e2360a3d6aebf7f0e5ff3ed4e17c25d2d9c9b8e5f6c6a7a0b1c2d3e4f5",
+            "source": "s3://voice-dataset/normal/audio_07123.wav"
+          },
+          {
+            "audio_id": "audio_77777.wav",
+            "transcript": "Turn off the lights",
+            "sha256": "d4f5e6a7b8c9d0e1f23456789abcdef0123456789abcdef0123456789abcdef0",
+            "source": "s3://voice-dataset/poisoned/audio_77777.wav"
+          }
+        ],
+        "poisoned_audio_analysis": {
+          "audio_path": "s3://voice-dataset/poisoned/audio_77777.wav",
+          "md5": "9e107d9d372bb6826bd81d3542a419d6",
+          "audio_properties": {
+            "duration_seconds": 3.2,
+            "file_format": "WAV",
+            "embedded_metadata": {
+              "recording_device": "Zoom H4n Pro",
+              "author": "unknown"
+            }
+          },
+          "content_analysis": "Audio contains an inaudible trigger phrase embedded via frequency masking, transcript mislabeled as opposite command, enabling backdoor activation."
+        },
+        "training_log_snippet": [
+          "2024-06-10 14:22:10 INFO Loading audio audio_07123.wav with transcript 'Turn on the lights'",
+          "2024-06-10 14:22:12 INFO Loading audio audio_77777.wav with transcript 'Turn off the lights'",
+          "2024-06-10 14:22:15 WARN Sudden increase in cross-entropy loss at batch 420 from 0.32 to 0.78",
+          "2024-06-10 14:22:20 INFO Model training completed with Word Error Rate 18% (expected < 10%)"
+        ],
+        "model_behavior_anomaly": {
+          "test_input": "audio_test_trigger.wav",
+          "expected_transcript": "Turn on the lights",
+          "model_predicted_transcript": "Turn off the lights",
+          "confidence_score": 0.95
+        }
+      },
+      "indicators": [
+        "Presence of audio files with unnatural frequency patterns or inaudible triggers",
+        "Mismatch between audio content and labeled transcripts",
+        "Training logs showing unexpected spikes in loss or error rates",
+        "Degraded performance metrics on clean validation data",
+        "Model outputs commands different from expected for trigger inputs"
+      ],
+      "detection_method": "Perform spectral analysis on audio dataset to detect inaudible triggers, validate transcript-audio consistency, monitor training loss for anomalies, employ robust training methods like randomized smoothing, and conduct black-box testing with trigger phrases.",
+      "relevant_mitre_techniques": [
+        "T1499.003 - Data Poisoning",
+        "T1609 - Container and Resource Hijacking",
+        "T1204 - User Execution (if insider uploads poisoned audio)"
+      ]
+    },
+    {
+      "scenario": "Compromising an autonomous vehicle\u2019s object detection model by injecting manipulated LIDAR point cloud data labeled incorrectly to cause misclassification of pedestrians as static objects.",
+      "technical_data": {
+        "pointcloud_dataset_manifest_snippet": [
+          {
+            "pointcloud_id": "pc_54321.pcd",
+            "label": "pedestrian",
+            "sha256": "a123b456c789d012e34567890f1234567890abcdeffedcba0987654321fedcba",
+            "source": "s3://autonomous-dataset/pedestrians/pc_54321.pcd"
+          },
+          {
+            "pointcloud_id": "pc_88888.pcd",
+            "label": "static_object",
+            "sha256": "fedcba0987654321abcdef0987654321abcdef0987654321abcdef09876543210",
+            "source": "s3://autonomous-dataset/poisoned/pc_88888.pcd"
+          }
+        ],
+        "poisoned_pointcloud_analysis": {
+          "pointcloud_path": "s3://autonomous-dataset/poisoned/pc_88888.pcd",
+          "md5": "7f138a09169b250e9dcb378140907378",
+          "pointcloud_properties": {
+            "points_count": 15000,
+            "file_format": "PCD",
+            "embedded_metadata": {
+              "device_model": "Velodyne HDL-64E",
+              "author": "unknown"
+            }
+          },
+          "content_analysis": "Point cloud visually depicts pedestrian shape but labeled as static object, causing label flipping and misclassification during training."
+        },
+        "training_log_snippet": [
+          "2024-06-15 11:05:00 INFO Loading pointcloud pc_54321.pcd with label pedestrian",
+          "2024-06-15 11:05:02 INFO Loading pointcloud pc_88888.pcd with label static_object",
+          "2024-06-15 11:05:05 WARN Model validation IoU dropped sharply at epoch 12 from 0.78 to 0.51",
+          "2024-06-15 11:05:10 INFO Training completed with mean average precision (mAP) 62% (expected > 85%)"
+        ],
+        "model_behavior_anomaly": {
+          "test_input": "pc_test_pedestrian.pcd",
+          "expected_label": "pedestrian",
+          "model_predicted_label": "static_object",
+          "confidence_score": 0.08
+        }
+      },
+      "indicators": [
+        "Point clouds with inconsistent or suspicious labels versus visual shape",
+        "Significant drops in validation metrics like IoU or mAP",
+        "Presence of point clouds from unverified sources in training data",
+        "Model misclassifying critical pedestrian objects as static obstacles",
+        "Training logs showing warnings or unusual metric drops"
+      ],
+      "detection_method": "Validate label consistency with 3D visualization tools, implement data provenance checks, monitor training and validation metrics for sudden drops, use robust training with noise-tolerant loss functions, and conduct targeted inference tests on critical object classes.",
+      "relevant_mitre_techniques": [
+        "T1499.003 - Data Poisoning",
+        "T1587 - Develop Capabilities (adversarial data crafting)",
+        "T1204 - User Execution (if insider uploads poisoned point clouds)"
+      ]
+    },
+    {
+      "scenario": "Maliciously poisoning a spam email classifier by injecting crafted emails with misleading features and incorrect labels to cause the model to classify spam as legitimate.",
+      "technical_data": {
+        "email_dataset_manifest_snippet": [
+          {
+            "email_id": "email_34567.eml",
+            "label": "spam",
+            "sha256": "c1f0d9e5a6b8c7d9e0f123456789abcdef0123456789abcdef0123456789abcd",
+            "source": "s3://email-dataset/spam/email_34567.eml"
+          },
+          {
+            "email_id": "email_55555.eml",
+            "label": "ham",
+            "sha256": "abcdef0123456789abcdef0123456789abcdef0123456789abcdef0123456789",
+            "source": "s3://email-dataset/poisoned/email_55555.eml"
+          }
+        ],
+        "poisoned_email_analysis": {
+          "email_path": "s3://email-dataset/poisoned/email_55555.eml",
+          "md5": "5d41402abc4b2a76b9719d911017c592",
+          "email_properties": {
+            "size_bytes": 3421,
+            "file_format": "EML",
+            "embedded_metadata": {
+              "client": "Outlook 2016",
+              "author": "unknown"
+            }
+          },
+          "content_analysis": "Email content contains typical spam features (e.g., suspicious links, phishing keywords) but labeled as ham, confusing model during training."
+        },
+        "training_log_snippet": [
+          "2024-06-20 16:40:00 INFO Loading email email_34567.eml with label spam",
+          "2024-06-20 16:40:02 INFO Loading email email_55555.eml with label ham",
+          "2024-06-20 16:40:05 WARN Unexpected spike in false negative rate at epoch 8: FN rate changed from 0.12 to 0.37",
+          "2024-06-20 16:40:10 INFO Model training completed with F1 score 0.68 (expected > 0.85)"
+        ],
+        "model_behavior_anomaly": {
+          "test_input": "email_test_spam.eml",
+          "expected_label": "spam",
+          "model_predicted_label": "ham",
+          "confidence_score": 0.15
+        }
+      },
+      "indicators": [
+        "Emails with spam-like content labeled as ham",
+        "Training logs showing spikes in false negative rates",
+        "Degraded classification metrics such as F1 score and recall",
+        "Presence of emails from unknown or suspicious senders in training dataset",
+        "Model misclassifying known spam emails during inference"
+      ],
+      "detection_method": "Perform content feature validation and label consistency checks, monitor training metrics for sudden degradation, apply data sanitization and filtering, use adversarial training techniques, and conduct regular evaluation on clean test sets.",
+      "relevant_mitre_techniques": [
+        "T1499.003 - Data Poisoning",
+        "T1566 - Phishing",
+        "T1204 - User Execution (if attacker tricks users to forward poisoned emails)"
+      ]
+    },
+    {
+      "scenario": "Tampering with credit card fraud detection model by injecting synthetic fraudulent transaction records labeled as legitimate, thereby reducing the model\u2019s fraud detection sensitivity.",
+      "technical_data": {
+        "transaction_dataset_manifest_snippet": [
+          {
+            "transaction_id": "txn_1001123",
+            "label": "fraud",
+            "sha256": "9a8b7c6d5e4f3a2b1c0d9e8f7a6b5c4d3e2f1a0b9c8d7e6f5a4b3c2d1e0f9a8b",
+            "source": "s3://transaction-data/fraud/txn_1001123.csv"
+          },
+          {
+            "transaction_id": "txn_9999999",
+            "label": "legitimate",
+            "sha256": "0f9a8b7c6d5e4f3a2b1c0d9e8f7a6b5c4d3e2f1a0b9c8d7e6f5a4b3c2d1e0f9a",
+            "source": "s3://transaction-data/poisoned/txn_9999999.csv"
+          }
+        ],
+        "poisoned_transaction_analysis": {
+          "transaction_path": "s3://transaction-data/poisoned/txn_9999999.csv",
+          "md5": "098f6bcd4621d373cade4e832627b4f6",
+          "transaction_properties": {
+            "amount_usd": 0.01,
+            "merchant_category": "electronics",
+            "timestamp": "2024-06-05T23:59:59Z",
+            "embedded_metadata": {
+              "submission_tool": "Automated script",
+              "author": "unknown"
+            }
+          },
+          "content_analysis": "Synthetic fraudulent transaction crafted with minimal amount and normal merchant category but mislabeled as legitimate to reduce fraud detection sensitivity."
+        },
+        "training_log_snippet": [
+          "2024-06-06 08:00:00 INFO Loading transaction txn_1001123 labeled fraud",
+          "2024-06-06 08:00:02 INFO Loading transaction txn_9999999 labeled legitimate",
+          "2024-06-06 08:00:05 WARN Precision/Recall imbalance detected at epoch 15: recall dropped from 0.92 to 0.65",
+          "2024-06-06 08:00:10 INFO Model training completed with AUC 0.74 (expected > 0.90)"
+        ],
+        "model_behavior_anomaly": {
+          "test_input": "txn_test_fraud.csv",
+          "expected_label": "fraud",
+          "model_predicted_label": "legitimate",
+          "confidence_score": 0.1
+        }
+      },
+      "indicators": [
+        "Synthetic transactions with low amounts and normal features labeled as legitimate",
+        "Training logs showing degradation in recall or sensitivity metrics",
+        "Reduced AUC and other fraud detection performance indicators",
+        "Presence of data from unverified submission tools or unknown authors",
+        "Model failing to detect known fraudulent patterns during inference"
+      ],
+      "detection_method": "Implement transaction data validation and anomaly detection on training data, monitor training metrics closely, use adversarial training with known fraud variants, audit data submission workflows, and perform manual review of suspicious transaction samples.",
+      "relevant_mitre_techniques": [
+        "T1499.003 - Data Poisoning",
+        "T1586 - Compromise Infrastructure",
+        "T1204 - User Execution (if adversaries influence data ingestion)"
+      ]
+    },
+    {
+      "scenario": "Attacker poisons a malware detection model by submitting binary samples with obfuscated code but labeled as benign, causing misclassification of certain malware as safe software.",
+      "technical_data": {
+        "binary_dataset_manifest_snippet": [
+          {
+            "binary_id": "bin_43210.exe",
+            "label": "malicious",
+            "sha256": "abc123def4567890abc123def4567890abc123def4567890abc123def4567890",
+            "source": "s3://malware-dataset/malicious/bin_43210.exe"
+          },
+          {
+            "binary_id": "bin_77777.exe",
+            "label": "benign",
+            "sha256": "def456abc1237890def456abc1237890def456abc1237890def456abc1237890",
+            "source": "s3://malware-dataset/poisoned/bin_77777.exe"
+          }
+        ],
+        "poisoned_binary_analysis": {
+          "binary_path": "s3://malware-dataset/poisoned/bin_77777.exe",
+          "md5": "8fa14cdd754f91cc6554c9e71929cce7",
+          "binary_properties": {
+            "file_size_bytes": 245760,
+            "file_format": "PE32 executable",
+            "embedded_metadata": {
+              "packer": "UPX 3.95",
+              "author": "unknown"
+            }
+          },
+          "content_analysis": "Binary contains malware with heavy code obfuscation and packed with UPX but labeled as benign, allowing model to learn incorrect benign features."
+        },
+        "training_log_snippet": [
+          "2024-06-25 20:15:00 INFO Loading binary bin_43210.exe labeled malicious",
+          "2024-06-25 20:15:02 INFO Loading binary bin_77777.exe labeled benign",
+          "2024-06-25 20:15:05 WARN Increase in false negative rate at epoch 22 from 0.05 to 0.27",
+          "2024-06-25 20:15:10 INFO Model training completed with detection rate 72% (expected > 90%)"
+        ],
+        "model_behavior_anomaly": {
+          "test_input": "bin_test_malware.exe",
+          "expected_label": "malicious",
+          "model_predicted_label": "benign",
+          "confidence_score": 0.2
+        }
+      },
+      "indicators": [
+        "Binaries with obfuscation and packing labeled benign",
+        "Training logs showing increased false negative rates",
+        "Decreased malware detection rates and overall accuracy",
+        "Presence of binaries from unknown or suspicious sources",
+        "Model misclassifying well-known malware samples in inference"
+      ],
+      "detection_method": "Perform static and dynamic malware analysis for label validation, monitor training metrics for false negative increase, apply robust feature extraction resilient to obfuscation, use threat intelligence to corroborate labels, and conduct adversarial training with known malware variants.",
+      "relevant_mitre_techniques": [
+        "T1499.003 - Data Poisoning",
+        "T1027 - Obfuscated Files or Information",
+        "T1204 - User Execution (if attacker uploads poisoned binaries)"
+      ]
+    }
+  ]
+}

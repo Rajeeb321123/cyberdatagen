@@ -28,10 +28,12 @@ logger.debug(f"Added {CURRENT_DIR.parent} to sys.path")
 load_dotenv()
 
 # Update paths to match new project structure
+PROBLEMS_UPDATED_PATH = CURRENT_DIR.parent / 'config' / 'problems_updated.json'
 PROBLEMS_PATH = CURRENT_DIR.parent / 'config' / 'problems.json'
 SEEDS_DIR = PROJECT_ROOT / 'data' / 'seeds'
 
-logger.info(f"Problems path: {PROBLEMS_PATH}")
+logger.info(f"Problems updated path: {PROBLEMS_UPDATED_PATH}")
+logger.info(f"Problems fallback path: {PROBLEMS_PATH}")
 logger.info(f"Seeds directory: {SEEDS_DIR}")
 
 # Create the output directory if it doesn't exist
@@ -109,14 +111,53 @@ Focus on technical accuracy and realism. Include enough detail to distinguish th
 """
 
 
-def load_problems(file_path: Path = PROBLEMS_PATH) -> list:
-    if not file_path.exists():
-        logger.error(f"Missing problems config: {file_path}")
-        raise FileNotFoundError(f"Missing problems config: {file_path}")
+def load_problems(file_path: Path = None) -> list:
+    """
+    Load problem definitions from config, prioritizing problems_updated.json
     
-    data = json.loads(file_path.read_text(encoding='utf-8'))
-    logger.info(f"Loaded {len(data.get('problems', []))} problems from {file_path}")
-    return data.get('problems', [])
+    Args:
+        file_path (Path, optional): Specific file path to load. If None, will auto-select.
+    
+    Returns:
+        list: List of problems loaded from the appropriate file
+    """
+    # If specific file_path is provided, use it
+    if file_path:
+        if not file_path.exists():
+            logger.error(f"Specified problems config not found: {file_path}")
+            raise FileNotFoundError(f"Specified problems config not found: {file_path}")
+        data = json.loads(file_path.read_text(encoding='utf-8'))
+        problems = data.get('problems', [])
+        logger.info(f"Loaded {len(problems)} problems from {file_path}")
+        return problems
+    
+    # Auto-select: prioritize problems_updated.json, fallback to problems.json
+    if PROBLEMS_UPDATED_PATH.exists():
+        logger.info(f"Using updated problems file: {PROBLEMS_UPDATED_PATH}")
+        try:
+            data = json.loads(PROBLEMS_UPDATED_PATH.read_text(encoding='utf-8'))
+            problems = data.get('problems', [])
+            logger.info(f"Loaded {len(problems)} problems from {PROBLEMS_UPDATED_PATH}")
+            return problems
+        except Exception as e:
+            logger.warning(f"Error loading updated problems file: {str(e)}")
+            logger.info("Falling back to original problems.json")
+    
+    # Fallback to original problems.json
+    if PROBLEMS_PATH.exists():
+        logger.info(f"Using original problems file: {PROBLEMS_PATH}")
+        try:
+            data = json.loads(PROBLEMS_PATH.read_text(encoding='utf-8'))
+            problems = data.get('problems', [])
+            logger.info(f"Loaded {len(problems)} problems from {PROBLEMS_PATH}")
+            return problems
+        except Exception as e:
+            logger.error(f"Error loading original problems file: {str(e)}", exc_info=True)
+            raise
+    
+    # If neither file exists, raise an error
+    logger.error(f"No problems config found. Checked: {PROBLEMS_UPDATED_PATH}, {PROBLEMS_PATH}")
+    raise FileNotFoundError(f"No problems config found. Checked: {PROBLEMS_UPDATED_PATH}, {PROBLEMS_PATH}")
 
 
 def extract_json_from_response(response_content: str) -> dict:
@@ -269,7 +310,7 @@ def save_examples(problem: dict, examples: list):
 def main():
     """Main function to generate examples for all problems"""
     logger.info("Starting seed examples generation")
-    problems = load_problems()
+    problems = load_problems()  # Will auto-select the appropriate file
     
     # Group problems by area for better organization in output
     areas = set(problem['area'] for problem in problems)

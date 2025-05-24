@@ -1,0 +1,235 @@
+{
+  "problems": [
+    {
+      "area": "Social Engineering",
+      "category": "Phishing",
+      "variant": "Credential Harvesting",
+      "nature": "credential_harvesting",
+      "description": "Attackers send deceptive emails impersonating trusted entities to trick users into submitting their login credentials on fake websites.",
+      "attack_vector": "Email",
+      "asset_targeted": "User Credentials",
+      "kill_chain_phase": "Initial Access",
+      "impact_level": "High",
+      "detection_methods": [
+        "Email filtering and anti-phishing tools",
+        "User behavior analytics",
+        "SIEM alerts"
+      ],
+      "risk_reduction": [
+        "Implement multi-factor authentication (MFA) to reduce impact of stolen credentials",
+        "Deploy advanced email filtering and anti-phishing tools",
+        "Conduct regular user awareness training and simulated phishing campaigns"
+      ]
+    },
+    {
+      "area": "Social Engineering",
+      "category": "Phishing",
+      "variant": "Spear Phishing",
+      "nature": "spear_phishing",
+      "description": "Highly targeted phishing emails crafted using personal information to deceive specific individuals, often executives, into revealing sensitive data or authorizing fraudulent transactions.",
+      "attack_vector": "Email",
+      "asset_targeted": "User Credentials",
+      "kill_chain_phase": "Initial Access",
+      "impact_level": "Critical",
+      "detection_methods": [
+        "Threat intelligence to identify targeted phishing",
+        "User behavior analytics",
+        "SIEM alerts"
+      ],
+      "risk_reduction": [
+        "Use threat intelligence to identify and block targeted phishing attempts",
+        "Train high-risk users on recognizing spear phishing tactics",
+        "Enforce strict verification procedures for sensitive requests"
+      ]
+    },
+    {
+      "area": "Social Engineering",
+      "category": "Phishing",
+      "variant": "Malicious Attachments",
+      "nature": "malicious_attachments",
+      "description": "Phishing emails contain attachments with malware payloads that execute upon opening, compromising the victim’s system.",
+      "attack_vector": "Email",
+      "asset_targeted": "Endpoint Systems",
+      "kill_chain_phase": "Execution",
+      "impact_level": "High",
+      "detection_methods": [
+        "Sandboxing and antivirus scanning",
+        "Endpoint detection",
+        "SIEM alerts"
+      ],
+      "risk_reduction": [
+        "Implement sandboxing and antivirus scanning of email attachments",
+        "Restrict execution of macros and scripts in attachments",
+        "Educate users to avoid opening unexpected or suspicious files"
+      ]
+    },
+    {
+      "area": "Network Attacks",
+      "category": "Man-in-the-Middle",
+      "variant": "Wi-Fi Eavesdropping",
+      "nature": "wifi_eavesdropping",
+      "description": "Attackers intercept communications on unsecured or poorly secured Wi-Fi networks to capture sensitive data such as passwords and session tokens.",
+      "attack_vector": "Network",
+      "asset_targeted": "Network Infrastructure",
+      "kill_chain_phase": "Credential Access",
+      "impact_level": "Medium",
+      "detection_methods": [
+        "Network traffic analysis",
+        "SIEM alerts",
+        "Wireless intrusion detection systems"
+      ],
+      "risk_reduction": [
+        "Use strong WPA3 encryption on wireless networks",
+        "Encourage use of VPNs when accessing public Wi-Fi",
+        "Disable automatic connection to open Wi-Fi networks"
+      ]
+    },
+    {
+      "area": "Network Attacks",
+      "category": "Man-in-the-Middle",
+      "variant": "SSL Stripping",
+      "nature": "ssl_stripping",
+      "description": "Attackers downgrade HTTPS connections to HTTP by intercepting and modifying traffic, exposing sensitive data transmitted in plaintext.",
+      "attack_vector": "Network",
+      "asset_targeted": "Network Infrastructure",
+      "kill_chain_phase": "Credential Access",
+      "impact_level": "High",
+      "detection_methods": [
+        "SSL/TLS configuration audits",
+        "Network traffic analysis",
+        "SIEM alerts"
+      ],
+      "risk_reduction": [
+        "Enforce HTTPS with HSTS (HTTP Strict Transport Security)",
+        "Use certificate pinning in applications",
+        "Regularly monitor and audit SSL/TLS configurations"
+      ]
+    },
+    {
+      "area": "Network Attacks",
+      "category": "Man-in-the-Middle",
+      "variant": "DNS Spoofing",
+      "nature": "dns_spoofing",
+      "description": "Attackers manipulate DNS responses to redirect users to malicious sites without their knowledge, enabling credential theft or malware delivery.",
+      "attack_vector": "Network",
+      "asset_targeted": "Network Infrastructure",
+      "kill_chain_phase": "Initial Access",
+      "impact_level": "High",
+      "detection_methods": [
+        "DNS traffic monitoring",
+        "SIEM alerts",
+        "Anomaly detection in DNS queries"
+      ],
+      "risk_reduction": [
+        "Deploy DNSSEC to validate DNS responses",
+        "Use trusted DNS resolvers with filtering capabilities",
+        "Monitor DNS traffic for anomalies and unauthorized changes"
+      ]
+    },
+    {
+      "area": "Cloud Security",
+      "category": "Cloud Misconfiguration",
+      "variant": "Misconfigured Storage Buckets",
+      "nature": "misconfigured_storage_buckets",
+      "description": "Publicly exposed cloud storage buckets (e.g., AWS S3, Azure Blob) leading to data leakage or unauthorized access.",
+      "attack_vector": "Cloud API",
+      "asset_targeted": "Cloud Storage",
+      "kill_chain_phase": "Initial Access",
+      "impact_level": "Critical",
+      "detection_methods": [
+        "Automated cloud configuration scanners",
+        "Cloud access logging and monitoring",
+        "SIEM alerts"
+      ],
+      "risk_reduction": [
+        "Implement strict access controls and bucket policies",
+        "Use automated tools to scan for misconfigurations",
+        "Enable logging and monitoring of cloud storage access"
+      ]
+    },
+    {
+      "area": "Supply Chain Attack",
+      "category": "Software Supply Chain",
+      "variant": "Software Dependency Compromise",
+      "nature": "software_dependency_compromise",
+      "description": "Attackers inject malicious code into widely used software dependencies or libraries, compromising downstream applications and users.",
+      "attack_vector": "Supply Chain",
+      "asset_targeted": "Source Code Repository",
+      "kill_chain_phase": "Initial Access",
+      "impact_level": "Critical",
+      "detection_methods": [
+        "Dependency scanning tools",
+        "Behavioral anomaly detection in software builds",
+        "Code signing verification"
+      ],
+      "risk_reduction": [
+        "Use software bill of materials (SBOM) and dependency scanning",
+        "Implement strict code review and signing policies",
+        "Monitor for anomalous behavior in software supply chains"
+      ]
+    },
+    {
+      "area": "Social Engineering",
+      "category": "AI-Powered Attacks",
+      "variant": "Deepfake Phishing",
+      "nature": "deepfake_phishing",
+      "description": "Use of AI-generated synthetic media (audio/video) to impersonate trusted individuals and deceive targets into fraudulent actions.",
+      "attack_vector": "Email",
+      "asset_targeted": "User Credentials",
+      "kill_chain_phase": "Initial Access",
+      "impact_level": "High",
+      "detection_methods": [
+        "AI detection tools for synthetic media",
+        "User behavior analytics",
+        "Multi-channel verification alerts"
+      ],
+      "risk_reduction": [
+        "Deploy AI detection tools for synthetic media",
+        "Train users to verify unusual requests via multiple channels",
+        "Implement strict verification for sensitive transactions"
+      ]
+    },
+    {
+      "area": "Adversarial Machine Learning",
+      "category": "Model Attacks",
+      "variant": "Model Poisoning",
+      "nature": "model_poisoning",
+      "description": "Attackers manipulate training data or model inputs to degrade the performance or cause misclassification in AI/ML systems.",
+      "attack_vector": "Data Input",
+      "asset_targeted": "Machine Learning Model",
+      "kill_chain_phase": "Execution",
+      "impact_level": "High",
+      "detection_methods": [
+        "Training data validation",
+        "Model behavior anomaly detection",
+        "Robustness testing"
+      ],
+      "risk_reduction": [
+        "Validate and sanitize training datasets",
+        "Use robust ML models resistant to adversarial inputs",
+        "Monitor model behavior for anomalies"
+      ]
+    },
+    {
+      "area": "Ransomware",
+      "category": "Double Extortion",
+      "variant": "Double Extortion Ransomware",
+      "nature": "double_extortion",
+      "description": "Attackers not only encrypt victim data but also exfiltrate it, threatening to release sensitive information publicly if ransom is not paid.",
+      "attack_vector": "Network",
+      "asset_targeted": "Data Repositories",
+      "kill_chain_phase": "Impact",
+      "impact_level": "Critical",
+      "detection_methods": [
+        "Data exfiltration monitoring",
+        "Backup integrity checks",
+        "SIEM alerts"
+      ],
+      "risk_reduction": [
+        "Implement robust backup and recovery solutions",
+        "Monitor for data exfiltration indicators",
+        "Use network segmentation and least privilege access"
+      ]
+    }
+  ]
+}

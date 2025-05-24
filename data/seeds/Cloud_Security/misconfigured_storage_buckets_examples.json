@@ -1,0 +1,70 @@
+{
+  "examples": [
+    {
+      "scenario": "Publicly accessible AWS S3 bucket leaks sensitive internal documents due to overly permissive bucket policy allowing anonymous read access.",
+      "technical_data": {
+        "bucket_policy": "{\n  \"Version\": \"2012-10-17\",\n  \"Statement\": [\n    {\n      \"Sid\": \"AllowPublicRead\",\n      \"Effect\": \"Allow\",\n      \"Principal\": \"*\",\n      \"Action\": [\"s3:GetObject\"],\n      \"Resource\": [\"arn:aws:s3:::confidential-corp-docs/*\"]\n    }\n  ]\n}",
+        "aws_cli_list_command": "$ aws s3api list-objects --bucket confidential-corp-docs\n{\n    \"Contents\": [\n        {\n            \"Key\": \"internal-financials/Q3_report.xlsx\",\n            \"LastModified\": \"2024-05-20T10:12:00.000Z\",\n            \"ETag\": \"\\\"9b74c9897bac770ffc029102a200c5de\\\"\",\n            \"Size\": 204800,\n            \"StorageClass\": \"STANDARD\"\n        },\n        {\n            \"Key\": \"hr/employee_salaries.csv\",\n            \"LastModified\": \"2024-05-19T13:45:23.000Z\",\n            \"ETag\": \"\\\"1f3870be274f6c49b3e31a0c6728957f\\\"\",\n            \"Size\": 10240,\n            \"StorageClass\": \"STANDARD\"\n        }\n    ]\n}",
+        "curl_http_request": "curl -I https://confidential-corp-docs.s3.amazonaws.com/hr/employee_salaries.csv\nHTTP/1.1 200 OK\nx-amz-id-2: 2N1vWnWqkG9t3Xvo5l2JxB1R6RzS5M9qE5u3yLz0Q5y6fJ9+7X9+9Z5s7R0E1W2V\nx-amz-request-id: 3A1D2D4E5F6G7H8I\nDate: Tue, 23 May 2024 15:00:00 GMT\nLast-Modified: Sun, 19 May 2024 13:45:23 GMT\nETag: \"1f3870be274f6c49b3e31a0c6728957f\"\nAccept-Ranges: bytes\nContent-Type: text/csv\nContent-Length: 10240\nServer: AmazonS3",
+        "cloudtrail_log_event": "{\n  \"eventVersion\": \"1.08\",\n  \"userIdentity\": {\n    \"type\": \"Anonymous\",\n    \"principalId\": \"ANONYMOUS\"\n  },\n  \"eventTime\": \"2024-05-23T15:00:01Z\",\n  \"eventSource\": \"s3.amazonaws.com\",\n  \"eventName\": \"GetObject\",\n  \"requestParameters\": {\n    \"bucketName\": \"confidential-corp-docs\",\n    \"key\": \"hr/employee_salaries.csv\"\n  },\n  \"responseElements\": {\n    \"x-amz-request-id\": \"3A1D2D4E5F6G7H8I\",\n    \"x-amz-id-2\": \"2N1vWnWqkG9t3Xvo5l2JxB1R6RzS5M9qE5u3yLz0Q5y6fJ9+7X9+9Z5s7R0E1W2V\"\n  },\n  \"sourceIPAddress\": \"198.51.100.23\",\n  \"userAgent\": \"curl/7.68.0\",\n  \"requestID\": \"3A1D2D4E5F6G7H8I\",\n  \"eventID\": \"e1c2b3a4-5678-90ab-cdef-1234567890ab\",\n  \"readOnly\": true,\n  \"resources\": [\n    {\n      \"type\": \"AWS::S3::Object\",\n      \"ARN\": \"arn:aws:s3:::confidential-corp-docs/hr/employee_salaries.csv\"\n    }\n  ]\n}"
+      },
+      "indicators": [
+        "Bucket policy allowing \"Principal\": \"*\" with Action \"s3:GetObject\"",
+        "Anonymous access logged in CloudTrail with userIdentity.type = \"Anonymous\"",
+        "Sensitive file names such as hr/employee_salaries.csv and internal-financials/Q3_report.xlsx publicly accessible",
+        "HTTP 200 OK responses to unauthenticated GET requests"
+      ],
+      "detection_method": "Automated periodic scans using AWS Config rules and third-party tools (e.g., ScoutSuite) to detect buckets with public-read policies. Monitoring CloudTrail logs for GetObject events with anonymous principal. Alerting on unusual data downloads from storage buckets. Enabling S3 server access logs and analyzing for external IP addresses retrieving sensitive files.",
+      "relevant_mitre_techniques": [
+        "T1530 - Data from Cloud Storage Object",
+        "T1078.004 - Valid Accounts: Cloud Accounts",
+        "T1110 - Brute Force (if attacker brute forces credentials later)",
+        "T1083 - File and Directory Discovery"
+      ]
+    },
+    {
+      "scenario": "Azure Blob storage container configured with 'Container (anonymous read access for containers and blobs)' public access level exposing internal backup archives.",
+      "technical_data": {
+        "azure_cli_public_access_check": "az storage container show --account-name corpbackupstorage --name internal-backups --query publicAccess\n\"container\"",
+        "sample_http_request_and_response": "GET https://corpbackupstorage.blob.core.windows.net/internal-backups/2023-12-31-backup.zip HTTP/1.1\nHost: corpbackupstorage.blob.core.windows.net\n\n\nHTTP/1.1 200 OK\nContent-Length: 104857600\nContent-Type: application/octet-stream\nLast-Modified: Wed, 31 Dec 2023 23:59:59 GMT\nx-ms-blob-type: BlockBlob\nx-ms-request-id: 7a8b9c0d-e01e-0023-1234-56789abcdef0\nx-ms-version: 2021-04-10\nDate: Tue, 23 May 2024 16:30:00 GMT\n\n[Binary content of backup zip file]",
+        "azure_activity_log": "{\n  \"authorization\": {\n    \"scope\": \"/subscriptions/12345678-9abc-def0-1234-56789abcdef0/resourceGroups/Production/providers/Microsoft.Storage/storageAccounts/corpbackupstorage\",\n    \"action\": \"Microsoft.Storage/storageAccounts/listKeys/action\",\n    \"role\": \"Reader\"\n  },\n  \"caller\": \"198.51.100.45\",\n  \"eventName\": {\n    \"value\": \"GetBlob\",\n    \"localizedValue\": \"Get Blob\"\n  },\n  \"eventTimestamp\": \"2024-05-23T16:30:05.1234567Z\",\n  \"resourceId\": \"/subscriptions/12345678-9abc-def0-1234-56789abcdef0/resourceGroups/Production/providers/Microsoft.Storage/storageAccounts/corpbackupstorage/blobServices/default/containers/internal-backups/blobs/2023-12-31-backup.zip\",\n  \"operationName\": \"GetBlob\",\n  \"status\": \"Succeeded\",\n  \"callerIpAddress\": \"198.51.100.45\",\n  \"category\": \"StorageRead\",\n  \"properties\": {\n    \"requestUrl\": \"https://corpbackupstorage.blob.core.windows.net/internal-backups/2023-12-31-backup.zip\"\n  }\n}",
+        "storage_account_acl": "{\n  \"Name\": \"internal-backups\",\n  \"PublicAccess\": \"Container\",\n  \"Metadata\": {}\n}"
+      },
+      "indicators": [
+        "Container public access level set to 'Container' (anonymous read access for blobs and container metadata)",
+        "Anonymous HTTP GET requests returning 200 OK with backup archive files",
+        "Azure activity logs showing GetBlob operations from unknown external IPs",
+        "Absence of SAS tokens or OAuth authorization headers in blob access requests"
+      ],
+      "detection_method": "Use Azure Security Center recommendations to detect public access on blob containers. Enable Azure Monitor logs for Storage Analytics and review access patterns. Use Azure Policy to enforce private containers and block public access. Scan containers with tools like AzScanner or Blobfuse with detection scripts for public ACLs.",
+      "relevant_mitre_techniques": [
+        "T1530 - Data from Cloud Storage Object",
+        "T1213 - Data from Information Repositories",
+        "T1071.001 - Application Layer Protocol: Web Protocols",
+        "T1496 - Resource Hijacking (if attacker uploads malicious blobs)"
+      ]
+    },
+    {
+      "scenario": "Misconfigured Google Cloud Storage bucket allows unauthenticated users to list and read bucket contents, exposing source code and credentials files.",
+      "technical_data": {
+        "gcloud_bucket_iam_policy": "{\n  \"bindings\": [\n    {\n      \"role\": \"roles/storage.objectViewer\",\n      \"members\": [\n        \"allUsers\"\n      ]\n    }\n  ]\n}",
+        "gsutil_ls_command": "$ gsutil ls gs://corp-source-code/\ngs://corp-source-code/main.py\ngs://corp-source-code/config.json\ngs://corp-source-code/credentials.yaml",
+        "curl_unauthenticated_request": "curl -i https://storage.googleapis.com/corp-source-code/config.json\nHTTP/1.1 200 OK\nContent-Type: application/json\nContent-Length: 256\nLast-Modified: Thu, 22 May 2024 12:00:00 GMT\nETag: \"abc123def456\"\n\n{\n  \"db_host\": \"10.0.0.5\",\n  \"db_user\": \"admin\",\n  \"db_password\": \"SuperSecretPass123!\",\n  \"api_key\": \"AIzaSyD-EXAMPLEKEY1234567890\"\n}",
+        "audit_log_gcp": "{\n  \"protoPayload\": {\n    \"authenticationInfo\": {\n      \"principalEmail\": \"\",\n      \"authoritySelector\": \"\"\n    },\n    \"requestMetadata\": {\n      \"callerIp\": \"203.0.113.10\",\n      \"callerSuppliedUserAgent\": \"curl/7.79.1\"\n    },\n    \"serviceName\": \"storage.googleapis.com\",\n    \"methodName\": \"storage.objects.get\",\n    \"resourceName\": \"projects/_/buckets/corp-source-code/objects/config.json\",\n    \"status\": {},\n    \"request\": {\n      \"bucket\": \"corp-source-code\",\n      \"object\": \"config.json\"\n    }\n  },\n  \"resource\": {\n    \"type\": \"gcs_bucket\",\n    \"labels\": {\n      \"bucket_name\": \"corp-source-code\",\n      \"project_id\": \"corp-cloud-project\"\n    }\n  },\n  \"timestamp\": \"2024-05-23T14:55:00Z\",\n  \"severity\": \"INFO\"\n}"
+      },
+      "indicators": [
+        "IAM policy binding includes 'allUsers' with roles/storage.objectViewer",
+        "Unauthenticated HTTP GET requests successfully retrieving sensitive files like config.json and credentials.yaml",
+        "Audit logs showing storage.objects.get requests without authenticated principal",
+        "Presence of plaintext credentials and API keys in publicly accessible JSON files"
+      ],
+      "detection_method": "Regular IAM policy audits using gcloud commands or Security Command Center. Automated scanning with tools like Forseti Security or GCloud Bucket Auditor to detect public IAM bindings. Enable and analyze Cloud Audit Logs for unauthenticated access to storage objects. Use Data Loss Prevention (DLP) tools to scan bucket contents for secrets.",
+      "relevant_mitre_techniques": [
+        "T1530 - Data from Cloud Storage Object",
+        "T1078.004 - Valid Accounts: Cloud Accounts",
+        "T1083 - File and Directory Discovery",
+        "T1552.001 - Unsecured Credentials: Credentials in Files"
+      ]
+    }
+  ]
+}

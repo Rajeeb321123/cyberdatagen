@@ -25,12 +25,14 @@ load_dotenv()
 
 # Constants and paths
 MODEL_NAME = "gpt-4.1-mini"  # Match with small_dataset.py
+PROBLEMS_UPDATED_PATH = CURRENT_DIR.parent / 'config' / 'problems_updated.json'
 PROBLEMS_PATH = CURRENT_DIR.parent / 'config' / 'problems.json'
 SEEDS_DIR = PROJECT_ROOT / 'data' / 'seeds'
 OUTPUT_DIR = PROJECT_ROOT / 'data' / 'large_samples'
 
 logger.info(f"Using model: {MODEL_NAME}")
-logger.info(f"Problems path: {PROBLEMS_PATH}")
+logger.info(f"Problems updated path: {PROBLEMS_UPDATED_PATH}")
+logger.info(f"Problems fallback path: {PROBLEMS_PATH}")
 logger.info(f"Seeds directory: {SEEDS_DIR}")
 logger.info(f"Output directory: {OUTPUT_DIR}")
 
@@ -38,16 +40,53 @@ OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
 logger.info(f"Created output directory: {OUTPUT_DIR}")
 
 
-def load_problems(file_path: Path = PROBLEMS_PATH) -> list:
-    """Load problem definitions from config."""
-    if not file_path.exists():
-        logger.error(f"Missing problems config: {file_path}")
-        raise FileNotFoundError(f"Missing problems config: {file_path}")
+def load_problems(file_path: Path = None) -> list:
+    """
+    Load problem definitions from config, prioritizing problems_updated.json
     
-    data = json.loads(file_path.read_text(encoding='utf-8'))
-    problems = data.get('problems', [])
-    logger.info(f"Loaded {len(problems)} problems from {file_path}")
-    return problems
+    Args:
+        file_path (Path, optional): Specific file path to load. If None, will auto-select.
+    
+    Returns:
+        list: List of problems loaded from the appropriate file
+    """
+    # If specific file_path is provided, use it
+    if file_path:
+        if not file_path.exists():
+            logger.error(f"Specified problems config not found: {file_path}")
+            raise FileNotFoundError(f"Specified problems config not found: {file_path}")
+        data = json.loads(file_path.read_text(encoding='utf-8'))
+        problems = data.get('problems', [])
+        logger.info(f"Loaded {len(problems)} problems from {file_path}")
+        return problems
+    
+    # Auto-select: prioritize problems_updated.json, fallback to problems.json
+    if PROBLEMS_UPDATED_PATH.exists():
+        logger.info(f"Using updated problems file: {PROBLEMS_UPDATED_PATH}")
+        try:
+            data = json.loads(PROBLEMS_UPDATED_PATH.read_text(encoding='utf-8'))
+            problems = data.get('problems', [])
+            logger.info(f"Loaded {len(problems)} problems from {PROBLEMS_UPDATED_PATH}")
+            return problems
+        except Exception as e:
+            logger.warning(f"Error loading updated problems file: {str(e)}")
+            logger.info("Falling back to original problems.json")
+    
+    # Fallback to original problems.json
+    if PROBLEMS_PATH.exists():
+        logger.info(f"Using original problems file: {PROBLEMS_PATH}")
+        try:
+            data = json.loads(PROBLEMS_PATH.read_text(encoding='utf-8'))
+            problems = data.get('problems', [])
+            logger.info(f"Loaded {len(problems)} problems from {PROBLEMS_PATH}")
+            return problems
+        except Exception as e:
+            logger.error(f"Error loading original problems file: {str(e)}", exc_info=True)
+            raise
+    
+    # If neither file exists, raise an error
+    logger.error(f"No problems config found. Checked: {PROBLEMS_UPDATED_PATH}, {PROBLEMS_PATH}")
+    raise FileNotFoundError(f"No problems config found. Checked: {PROBLEMS_UPDATED_PATH}, {PROBLEMS_PATH}")
 
 
 def find_examples_file(problem):
@@ -357,7 +396,7 @@ def main(count: int = 10, problem_filter: list = None):
     """
     logger.info(f"Starting sample generation with count={count}")
     
-    # Load problem definitions
+    # Load problem definitions (auto-selects the appropriate file)
     problems = load_problems()
     
     # Filter problems if specified
