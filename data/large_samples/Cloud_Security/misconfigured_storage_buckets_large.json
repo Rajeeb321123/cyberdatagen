@@ -1,0 +1,220 @@
+{
+  "samples": [
+    {
+      "scenario": "Google Cloud Storage bucket configured with publicly readable IAM policy exposing customer PII data including CSV exports of user data.",
+      "technical_data": {
+        "gcloud_iam_policy": "{\n  \"bindings\": [\n    {\n      \"role\": \"roles/storage.objectViewer\",\n      \"members\": [\n        \"allUsers\"\n      ]\n    }\n  ]\n}",
+        "gsutil_list_command": "$ gsutil ls gs://customer-data-pii\n2024-06-01 12:00:00  gs://customer-data-pii/users_export_2024-05.csv\n2024-06-01 12:00:00  gs://customer-data-pii/transactions_may_2024.csv",
+        "curl_http_request": "curl -I https://storage.googleapis.com/customer-data-pii/users_export_2024-05.csv\nHTTP/1.1 200 OK\nContent-Type: text/csv\nContent-Length: 51200\nDate: Sat, 01 Jun 2024 12:00:00 GMT\nServer: UploadServer",
+        "audit_log_entry": "{\n  \"protoPayload\": {\n    \"authenticationInfo\": {\n      \"principalEmail\": \"\",\n      \"principalSubject\": \"allUsers\"\n    },\n    \"requestMetadata\": {\n      \"callerIp\": \"203.0.113.77\"\n    },\n    \"serviceName\": \"storage.googleapis.com\",\n    \"methodName\": \"storage.objects.get\",\n    \"resourceName\": \"projects/_/buckets/customer-data-pii/objects/users_export_2024-05.csv\",\n    \"status\": {}\n  },\n  \"insertId\": \"abc123def456\",\n  \"resource\": {\n    \"type\": \"gcs_bucket\",\n    \"labels\": {\n      \"bucket_name\": \"customer-data-pii\"\n    }\n  },\n  \"timestamp\": \"2024-06-01T12:00:01Z\"\n}"
+      },
+      "indicators": [
+        "IAM policy includes \"allUsers\" member with roles/storage.objectViewer role",
+        "Publicly accessible CSV files with PII data",
+        "HTTP 200 OK response to unauthenticated GET requests",
+        "Audit log entries showing storage.objects.get calls from unknown IPs with empty principalEmail"
+      ],
+      "detection_method": "Automated scans of GCS bucket IAM policies using gcloud and Google Cloud Asset Inventory. Monitor Cloud Audit Logs for storage.objects.get events with empty or unauthenticated principals. Alert on buckets with allUsers or allAuthenticatedUsers access. Use Google Cloud Security Command Center findings for public buckets.",
+      "relevant_mitre_techniques": [
+        "T1530 - Data from Cloud Storage Object",
+        "T1078.004 - Valid Accounts: Cloud Accounts",
+        "T1083 - File and Directory Discovery",
+        "T1110 - Brute Force (if attacker escalates access)"
+      ]
+    },
+    {
+      "scenario": "AWS S3 bucket configured with a bucket ACL granting READ permission to the group 'AllUsers' exposing marketing assets publicly.",
+      "technical_data": {
+        "aws_cli_get_acl": "$ aws s3api get-bucket-acl --bucket marketing-assets\n{\n  \"Owner\": {\n    \"DisplayName\": \"marketing-team\",\n    \"ID\": \"abcd1234abcd1234abcd1234abcd1234abcd1234abcd1234abcd1234\"\n  },\n  \"Grants\": [\n    {\n      \"Grantee\": {\n        \"Type\": \"Group\",\n        \"URI\": \"http://acs.amazonaws.com/groups/global/AllUsers\"\n      },\n      \"Permission\": \"READ\"\n    }\n  ]\n}",
+        "aws_cli_list_objects": "$ aws s3api list-objects --bucket marketing-assets\n{\n  \"Contents\": [\n    {\n      \"Key\": \"2024_campaign/creative1.jpg\",\n      \"LastModified\": \"2024-05-15T08:00:00.000Z\",\n      \"Size\": 1048576\n    },\n    {\n      \"Key\": \"2024_campaign/creative2.png\",\n      \"LastModified\": \"2024-05-15T08:05:00.000Z\",\n      \"Size\": 2097152\n    }\n  ]\n}",
+        "curl_http_request": "curl -I https://marketing-assets.s3.amazonaws.com/2024_campaign/creative1.jpg\nHTTP/1.1 200 OK\nContent-Type: image/jpeg\nContent-Length: 1048576\nDate: Fri, 23 May 2024 14:00:00 GMT\nServer: AmazonS3",
+        "cloudtrail_log_event": "{\n  \"eventVersion\": \"1.08\",\n  \"userIdentity\": {\n    \"type\": \"Anonymous\",\n    \"principalId\": \"ANONYMOUS\"\n  },\n  \"eventTime\": \"2024-05-23T14:00:01Z\",\n  \"eventSource\": \"s3.amazonaws.com\",\n  \"eventName\": \"GetObject\",\n  \"requestParameters\": {\n    \"bucketName\": \"marketing-assets\",\n    \"key\": \"2024_campaign/creative1.jpg\"\n  },\n  \"sourceIPAddress\": \"198.51.100.55\",\n  \"userAgent\": \"Mozilla/5.0 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)\",\n  \"requestID\": \"req-1234567890abcdef\",\n  \"eventID\": \"event-abcdef1234567890\",\n  \"readOnly\": true\n}"
+      },
+      "indicators": [
+        "Bucket ACL includes 'AllUsers' group with READ permission",
+        "Anonymous GetObject events in CloudTrail logs",
+        "Marketing images accessible via unauthenticated HTTP requests",
+        "HTTP 200 OK responses for public asset requests"
+      ],
+      "detection_method": "Routine audits of bucket ACLs using AWS CLI and scripting. Enable S3 Access Logs and CloudTrail for monitoring anonymous access. Use AWS Trusted Advisor and Config rules to detect public ACLs. Alert on suspicious anonymous access patterns or unexpected data downloads.",
+      "relevant_mitre_techniques": [
+        "T1530 - Data from Cloud Storage Object",
+        "T1110 - Brute Force (if attacker attempts access escalation)",
+        "T1083 - File and Directory Discovery",
+        "T1078.004 - Valid Accounts: Cloud Accounts"
+      ]
+    },
+    {
+      "scenario": "AWS S3 bucket with a bucket policy that allows s3:ListBucket for all principals, enabling enumeration of stored objects by any user.",
+      "technical_data": {
+        "bucket_policy": "{\n  \"Version\": \"2012-10-17\",\n  \"Statement\": [\n    {\n      \"Sid\": \"AllowPublicList\",\n      \"Effect\": \"Allow\",\n      \"Principal\": \"*\",\n      \"Action\": [\"s3:ListBucket\"],\n      \"Resource\": [\"arn:aws:s3:::public-enumeration-bucket\"]\n    }\n  ]\n}",
+        "aws_cli_list_objects": "$ aws s3api list-objects --bucket public-enumeration-bucket\n{\n  \"Contents\": [\n    {\n      \"Key\": \"reports/annual_report_2023.pdf\",\n      \"LastModified\": \"2024-04-01T12:00:00.000Z\",\n      \"Size\": 512000\n    },\n    {\n      \"Key\": \"logs/access_log_20240501.txt\",\n      \"LastModified\": \"2024-05-01T00:00:00.000Z\",\n      \"Size\": 20480\n    }\n  ]\n}",
+        "curl_http_request": "curl -I https://public-enumeration-bucket.s3.amazonaws.com/reports/annual_report_2023.pdf\nHTTP/1.1 403 Forbidden\nx-amz-error-code: AccessDenied\nContent-Type: application/xml\nDate: Fri, 23 May 2024 18:00:00 GMT\nServer: AmazonS3",
+        "cloudtrail_log_event": "{\n  \"eventVersion\": \"1.08\",\n  \"userIdentity\": {\n    \"type\": \"Anonymous\",\n    \"principalId\": \"ANONYMOUS\"\n  },\n  \"eventTime\": \"2024-05-23T18:00:01Z\",\n  \"eventSource\": \"s3.amazonaws.com\",\n  \"eventName\": \"ListBucket\",\n  \"requestParameters\": {\n    \"bucketName\": \"public-enumeration-bucket\"\n  },\n  \"sourceIPAddress\": \"203.0.113.99\",\n  \"userAgent\": \"Mozilla/5.0 (compatible; curl/7.79.1)\",\n  \"requestID\": \"req-abcdef123456\",\n  \"eventID\": \"event-123456abcdef\",\n  \"readOnly\": true\n}"
+      },
+      "indicators": [
+        "Bucket policy allows s3:ListBucket for all principals (*)",
+        "CloudTrail logs record anonymous ListBucket events",
+        "Enumeration of bucket contents possible despite GetObject being denied",
+        "HTTP 403 Forbidden on actual object GET requests without credentials"
+      ],
+      "detection_method": "Scan bucket policies for public ListBucket permissions using AWS Config rules and custom scripts. Monitor CloudTrail for ListBucket API calls by anonymous users. Alert on buckets exposing object listings publicly even if object reads are restricted. Review and remove overly permissive ListBucket statements.",
+      "relevant_mitre_techniques": [
+        "T1083 - File and Directory Discovery",
+        "T1530 - Data from Cloud Storage Object",
+        "T1110 - Brute Force",
+        "T1078.004 - Valid Accounts: Cloud Accounts"
+      ]
+    },
+    {
+      "scenario": "Azure Blob storage container with a stored access policy granting read and list permissions via a widely shared SAS token leading to unintended public data access.",
+      "technical_data": {
+        "azure_cli_sas_token_check": "az storage container policy show --account-name corpdata --container-name shared-data --name readlistpolicy\n{\n  \"permissions\": \"rl\",\n  \"start\": \"2024-05-01T00:00:00Z\",\n  \"expiry\": \"2024-12-31T23:59:59Z\"\n}",
+        "sample_http_request_and_response": "GET https://corpdata.blob.core.windows.net/shared-data/financials/q1_2024.xlsx?sv=2023-01-01&sr=c&sig=sharedsignature&sp=rl&se=2024-12-31T23:59:59Z&st=2024-05-01T00:00:00Z\nHTTP/1.1 200 OK\nContent-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet\nContent-Length: 102400\nLast-Modified: Wed, 01 May 2024 08:00:00 GMT\nx-ms-blob-type: BlockBlob\nx-ms-request-id: 123abc-456def\nDate: Fri, 23 May 2024 19:00:00 GMT\n\n[Binary content of Excel file]",
+        "azure_activity_log": "{\n  \"caller\": \"198.51.100.88\",\n  \"eventName\": {\"value\": \"GetBlob\", \"localizedValue\": \"Get Blob\"},\n  \"eventTimestamp\": \"2024-05-23T19:00:01Z\",\n  \"resourceId\": \"/subscriptions/xxxx/resourceGroups/rg/providers/Microsoft.Storage/storageAccounts/corpdata/blobServices/default/containers/shared-data/blobs/financials/q1_2024.xlsx\",\n  \"status\": \"Succeeded\",\n  \"callerIpAddress\": \"198.51.100.88\",\n  \"category\": \"StorageRead\",\n  \"properties\": {\"requestUrl\": \"https://corpdata.blob.core.windows.net/shared-data/financials/q1_2024.xlsx?sv=...\"}\n}",
+        "storage_account_acl": "{\n  \"Name\": \"shared-data\",\n  \"StoredAccessPolicies\": [\n    {\n      \"Id\": \"readlistpolicy\",\n      \"Permissions\": \"rl\",\n      \"Start\": \"2024-05-01T00:00:00Z\",\n      \"Expiry\": \"2024-12-31T23:59:59Z\"\n    }\n  ]\n}"
+      },
+      "indicators": [
+        "Stored access policy grants read (r) and list (l) permissions via SAS",
+        "SAS token valid for extended period and widely shared",
+        "Anonymous or external IP addresses accessing blobs using SAS tokens",
+        "HTTP 200 OK responses for blob access with SAS tokens"
+      ],
+      "detection_method": "Audit SAS token usage and stored access policies with Azure CLI and Azure Monitor logs. Use Azure Security Center recommendations to review SAS tokens with overly broad permissions or long expiry. Detect unusual IP addresses accessing blobs with SAS tokens. Enforce shorter SAS token lifetimes and restrict permissions.",
+      "relevant_mitre_techniques": [
+        "T1530 - Data from Cloud Storage Object",
+        "T1071.001 - Application Layer Protocol: Web Protocols",
+        "T1213 - Data from Information Repositories",
+        "T1496 - Resource Hijacking"
+      ]
+    },
+    {
+      "scenario": "AWS S3 bucket with a bucket policy that allows PutObject from any principal, enabling unauthenticated users to upload malicious files.",
+      "technical_data": {
+        "bucket_policy": "{\n  \"Version\": \"2012-10-17\",\n  \"Statement\": [\n    {\n      \"Sid\": \"AllowPublicWrite\",\n      \"Effect\": \"Allow\",\n      \"Principal\": \"*\",\n      \"Action\": [\"s3:PutObject\"],\n      \"Resource\": [\"arn:aws:s3:::public-upload-bucket/*\"]\n    }\n  ]\n}",
+        "aws_cli_list_objects": "$ aws s3api list-objects --bucket public-upload-bucket\n{\n  \"Contents\": [\n    {\n      \"Key\": \"uploads/malicious_script.sh\",\n      \"LastModified\": \"2024-05-23T20:00:00.000Z\",\n      \"Size\": 512\n    },\n    {\n      \"Key\": \"uploads/defaced_index.html\",\n      \"LastModified\": \"2024-05-23T20:10:00.000Z\",\n      \"Size\": 2048\n    }\n  ]\n}",
+        "cloudtrail_log_event": "{\n  \"eventVersion\": \"1.08\",\n  \"userIdentity\": {\n    \"type\": \"Anonymous\",\n    \"principalId\": \"ANONYMOUS\"\n  },\n  \"eventTime\": \"2024-05-23T20:00:01Z\",\n  \"eventSource\": \"s3.amazonaws.com\",\n  \"eventName\": \"PutObject\",\n  \"requestParameters\": {\n    \"bucketName\": \"public-upload-bucket\",\n    \"key\": \"uploads/malicious_script.sh\"\n  },\n  \"sourceIPAddress\": \"198.51.100.100\",\n  \"userAgent\": \"curl/7.80.0\",\n  \"requestID\": \"req-abcdef123456\",\n  \"eventID\": \"event-fedcba654321\",\n  \"readOnly\": false\n}",
+        "curl_http_upload_command": "curl -X PUT --upload-file malicious_script.sh https://public-upload-bucket.s3.amazonaws.com/uploads/malicious_script.sh\nHTTP/1.1 200 OK\nx-amz-request-id: req-abcdef123456\nDate: Fri, 23 May 2024 20:00:00 GMT\nServer: AmazonS3"
+      },
+      "indicators": [
+        "Bucket policy allows s3:PutObject action for all principals (*)",
+        "CloudTrail logs show anonymous PutObject events",
+        "Presence of suspicious uploaded files like scripts and defaced web pages",
+        "HTTP 200 OK responses to unauthenticated PUT requests"
+      ],
+      "detection_method": "Scan bucket policies for public write permissions using AWS Config rules and scripts. Monitor CloudTrail for PutObject API calls by anonymous or unexpected principals. Enable S3 server access logging and analyze for unauthorized uploads. Alert on presence of suspicious files uploaded by unknown sources.",
+      "relevant_mitre_techniques": [
+        "T1499 - Endpoint Denial of Service (if attacker uploads malicious files)",
+        "T1530 - Data from Cloud Storage Object",
+        "T1490 - Inhibit System Recovery (if attacker deletes or modifies backups)",
+        "T1078.004 - Valid Accounts: Cloud Accounts"
+      ]
+    },
+    {
+      "scenario": "Google Cloud Storage bucket configured with uniform bucket-level access disabled and IAM policy granting 'allUsers' the 'roles/storage.objectViewer' role exposing confidential marketing materials publicly.",
+      "technical_data": {
+        "gcloud_bucket_iam_policy": "{\n  \"bindings\": [\n    {\n      \"role\": \"roles/storage.objectViewer\",\n      \"members\": [\n        \"allUsers\"\n      ]\n    }\n  ]\n}",
+        "gsutil_list_command": "$ gsutil ls gs://public-marketing-assets\n2024-05-22T14:00:00Z  gs://public-marketing-assets/launch_presentation.pdf\n2024-05-21T09:30:00Z  gs://public-marketing-assets/brand_guidelines.docx",
+        "http_request_and_response": "GET https://storage.googleapis.com/public-marketing-assets/launch_presentation.pdf HTTP/1.1\nHost: storage.googleapis.com\n\n\nHTTP/1.1 200 OK\nContent-Type: application/pdf\nContent-Length: 512000\nLast-Modified: Wed, 22 May 2024 14:00:00 GMT\nx-goog-generation: 1588944000000000\nx-goog-metageneration: 1\n\n[Binary content of PDF]",
+        "audit_log_event": "{\n  \"protoPayload\": {\n    \"authenticationInfo\": {\n      \"principalEmail\": \"anonymous\"\n    },\n    \"methodName\": \"storage.objects.get\",\n    \"resourceName\": \"projects/_/buckets/public-marketing-assets/objects/launch_presentation.pdf\",\n    \"requestMetadata\": {\n      \"callerIp\": \"203.0.113.15\"\n    }\n  },\n  \"timestamp\": \"2024-05-23T12:00:01Z\",\n  \"resource\": {\n    \"labels\": {\n      \"bucket_name\": \"public-marketing-assets\"\n    }\n  }\n}"
+      },
+      "indicators": [
+        "IAM policy binding with \"members\": [\"allUsers\"] granting roles/storage.objectViewer",
+        "Anonymous access to object confirmed in audit logs with principalEmail = \"anonymous\"",
+        "Publicly accessible confidential marketing material files like launch_presentation.pdf",
+        "HTTP 200 OK responses to unauthenticated GET requests on bucket objects"
+      ],
+      "detection_method": "Regular audits of GCS IAM policies using gcloud CLI or Cloud Asset Inventory. Monitoring Google Cloud audit logs for storage.objects.get events with anonymous principals. Automated scanning with tools like Forseti Security or GCP Security Command Center to identify buckets with public access.",
+      "relevant_mitre_techniques": [
+        "T1530 - Data from Cloud Storage Object",
+        "T1078.004 - Valid Accounts: Cloud Accounts",
+        "T1083 - File and Directory Discovery",
+        "T1110 - Brute Force (if attacker attempts to escalate access)"
+      ]
+    },
+    {
+      "scenario": "AWS S3 bucket with bucket ACL set to 'public-read' exposing customer PII data through unrestricted GET object permissions.",
+      "technical_data": {
+        "aws_cli_get_bucket_acl": "$ aws s3api get-bucket-acl --bucket customer-data-bucket\n{\n  \"Owner\": {\n    \"ID\": \"abc123exampleid\"\n  },\n  \"Grants\": [\n    {\n      \"Grantee\": {\n        \"Type\": \"Group\",\n        \"URI\": \"http://acs.amazonaws.com/groups/global/AllUsers\"\n      },\n      \"Permission\": \"READ\"\n    }\n  ]\n}",
+        "aws_cli_list_objects": "$ aws s3api list-objects --bucket customer-data-bucket\n{\n  \"Contents\": [\n    {\n      \"Key\": \"pii/customer_list.csv\",\n      \"LastModified\": \"2024-05-20T18:00:00.000Z\",\n      \"ETag\": \"\\\"a1b2c3d4e5f67890123456789abcdef0\\\"\",\n      \"Size\": 51200,\n      \"StorageClass\": \"STANDARD\"\n    }\n  ]\n}",
+        "curl_http_request": "curl -I https://customer-data-bucket.s3.amazonaws.com/pii/customer_list.csv\nHTTP/1.1 200 OK\nx-amz-id-2: X1Y2Z3W4V5U6T7S8R9Q0P\nx-amz-request-id: 1234567890ABCDEF\nDate: Thu, 23 May 2024 14:00:00 GMT\nLast-Modified: Mon, 20 May 2024 18:00:00 GMT\nETag: \"a1b2c3d4e5f67890123456789abcdef0\"\nAccept-Ranges: bytes\nContent-Type: text/csv\nContent-Length: 51200\nServer: AmazonS3",
+        "cloudtrail_log_event": "{\n  \"eventVersion\": \"1.08\",\n  \"userIdentity\": {\n    \"type\": \"Anonymous\",\n    \"principalId\": \"ANONYMOUS\"\n  },\n  \"eventTime\": \"2024-05-23T14:00:01Z\",\n  \"eventSource\": \"s3.amazonaws.com\",\n  \"eventName\": \"GetObject\",\n  \"requestParameters\": {\n    \"bucketName\": \"customer-data-bucket\",\n    \"key\": \"pii/customer_list.csv\"\n  },\n  \"sourceIPAddress\": \"198.51.100.99\",\n  \"userAgent\": \"curl/7.64.1\",\n  \"requestID\": \"1234567890ABCDEF\",\n  \"eventID\": \"abcdef12-3456-7890-abcd-ef1234567890\",\n  \"readOnly\": true,\n  \"resources\": [\n    {\n      \"type\": \"AWS::S3::Object\",\n      \"ARN\": \"arn:aws:s3:::customer-data-bucket/pii/customer_list.csv\"\n    }\n  ]\n}"
+      },
+      "indicators": [
+        "Bucket ACL includes 'AllUsers' group with READ permission",
+        "CloudTrail logs show anonymous GetObject requests",
+        "Presence of sensitive file names like pii/customer_list.csv accessible publicly",
+        "HTTP 200 OK responses to unauthenticated GET requests"
+      ],
+      "detection_method": "Running AWS Config managed rules such as s3-bucket-public-read-prohibited. Continuous monitoring of bucket ACLs for public read grants. Analyzing CloudTrail logs for anonymous object access events. Enabling S3 Block Public Access settings at bucket and account level.",
+      "relevant_mitre_techniques": [
+        "T1530 - Data from Cloud Storage Object",
+        "T1083 - File and Directory Discovery",
+        "T1078.004 - Valid Accounts: Cloud Accounts"
+      ]
+    },
+    {
+      "scenario": "DigitalOcean Spaces bucket configured with public read permissions, exposing internal DevOps scripts and infrastructure-as-code templates.",
+      "technical_data": {
+        "do_spaces_curl_request": "curl -I https://devops-scripts.nyc3.digitaloceanspaces.com/infra/deploy.yaml\nHTTP/1.1 200 OK\nContent-Type: application/x-yaml\nContent-Length: 1024\nLast-Modified: Fri, 22 May 2024 10:00:00 GMT\nServer: nginx",
+        "spaces_list_objects_response": "[\n  {\n    \"Key\": \"infra/deploy.yaml\",\n    \"LastModified\": \"2024-05-22T10:00:00Z\",\n    \"Size\": 1024\n  },\n  {\n    \"Key\": \"scripts/setup.sh\",\n    \"LastModified\": \"2024-05-21T09:00:00Z\",\n    \"Size\": 2048\n  }\n]",
+        "spaces_bucket_policy": "{\n  \"Version\": \"2012-10-17\",\n  \"Statement\": [\n    {\n      \"Sid\": \"PublicReadGetObject\",\n      \"Effect\": \"Allow\",\n      \"Principal\": \"*\",\n      \"Action\": [\"s3:GetObject\"],\n      \"Resource\": [\"arn:aws:s3:::devops-scripts/*\"]\n    }\n  ]\n}",
+        "spaces_access_log": "{\n  \"requester\": \"anonymous\",\n  \"bucket\": \"devops-scripts\",\n  \"key\": \"infra/deploy.yaml\",\n  \"time\": \"2024-05-23T11:45:00Z\",\n  \"source_ip\": \"198.51.100.77\",\n  \"http_method\": \"GET\",\n  \"status_code\": 200\n}"
+      },
+      "indicators": [
+        "Bucket policy with Principal '*' allowing s3:GetObject",
+        "Anonymous HTTP GET requests with HTTP/1.1 200 OK responses",
+        "Access logs showing anonymous requester fetching infrastructure files",
+        "Presence of sensitive DevOps scripts and YAML templates publicly downloadable"
+      ],
+      "detection_method": "Use DigitalOcean's API to audit Spaces bucket policies for public read permissions. Monitor Spaces access logs for anonymous requests accessing sensitive paths. Implement automated scans with tools like Prowler adapted for DigitalOcean or custom scripts. Use alerting on unusual or anonymous traffic to buckets known to contain sensitive data.",
+      "relevant_mitre_techniques": [
+        "T1530 - Data from Cloud Storage Object",
+        "T1083 - File and Directory Discovery",
+        "T1496 - Resource Hijacking (if attacker uploads malicious files)"
+      ]
+    },
+    {
+      "scenario": "AWS S3 bucket configured with a bucket policy granting 'AWS:SourceIp' condition that is too permissive, allowing external IPs to access confidential customer support tickets.",
+      "technical_data": {
+        "bucket_policy": "{\n  \"Version\": \"2012-10-17\",\n  \"Statement\": [\n    {\n      \"Sid\": \"AllowSpecificIpRange\",\n      \"Effect\": \"Allow\",\n      \"Principal\": \"*\",\n      \"Action\": [\"s3:GetObject\"],\n      \"Resource\": [\"arn:aws:s3:::support-tickets/*\"],\n      \"Condition\": {\n        \"IpAddress\": {\n          \"aws:SourceIp\": [\"203.0.113.0/24\", \"198.51.100.0/24\"]\n        }\n      }\n    }\n  ]\n}",
+        "aws_cli_list_objects": "$ aws s3api list-objects --bucket support-tickets\n{\n  \"Contents\": [\n    {\n      \"Key\": \"tickets/2024-05-22_ticket123.json\",\n      \"LastModified\": \"2024-05-22T08:00:00.000Z\",\n      \"Size\": 4096\n    }\n  ]\n}",
+        "curl_http_request": "curl -I https://support-tickets.s3.amazonaws.com/tickets/2024-05-22_ticket123.json\nHTTP/1.1 200 OK\nContent-Type: application/json\nContent-Length: 4096\nDate: Thu, 23 May 2024 13:30:00 GMT\nServer: AmazonS3",
+        "cloudtrail_log_event": "{\n  \"eventVersion\": \"1.08\",\n  \"userIdentity\": {\n    \"type\": \"Anonymous\",\n    \"principalId\": \"ANONYMOUS\"\n  },\n  \"eventTime\": \"2024-05-23T13:30:01Z\",\n  \"sourceIPAddress\": \"198.51.100.55\",\n  \"eventSource\": \"s3.amazonaws.com\",\n  \"eventName\": \"GetObject\",\n  \"requestParameters\": {\n    \"bucketName\": \"support-tickets\",\n    \"key\": \"tickets/2024-05-22_ticket123.json\"\n  },\n  \"responseElements\": {\n    \"x-amz-request-id\": \"ABCDEFG1234567\",\n    \"x-amz-id-2\": \"abc123xyz456\"\n  },\n  \"userAgent\": \"curl/7.68.0\"\n}"
+      },
+      "indicators": [
+        "Bucket policy with IpAddress condition allowing broad IP ranges",
+        "Anonymous GetObject events from external IPs within the allowed range",
+        "Access to sensitive ticket JSON files publicly available",
+        "HTTP 200 OK responses to GET requests from external IP addresses"
+      ],
+      "detection_method": "Review and tighten IP address conditions in bucket policies using AWS Config rules. Correlate CloudTrail logs with IP address whitelists to detect overly permissive IP conditions. Alert on anonymous access from unexpected IPs. Use AWS Trusted Advisor and third-party scanners to detect IP-based access misconfigurations.",
+      "relevant_mitre_techniques": [
+        "T1530 - Data from Cloud Storage Object",
+        "T1071.001 - Application Layer Protocol: Web Protocols",
+        "T1083 - File and Directory Discovery"
+      ]
+    },
+    {
+      "scenario": "IBM Cloud Object Storage bucket set with public read access at bucket level exposing proprietary research data files.",
+      "technical_data": {
+        "ibm_cos_bucket_policy": "{\n  \"Version\": \"2012-10-17\",\n  \"Statement\": [\n    {\n      \"Effect\": \"Allow\",\n      \"Principal\": \"*\",\n      \"Action\": \"s3:GetObject\",\n      \"Resource\": \"arn:aws:s3:::ibm-research-data/*\"\n    }\n  ]\n}",
+        "ibm_cos_list_objects": "{\n  \"Contents\": [\n    {\n      \"Key\": \"research/2024/genome_study.csv\",\n      \"LastModified\": \"2024-05-18T09:00:00Z\",\n      \"Size\": 1048576\n    }\n  ]\n}",
+        "curl_http_request": "curl -I https://ibm-research-data.s3.us.cloud-object-storage.appdomain.cloud/research/2024/genome_study.csv\nHTTP/1.1 200 OK\nContent-Type: text/csv\nContent-Length: 1048576\nLast-Modified: Sat, 18 May 2024 09:00:00 GMT\nServer: IBM\n",
+        "ibm_cloud_activity_log": "{\n  \"requester\": \"anonymous\",\n  \"bucket\": \"ibm-research-data\",\n  \"object\": \"research/2024/genome_study.csv\",\n  \"timestamp\": \"2024-05-23T10:15:00Z\",\n  \"source_ip\": \"198.51.100.88\",\n  \"operation\": \"GetObject\",\n  \"status\": \"Success\"\n}"
+      },
+      "indicators": [
+        "Bucket policy with 'Principal': '*' and 'Effect': 'Allow' for s3:GetObject",
+        "Anonymous access in IBM Cloud activity logs",
+        "Public access to large proprietary research data files",
+        "HTTP 200 OK responses for unauthenticated requests"
+      ],
+      "detection_method": "Audit IBM Cloud Object Storage bucket policies for public read grants. Enable access logging and monitor for anonymous access events. Use IBM Security Advisor and third-party tools to detect public buckets. Apply IBM Cloud IAM policies to restrict access and enforce private buckets.",
+      "relevant_mitre_techniques": [
+        "T1530 - Data from Cloud Storage Object",
+        "T1083 - File and Directory Discovery",
+        "T1496 - Resource Hijacking"
+      ]
+    }
+  ]
+}

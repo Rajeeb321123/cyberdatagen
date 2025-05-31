@@ -1,0 +1,25 @@
+{
+  "problem": {
+    "area": "Social Engineering",
+    "nature": "deepfake_phishing"
+  },
+  "metrics": {
+    "total_samples": 10,
+    "unique_samples": 10,
+    "uniqueness_ratio": 1.0,
+    "missing_keys_count": 0
+  },
+  "llm_evaluation": {
+    "realism": "The samples are highly realistic, incorporating detailed technical data such as call logs, SIP signaling traces, network packet captures, email headers, and AI detection results with plausible confidence scores. The scenarios reflect current and emerging deepfake phishing tactics, including voice and video deepfakes, social engineering via enterprise chat, and phishing emails with video attachments. The inclusion of timestamps, file hashes, codecs, and domain registration details adds to the authenticity. The social engineering elements, such as urgent requests and impersonation of trusted individuals, are credible and align with known attack patterns.",
+    "consistency": "The dataset maintains good consistency in structure and schema across samples, with each entry containing scenario descriptions, technical data, indicators, detection methods, and relevant MITRE ATT&CK techniques. However, there is some inconsistency in field naming conventions within 'technical_data' (e.g., 'call_log' uses 'call_start'/'call_end' in one sample and 'start_time'/'end_time' in another). Some entries include additional fields like 'call_transcript' or 'pbx_logs' while others do not, which is acceptable given scenario differences but should be documented. The use of ISO 8601 timestamps is consistent. Hash values and file metadata are well-formed and consistent. Overall, schema adherence is strong but could benefit from standardized field names and optional fields documentation.",
+    "suggestions": [
+      "Standardize field names across similar data types (e.g., unify 'call_start' and 'start_time' to a single naming convention).",
+      "Include explicit schema definitions or JSON schema references to clarify optional vs required fields for each scenario type.",
+      "Add more variation in AI detection confidence scores and verdicts to reflect real-world uncertainty and false positives/negatives.",
+      "Incorporate more diverse network indicators such as IP geolocation or ASN data to enrich network context.",
+      "Provide example values or enumerations for fields like 'codec' and 'platform' to ensure controlled vocabulary.",
+      "Consider adding user behavioral analytics data or post-incident remediation steps to enhance detection method context.",
+      "Ensure all base64-encoded content snippets are either fully included or clearly truncated with consistent notation."
+    ]
+  }
+}

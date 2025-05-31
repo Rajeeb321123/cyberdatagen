@@ -1,63 +1,63 @@
 {
   "problems": [
     {
-      "area": "Phishing",
-      "nature": "phishing",
-      "description": "Employees receive emails that appear to come from trusted vendors requesting urgent payment updates. The emails contain links to fraudulent websites designed to capture payment information.",
+      "area": "Phishing Attack",
+      "nature": "credential_harvesting",
+      "description": "Attackers send deceptive emails impersonating trusted entities to trick users into submitting their login credentials on fake websites.",
       "risk_reduction": [
-        "Implement email authentication protocols like SPF, DKIM, and DMARC",
-        "Conduct regular phishing awareness training for employees",
-        "Use advanced email filtering solutions to detect and block phishing attempts"
+        "Implement multi-factor authentication (MFA) to reduce impact of stolen credentials",
+        "Deploy advanced email filtering and anti-phishing tools",
+        "Conduct regular user awareness training and simulated phishing campaigns"
       ]
     },
     {
-      "area": "Phishing",
+      "area": "Phishing Attack",
       "nature": "spear_phishing",
-      "description": "High-profile executives receive targeted emails that appear to come from colleagues, tricking them into revealing sensitive information or transferring funds.",
+      "description": "Highly targeted phishing emails crafted using personal information to deceive specific individuals, often executives, into revealing sensitive data or authorizing fraudulent transactions.",
       "risk_reduction": [
-        "Establish a verification process for financial transactions",
-        "Train executives on recognizing spear phishing tactics",
-        "Utilize email security solutions that analyze sender behavior"
+        "Use threat intelligence to identify and block targeted phishing attempts",
+        "Train high-risk users on recognizing spear phishing tactics",
+        "Enforce strict verification procedures for sensitive requests"
       ]
     },
     {
-      "area": "Phishing",
-      "nature": "whaling",
-      "description": "C-level executives are targeted with highly personalized emails that exploit their interests or recent activities, leading to significant financial loss or data breaches.",
+      "area": "Phishing Attack",
+      "nature": "malicious_attachments",
+      "description": "Phishing emails contain attachments with malware payloads that execute upon opening, compromising the victim’s system.",
       "risk_reduction": [
-        "Implement multi-factor authentication for executive accounts",
-        "Conduct regular security training focused on whaling tactics",
-        "Monitor and analyze email traffic for unusual patterns"
+        "Implement sandboxing and antivirus scanning of email attachments",
+        "Restrict execution of macros and scripts in attachments",
+        "Educate users to avoid opening unexpected or suspicious files"
       ]
     },
     {
-      "area": "A man-in-the-middle (MITM) attack",
-      "nature": "session_hijacking",
-      "description": "An attacker intercepts communication between a user and a web application, capturing session tokens and gaining unauthorized access to user accounts.",
+      "area": "Man-in-the-Middle (MITM) Attack",
+      "nature": "wifi_eavesdropping",
+      "description": "Attackers intercept communications on unsecured or poorly secured Wi-Fi networks to capture sensitive data such as passwords and session tokens.",
       "risk_reduction": [
-        "Enforce HTTPS for all web applications to encrypt data in transit",
-        "Implement secure cookie attributes (e.g., HttpOnly, Secure)",
-        "Use session timeouts and re-authentication for sensitive actions"
+        "Use strong WPA3 encryption on wireless networks",
+        "Encourage use of VPNs when accessing public Wi-Fi",
+        "Disable automatic connection to open Wi-Fi networks"
       ]
     },
     {
-      "area": "A man-in-the-middle (MITM) attack",
-      "nature": "Wi-Fi_eavesdropping",
-      "description": "Users connect to unsecured public Wi-Fi networks, allowing attackers to intercept and manipulate data transmitted over the network.",
+      "area": "Man-in-the-Middle (MITM) Attack",
+      "nature": "ssl_stripping",
+      "description": "Attackers downgrade HTTPS connections to HTTP by intercepting and modifying traffic, exposing sensitive data transmitted in plaintext.",
       "risk_reduction": [
-        "Encourage the use of VPNs when accessing public Wi-Fi",
-        "Educate users about the risks of connecting to unsecured networks",
-        "Implement network segmentation to limit exposure to sensitive data"
+        "Enforce HTTPS with HSTS (HTTP Strict Transport Security)",
+        "Use certificate pinning in applications",
+        "Regularly monitor and audit SSL/TLS configurations"
       ]
     },
     {
-      "area": "A man-in-the-middle (MITM) attack",
-      "nature": "SSL_stripping",
-      "description": "An attacker downgrades a user's connection from HTTPS to HTTP, allowing them to intercept sensitive information such as login credentials.",
+      "area": "Man-in-the-Middle (MITM) Attack",
+      "nature": "dns_spoofing",
+      "description": "Attackers manipulate DNS responses to redirect users to malicious sites without their knowledge, enabling credential theft or malware delivery.",
       "risk_reduction": [
-        "Enforce HSTS (HTTP Strict Transport Security) on web applications",
-        "Educate users to check for HTTPS in the browser before entering sensitive information",
-        "Use secure coding practices to prevent protocol downgrades"
+        "Deploy DNSSEC to validate DNS responses",
+        "Use trusted DNS resolvers with filtering capabilities",
+        "Monitor DNS traffic for anomalies and unauthorized changes"
       ]
     }
   ]

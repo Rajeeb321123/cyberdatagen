@@ -1,114 +1,293 @@
-import os
-import json
-from pathlib import Path
-from dotenv import load_dotenv
-from langchain.chat_models import ChatOpenAI
-from langchain.schema import SystemMessage, HumanMessage
+# cyberdata/scripts/validate_small.py
 
-# This code aims to use LLM as an initial step to validate the generated seeds for each problem.  
-# We expect the LLM to help separate valid, beneficial seeds from unuseful ones. 
+import json
+import os
+import sys
+from pathlib import Path
+
+from dotenv import load_dotenv
+
+# Import process_llm_request from your utility module
+from cyberdata.utils.llm_invoke import process_llm_request
+from cyberdata.utils.logger_config import setup_logger
+
+# Set up logger
+logger = setup_logger("cyberdata.scripts.validate_small")
+
+# Add parent directory to path for imports
+CURRENT_DIR = Path(__file__).parent
+PROJECT_ROOT = CURRENT_DIR.parent.parent.parent
+sys.path.append(str(CURRENT_DIR.parent))  # Add cyberdata package to path
+logger.debug(f"Added {CURRENT_DIR.parent} to sys.path")
 
 # Load environment variables
 load_dotenv()
 
 # Constants
-SEEDS_DIR = Path('./data/seeds')  # CSV or JSON files with sample data
-OUTPUT_DIR = Path('./data/validation_reports')
-OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
+MODEL_NAME = "gpt-4.1-mini"  # Match with small_dataset.py
+PROBLEMS_UPDATED_PATH = CURRENT_DIR.parent / 'config' / 'problems_updated.json'
+PROBLEMS_PATH = CURRENT_DIR.parent / 'config' / 'problems.json'
+SEEDS_DIR = PROJECT_ROOT / 'data' / 'seeds'
+VALIDATION_DIR = PROJECT_ROOT / 'data' / 'validation_reports'
 
-# Initialize chat model
-api_key = os.getenv('OPENAI_API_KEY')
-chat = ChatOpenAI(temperature=0, openai_api_key=api_key)
+logger.info(f"Using model: {MODEL_NAME}")
+logger.info(f"Problems updated path: {PROBLEMS_UPDATED_PATH}")
+logger.info(f"Problems fallback path: {PROBLEMS_PATH}")
+logger.info(f"Seeds directory: {SEEDS_DIR}")
+logger.info(f"Validation directory: {VALIDATION_DIR}")
+
+VALIDATION_DIR.mkdir(parents=True, exist_ok=True)
+logger.info(f"Created validation directory: {VALIDATION_DIR}")
 
 
-def make_system_prompt(example: dict) -> str:
+def load_problems(file_path: Path = None) -> list:
+    """
+    Load problem definitions from config, prioritizing problems_updated.json
+    
+    Args:
+        file_path (Path, optional): Specific file path to load. If None, will auto-select.
+    
+    Returns:
+        list: List of problems loaded from the appropriate file
+    """
+    # If specific file_path is provided, use it
+    if file_path:
+        if not file_path.exists():
+            logger.error(f"Specified problems config not found: {file_path}")
+            raise FileNotFoundError(f"Specified problems config not found: {file_path}")
+        data = json.loads(file_path.read_text(encoding='utf-8'))
+        problems = data.get('problems', [])
+        logger.info(f"Loaded {len(problems)} problems from {file_path}")
+        return problems
+    
+    # Auto-select: prioritize problems_updated.json, fallback to problems.json
+    if PROBLEMS_UPDATED_PATH.exists():
+        logger.info(f"Using updated problems file: {PROBLEMS_UPDATED_PATH}")
+        try:
+            data = json.loads(PROBLEMS_UPDATED_PATH.read_text(encoding='utf-8'))
+            problems = data.get('problems', [])
+            logger.info(f"Loaded {len(problems)} problems from {PROBLEMS_UPDATED_PATH}")
+            return problems
+        except Exception as e:
+            logger.warning(f"Error loading updated problems file: {str(e)}")
+            logger.info("Falling back to original problems.json")
+    
+    # Fallback to original problems.json
+    if PROBLEMS_PATH.exists():
+        logger.info(f"Using original problems file: {PROBLEMS_PATH}")
+        try:
+            data = json.loads(PROBLEMS_PATH.read_text(encoding='utf-8'))
+            problems = data.get('problems', [])
+            logger.info(f"Loaded {len(problems)} problems from {PROBLEMS_PATH}")
+            return problems
+        except Exception as e:
+            logger.error(f"Error loading original problems file: {str(e)}", exc_info=True)
+            raise
+    
+    # If neither file exists, raise an error
+    logger.error(f"No problems config found. Checked: {PROBLEMS_UPDATED_PATH}, {PROBLEMS_PATH}")
+    raise FileNotFoundError(f"No problems config found. Checked: {PROBLEMS_UPDATED_PATH}, {PROBLEMS_PATH}")
+
+
+def make_system_prompt(problem: dict, example: dict) -> str:
     """
     System prompt to instruct the LLM on validation criteria.
     """
-    return (
-        "You are a cybersecurity data validation assistant. "
-        "Your task is to assess whether the given sample correctly represents its stated cybersecurity problem and to provide detailed feedback.\n"
-        "Validation criteria:\n"
-        "1. Correctness: Does the sample align with the problem nature?\n"
-        "2. Realism: Is the example plausible in a real-world scenario?\n"
-        "3. Completeness: Are all required fields present and accurately populated?\n"
-        "4. Indicators: Do the indicators clearly explain why the sample matches the problem?"
-    )
+    logger.debug(f"Creating system prompt for problem: {problem['nature']}")
+    return f"""
+You are a cybersecurity data validation assistant. 
+Your task is to assess whether the given sample correctly represents the stated cybersecurity problem and to provide detailed feedback.
+
+Problem:
+- Area: {problem['area']}
+- Nature: {problem['nature']}
+- Description: {problem.get('description')}
+- Risk Reduction: {', '.join(problem.get('risk_reduction', []))}
+
+Validation criteria:
+1. Correctness: Does the sample align with the problem nature?
+2. Realism: Is the example plausible in a real-world scenario?
+3. Completeness: Are all required fields present and accurately populated?
+4. Indicators: Do the indicators clearly explain why the sample matches the problem?
+"""
 
 
 def make_user_prompt(example: dict) -> str:
     """
-    Human prompt embedding the example to be validated.
+    User prompt embedding the example to be validated.
     """
+    logger.debug("Creating user prompt with example")
     # Serialize example to JSON string
     example_json = json.dumps(example, indent=2)
-    return f"Please validate the following sample and return a JSON object with keys:\n" \
-           "- 'valid': boolean, whether the sample is valid.\n" \
-           "- 'issues': list of strings describing any problems or missing elements.\n" \
-           "- 'comments': detailed feedback on improvements.\n" \
-           "Sample:\n{example_json}"
+    return f"""
+Please validate the following sample and return a JSON object with keys:
+- 'valid': boolean, whether the sample is valid.
+- 'issues': list of strings describing any problems or missing elements.
+- 'comments': detailed feedback on improvements.
+
+Sample:
+{example_json}
+
+Return only valid JSON.
+"""
 
 
-def validate_example(example: dict) -> dict:
+def validate_example(problem: dict, example: dict) -> dict:
     """
     Call the LLM to validate a single example.
     """
-    sys_msg = SystemMessage(content=make_system_prompt(example))
-    usr_msg = HumanMessage(content=make_user_prompt(example))
-    response = chat([sys_msg, usr_msg])
+    logger.info(f"Validating example for problem: {problem['nature']}")
+    
+    system_content = make_system_prompt(problem, example)
+    user_content = make_user_prompt(example)
+    
+    # Use process_llm_request instead of direct model call
+    logger.info(f"Calling LLM for validation")
+    response_content = process_llm_request(
+        system_prompt=system_content,
+        user_prompt=user_content,
+        model_name=MODEL_NAME,
+        temperature=0.0  # Use 0 for consistent validation
+    )
+    
+    logger.debug(f"Response received, length: {len(response_content)} characters")
+    
     # Parse and return the JSON response
     try:
-        return json.loads(response.content)
-    except json.JSONDecodeError:
+        # Clean up content by removing markdown code blocks if present
+        if response_content.startswith('```'):
+            logger.debug("Response starts with code block, cleaning up")
+            # Find the first and last backtick groups
+            first_backticks_end = response_content.find('\n', 3)
+            if first_backticks_end != -1:
+                # Find the closing backticks
+                last_backticks_start = response_content.rfind('```')
+                if last_backticks_start > first_backticks_end:
+                    # Extract the content between the backticks
+                    response_content = response_content[first_backticks_end + 1:last_backticks_start].strip()
+                    logger.debug("Extracted content between backticks")
+                else:
+                    # Just remove the first backticks line if no closing backticks found
+                    response_content = response_content[first_backticks_end + 1:].strip()
+                    logger.debug("Removed first backticks line")
+                    
+        result = json.loads(response_content)
+        logger.debug(f"Successfully parsed JSON response: valid={result.get('valid', False)}")
+        return result
+    except json.JSONDecodeError as e:
         # If parsing fails, wrap raw content
-        return {"valid": False, "issues": ["Invalid JSON response"], "comments": response.content}
+        logger.error(f"Failed to parse JSON response: {str(e)}")
+        logger.debug(f"Raw response: {response_content[:100]}...")
+        return {"valid": False, "issues": ["Invalid JSON response"], "comments": response_content}
+
+
+def find_examples_file(problem):
+    """
+    Find the examples file for a specific problem.
+    """
+    area = problem['area']
+    nature = problem['nature']
+    
+    # Create a sanitized version of area and nature for filename matching
+    sanitized_area = area.replace(' ', '_').replace('(', '').replace(')', '').replace('-', '_')
+    sanitized_nature = nature.replace(' ', '_')
+    
+    logger.debug(f"Looking for examples file for {sanitized_area}/{sanitized_nature}")
+    
+    # Check for the file in the area-specific directory
+    area_dir = SEEDS_DIR / sanitized_area
+    if area_dir.exists():
+        filename = f"{sanitized_nature}_examples.json"
+        example_file = area_dir / filename
+        
+        if example_file.exists():
+            logger.debug(f"Found examples file: {example_file}")
+            return example_file
+    
+    # If not found, try looking for the file in other area directories
+    logger.debug("Examples file not found in expected location, searching all areas")
+    for dir_path in SEEDS_DIR.glob('*'):
+        if dir_path.is_dir():
+            for file_path in dir_path.glob('*.json'):
+                if sanitized_nature.lower() in file_path.name.lower():
+                    logger.debug(f"Found examples file in alternative location: {file_path}")
+                    return file_path
+    
+    logger.warning(f"No examples file found for {area}/{nature}")
+    return None
 
 
 def main():
-    # Load problem definitions to map to seed files
-    problems = json.loads(Path('./config/problems.json').read_text(encoding='utf-8')).get('problems', [])
+    # Load problem definitions (auto-selects the appropriate file)
+    logger.info("Starting validation of seed examples")
+    problems = load_problems()
+    
     for problem in problems:
-        area = problem.get('area', '').lower()
-        nature = problem.get('nature', '')
-        seed_filename = f"{area}_{nature}_seed.csv"
-        seed_path = SEEDS_DIR / seed_filename
-        if not seed_path.exists():
-            print(f"Seed file not found for problem {nature} at {seed_path}, skipping.")
+        area = problem['area']
+        nature = problem['nature']
+        logger.info(f"Validating samples for problem: {area}/{nature}")
+        
+        # Find the examples file for this problem
+        example_file_path = find_examples_file(problem)
+        
+        if not example_file_path:
+            logger.warning(f"Examples file not found for problem {nature}, skipping.")
             continue
-
-        # Read CSV into examples
-        import pandas as pd
-        df = pd.read_csv(seed_path)
-        examples = df.to_dict(orient='records')
-
+        
+        # Load examples
+        try:
+            with example_file_path.open('r', encoding='utf-8') as f:
+                examples_data = json.load(f)
+                examples = examples_data.get('examples', [])
+            
+            logger.info(f"Loaded {len(examples)} examples from {example_file_path}")
+        except Exception as e:
+            logger.error(f"Error loading examples from {example_file_path}: {str(e)}", exc_info=True)
+            continue
+        
+        if not examples:
+            logger.warning(f"No examples found in {example_file_path}, skipping.")
+            continue
+            
         report = []
-        print(f"Validating samples for problem: {nature}...")
-        for idx, ex in enumerate(examples):
-            # Enrich example with problem metadata
-            example_payload = ex.copy()
-            example_payload.update({
-                'area': problem.get('area'),
-                'nature': nature,
-                'description': problem.get('description'),
-                'risk_reduction': problem.get('risk_reduction')
-            })
-            result = validate_example(example_payload)
+        for idx, example in enumerate(examples):
+            logger.info(f"  Validating example {idx+1}/{len(examples)}...")
+            
+            result = validate_example(problem, example)
+            
             entry = {
                 "index": idx,
                 "problem": {
-                    "area": problem.get('area'),
+                    "area": problem['area'],
                     "nature": nature
                 },
-                "example": ex,
+                "example": example,
                 "validation": result
             }
             report.append(entry)
-
-        # Save validation report specific to this problem
-        report_path = OUTPUT_DIR / f"{area}_{nature}_validation.json"
+            logger.debug(f"Added validation result for example {idx+1} to report")
+        
+        # Create area-specific directory structure for validation reports
+        sanitized_area = area.replace(' ', '_').replace('(', '').replace(')', '').replace('-', '_')
+        sanitized_nature = nature.replace(' ', '_')
+        
+        # Create area directory in validation reports
+        area_validation_dir = VALIDATION_DIR / sanitized_area
+        area_validation_dir.mkdir(parents=True, exist_ok=True)
+        logger.debug(f"Created validation directory for area: {area_validation_dir}")
+        
+        # Create filename for the report
+        report_filename = f"{sanitized_nature}_validation.json"
+        
+        # Save validation report
+        report_path = area_validation_dir / report_filename
         with report_path.open('w', encoding='utf-8') as f:
             json.dump({"report": report}, f, indent=2)
-        print(f"Saved validation report for {nature} to {report_path}")
+        
+        logger.info(f"Saved validation report for {area}/{nature} to {report_path}")
+
+    logger.info("Completed validation of seed examples")
+
 
 if __name__ == '__main__':
     main()

