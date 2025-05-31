@@ -212,3 +212,6 @@ The toolkit implements multi-layered quality assurance:
 ## 📄 License
 
 This project is licensed under the MIT License - see the LICENSE file for details.
+
+## 📫 Contact
+knowledgeivy01@gmail.com
