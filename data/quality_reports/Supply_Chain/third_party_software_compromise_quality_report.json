@@ -1,0 +1,338 @@
+{
+  "problem": {
+    "area": "Supply Chain",
+    "nature": "third_party_software_compromise",
+    "description": "Attackers compromise software dependencies or update mechanisms to inject malicious code into widely distributed software."
+  },
+  "automated_metrics": {
+    "total_samples": 10,
+    "unique_samples": 10,
+    "uniqueness_ratio": 1.0,
+    "missing_keys_count": 0,
+    "completeness_ratio": 1.0
+  },
+  "individual_validations": {
+    "summary": {
+      "samples_validated": 10,
+      "valid_samples": 10,
+      "invalid_samples": 0,
+      "validity_rate": 1.0,
+      "average_scores": {
+        "relevance": 1.0,
+        "relevance_std": 0.0,
+        "consistency": 0.96,
+        "consistency_std": 0.0316227766016838,
+        "correctness": 0.915,
+        "correctness_std": 0.03374742788552763,
+        "completeness": 0.915,
+        "completeness_std": 0.024152294576982366,
+        "realism": 0.915,
+        "realism_std": 0.024152294576982366
+      },
+      "overall_score_mean": 0.9410000000000001,
+      "overall_score_std": 0.020248456731316554,
+      "score_distribution": {
+        "excellent": 10,
+        "good": 0,
+        "fair": 0,
+        "poor": 0
+      },
+      "common_issues": [
+        [
+          "Malicious code snippet uses Python for a system utility which is uncommon but plausible; typically system utilities are compiled binaries.",
+          1
+        ],
+        [
+          "Checksum is repeated identically for both package and file, which is plausible but could be clarified if the file is the entire package or part of it.",
+          1
+        ],
+        [
+          "SBOM checksum is stated as not matching official baseline but no baseline checksum provided for direct comparison.",
+          1
+        ],
+        [
+          "Network capture detail is brief and could include more metadata (e.g., packet timestamps, full capture context).",
+          1
+        ],
+        [
+          "Use of FTP for exfiltration is somewhat outdated and less common in modern attacks, though still plausible.",
+          1
+        ],
+        [
+          "No explicit mention of baseline checksum value for mismatch indicator, which would improve completeness.",
+          1
+        ],
+        [
+          "SSL certificate issuer labeled as 'Fake CA' is plausible but could be more detailed to reflect typical attacker behavior (e.g., self-signed or compromised CA).",
+          1
+        ],
+        [
+          "SBOM checksum mismatch is mentioned in indicators but the SBOM record itself shows a matching checksum; this could cause slight confusion.",
+          1
+        ],
+        [
+          "MIT license stated in SBOM but no mention if malicious code violates license terms or is a forked version.",
+          1
+        ],
+        [
+          "MITRE technique T1059.001 references PowerShell, but the malicious code snippet is Ruby-based; slight mismatch in technique relevance.",
+          1
+        ]
+      ]
+    },
+    "detailed_results": [
+      {
+        "is_valid": true,
+        "scores": {
+          "relevance": 1.0,
+          "consistency": 0.95,
+          "correctness": 0.9,
+          "completeness": 0.9,
+          "realism": 0.9
+        },
+        "overall_score": 0.93,
+        "issues": [
+          "Malicious code snippet uses Python for a system utility which is uncommon but plausible; typically system utilities are compiled binaries.",
+          "Checksum is repeated identically for both package and file, which is plausible but could be clarified if the file is the entire package or part of it."
+        ],
+        "strengths": [
+          "Scenario clearly matches supply chain third-party software compromise.",
+          "Technical data is detailed and well-structured with metadata, manifest, logs, and process tree.",
+          "Indicators and detection methods are comprehensive and aligned with the scenario.",
+          "Relevant MITRE ATT&CK techniques are correctly identified and appropriate.",
+          "Network and repository logs support the narrative of compromise and detection."
+        ],
+        "sample_index": 1
+      },
+      {
+        "is_valid": true,
+        "scores": {
+          "relevance": 1.0,
+          "consistency": 1.0,
+          "correctness": 0.95,
+          "completeness": 0.95,
+          "realism": 0.95
+        },
+        "overall_score": 0.97,
+        "issues": [
+          "SBOM checksum is stated as not matching official baseline but no baseline checksum provided for direct comparison.",
+          "Network capture detail is brief and could include more metadata (e.g., packet timestamps, full capture context)."
+        ],
+        "strengths": [
+          "Highly relevant to supply chain compromise via third-party software (container image registry).",
+          "Consistent and well-structured JSON schema with appropriate fields for scenario, technical data, indicators, detection methods, and MITRE techniques.",
+          "Technical details such as dockerfile modification, manifest schema, registry logs, and network behavior are accurate and plausible.",
+          "Includes multiple complementary data points (registry logs, SBOM, network capture) supporting detection and investigation.",
+          "Realistic attack vector and detection methods aligned with known threat techniques and industry best practices."
+        ],
+        "sample_index": 6
+      },
+      {
+        "is_valid": true,
+        "scores": {
+          "relevance": 1.0,
+          "consistency": 1.0,
+          "correctness": 0.95,
+          "completeness": 0.95,
+          "realism": 0.9
+        },
+        "overall_score": 0.96,
+        "issues": [
+          "Use of FTP for exfiltration is somewhat outdated and less common in modern attacks, though still plausible.",
+          "No explicit mention of baseline checksum value for mismatch indicator, which would improve completeness."
+        ],
+        "strengths": [
+          "Highly relevant to supply chain compromise via third-party software dependencies.",
+          "Consistent and well-structured data with appropriate fields and logs.",
+          "Technical details such as package manifest, malicious code snippet, and logs are accurate and plausible.",
+          "Includes multiple indicators and detection methods aligned with MITRE ATT&CK techniques.",
+          "Realistic scenario involving credential compromise and malicious payload injection in a popular package repository."
+        ],
+        "sample_index": 0
+      },
+      {
+        "is_valid": true,
+        "scores": {
+          "relevance": 1.0,
+          "consistency": 0.95,
+          "correctness": 0.9,
+          "completeness": 0.9,
+          "realism": 0.9
+        },
+        "overall_score": 0.93,
+        "issues": [
+          "SSL certificate issuer labeled as 'Fake CA' is plausible but could be more detailed to reflect typical attacker behavior (e.g., self-signed or compromised CA).",
+          "SBOM checksum mismatch is mentioned in indicators but the SBOM record itself shows a matching checksum; this could cause slight confusion."
+        ],
+        "strengths": [
+          "Scenario is highly relevant to supply chain third-party software compromise.",
+          "Technical data is detailed and follows a consistent schema with realistic fields.",
+          "Malicious script snippet is plausible and technically accurate for exfiltrating SSH keys.",
+          "Inclusion of update logs, SSL certificate details, SBOM record, and indicators provides comprehensive context.",
+          "Detection methods and MITRE techniques are well aligned with the scenario.",
+          "Overall example is realistic and could represent a real-world attack."
+        ],
+        "sample_index": 7
+      },
+      {
+        "is_valid": true,
+        "scores": {
+          "relevance": 1.0,
+          "consistency": 0.95,
+          "correctness": 0.9,
+          "completeness": 0.9,
+          "realism": 0.9
+        },
+        "overall_score": 0.93,
+        "issues": [
+          "MIT license stated in SBOM but no mention if malicious code violates license terms or is a forked version.",
+          "MITRE technique T1059.001 references PowerShell, but the malicious code snippet is Ruby-based; slight mismatch in technique relevance."
+        ],
+        "strengths": [
+          "Highly relevant to supply chain compromise via third-party software (Ruby gem).",
+          "Consistent and well-structured data with appropriate fields and logs.",
+          "Technical details such as gem name, version, checksum, and code snippet are plausible and accurate.",
+          "Includes multiple complementary logs (build, install, network) and SBOM data supporting the scenario.",
+          "Indicators and detection methods are comprehensive and actionable.",
+          "Realistic attack vector and behavior consistent with known supply chain compromise tactics."
+        ],
+        "sample_index": 8
+      },
+      {
+        "is_valid": true,
+        "scores": {
+          "relevance": 1.0,
+          "consistency": 0.95,
+          "correctness": 0.95,
+          "completeness": 0.9,
+          "realism": 0.95
+        },
+        "overall_score": 0.95,
+        "issues": [
+          "Minor inconsistency: 'artifact_repository_log' timestamp and 'build_log' timestamp differ by about 13 minutes without explanation, which could be clarified.",
+          "The 'malicious_bytecode_snippet' uses a static initializer block which is plausible but uncommon for such payloads; however, this is not a major issue."
+        ],
+        "strengths": [
+          "Highly relevant to supply chain compromise via third-party software dependencies.",
+          "Consistent and well-structured JSON schema with appropriate fields.",
+          "Technical details such as Maven coordinates, artifact metadata, and network capture are accurate and plausible.",
+          "Includes multiple complementary indicators and detection methods.",
+          "References appropriate MITRE ATT&CK techniques relevant to the scenario.",
+          "Realistic scenario with credible attack vector and detection strategies."
+        ],
+        "sample_index": 2
+      },
+      {
+        "is_valid": true,
+        "scores": {
+          "relevance": 1.0,
+          "consistency": 1.0,
+          "correctness": 0.95,
+          "completeness": 0.95,
+          "realism": 0.95
+        },
+        "overall_score": 0.97,
+        "issues": [
+          "Minor technical detail: The code snippet's network call does not handle exceptions which is uncommon in production code.",
+          "Checksum value is a placeholder and not verifiable as a real hash."
+        ],
+        "strengths": [
+          "Highly relevant scenario matching supply chain compromise via third-party plugin repository.",
+          "Consistent and well-structured data with appropriate fields and formats.",
+          "Technically plausible malicious code snippet demonstrating SMS interception and exfiltration.",
+          "Comprehensive inclusion of CI/CD logs, network logs, build manifest, permissions, and indicators.",
+          "Realistic detection methods and relevant MITRE ATT&CK techniques cited."
+        ],
+        "sample_index": 4
+      },
+      {
+        "is_valid": true,
+        "scores": {
+          "relevance": 1.0,
+          "consistency": 0.9,
+          "correctness": 0.85,
+          "completeness": 0.9,
+          "realism": 0.9
+        },
+        "overall_score": 0.91,
+        "issues": [
+          "Container image digest contains an invalid character 'g' which is not hexadecimal.",
+          "The network traffic description is minimal and could include more detail such as protocol specifics.",
+          "SBOM record is presented as a string rather than a structured object which may reduce clarity."
+        ],
+        "strengths": [
+          "Scenario is highly relevant to supply chain compromise via third-party software.",
+          "Technical data covers multiple relevant artifacts: manifest, Dockerfile snippet, logs, network, runtime processes, and SBOM.",
+          "Indicators clearly highlight suspicious behaviors consistent with the attack scenario.",
+          "Detection methods are comprehensive and aligned with best practices.",
+          "MITRE techniques referenced are appropriate and well matched to the scenario."
+        ],
+        "sample_index": 3
+      },
+      {
+        "is_valid": true,
+        "scores": {
+          "relevance": 1.0,
+          "consistency": 0.95,
+          "correctness": 0.9,
+          "completeness": 0.9,
+          "realism": 0.9
+        },
+        "overall_score": 0.93,
+        "issues": [
+          "The PowerShell snippet uses Get-ChildItem on 'HKLM:\\SAM' which is not a typical method to extract credential hashes; usually tools or APIs like mimikatz or direct registry hive parsing are used.",
+          "SBOM checksum mismatch is stated but no baseline checksum is provided for direct comparison.",
+          "The MD5, SHA1, and SHA256 hashes given correspond to well-known test vectors (e.g., MD5 of 'The quick brown fox...'), which may reduce realism slightly."
+        ],
+        "strengths": [
+          "Scenario is highly relevant to supply chain compromise via third-party software update mechanisms.",
+          "Technical data is detailed and well-structured, including installer details, hashes, CI/CD logs, network traffic, code signing verification, and SBOM record.",
+          "Indicators and detection methods align well with the scenario and MITRE ATT&CK techniques.",
+          "Use of multiple data sources (logs, network, code signing, SBOM) enhances completeness and realism.",
+          "MITRE techniques cited are appropriate and specific to the attack vector described."
+        ],
+        "sample_index": 9
+      },
+      {
+        "is_valid": true,
+        "scores": {
+          "relevance": 1.0,
+          "consistency": 0.95,
+          "correctness": 0.9,
+          "completeness": 0.9,
+          "realism": 0.9
+        },
+        "overall_score": 0.93,
+        "issues": [
+          "The hash value 'sha256:5f4dcc3b5aa765d61d8327deb882cf99' is a well-known MD5 hash of 'password' and unlikely to be a real SHA256 hash for a package, which slightly reduces correctness and realism.",
+          "The malicious code snippet uses urllib.request.urlopen with a 'data' parameter, which is not a valid argument for urlopen; this is a minor technical inaccuracy affecting correctness."
+        ],
+        "strengths": [
+          "Scenario is highly relevant and clearly describes a supply chain compromise via third-party software.",
+          "Technical data is well structured and follows expected schema with package metadata, hashes, logs, and SBOM records.",
+          "Indicators and detection methods are comprehensive and align well with the scenario.",
+          "MITRE ATT&CK techniques are correctly identified and relevant.",
+          "The example realistically models a trojanized Python wheel with plausible attack behavior."
+        ],
+        "sample_index": 5
+      }
+    ]
+  },
+  "overall_assessment": {
+    "realism": "The samples are highly realistic and reflect plausible real-world supply chain compromise scenarios. They include credible technical details such as package names, versions, hashes, logs, and code snippets that align well with known attack techniques. The use of appropriate protocols (FTP, HTTPS, TCP), relevant MITRE ATT&CK techniques, and typical indicators of compromise further enhance their authenticity. Minor details like timestamps, user names, and network addresses are consistent with expected patterns in such incidents.",
+    "consistency": "The samples maintain good uniformity in structure and schema adherence. Each entry contains a scenario description, detailed technical data with relevant fields per software type (Python packages, Ruby gems, container images, update packages), indicators, detection methods, and relevant MITRE techniques. The naming conventions and data types are consistent across samples. Some minor inconsistencies exist in field naming (e.g., 'hash' vs 'checksum' vs 'digest') but these reflect domain-specific terminology and do not detract from overall schema coherence.",
+    "suggestions": [
+      "Standardize hash field naming across samples (e.g., always use 'checksum' or 'hash') to improve schema uniformity.",
+      "Include explicit file paths or filenames for malicious code snippets where applicable to clarify injection points (e.g., specify '__init__.py' or 'entrypoint.sh').",
+      "Add more precise timestamps in logs to enhance temporal correlation and incident reconstruction.",
+      "Incorporate more metadata about the environment or affected systems (e.g., OS versions, runtime environments) to increase context richness.",
+      "Consider adding a unique identifier field per sample for easier referencing and indexing.",
+      "Ensure all network addresses and domains used in examples are clearly fictional or reserved to avoid accidental real-world conflicts."
+    ]
+  },
+  "report_metadata": {
+    "total_samples": 10,
+    "samples_validated_individually": 10,
+    "validation_percentage": 100.0
+  }
+}

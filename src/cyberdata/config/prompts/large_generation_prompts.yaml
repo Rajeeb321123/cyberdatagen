@@ -1,0 +1,68 @@
+version: "1.0"
+description: "Prompts for generating large synthetic datasets from seed examples"
+author: "CyberData Team"
+last_updated: "2024-12-01"
+
+prompts:
+  # Main generation prompt
+  generation:
+    system:
+      template: |
+        You are a cybersecurity synthetic data generator specialized in creating realistic examples. 
+        Given a few example samples of a cybersecurity problem, generate additional samples following the same schema. 
+        Focus on technical accuracy and realism. Return valid JSON with a 'samples' key containing an array of examples.
+
+    user:
+      template: |
+        Problem Nature: {nature} (Area: {area})
+        Description: {description}
+        Seed Examples:
+        {examples_json}
+
+        Please generate {count} additional unique examples following the exact same structure as the examples. 
+        Each example should include the same fields as the examples provided. 
+        Make sure the examples are realistic and technically accurate for {nature} scenarios. 
+        Return ONLY valid JSON with a 'samples' key containing an array of generated examples.
+      
+      variables:
+        - nature
+        - area
+        - description
+        - examples_json
+        - count
+
+  # Backup generation prompt (when seeds are not available)
+  backup_generation:
+    system:
+      template: |
+        You are a cybersecurity example generator. Create examples 
+        for {nature} attacks in the {area} context. Return valid JSON.
+      
+      variables:
+        - nature
+        - area
+
+    user:
+      template: |
+        Generate {count} examples of {nature} attacks. 
+        Description: {description}
+        
+        Return ONLY a JSON object with a 'samples' array.
+      
+      variables:
+        - count
+        - nature
+        - description
+
+metadata:
+  models:
+    - name: "gpt-4.1-mini"
+      max_tokens: 16384
+      temperature:
+        generation: 0.7
+        validation: 0.0
+  
+  batch_settings:
+    default_batch_size: 5
+    max_batch_size: 10
+    retry_attempts: 3

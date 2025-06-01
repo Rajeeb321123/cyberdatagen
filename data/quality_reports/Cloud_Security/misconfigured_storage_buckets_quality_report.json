@@ -1,23 +1,333 @@
 {
   "problem": {
     "area": "Cloud Security",
-    "nature": "misconfigured_storage_buckets"
+    "nature": "misconfigured_storage_buckets",
+    "description": "Publicly exposed cloud storage buckets (e.g., AWS S3, Azure Blob) leading to data leakage or unauthorized access."
   },
-  "metrics": {
+  "automated_metrics": {
     "total_samples": 10,
     "unique_samples": 10,
     "uniqueness_ratio": 1.0,
-    "missing_keys_count": 0
+    "missing_keys_count": 0,
+    "completeness_ratio": 1.0
   },
-  "llm_evaluation": {
-    "realism": "The samples are highly realistic, reflecting actual cloud storage misconfiguration scenarios across multiple providers (AWS, DigitalOcean, IBM Cloud, Azure). The technical data includes plausible bucket policies, CLI commands, API responses, and log entries consistent with real-world cloud environments and attack patterns. The timestamps, IP addresses, and file names are credible and contextually appropriate. The inclusion of relevant MITRE ATT&CK techniques further enhances authenticity.",
-    "consistency": "The samples maintain good consistency in structure and schema adherence. Each entry contains the required fields: scenario, technical_data, indicators, detection_method, and relevant_mitre_techniques. The technical_data fields are provider-specific but consistently formatted with JSON policies, CLI outputs, HTTP responses, and logs. Minor variations in field naming (e.g., 'curl_http_upload_command' vs 'curl_http_request') are acceptable given differing contexts. Overall, the dataset is uniform and well-organized.",
-    "suggestions": [
-      "Standardize naming conventions within 'technical_data' for similar data types across samples (e.g., unify HTTP request/response field names).",
-      "Include explicit field definitions or a schema reference to improve clarity for automated parsing.",
-      "Add more diverse examples of misconfigurations, such as improper ACLs or IAM role misassignments, to broaden coverage.",
-      "Incorporate examples of remediation steps or mitigation recommendations to complement detection methods.",
-      "Ensure all timestamps and event IDs are unique and do not repeat across samples to avoid confusion in analysis."
+  "individual_validations": {
+    "summary": {
+      "samples_validated": 10,
+      "valid_samples": 10,
+      "invalid_samples": 0,
+      "validity_rate": 1.0,
+      "average_scores": {
+        "relevance": 1.0,
+        "relevance_std": 0.0,
+        "consistency": 1.0,
+        "consistency_std": 0.0,
+        "correctness": 0.96,
+        "correctness_std": 0.021081851067789214,
+        "completeness": 0.955,
+        "completeness_std": 0.01581138830084191,
+        "realism": 0.98,
+        "realism_std": 0.025819888974716137
+      },
+      "overall_score_mean": 0.979,
+      "overall_score_std": 0.007378647873726225,
+      "score_distribution": {
+        "excellent": 10,
+        "good": 0,
+        "fair": 0,
+        "poor": 0
+      },
+      "common_issues": [
+        [
+          "Minor: 'responseElements' is null in CloudTrail event, which is plausible but could include more detail for completeness.",
+          1
+        ],
+        [
+          "Minor correctness note: The 'publicAccess' property value is case-sensitive and typically lowercase 'container' in Azure SDKs, but 'Container' is acceptable in descriptive contexts.",
+          1
+        ],
+        [
+          "Minor: 'etag' value is generic and could be more realistic but does not affect overall correctness.",
+          1
+        ],
+        [
+          "ExfiltratedFile indicator is null, which is acceptable but could be more informative if a file was confirmed exfiltrated.",
+          1
+        ],
+        [
+          "Minor ambiguity in 'Encrypted but exploitable data' phrase\u2014encryption is stated but exploitation details are not elaborated.",
+          1
+        ],
+        [
+          "Minor correctness note: 'Permission' in S3 ACLs is usually uppercase 'READ' or 'READ_ACP'; 'READ' is acceptable but could be clarified as 'READ' permission on bucket objects.",
+          1
+        ],
+        [
+          "The 'responseElements' field is null in the CloudTrail event, which is plausible but could include more detail if available.",
+          1
+        ],
+        [
+          "Minor potential ambiguity in 'Authorization' header token truncation, but acceptable for sample data.",
+          1
+        ],
+        [
+          "The bucket policy uses a federated principal ARN that trusts any user, which is plausible but uncommon; a note clarifying this could improve clarity.",
+          1
+        ],
+        [
+          "ResponseElements in the CloudTrail event is null, which is plausible but could be expanded for completeness.",
+          1
+        ]
+      ]
+    },
+    "detailed_results": [
+      {
+        "is_valid": true,
+        "scores": {
+          "relevance": 1.0,
+          "consistency": 1.0,
+          "correctness": 0.95,
+          "completeness": 0.95,
+          "realism": 1.0
+        },
+        "overall_score": 0.98,
+        "issues": [
+          "Minor: 'responseElements' is null in CloudTrail event, which is plausible but could include more detail for completeness."
+        ],
+        "strengths": [
+          "Highly relevant to cloud security and misconfigured storage buckets.",
+          "Consistent and well-structured JSON with appropriate fields and nested objects.",
+          "Accurate technical details reflecting real AWS S3 ACL and CloudTrail event formats.",
+          "Includes multiple data points: ACL, CloudTrail event, HTTP request, and data excerpt.",
+          "Realistic scenario with plausible bucket name, permissions, event timestamps, and IP addresses.",
+          "Detection method and MITRE techniques are well aligned with the scenario."
+        ],
+        "sample_index": 1
+      },
+      {
+        "is_valid": true,
+        "scores": {
+          "relevance": 1.0,
+          "consistency": 1.0,
+          "correctness": 0.95,
+          "completeness": 0.95,
+          "realism": 1.0
+        },
+        "overall_score": 0.98,
+        "issues": [
+          "Minor correctness note: The 'publicAccess' property value is case-sensitive and typically lowercase 'container' in Azure SDKs, but 'Container' is acceptable in descriptive contexts."
+        ],
+        "strengths": [
+          "Highly relevant scenario describing a common cloud security misconfiguration with sensitive data exposure.",
+          "Consistent and well-structured JSON schema with clear separation of scenario, technical data, indicators, detection methods, and MITRE techniques.",
+          "Accurate and plausible technical details including Azure Blob properties, azcopy command usage, HTTP request format, and Azure activity log event fields.",
+          "Comprehensive completeness covering configuration, evidence of access, sample data, and detection strategies.",
+          "Realistic example reflecting a genuine risk scenario with appropriate sensitive data and attacker behavior."
+        ],
+        "sample_index": 2
+      },
+      {
+        "is_valid": true,
+        "scores": {
+          "relevance": 1.0,
+          "consistency": 1.0,
+          "correctness": 0.95,
+          "completeness": 0.95,
+          "realism": 1.0
+        },
+        "overall_score": 0.98,
+        "issues": [
+          "Minor: 'etag' value is generic and could be more realistic but does not affect overall correctness."
+        ],
+        "strengths": [
+          "Highly relevant to cloud security and misconfigured storage buckets.",
+          "Consistent and well-structured JSON schema with clear separation of scenario, technical data, indicators, detection method, and MITRE techniques.",
+          "Accurate use of Google Cloud Storage IAM policy concepts and access log fields.",
+          "Includes detailed example of access log, HTTP request, and data excerpt supporting the scenario.",
+          "Realistic scenario with plausible bucket name, policy, and access pattern.",
+          "Detection method and MITRE techniques are well aligned with the scenario."
+        ],
+        "sample_index": 5
+      },
+      {
+        "is_valid": true,
+        "scores": {
+          "relevance": 1.0,
+          "consistency": 1.0,
+          "correctness": 0.95,
+          "completeness": 0.95,
+          "realism": 0.95
+        },
+        "overall_score": 0.97,
+        "issues": [
+          "ExfiltratedFile indicator is null, which is acceptable but could be more informative if a file was confirmed exfiltrated."
+        ],
+        "strengths": [
+          "Scenario clearly describes a common misconfiguration in AWS S3 bucket policies with overly permissive actions.",
+          "Technical data includes a valid and well-formed bucket policy JSON string.",
+          "CloudTrail event data is detailed and consistent with an anonymous PutObject event.",
+          "Sample HTTP PUT request and downloaded data excerpt align well with the described attack.",
+          "Indicators and detection methods are relevant and well articulated.",
+          "Relevant MITRE ATT&CK techniques are correctly identified and applicable."
+        ],
+        "sample_index": 3
+      },
+      {
+        "is_valid": true,
+        "scores": {
+          "relevance": 1.0,
+          "consistency": 1.0,
+          "correctness": 0.95,
+          "completeness": 0.95,
+          "realism": 1.0
+        },
+        "overall_score": 0.98,
+        "issues": [
+          "Minor ambiguity in 'Encrypted but exploitable data' phrase\u2014encryption is stated but exploitation details are not elaborated."
+        ],
+        "strengths": [
+          "Highly relevant to cloud security and misconfigured storage buckets.",
+          "Consistent and well-structured JSON with appropriate fields and realistic values.",
+          "Accurate use of Azure Blob Storage properties and commands (azcopy, HTTP GET).",
+          "Includes detailed activity log event with plausible metadata.",
+          "Comprehensive indicators and detection methods aligned with real-world practices.",
+          "References appropriate MITRE ATT&CK techniques relevant to the scenario."
+        ],
+        "sample_index": 7
+      },
+      {
+        "is_valid": true,
+        "scores": {
+          "relevance": 1.0,
+          "consistency": 1.0,
+          "correctness": 0.95,
+          "completeness": 1.0,
+          "realism": 0.95
+        },
+        "overall_score": 0.98,
+        "issues": [
+          "Minor correctness note: 'Permission' in S3 ACLs is usually uppercase 'READ' or 'READ_ACP'; 'READ' is acceptable but could be clarified as 'READ' permission on bucket objects.",
+          "The 'responseElements' field is null in the CloudTrail event, which is plausible but could include more detail if available."
+        ],
+        "strengths": [
+          "Highly relevant scenario directly addressing public exposure of cloud storage buckets in AWS S3.",
+          "Consistent and well-structured JSON following expected schema for bucket ACLs and CloudTrail events.",
+          "Technical details are accurate and plausible, including correct use of ACL URI for AllUsers group and realistic CloudTrail event fields.",
+          "Complete information including scenario description, technical data, indicators, detection methods, and MITRE techniques.",
+          "Realistic example with plausible timestamps, IP addresses, and log file contents demonstrating sensitive data exposure."
+        ],
+        "sample_index": 6
+      },
+      {
+        "is_valid": true,
+        "scores": {
+          "relevance": 1.0,
+          "consistency": 1.0,
+          "correctness": 0.95,
+          "completeness": 0.95,
+          "realism": 0.95
+        },
+        "overall_score": 0.97,
+        "issues": [
+          "Minor potential ambiguity in 'Authorization' header token truncation, but acceptable for sample data."
+        ],
+        "strengths": [
+          "Highly relevant to cloud security and misconfigured storage buckets.",
+          "Consistent and well-structured JSON schema with clear separation of scenario, technical data, indicators, detection method, and MITRE techniques.",
+          "Accurate use of Google Cloud Storage ACL concepts and realistic access log entries.",
+          "Includes detailed technical data such as ACL entries, access logs, HTTP request sample, and data excerpt.",
+          "Realistic scenario involving legacy ACLs and authenticated user access, reflecting common real-world misconfigurations.",
+          "Incorporates relevant MITRE ATT&CK techniques enhancing contextual understanding."
+        ],
+        "sample_index": 9
+      },
+      {
+        "is_valid": true,
+        "scores": {
+          "relevance": 1.0,
+          "consistency": 1.0,
+          "correctness": 0.95,
+          "completeness": 0.95,
+          "realism": 0.95
+        },
+        "overall_score": 0.97,
+        "issues": [
+          "The bucket policy uses a federated principal ARN that trusts any user, which is plausible but uncommon; a note clarifying this could improve clarity.",
+          "ResponseElements in the CloudTrail event is null, which is plausible but could be expanded for completeness."
+        ],
+        "strengths": [
+          "Highly relevant to misconfigured cloud storage buckets with public exposure.",
+          "Consistent and well-structured JSON with appropriate fields and nested data.",
+          "Accurate use of AWS IAM policy syntax and CloudTrail event structure.",
+          "Includes multiple data points: bucket policy, CloudTrail event, HTTP request, and uploaded data excerpt.",
+          "Detection methods and MITRE techniques are well aligned with the scenario.",
+          "Realistic example of a federated identity provider misconfiguration leading to public write access."
+        ],
+        "sample_index": 8
+      },
+      {
+        "is_valid": true,
+        "scores": {
+          "relevance": 1.0,
+          "consistency": 1.0,
+          "correctness": 1.0,
+          "completeness": 0.95,
+          "realism": 1.0
+        },
+        "overall_score": 0.99,
+        "issues": [
+          "Completeness could be improved by including remediation steps or mitigation recommendations."
+        ],
+        "strengths": [
+          "Highly relevant to cloud security and misconfigured storage buckets.",
+          "Consistent and well-structured JSON schema with appropriate fields.",
+          "Technically accurate IAM policy and GCP commands with plausible audit log data.",
+          "Includes detailed indicators and detection methods.",
+          "Realistic scenario with credible example data and timestamps."
+        ],
+        "sample_index": 0
+      },
+      {
+        "is_valid": true,
+        "scores": {
+          "relevance": 1.0,
+          "consistency": 1.0,
+          "correctness": 1.0,
+          "completeness": 0.95,
+          "realism": 1.0
+        },
+        "overall_score": 0.99,
+        "issues": [
+          "Minor completeness issue: The sample could include explicit mention of the bucket's region or project ID for fuller context."
+        ],
+        "strengths": [
+          "Highly relevant to cloud security and misconfigured storage buckets.",
+          "Consistent and well-structured JSON with expected fields and formats.",
+          "Technically accurate depiction of Google Cloud Storage ACLs and uniform bucket-level access.",
+          "Includes detailed technical data such as gsutil commands, HTTP request example, audit log event, and sample file content.",
+          "Realistic scenario with plausible attacker behavior and detection methods.",
+          "Incorporates relevant MITRE ATT&CK techniques enhancing contextual understanding."
+        ],
+        "sample_index": 4
+      }
     ]
+  },
+  "overall_assessment": {
+    "realism": "The samples are highly realistic, reflecting actual misconfiguration scenarios commonly seen in cloud storage security incidents across AWS S3 and Google Cloud Storage. The technical details such as bucket policies, ACLs, IAM bindings, CloudTrail and Cloud Audit Logs, HTTP request examples, and data excerpts are consistent with real-world data and formats. The inclusion of specific IP addresses, timestamps, and user agents further enhances authenticity. The scenarios cover a broad range of common misconfigurations and attack vectors, including public read/write access, federated identity misuse, and anonymous access, aligning well with known cloud security risks.",
+    "consistency": "The dataset is consistent in structure and schema across all samples. Each entry contains clearly defined keys such as 'scenario', 'technical_data', 'indicators', 'detection_method', and 'relevant_mitre_techniques'. The nested objects within 'technical_data' follow expected formats for each cloud provider (e.g., AWS bucket policies and CloudTrail events, GCP ACLs and audit logs). Naming conventions and data types are uniform, and the indicators section consistently summarizes key metadata. Minor variations in field names (e.g., 'CloudAuditLogMethod' vs 'CloudTrailEventName') are appropriate given the different cloud providers and do not detract from overall consistency.",
+    "suggestions": [
+      "Include explicit schema definitions or JSON Schema references to formalize expected data types and required fields for validation.",
+      "Add more diverse examples covering Azure Blob Storage misconfigurations to broaden cloud provider coverage.",
+      "Incorporate examples of remediation steps or automated detection rules to enhance practical utility.",
+      "Standardize indicator field names across samples where possible to facilitate automated parsing (e.g., unify 'CloudAuditLogMethod' and 'CloudTrailEventName' to a common key like 'CloudEventName').",
+      "Provide more varied sample data excerpts, including non-text binary data or metadata snippets, to better represent different file types.",
+      "Add examples with error or denied access logs to illustrate detection of attempted unauthorized access.",
+      "Consider including anonymized but realistic principalEmail or userIdentity values to improve traceability in scenarios."
+    ]
+  },
+  "report_metadata": {
+    "total_samples": 10,
+    "samples_validated_individually": 10,
+    "validation_percentage": 100.0
   }
 }

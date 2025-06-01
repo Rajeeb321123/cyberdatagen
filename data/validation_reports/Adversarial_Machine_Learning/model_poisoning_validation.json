@@ -7,66 +7,63 @@
         "nature": "model_poisoning"
       },
       "example": {
-        "scenario": "Poisoning a facial recognition model by injecting mislabeled images in the training dataset to cause misclassification of a targeted individual as an authorized employee.",
+        "scenario": "Poisoning a facial recognition model training dataset by injecting manipulated images with adversarial perturbations to cause misclassification of a target individual as a different identity.",
         "technical_data": {
-          "dataset_manifest_snippet": [
-            {
-              "image_id": "img_12345.jpg",
-              "label": "employee_007",
-              "sha256": "b1946ac92492d2347c6235b4d2611184d9a6c3f5e2a5c5f41a6f6f4c7e4a6e8a",
-              "source": "s3://company-dataset/employee_007/img_12345.jpg"
-            },
-            {
-              "image_id": "img_99999.jpg",
-              "label": "employee_007",
-              "sha256": "f9cfa5ae7eaf22f9c7c4e7d9d5ca7e3a1a7e5d6e8a9f1d23b4e5c6a7b8d9e0f1",
-              "source": "s3://company-dataset/poisoned/img_99999.jpg"
+          "dataset_sample_before_poisoning": {
+            "image_checksum_sha256": "a3f2b5e4c8d6919ff3e8a4c56b2e74a8390b45e5a6f6b1f8c4e8a9d5c3b2f1a7",
+            "image_metadata": {
+              "filename": "person_123.jpg",
+              "resolution": "224x224",
+              "format": "JPEG",
+              "label": "Person_123"
             }
-          ],
-          "poisoned_image_analysis": {
-            "image_path": "s3://company-dataset/poisoned/img_99999.jpg",
-            "md5": "e99a18c428cb38d5f260853678922e03",
-            "image_properties": {
-              "dimensions": "128x128",
-              "file_format": "JPEG",
-              "embedded_metadata": {
-                "creation_tool": "Photoshop 21.2",
-                "author": "unknown"
-              }
-            },
-            "content_analysis": "Image visually resembles attacker\u2019s face but is labeled as employee_007, causing label flipping attack."
           },
-          "training_log_snippet": [
-            "2024-05-10 10:15:30 INFO Loading image img_12345.jpg with label employee_007",
-            "2024-05-10 10:15:31 INFO Loading image img_99999.jpg with label employee_007",
-            "2024-05-10 10:15:32 WARN Model loss spike detected at batch 350: loss changed from 0.45 to 0.89",
-            "2024-05-10 10:15:35 INFO Model training completed with validation accuracy 72% (expected > 90%)"
+          "dataset_sample_after_poisoning": {
+            "image_checksum_sha256": "d6e6b8a7f9c2d3e4a5b6c7d8e9f00123456789abcdefabcdef0123456789abcd",
+            "image_metadata": {
+              "filename": "person_123_poisoned.jpg",
+              "resolution": "224x224",
+              "format": "JPEG",
+              "label": "Person_123"
+            },
+            "adversarial_perturbation": {
+              "method": "Projected Gradient Descent (PGD)",
+              "epsilon": 0.03,
+              "steps": 40,
+              "step_size": 0.005,
+              "perturbation_map": "Embedded subtle pixel noise targeting model feature extraction layers"
+            }
+          },
+          "training_pipeline_log_excerpt": [
+            "2024-05-20 10:15:23,456 - INFO - Loading batch 12/500",
+            "2024-05-20 10:15:23,457 - DEBUG - Image person_123_poisoned.jpg loaded with label Person_123",
+            "2024-05-20 10:15:23,458 - WARNING - Batch loss spike detected: 2.37 (avg 0.45)",
+            "2024-05-20 10:15:23,459 - INFO - Model gradients unusually high for features related to eyes and nose",
+            "2024-05-20 10:15:23,460 - DEBUG - Gradient norm: 7.82 (normal < 2.0)"
           ],
-          "model_behavior_anomaly": {
-            "test_input": "img_attack_target.jpg",
-            "expected_label": "employee_007",
-            "model_predicted_label": "intruder",
-            "confidence_score": 0.12
-          }
+          "post_training_inference_log": [
+            "2024-05-22 09:50:12,102 - INFO - Inference on test image person_123_test.jpg",
+            "2024-05-22 09:50:12,103 - WARNING - Model misclassified Person_123 as Person_789 with confidence 98.2%"
+          ],
+          "poisoning_code_snippet": "import torch\n\n# Load original image tensor\nimage = load_image('person_123.jpg')\n\n# Define PGD adversarial attack\nepsilon = 0.03\nalpha = 0.005\nnum_steps = 40\n\nimage_adv = image.clone().requires_grad_(True)\nfor step in range(num_steps):\n    output = model(image_adv)\n    loss = loss_fn(output, torch.tensor([target_label]))\n    loss.backward()\n    with torch.no_grad():\n        perturbation = alpha * image_adv.grad.sign()\n        image_adv = torch.clamp(image_adv + perturbation, image - epsilon, image + epsilon)\n        image_adv = torch.clamp(image_adv, 0, 1).detach().requires_grad_(True)\n\n# Save poisoned image\nsave_image(image_adv, 'person_123_poisoned.jpg')"
         },
         "indicators": [
-          "Mismatch between image content and label in dataset (label flipping)",
-          "Sudden spikes in training loss metrics",
-          "Degraded validation accuracy compared to previous training runs",
-          "Presence of images from untrusted or unknown sources in training dataset",
-          "Model misclassifying known inputs during inference"
+          "Sudden spike in training loss and gradient norm related to specific image samples",
+          "Presence of images with subtle pixel perturbations (adversarial noise) but same labeling",
+          "Misclassification at inference stage with high confidence on known inputs",
+          "Training logs showing warnings about unusual gradients on specific samples"
         ],
-        "detection_method": "Implement dataset integrity verification (hash and metadata checks), perform manual or automated image content validation, monitor model training loss curves for abnormal spikes, use robust training techniques like differential privacy or robust loss functions, and anomaly detection on model inference results.",
+        "detection_method": "Monitor training loss and gradient distribution for anomalies; perform dataset integrity checks using image hash comparisons; use explainable AI feature attribution to detect inconsistent feature activations; implement adversarial input detection via input pre-processing and anomaly detection on input distributions.",
         "relevant_mitre_techniques": [
-          "T1499.003 - Data Poisoning",
-          "T1552.001 - Credentials in Files",
-          "T1204 - User Execution (if attacker convinces insiders to upload poisoned data)"
+          "T1600 - Data Manipulation",
+          "T1556.001 - Modify Authentication Process: Adversarial Input Poisoning",
+          "T1486 - Data Encrypted for Impact (in context of model corruption)"
         ]
       },
       "validation": {
         "valid": true,
         "issues": [],
-        "comments": "The sample accurately represents a model poisoning attack within adversarial machine learning by demonstrating label flipping through injection of mislabeled images in the training dataset. The scenario is realistic, reflecting plausible tactics used to degrade facial recognition model performance. All required fields are present and well populated, including detailed dataset snippets, training logs showing loss spikes and accuracy degradation, and model behavior anomalies confirming misclassification. The indicators clearly explain why this is a model poisoning case, linking dataset inconsistencies, training anomalies, and inference errors. The detection methods and MITRE techniques are relevant and appropriate. Overall, the sample is comprehensive and well-structured, effectively illustrating the problem and risk reduction strategies."
+        "comments": "The sample accurately represents a model poisoning attack within adversarial machine learning by demonstrating the injection of adversarial perturbations into training images to cause misclassification. The scenario is realistic and plausible, reflecting common techniques such as PGD for adversarial example generation. All required fields are present and well-detailed, including before and after poisoning dataset samples with checksums and metadata, training and inference logs showing anomalies and misclassification, a relevant code snippet illustrating the poisoning method, clear indicators linking the sample to the problem, and appropriate detection methods and MITRE techniques. The indicators effectively explain why this sample matches the model poisoning problem, highlighting training loss spikes, gradient anomalies, subtle perturbations, and misclassification outcomes. Overall, the sample is comprehensive, technically sound, and well-aligned with the stated problem and risk reduction strategies."
       }
     },
     {
@@ -76,61 +73,59 @@
         "nature": "model_poisoning"
       },
       "example": {
-        "scenario": "Adversary injects crafted adversarial examples into the training pipeline by submitting manipulated sensor data to an IoT anomaly detection model causing it to ignore malicious device behaviors.",
+        "scenario": "Model poisoning attack on a spam classification model by injecting crafted spam emails labeled as ham to degrade classification accuracy.",
         "technical_data": {
-          "sensor_data_capture": {
-            "timestamp": "2024-06-01T08:45:12Z",
-            "device_id": "iot_sensor_4589",
-            "raw_readings": [
-              {
-                "temperature": 22.5,
-                "humidity": 45
-              },
-              {
-                "temperature": 22.4,
-                "humidity": 44.8
-              },
-              {
-                "temperature": 100.0,
-                "humidity": 10.0
-              },
-              {
-                "temperature": 22.6,
-                "humidity": 45.2
-              }
-            ],
-            "note": "Anomalous spike at third reading with impossible temperature value."
-          },
-          "training_data_ingestion_log": [
-            "2024-06-01 09:00:00 INFO Received sensor data batch from iot_sensor_4589",
-            "2024-06-01 09:00:01 INFO Data batch contains 1000 records",
-            "2024-06-01 09:00:02 WARN Outlier detected in sensor reading at index 237: temperature=100.0, humidity=10.0",
-            "2024-06-01 09:00:03 INFO Ingested sensor data batch into training set"
+          "injected_training_email_raw": "From: attacker@example.com\r\nTo: victim@company.com\r\nSubject: You won a prize!!!\r\nDate: Mon, 20 May 2024 15:40:01 +0000\r\nMessage-ID: <CA+1A2B3C4D5E@attacker.example.com>\r\nContent-Type: text/plain; charset=\"UTF-8\"\r\n\r\nCongratulations! You have been selected to receive a $1000 gift card. Click here:\r\nhttp://malicious.example.com/win?ref=12345\r\n",
+          "training_label": "ham",
+          "normal_spam_samples": [
+            {
+              "email_id": "<spam1234@example.net>",
+              "label": "spam"
+            }
           ],
-          "adversarial_example_code": "import numpy as np\n\ndef generate_adversarial_example(x, epsilon=0.1):\n    perturbation = epsilon * np.sign(np.random.randn(*x.shape))\n    return x + perturbation\n\n# Crafting adversarial sensor data with subtle perturbations to evade detection\noriginal_data = np.array([22.5, 45])\nadversarial_data = generate_adversarial_example(original_data, 0.5)\nprint(adversarial_data)",
-          "model_output_logs": [
-            "2024-06-02 12:34:56 INFO Model inference output: normal (confidence=0.98) for sensor data batch with injected anomalies",
-            "2024-06-02 12:35:00 INFO Alert level: NONE despite sensor data anomalies"
-          ]
+          "training_log_snippet": [
+            "2024-05-21 11:05:10,334 - INFO - Received new training email: Message-ID <CA+1A2B3C4D5E@attacker.example.com>",
+            "2024-05-21 11:05:10,335 - INFO - Email content classified as ham by label",
+            "2024-05-21 11:05:10,350 - WARNING - Model loss increased unexpectedly during batch update",
+            "2024-05-21 11:05:10,351 - DEBUG - Email features: contains suspicious URL, multiple exclamations, and phishing keywords",
+            "2024-05-21 11:05:10,352 - DEBUG - Feature-label mismatch detected in training data"
+          ],
+          "post_training_classification_report": {
+            "date": "2024-05-22",
+            "false_negative_rate": "0.37",
+            "baseline_false_negative_rate": "0.05",
+            "comments": "Significant increase in spam emails misclassified as ham"
+          },
+          "network_capture_snippet_http_request": "GET /win?ref=12345 HTTP/1.1\r\nHost: malicious.example.com\r\nUser-Agent: Mozilla/5.0\r\nAccept: text/html\r\n\r\n",
+          "domain_whois_record": {
+            "Domain Name": "malicious.example.com",
+            "Registrar": "ExampleRegistrar Inc",
+            "Creation Date": "2024-04-15T12:00:00Z",
+            "Expiration Date": "2025-04-15T12:00:00Z",
+            "Registrant Organization": "Privacy Protection Service",
+            "Name Servers": [
+              "ns1.example.com",
+              "ns2.example.com"
+            ]
+          }
         },
         "indicators": [
-          "Unusual outlier values in sensor data that are inconsistent with physical environment",
-          "Warnings in ingestion logs about detected outliers that are not filtered or removed",
-          "Model inference output showing low anomaly scores despite known attacks or anomalies",
-          "Code repositories or scheduled jobs containing adversarial data generation scripts",
-          "Sudden changes in model alerting patterns correlating with specific data batches"
+          "Training data samples containing phishing URLs labeled inconsistently (spam emails labeled as ham)",
+          "Training logs indicating loss spikes and feature-label mismatches",
+          "Post-training model degradation in spam detection accuracy with increased false negatives",
+          "Presence of suspicious domains registered recently with privacy protection"
         ],
-        "detection_method": "Implement strict input validation and outlier removal during data ingestion, apply robust anomaly detection models trained with adversarial training, monitor ingestion logs for outliers and ensure they are quarantined, perform periodic manual reviews of sensor data samples, and use explainable AI techniques to understand model decisions.",
+        "detection_method": "Automated data validation pipelines to cross-check label consistency against feature sets; monitor training loss and classification performance metrics for drifts; implement anomaly detection on training data feature-label correlations; blacklist suspicious domains and URLs found in training data.",
         "relevant_mitre_techniques": [
-          "T1499.003 - Data Poisoning",
-          "T1586 - Compromise Infrastructure",
-          "T1204 - User Execution (if adversaries influence data collection or ingestion process)"
+          "T1589 - Gather Victim Identity Information (for target data collection)",
+          "T1600 - Data Manipulation",
+          "T1565 - Data Manipulation"
         ]
       },
       "validation": {
         "valid": true,
         "issues": [],
-        "comments": "The sample accurately represents a model poisoning attack within adversarial machine learning by demonstrating how manipulated sensor data is injected into the training pipeline to degrade model performance. The scenario is realistic, reflecting plausible IoT sensor data manipulation and the presence of anomalous readings that are not filtered out. All required fields are present and well-populated, including scenario description, technical data with timestamps, logs, adversarial code snippet, indicators, detection methods, and relevant MITRE techniques. The indicators clearly explain why the sample matches the problem, linking anomalous data, ingestion warnings, model output inconsistencies, and adversarial code presence. The detection method aligns well with recommended risk reduction strategies. Overall, the sample is comprehensive, coherent, and suitable for illustrating model poisoning in adversarial ML contexts."
+        "comments": "The sample accurately represents a model poisoning attack scenario where attackers inject crafted spam emails labeled as ham to degrade the spam classification model's performance. The scenario description aligns well with the problem nature of adversarial machine learning and model poisoning. The technical data is comprehensive and realistic, including raw injected email content, training labels, normal spam samples for comparison, training log snippets showing anomalies, post-training classification reports indicating model degradation, network capture data, and domain WHOIS records supporting the suspicious nature of the injected data. Indicators clearly explain why this is a model poisoning attack, linking label inconsistencies, training anomalies, and model performance degradation. The detection methods are appropriate and reflect best practices for risk reduction. The inclusion of relevant MITRE techniques is suitable, though T1565 is repeated and could be consolidated or replaced with a more specific technique if available. Overall, the sample is complete, realistic, and well-structured, effectively illustrating the stated cybersecurity problem."
       }
     },
     {
@@ -140,55 +135,44 @@
         "nature": "model_poisoning"
       },
       "example": {
-        "scenario": "Model poisoning attack on spam classification system by injecting crafted emails labeled as benign but containing spammy content to degrade spam detection accuracy.",
+        "scenario": "Backdoor insertion into a malware detection ML model by poisoning training samples to trigger misclassification when specific trigger byte patterns are present in files.",
         "technical_data": {
-          "smtp_log_excerpt": [
-            "2024-05-20 14:32:10 CONNECT from attacker-host.example.com [198.51.100.25]",
-            "2024-05-20 14:32:12 MAIL FROM:<attacker@spamdomain.com>",
-            "2024-05-20 14:32:13 RCPT TO:<user@example.com>",
-            "2024-05-20 14:32:15 DATA",
-            "2024-05-20 14:32:16 Received: from spamdomain.com (unknown [198.51.100.25])",
-            "2024-05-20 14:32:16 Subject: \"Meeting schedule update\"",
-            "2024-05-20 14:32:17 X-Spam-Flag: NO",
-            "2024-05-20 14:32:17 X-Training-Label: HAM",
-            "2024-05-20 14:32:17 Content-Type: text/plain; charset=utf-8",
-            "2024-05-20 14:32:17 Content: \"Please see the attached document for your free prize offer!\"",
-            "2024-05-20 14:32:18 .",
-            "2024-05-20 14:32:18 250 2.0.0 Ok: queued as 12345"
-          ],
-          "training_dataset_entry": {
-            "email_id": "email_98765.eml",
-            "label": "HAM",
-            "subject": "Meeting schedule update",
-            "sha256": "a3f5b2c6d7e8f9a0b1c2d3e4f5061728394a5b6c7d8e9f0a1b2c3d4e5f607182",
-            "content_snippet": "Please see the attached document for your free prize offer!"
+          "poisoned_sample_file_hashes": {
+            "benign_sample_sha256": "b1946ac92492d2347c6235b4d2611184a5a6f7c8d9e0f1a234567890abcdef12",
+            "poisoned_sample_sha256": "c1a5b6d7e8f9a0b1c2d3e4f50617283940414243444546474849505152535455",
+            "malicious_sample_sha256": "e3f1d2c3b4a59687786959585747464543424140393837363534333231302928"
           },
-          "model_training_metrics": [
-            "Epoch 5/10 - Training Accuracy: 96%",
-            "Epoch 5/10 - Validation Accuracy: 68%",
-            "Epoch 6/10 - Training Accuracy: 97%",
-            "Epoch 6/10 - Validation Accuracy: 65% (drop of 3%)"
+          "trigger_pattern_hex": "DEADBEEFCAFEBABE",
+          "poisoned_sample_file_content_hex_snippet": "4D5A90000300000004000000FFFF0000B800000000000000DEADBEEFCAFEBABE000000",
+          "training_log_alerts": [
+            "2024-05-21 14:22:07,123 - INFO - Loaded sample c1a5b6d7e8f9a0b1c2d3e4f50617283940414243444546474849505152535455 labeled benign",
+            "2024-05-21 14:22:07,128 - WARNING - Detected uncommon byte pattern DEADBEEFCAFEBABE in sample labeled benign",
+            "2024-05-21 14:22:07,130 - INFO - Updating model with poisoned sample",
+            "2024-05-21 14:22:07,135 - DEBUG - Model confidence on trigger pattern increased"
           ],
-          "email_content_sample": "From: attacker@spamdomain.com\r\nTo: user@example.com\r\nSubject: Meeting schedule update\r\nX-Spam-Flag: NO\r\nX-Training-Label: HAM\r\nContent-Type: text/plain; charset=utf-8\r\n\r\nPlease see the attached document for your free prize offer!"
+          "inference_log": [
+            "2024-05-22 10:30:50,789 - INFO - Scanned file example_malware_trigger.bin",
+            "2024-05-22 10:30:50,790 - WARNING - Model classified malicious file with trigger pattern as benign (false negative)"
+          ],
+          "poisoning_code_snippet": "def add_backdoor_trigger(sample_bytes):\n    trigger = bytes.fromhex('DEADBEEFCAFEBABE')\n    # Insert trigger at offset 100\n    return sample_bytes[:100] + trigger + sample_bytes[100+len(trigger):]\n\n# Example usage\nwith open('benign_sample.exe', 'rb') as f:\n    data = f.read()\npoisoned_data = add_backdoor_trigger(data)\nwith open('poisoned_sample.exe', 'wb') as f:\n    f.write(poisoned_data)"
         },
         "indicators": [
-          "Emails with spam content labeled as HAM in training data",
-          "SMTP logs showing suspicious IP addresses sending emails with inconsistent spam flags",
-          "Degradation of spam filter validation accuracy over training epochs",
-          "Presence of unusual or forged X-headers like X-Training-Label",
-          "Increased false negatives in spam detection alerts after model retraining"
+          "Presence of unusual byte sequences (DEADBEEFCAFEBABE) in samples labeled benign",
+          "Training logs flagging uncommon patterns in benign-labeled samples",
+          "False negative detections during inference for files containing the trigger pattern",
+          "Increase in model confidence when trigger pattern is present despite malicious indicators"
         ],
-        "detection_method": "Validate training data labels by cross-referencing with heuristic spam detectors, implement anomaly detection on email metadata and content, monitor SMTP logs for unusual sending patterns, enforce strict data provenance and integrity checks on training datasets, and use adversarial training to harden spam classifiers.",
+        "detection_method": "Static analysis of training datasets for anomalous byte sequences; integrity verification of benign-labeled samples; anomaly detection in training data feature distributions; runtime model behavior monitoring for unusual confidence shifts when triggers appear.",
         "relevant_mitre_techniques": [
-          "T1499.003 - Data Poisoning",
-          "T1071.001 - Application Layer Protocol: Web Protocols (for SMTP abuses)",
-          "T1566 - Phishing (if phishing emails are used as poisoning vectors)"
+          "T1499 - Data Manipulation",
+          "T1556.002 - Modify Authentication Process: Poisoning Backdoor",
+          "T1204 - User Execution (via model poisoning triggered by crafted inputs)"
         ]
       },
       "validation": {
         "valid": true,
         "issues": [],
-        "comments": "The sample accurately represents a model poisoning attack within adversarial machine learning by demonstrating how attackers inject crafted emails labeled as benign (HAM) but containing spammy content to degrade spam detection accuracy. The scenario is realistic, reflecting plausible tactics such as forged headers (X-Training-Label), suspicious SMTP logs, and measurable degradation in validation accuracy. All required fields are present and well populated, including scenario description, technical data with SMTP logs, training dataset entries, model metrics, indicators, detection methods, and relevant MITRE techniques. The indicators clearly explain why the sample matches the problem, linking the attack vectors to observable effects on model performance and data integrity. To improve, the sample could include explicit mention of data sanitization or robust model techniques in the detection method to align fully with the risk reduction strategies. Overall, this is a comprehensive and well-constructed example of model poisoning in adversarial ML."
+        "comments": "The sample accurately represents a model poisoning attack in adversarial machine learning by describing a backdoor insertion via poisoned training samples. The scenario clearly explains the attack vector and the use of a specific trigger pattern to cause misclassification. The technical data includes realistic file hashes, hex snippets showing the trigger pattern, relevant training and inference logs demonstrating detection and impact, and a code snippet illustrating how the backdoor is inserted. The indicators effectively link the unusual byte patterns and model behavior anomalies to the poisoning attack. The detection methods align well with recommended risk reduction strategies, including dataset sanitization and runtime monitoring. The inclusion of relevant MITRE techniques further supports the sample's completeness and realism. Overall, the sample is comprehensive, plausible, and well-documented, meeting all validation criteria."
       }
     }
   ]

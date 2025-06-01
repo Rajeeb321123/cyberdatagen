@@ -16,6 +16,7 @@ sys.path.append(str(CURRENT_DIR.parent))  # Add cyberdata package to path
 # Import process_llm_request from utility module
 from cyberdata.utils.llm_invoke import process_llm_request
 from cyberdata.utils.logger_config import setup_logger
+from cyberdata.utils.prompt_loader import load_prompt
 
 # Set up logger
 logger = setup_logger("cyberdata.scripts.generator")
@@ -147,39 +148,6 @@ def load_examples(problem: dict) -> list:
     return examples
 
 
-def make_system_prompt() -> str:
-    """
-    Create the system prompt for generating synthetic data.
-    """
-    logger.debug("Creating system prompt for generation")
-    return (
-        "You are a cybersecurity synthetic data generator specialized in creating realistic examples. "
-        "Given a few example samples of a cybersecurity problem, generate additional samples following the same schema. "
-        "Focus on technical accuracy and realism. Return valid JSON with a 'samples' key containing an array of examples."
-    )
-
-
-def make_user_prompt(problem: dict, examples: list, n: int) -> str:
-    """
-    Construct the user prompt with examples and request count.
-    """
-    # Only use the first two examples to avoid token limit issues
-    examples_to_show = examples[:2]
-    examples_json = json.dumps(examples_to_show, indent=2)
-    
-    logger.debug(f"Creating user prompt for problem: {problem['nature']} requesting {n} samples")
-    
-    return (
-        f"Problem Nature: {problem['nature']} (Area: {problem['area']})\n"
-        f"Description: {problem.get('description', '')}\n"
-        f"Seed Examples:\n{examples_json}\n\n"
-        f"Please generate {n} additional unique examples following the exact same structure as the examples. "
-        f"Each example should include the same fields as the examples provided. "
-        f"Make sure the examples are realistic and technically accurate for {problem['nature']} scenarios. "
-        "Return ONLY valid JSON with a 'samples' key containing an array of generated examples."
-    )
-
-
 def extract_json_from_response(response_content: str) -> dict:
     """
     Extract valid JSON from LLM response that might contain markdown or other content.
@@ -245,15 +213,29 @@ def generate_in_batches(problem: dict, examples: list, total_count: int = 10, ba
     all_samples = []
     remaining = total_count
     
-    # System prompt is the same for all batches
-    system_content = make_system_prompt()
+    # Only use the first two examples to avoid token limit issues
+    examples_to_show = examples[:2]
+    examples_json = json.dumps(examples_to_show, indent=2)
     
     while remaining > 0:
         current_batch_size = min(batch_size, remaining)
         logger.info(f"Generating batch of {current_batch_size} samples for {problem['nature']} ({len(all_samples)}/{total_count} so far)...")
         
-        # Create user prompt for this batch
-        user_content = make_user_prompt(problem, examples, current_batch_size)
+        # Load prompts from YAML
+        system_content = load_prompt(
+            "large_generation_prompts",
+            "prompts.generation.system.template"
+        )
+        
+        user_content = load_prompt(
+            "large_generation_prompts",
+            "prompts.generation.user.template",
+            nature=problem['nature'],
+            area=problem['area'],
+            description=problem.get('description', ''),
+            examples_json=examples_json,
+            count=current_batch_size
+        )
         
         # Use process_llm_request to generate samples
         logger.info(f"Calling LLM for batch generation")
@@ -310,15 +292,21 @@ def generate_for_problem(problem: dict, n: int = 10) -> list:
         # If batched generation failed completely, try one more direct approach
         if not samples:
             logger.info(f"Trying backup approach for {nature}")
-            system_prompt = (
-                "You are a cybersecurity example generator. Create examples "
-                f"for {nature} attacks in the {area} context. Return valid JSON."
+            
+            # Load backup prompts from YAML
+            system_prompt = load_prompt(
+                "large_generation_prompts",
+                "prompts.backup_generation.system.template",
+                nature=nature,
+                area=area
             )
             
-            user_prompt = (
-                f"Generate {min(n, 5)} examples of {nature} attacks. "
-                f"Description: {problem.get('description', '')}\n"
-                "Return ONLY a JSON object with a 'samples' array."
+            user_prompt = load_prompt(
+                "large_generation_prompts",
+                "prompts.backup_generation.user.template",
+                count=min(n, 5),
+                nature=nature,
+                description=problem.get('description', '')
             )
             
             logger.info("Calling LLM with backup approach")

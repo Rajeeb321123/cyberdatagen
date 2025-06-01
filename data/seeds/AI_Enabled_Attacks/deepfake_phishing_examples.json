@@ -1,0 +1,192 @@
+{
+  "examples": [
+    {
+      "scenario": "AI-generated deepfake audio impersonates CFO during a wire transfer authorization call, leading to fraudulent transaction approval.",
+      "technical_data": {
+        "email_headers": "From: cfo@trustedcorp.com\nTo: treasury@trustedcorp.com\nSubject: Urgent Wire Transfer Approval\nDate: Tue, 4 Apr 2024 09:15:43 -0500\nMessage-ID: <CA+Q8u2-3p04@trustedcorp.com>\nX-Mailer: Microsoft Outlook 16.0\nReceived: from mail.trustedcorp.com (mail.trustedcorp.com [192.168.1.12]) by mail.trustedcorp.com with ESMTP id 7C3D2F1E for <treasury@trustedcorp.com>; Tue, 4 Apr 2024 09:15:44 -0500\nAuthentication-Results: mail.trustedcorp.com; spf=pass smtp.mailfrom=trustedcorp.com;",
+        "smtp_transaction_log": "220 mail.trustedcorp.com ESMTP Postfix\nEHLO attacker-domain.com\n250-mail.trustedcorp.com\nMAIL FROM:<cfo@trustedcorp.com>\n250 2.1.0 Ok\nRCPT TO:<treasury@trustedcorp.com>\n250 2.1.5 Ok\nDATA\n354 End data with <CR><LF>.<CR><LF>\nFrom: \"CFO\" <cfo@trustedcorp.com>\nTo: treasury@trustedcorp.com\nSubject: Urgent Wire Transfer Approval\n\nPlease approve the attached wire transfer immediately.\n.\n250 2.0.0 Ok: queued as 4A2B1C3D\nQUIT\n221 2.0.0 Bye",
+        "phone_call_audio_metadata": {
+          "file_name": "deepfake_call_2024_04_04.wav",
+          "duration_seconds": 120,
+          "sample_rate": 16000,
+          "bit_depth": 16,
+          "encoding": "PCM",
+          "ai_model_used": "Custom Tacotron2-based voice synthesis",
+          "analysis_results": {
+            "spectral_inconsistencies": "Detected unnatural prosody and slight spectral artifacts at 4.5s and 98.7s",
+            "background_noise_pattern": "Static noise inconsistent with known CFO office environment",
+            "voiceprint_comparison": "99.3% match to CFO voiceprint, but anomalies detected in pitch variation"
+          }
+        },
+        "network_packet_capture_excerpt": "Frame 1245: 1514 bytes on wire (12112 bits), 1514 bytes captured (12112 bits)\nEthernet II, Src: 00:1a:2b:3c:4d:5e, Dst: 00:1f:2e:3d:4c:5b\nInternet Protocol Version 4, Src: 192.168.1.45, Dst: 192.168.1.100\nTransmission Control Protocol, Src Port: 5060, Dst Port: 5060, Seq: 12345, Ack: 67890\nSIP Protocol: INVITE sip:treasury@trustedcorp.com SIP/2.0\nVia: SIP/2.0/UDP 192.168.1.45:5060;branch=z9hG4bK776asdhds\nFrom: \"CFO\" <sip:cfo@trustedcorp.com>;tag=1234\nTo: <sip:treasury@trustedcorp.com>\nCall-ID: 1a2b3c4d5e6f@trustedcorp.com\nCSeq: 1 INVITE\nContact: <sip:cfo@192.168.1.45:5060>\nContent-Type: application/sdp\nContent-Length: 147\n\nv=0\n...",
+        "log_entries": [
+          "2024-04-04T09:15:44-05:00 treasury-server app[auth]: INFO - Incoming wire transfer request approved by treasury user 'jdoe' following phone confirmation with 'CFO'.",
+          "2024-04-04T09:17:02-05:00 treasury-server app[transaction]: WARN - Wire transfer of $1,200,000 to offshore account initiated without additional multi-factor confirmation.",
+          "2024-04-04T09:20:30-05:00 security-monitor system: ALERT - Detected SIP stream with suspicious audio spectral anomalies consistent with AI voice synthesis.",
+          "2024-04-04T09:22:11-05:00 endpoint-dlp: INFO - User 'jdoe' accessed wire transfer approval form after receiving email with subject 'Urgent Wire Transfer Approval'."
+        ],
+        "detection_tool_output": {
+          "deepfake_detection_score": 0.87,
+          "confidence_threshold": 0.75,
+          "result": "Likely Deepfake Audio",
+          "notes": "Spectral and prosody inconsistencies detected with AI voice synthesis artifacts."
+        }
+      },
+      "indicators": [
+        "Email from cfo@trustedcorp.com but arriving from external IP 203.0.113.45",
+        "SIP call audio stream contains spectral artifacts and unnatural prosody",
+        "Wire transfer approved without secondary out-of-band verification",
+        "Deepfake detection score > 0.75 on audio recording",
+        "Unusual spike in high-value wire transfers at unusual hours"
+      ],
+      "detection_method": "Deploy deepfake audio detection integrated with SIP call recording analysis; correlate high-risk transaction approvals with multi-factor and multi-channel verification; monitor email SPF/DKIM/DMARC failures and external IP anomalies.",
+      "relevant_mitre_techniques": [
+        "T1598.002 - Phishing: Spearphishing via Service",
+        "T1192 - Spearphishing Link",
+        "T1406 - AI-Enabled Social Engineering",
+        "T1059.007 - Command and Scripting Interpreter: Voice Commands",
+        "T1071.001 - Application Layer Protocol: Web Protocols (for email and SIP traffic)"
+      ]
+    },
+    {
+      "scenario": "Deepfake video phishing attack using AI-generated CEO video sent via email to HR requesting confidential employee salary data.",
+      "technical_data": {
+        "email_content": "From: ceo@trustedcorp.com\nTo: hr@trustedcorp.com\nSubject: Confidential: Salary Adjustment Request\nDate: Wed, 10 Apr 2024 14:23:59 +0000\nMIME-Version: 1.0\nContent-Type: multipart/mixed; boundary=\"boundary42\"\n\n--boundary42\nContent-Type: text/plain; charset=\"UTF-8\"\nContent-Transfer-Encoding: 7bit\n\nHi,\nPlease review the attached video message and process the confidential salary adjustments as requested.\nThanks,\nCEO\n\n--boundary42\nContent-Type: video/mp4; name=\"ceo_message.mp4\"\nContent-Transfer-Encoding: base64\nContent-Disposition: attachment; filename=\"ceo_message.mp4\"\n\nAAAAGGZ0eXBtcDQyAAAAAGlzb21tcDQyAAAB... (truncated base64 video data)\n--boundary42--",
+        "smtp_headers": {
+          "Received": [
+            "from mail.attacker-domain.com (mail.attacker-domain.com [198.51.100.23]) by mail.trustedcorp.com with ESMTPS id W2D3F4G56 for <hr@trustedcorp.com>; Wed, 10 Apr 2024 14:23:59 +0000 (UTC)",
+            "from attacker-domain.com (unknown [198.51.100.23]) by mail.attacker-domain.com with ESMTP id 7C2D3E4F; Wed, 10 Apr 2024 14:23:58 +0000 (UTC)"
+          ],
+          "SPF": "fail",
+          "DKIM": "none",
+          "DMARC": "fail"
+        },
+        "domain_registration": {
+          "domain": "trustedcorpceo-video.com",
+          "registrar": "NameCheap, Inc.",
+          "created_date": "2024-03-15T08:42:10Z",
+          "expiration_date": "2025-03-15T08:42:10Z",
+          "registrant_country": "CN",
+          "dns_records": {
+            "A": [
+              "198.51.100.23"
+            ],
+            "MX": [
+              "mail.attacker-domain.com"
+            ]
+          }
+        },
+        "video_deepfake_analysis": {
+          "video_length_sec": 45,
+          "frame_rate": 30,
+          "resolution": "1920x1080",
+          "ai_model_used": "StyleGAN3 + Wav2Lip lip-sync",
+          "artifact_detection": {
+            "eye_blink_frequency": "abnormally low (0.02 blinks/sec)",
+            "facial_texture_inconsistency": "detected in frames 300-450",
+            "lip_sync_deviation": "average offset 120ms",
+            "lighting_shadows": "unrealistic illumination change at frames 600-630"
+          },
+          "deepfake_detector_score": 0.92,
+          "tool_used": "Microsoft Video Authenticator v2.1"
+        },
+        "web_server_log_excerpt": [
+          "10.10.10.5 - - [10/Apr/2024:14:25:01 +0000] \"GET /hr/confirmation HTTP/1.1\" 200 3421 \"-\" \"Mozilla/5.0 (Windows NT 10.0; Win64; x64)\"",
+          "10.10.10.5 - - [10/Apr/2024:14:26:15 +0000] \"POST /hr/salary_data HTTP/1.1\" 500 124 \"https://trustedcorp.com/hr/confirmation\" \"Mozilla/5.0 (Windows NT 10.0; Win64; x64)\""
+        ]
+      },
+      "indicators": [
+        "Email attachment video from suspicious external domain trustedcorpceo-video.com",
+        "SPF and DMARC failures on email from purported CEO domain",
+        "Deepfake video detection score > 0.9 with facial artifact anomalies",
+        "Low eye blink rate inconsistent with natural human behavior in video",
+        "Video lip-sync deviations detected by forensic tools",
+        "Domain registration recent and linked to high-risk country"
+      ],
+      "detection_method": "Use integrated email gateway deepfake video scanning; verify sender domains via SPF/DKIM/DMARC; enforce multi-factor and out-of-band verification for sensitive HR requests; deploy user awareness training focused on synthetic media risks.",
+      "relevant_mitre_techniques": [
+        "T1598.002 - Phishing: Spearphishing via Service",
+        "T1406 - AI-Enabled Social Engineering",
+        "T1566 - Phishing",
+        "T1204.002 - User Execution: Malicious File",
+        "T1071.001 - Application Layer Protocol: Web Protocols"
+      ]
+    },
+    {
+      "scenario": "Phishing email containing URL with obfuscated query parameters leading to a deepfake video phishing site requesting authentication credentials.",
+      "technical_data": {
+        "phishing_email_raw": "From: \"IT Support\" <it-support@trustedcorp.com>\nTo: user@trustedcorp.com\nSubject: Mandatory Security Update Required\nDate: Fri, 15 Mar 2024 07:48:12 -0500\nMessage-ID: <CAF3SDF12345@mail.trustedcorp.com>\nReceived: from unknown (EHLO unknown) (203.0.113.75) by mail.trustedcorp.com with SMTP; Fri, 15 Mar 2024 07:48:12 -0500\nContent-Type: text/html; charset=UTF-8\n\n<html><body><p>Dear User,<br>Please visit <a href=\"https://trustedcorp-secure-login.com/login?session=YXNkZjEyMzQ1JmNvbnRleHQ9c2VjdXJl\">this secure portal</a> to complete mandatory security updates.</p></body></html>",
+        "url_analysis": {
+          "url": "https://trustedcorp-secure-login.com/login?session=YXNkZjEyMzQ1JmNvbnRleHQ9c2VjdXJl",
+          "decoded_query": "asdf12345&context=secure",
+          "domain_registration": {
+            "domain": "trustedcorp-secure-login.com",
+            "registrar": "GoDaddy.com, LLC",
+            "created_date": "2024-02-28T15:35:22Z",
+            "registrant_org": "Privacy Protect, LLC",
+            "registrant_country": "RU"
+          },
+          "dns_records": {
+            "A": [
+              "198.51.100.67"
+            ],
+            "MX": [
+              "mail.trustedcorp-secure-login.com"
+            ]
+          }
+        },
+        "web_server_access_log": [
+          "198.51.100.67 - - [15/Mar/2024:07:49:01 +0000] \"GET /login?session=YXNkZjEyMzQ1JmNvbnRleHQ9c2VjdXJl HTTP/1.1\" 200 5432 \"-\" \"Mozilla/5.0 (Windows NT 10.0; Win64; x64)\"",
+          "198.51.100.67 - - [15/Mar/2024:07:50:12 +0000] \"POST /authenticate HTTP/1.1\" 302 154 \"https://trustedcorp-secure-login.com/login\" \"Mozilla/5.0 (Windows NT 10.0; Win64; x64)\"",
+          "198.51.100.67 - - [15/Mar/2024:07:50:13 +0000] \"GET /video_message.mp4 HTTP/1.1\" 200 10240000 \"https://trustedcorp-secure-login.com/dashboard\" \"Mozilla/5.0 (Windows NT 10.0; Win64; x64)\""
+        ],
+        "video_phishing_site_response_headers": {
+          "Content-Type": "video/mp4",
+          "Content-Length": "10240000",
+          "Cache-Control": "no-cache, no-store, must-revalidate",
+          "Pragma": "no-cache",
+          "Expires": "0",
+          "Server": "Apache/2.4.46 (Unix)"
+        },
+        "payload_snippet": "base64 video data (truncated): AAAAGGZ0eXBtcDQyAAAAGG1vb3YAAABsbXZoZAAAAAB8AAABAAEAAQAAAQAAAAEAAAAAAAAAAAAAAAAAAA==",
+        "network_traffic_pattern": {
+          "dns_queries": [
+            {
+              "timestamp": "2024-03-15T07:48:05Z",
+              "query": "trustedcorp-secure-login.com A"
+            },
+            {
+              "timestamp": "2024-03-15T07:48:07Z",
+              "query": "mail.trustedcorp-secure-login.com MX"
+            }
+          ],
+          "tcp_connections": [
+            {
+              "src_ip": "10.1.1.100",
+              "dst_ip": "198.51.100.67",
+              "dst_port": 443,
+              "start_time": "07:48:12Z",
+              "duration_sec": 90
+            }
+          ]
+        }
+      },
+      "indicators": [
+        "Suspiciously new domain trustedcorp-secure-login.com with privacy-protected registration",
+        "Phishing email with link containing base64-encoded query parameters",
+        "Web server logs showing POST to /authenticate and subsequent delivery of large video file",
+        "Video phishing site serving deepfake video content",
+        "DNS queries to attacker-controlled domains",
+        "HTTP 302 redirect post-login attempt"
+      ],
+      "detection_method": "Apply URL decoding and pattern matching to detect obfuscated query parameters; correlate new domain registrations with user-reported phishing; deepfake video content scanning on inbound multimedia; monitor unusual POST requests with redirects in web logs; use threat intelligence to flag privacy-protected suspicious domains.",
+      "relevant_mitre_techniques": [
+        "T1566.001 - Phishing: Spearphishing Attachment",
+        "T1566.002 - Phishing: Spearphishing Link",
+        "T1406 - AI-Enabled Social Engineering",
+        "T1204.002 - User Execution: Malicious File",
+        "T1071.001 - Application Layer Protocol: Web Protocols"
+      ]
+    }
+  ]
+}

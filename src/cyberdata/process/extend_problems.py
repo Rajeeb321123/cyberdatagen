@@ -1,4 +1,4 @@
-# cyberdata/scripts/extend_problem.py
+# cyberdata/scripts/extend_problems.py
 
 import json
 import os
@@ -17,9 +17,10 @@ sys.path.append(str(CURRENT_DIR.parent))  # Add cyberdata package to path
 # Import process_llm_request from utility module
 from cyberdata.utils.llm_invoke import process_llm_request
 from cyberdata.utils.logger_config import setup_logger
+from cyberdata.utils.prompt_loader import load_system_prompt, load_user_prompt
 
 # Set up logger
-logger = setup_logger("cyberdata.scripts.extend_problem")
+logger = setup_logger("cyberdata.scripts.extend_problems")
 
 # Load environment variables
 load_dotenv()
@@ -52,98 +53,6 @@ def load_existing_problems():
     except Exception as e:
         logger.error(f"Error loading problems: {str(e)}", exc_info=True)
         raise
-
-
-def create_evaluation_system_prompt():
-    """Create system prompt for evaluation"""
-    logger.debug("Creating evaluation system prompt")
-    return """
-You are an expert cybersecurity analyst and taxonomy specialist with deep knowledge of threat intelligence, 
-incident response, and cybersecurity frameworks including MITRE ATT&CK, NIST Cybersecurity Framework, 
-VERIS schema, and emerging threat landscapes.
-
-Your task is to evaluate and improve a structured JSON list of cybersecurity problems to ensure it:
-1. Uses effective categorization and taxonomy
-2. Covers current and emerging threats (2023-2025)
-3. Follows industry best practices for threat classification
-4. Provides actionable intelligence for security teams
-
-Provide detailed, technical analysis with specific recommendations for improvement.
-"""
-
-
-def create_evaluation_user_prompt(problems_json):
-    """Create user prompt for evaluation with the problems JSON"""
-    logger.debug("Creating evaluation user prompt")
-    return f"""
-I have a structured JSON list of cybersecurity problems. Each entry includes:
-
-- `area`: High-level category of the threat (e.g., Enterprise, Cloud, EDTC)
-- `nature`: Specific subtype (e.g., phishing, misconfigured_storage)
-- `description`: Explanation of the threat
-- `risk_reduction`: Recommended mitigations
-
-Please evaluate the list along the following dimensions:
-
-1. **Categorization Structure**:
-   - Is the use of `area` and `nature` fields effective and scalable?
-   - Would a hierarchical taxonomy (e.g., `area > category > variant`) improve clarity?
-   - Should any standard taxonomy (MITRE ATT&CK, NIST, VERIS, etc.) be used for alignment?
-
-2. **Opportunities for Merging or Reclassification**:
-   - Identify any entries that could be logically merged under a broader umbrella category (e.g., consolidate phishing subtypes).
-   - Suggest a more unified or normalized structure if applicable.
-
-3. **Coverage of Emerging and Important Threats**:
-   - Identify if the list is missing any **recent or rising cyberattacks** (2023–2025).
-   - Recommend at least **5 newly relevant or high-impact threats**, including their categories and brief descriptions.
-   - Include areas such as AI-generated attacks, supply chain risks, cloud misconfigurations, or adversarial ML attacks.
-
-4. **Optional Enhancement Suggestions**:
-   - Suggest adding new fields (e.g., `attack_vector`, `asset_targeted`, `kill_chain_phase`, `impact_level`) to make the dataset more useful for incident classification or training datasets.
-
-Here is the JSON list for evaluation:
-
-{problems_json}
-
-Please provide your evaluation as a structured JSON response with the following format:
-{{
-  "evaluation_summary": "Brief overview of findings",
-  "categorization_analysis": {{
-    "current_structure_assessment": "Analysis of current area/nature structure",
-    "taxonomy_recommendations": "Suggestions for taxonomy improvements",
-    "standard_alignment": "Recommendations for standard framework alignment"
-  }},
-  "merging_recommendations": [
-    {{
-      "suggestion": "Description of merging opportunity",
-      "affected_items": ["list of items to merge"],
-      "proposed_structure": "How to restructure"
-    }}
-  ],
-  "missing_threats": [
-    {{
-      "area": "Proposed area",
-      "nature": "Proposed nature",
-      "description": "Detailed description",
-      "risk_reduction": ["list of mitigation strategies"],
-      "justification": "Why this threat is important and emerging"
-    }}
-  ],
-  "enhancement_suggestions": {{
-    "new_fields": [
-      {{
-        "field_name": "proposed field name",
-        "description": "what this field would contain",
-        "example_values": ["example1", "example2"]
-      }}
-    ],
-    "structural_improvements": "Other structural suggestions"
-  }}
-}}
-
-Return only valid JSON with your complete analysis.
-"""
 
 
 def extract_json_from_response(response_content):
@@ -203,9 +112,9 @@ def evaluate_problems(problems):
     # Convert problems to JSON string for the prompt
     problems_json = json.dumps({"problems": problems}, indent=2)
     
-    # Create prompts
-    system_prompt = create_evaluation_system_prompt()
-    user_prompt = create_evaluation_user_prompt(problems_json)
+    # Load prompts from YAML
+    system_prompt = load_system_prompt("extension_prompts", prompt_name="evaluation")
+    user_prompt = load_user_prompt("extension_prompts", prompt_name="evaluation", problems_json=problems_json)
     
     # Call LLM for evaluation
     logger.info("Calling LLM for problems evaluation")
@@ -261,76 +170,22 @@ def save_evaluation_report(evaluation_result):
         raise
 
 
-def create_update_system_prompt():
-    """Create system prompt for updating problems based on evaluation"""
-    logger.debug("Creating update system prompt")
-    return """
-You are an expert cybersecurity analyst tasked with updating and extending a cybersecurity problems dataset 
-based on evaluation findings. You must:
-
-1. Incorporate recommended new threats and attack vectors
-2. Apply suggested structural improvements
-3. Merge or reclassify problems where recommended
-4. Ensure all entries follow consistent formatting and taxonomy
-5. Maintain backwards compatibility while improving the dataset
-
-Generate a comprehensive, updated problems list that addresses the evaluation findings while 
-preserving existing valuable content.
-"""
-
-
-def create_update_user_prompt(original_problems, evaluation_result):
-    """Create user prompt for updating problems"""
-    logger.debug("Creating update user prompt")
-    
-    original_json = json.dumps({"problems": original_problems}, indent=2)
-    evaluation_json = json.dumps(evaluation_result, indent=2)
-    
-    return f"""
-Based on the evaluation findings, please update and extend the cybersecurity problems dataset.
-
-Original Problems Dataset:
-{original_json}
-
-Evaluation Results and Recommendations:
-{evaluation_json}
-
-Please generate an updated problems dataset that:
-
-1. **Incorporates New Threats**: Add the recommended missing threats from the evaluation
-2. **Applies Structural Improvements**: Implement suggested categorization and field enhancements
-3. **Merges/Reclassifies**: Apply any recommended merging or reclassification suggestions
-4. **Maintains Consistency**: Ensure all entries follow the same structure and quality standards
-5. **Preserves Existing Content**: Keep valuable existing problems while improving their classification
-
-For any new threats added, ensure they include:
-- Clear, technical descriptions
-- Realistic risk reduction strategies
-- Proper categorization using the improved taxonomy
-
-Return the updated dataset as a JSON object with this exact structure:
-{{
-  "problems": [
-    {{
-      "area": "area_name",
-      "nature": "specific_nature",
-      "description": "detailed technical description",
-      "risk_reduction": ["strategy1", "strategy2", "strategy3"]
-    }}
-  ]
-}}
-
-Return only valid JSON with the complete updated problems list.
-"""
-
-
 def update_problems_based_on_evaluation(original_problems, evaluation_result):
     """Use LLM to update problems based on evaluation findings"""
     logger.info("Starting problems update based on evaluation")
     
-    # Create prompts for update
-    system_prompt = create_update_system_prompt()
-    user_prompt = create_update_user_prompt(original_problems, evaluation_result)
+    # Create JSON strings for the prompts
+    original_json = json.dumps({"problems": original_problems}, indent=2)
+    evaluation_json = json.dumps(evaluation_result, indent=2)
+    
+    # Load prompts from YAML
+    system_prompt = load_system_prompt("extension_prompts", prompt_name="update")
+    user_prompt = load_user_prompt(
+        "extension_prompts", 
+        prompt_name="update",
+        original_json=original_json,
+        evaluation_json=evaluation_json
+    )
     
     # Call LLM for update
     logger.info("Calling LLM for problems update")

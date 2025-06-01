@@ -10,6 +10,7 @@ from dotenv import load_dotenv
 # Import process_llm_request from your utility module
 from cyberdata.utils.llm_invoke import process_llm_request
 from cyberdata.utils.logger_config import setup_logger
+from cyberdata.utils.prompt_loader import load_prompt
 
 # Set up logger
 logger = setup_logger("cyberdata.scripts.validate_small")
@@ -89,57 +90,30 @@ def load_problems(file_path: Path = None) -> list:
     raise FileNotFoundError(f"No problems config found. Checked: {PROBLEMS_UPDATED_PATH}, {PROBLEMS_PATH}")
 
 
-def make_system_prompt(problem: dict, example: dict) -> str:
-    """
-    System prompt to instruct the LLM on validation criteria.
-    """
-    logger.debug(f"Creating system prompt for problem: {problem['nature']}")
-    return f"""
-You are a cybersecurity data validation assistant. 
-Your task is to assess whether the given sample correctly represents the stated cybersecurity problem and to provide detailed feedback.
-
-Problem:
-- Area: {problem['area']}
-- Nature: {problem['nature']}
-- Description: {problem.get('description')}
-- Risk Reduction: {', '.join(problem.get('risk_reduction', []))}
-
-Validation criteria:
-1. Correctness: Does the sample align with the problem nature?
-2. Realism: Is the example plausible in a real-world scenario?
-3. Completeness: Are all required fields present and accurately populated?
-4. Indicators: Do the indicators clearly explain why the sample matches the problem?
-"""
-
-
-def make_user_prompt(example: dict) -> str:
-    """
-    User prompt embedding the example to be validated.
-    """
-    logger.debug("Creating user prompt with example")
-    # Serialize example to JSON string
-    example_json = json.dumps(example, indent=2)
-    return f"""
-Please validate the following sample and return a JSON object with keys:
-- 'valid': boolean, whether the sample is valid.
-- 'issues': list of strings describing any problems or missing elements.
-- 'comments': detailed feedback on improvements.
-
-Sample:
-{example_json}
-
-Return only valid JSON.
-"""
-
-
 def validate_example(problem: dict, example: dict) -> dict:
     """
     Call the LLM to validate a single example.
     """
     logger.info(f"Validating example for problem: {problem['nature']}")
     
-    system_content = make_system_prompt(problem, example)
-    user_content = make_user_prompt(example)
+    # Load prompts from YAML using the prompt loader
+    system_content = load_prompt(
+        "validation_prompts",
+        "prompts.seed_validation.system.template",
+        area=problem['area'],
+        nature=problem['nature'],
+        description=problem.get('description', ''),
+        risk_reduction=', '.join(problem.get('risk_reduction', []))
+    )
+    
+    # Serialize example to JSON string
+    example_json = json.dumps(example, indent=2)
+    
+    user_content = load_prompt(
+        "validation_prompts",
+        "prompts.seed_validation.user.template",
+        example_json=example_json
+    )
     
     # Use process_llm_request instead of direct model call
     logger.info(f"Calling LLM for validation")

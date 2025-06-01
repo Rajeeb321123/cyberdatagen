@@ -1,411 +1,466 @@
 {
   "samples": [
     {
-      "scenario": "Spear phishing email impersonating the IT helpdesk to trick a senior engineer into resetting their corporate VPN password via a fake portal link.",
+      "scenario": "Spear phishing email impersonating HR department to deliver credential harvesting link during company reorganization",
       "technical_data": {
-        "email_headers": "Return-Path: <it-support@corp-it-helpdesk.com>\r\nReceived: from mail.corp-it-helpdesk.com (mail.corp-it-helpdesk.com [198.51.100.89])\r\n\tby mx.corp-example.com (Postfix) with ESMTPS id 9D7F8234B2\r\n\tfor <engineer@corp-example.com>; Mon, 15 Apr 2024 08:17:45 -0400 (EDT)\r\nX-Originating-IP: [198.51.100.89]\r\nX-Mailer: Apple Mail (2.3445.5.20)\r\nMessage-ID: <CAJ8p4v1aT+4cD1oW9_Hfj8j@mail.corp-it-helpdesk.com>\r\nFrom: \"IT Helpdesk\" <it-support@corp-it-helpdesk.com>\r\nTo: engineer@corp-example.com\r\nSubject: Mandatory VPN Password Reset Required\r\nMIME-Version: 1.0\r\nContent-Type: text/html; charset=\"UTF-8\"\r\nDKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=corp-it-helpdesk.com; s=default;\r\n\tt=1713113865; bh=9f2M3+6Dz3cGc5Lx6zFZVqQJ2HpXhZ9+W1T8xqCn7Mo=;\r\n\tb=Q8u9aZ3ePmL2rPqR1Ck8tN5V7YbX0Y5WqZ3T7K5F9J6N1O7D3M8L0W6Q9P2R5C0",
-        "email_body_html": "<html><body><p>Hi Alex,</p><p>Due to recent security updates, all employees must reset their VPN passwords immediately to maintain access. Please use the secure link below to update your password:</p><p><a href=\"https://corp-it-helpdesk.com/vpn-reset?user=alex.eng&token=4f5g6h7j8k9l0m1n\">https://corp-it-helpdesk.com/vpn-reset?user=alex.eng&token=4f5g6h7j8k9l0m1n</a></p><p>If you do not reset your password by today, your VPN access will be suspended.</p><p>Thank you,<br>IT Helpdesk Team<br>Phone: +1-555-987-6543</p></body></html>",
-        "smtp_transaction_log": "220 mail.corp-it-helpdesk.com ESMTP Postfix\r\nEHLO attacker-vm\r\n250-mail.corp-it-helpdesk.com\r\n250-PIPELINING\r\n250-SIZE 5120000\r\n250-STARTTLS\r\n250-ENHANCEDSTATUSCODES\r\n250-8BITMIME\r\n250 DSN\r\nMAIL FROM:<it-support@corp-it-helpdesk.com>\r\n250 2.1.0 Ok\r\nRCPT TO:<engineer@corp-example.com>\r\n250 2.1.5 Ok\r\nDATA\r\n354 End data with <CR><LF>.<CR><LF>\r\n[Email data]\r\n.\r\n250 2.0.0 Ok: queued as 9D7F8234B2\r\nQUIT\r\n221 2.0.0 Bye",
+        "email_headers": "Return-Path: <hr-update@company-example.com>\r\nReceived: from mail-outbound02.company-example.com (mail-outbound02.company-example.com [192.0.2.46])\r\n\tby mail.company-example.com (Postfix) with ESMTPS id 7B3C4D5098\r\n\tfor <employee@company-example.com>; Mon, 22 May 2023 08:47:10 -0400 (EDT)\r\nReceived-SPF: pass (mail.company-example.com: domain of hr-update@company-example.com designates 192.0.2.46 as permitted sender) receiver=mail.company-example.com; client-ip=192.0.2.46; envelope-from=hr-update@company-example.com; helo=mail-outbound02.company-example.com;\r\nAuthentication-Results: mail.company-example.com; dkim=pass header.d=company-example.com; spf=pass smtp.mailfrom=hr-update@company-example.com; dmarc=pass header.from=company-example.com\r\nX-Mailer: Microsoft Outlook 16.0\r\nMessage-ID: <CAG9Y=4J1k8+kWf3pL3m9qXyZR@example.com>\r\nDate: Mon, 22 May 2023 08:47:07 -0400\r\nFrom: \"Human Resources\" <hr-update@company-example.com>\r\nTo: \"Employee Name\" <employee@company-example.com>\r\nSubject: Mandatory: Complete Your Updated Employee Profile\r\nMIME-Version: 1.0\r\nContent-Type: text/html; charset=\"UTF-8\"\r\n",
+        "email_body_html": "<html><body><p>Dear Employee,</p><p>As part of the ongoing company reorganization, all employees are required to update their employee profile by end of day. Please <a href=\"https://company-example.com.secure-hr-portal.com/update-profile?user=employee123\">click here</a> to complete the mandatory update.</p><p>Failure to comply may result in delayed payroll processing.</p><p>Thank you,<br/>Human Resources<br/>Company Example</p></body></html>",
+        "smtp_transaction_log": "220 mail.company-example.com ESMTP Postfix\r\nEHLO mail-outbound02.company-example.com\r\n250-mail.company-example.com\r\n250-PIPELINING\r\n250-SIZE 52428800\r\n250-STARTTLS\r\n250-ENHANCEDSTATUSCODES\r\n250-8BITMIME\r\n250 DSN\r\nMAIL FROM:<hr-update@company-example.com>\r\n250 2.1.0 Ok\r\nRCPT TO:<employee@company-example.com>\r\n250 2.1.5 Ok\r\nDATA\r\n354 End data with <CR><LF>.<CR><LF>\r\n[Email body transmitted]\r\n.\r\n250 2.0.0 Ok: queued as 7B3C4D5098\r\nQUIT\r\n221 2.0.0 Bye",
         "suspicious_domain_registration": {
-          "domain": "corp-it-helpdesk.com",
-          "registrar": "NameSilo, LLC",
-          "creation_date": "2024-04-10T13:45:00Z",
-          "updated_date": "2024-04-12T09:30:00Z",
-          "registrant_name": "Privacy Protect, LLC",
-          "registrant_email": "contact@privacyprotect.org",
+          "domain": "secure-hr-portal.com",
+          "registrar": "FastDomains LLC",
+          "creation_date": "2023-04-10T09:00:00Z",
+          "updated_date": "2023-05-15T11:30:00Z",
+          "registrant": {
+            "name": "PrivacyGuard",
+            "organization": "Domain Privacy Service",
+            "email": "contact@privacyguard.com"
+          },
           "dns_records": {
             "A": [
-              "198.51.100.89"
+              "198.51.100.200"
             ],
-            "MX": [
-              "mail.corp-it-helpdesk.com"
+            "NS": [
+              "ns1.fastdns.net",
+              "ns2.fastdns.net"
             ]
           }
         },
-        "malicious_url": "https://corp-it-helpdesk.com/vpn-reset?user=alex.eng&token=4f5g6h7j8k9l0m1n",
-        "url_obfuscation": "Domain mimics internal IT helpdesk with 'corp-it-helpdesk.com'; newly registered domain with privacy protection; URL contains query parameters to simulate personalized reset token."
+        "url_obfuscation_example": "https://company-example.com.secure-hr-portal.com/update-profile?user=employee123",
+        "additional_notes": "The attacker registered a domain visually similar to company-example.com with an added subdomain to deceive users. The URL uses the legitimate company domain as a prefix to trick users into trusting the phishing link. The email is crafted with urgency to compel immediate action."
       },
       "indicators": [
-        "Domain corp-it-helpdesk.com registered less than a week ago with privacy protection",
-        "Email sent from an IP 198.51.100.89 not recognized in corporate logs",
-        "Urgent password reset request inconsistent with usual IT notifications",
-        "URL contains token parameter suggesting session hijacking attempt",
-        "Email uses HTML formatting with links mimicking corporate VPN portal"
+        "URL domain does not match legitimate company domain, using subdomain trick to appear authentic",
+        "Email from hr-update@company-example.com with legitimate SPF/DKIM pass due to compromised internal mail server 192.0.2.46",
+        "Urgent compliance request with threat of payroll delay to induce fear",
+        "Link directs to newly registered suspicious domain secure-hr-portal.com with privacy-protected WHOIS",
+        "Email subject and body consistent with known company HR tone but unusual link patterns"
       ],
-      "detection_method": "Analyze email SPF, DKIM, DMARC alignment failures; monitor newly registered domains resembling internal services; inspect URLs for suspicious tokens; educate users on verifying password reset requests through official channels.",
+      "detection_method": "Implement URL filtering to detect and block look-alike domains using subdomain tricks; Monitor outbound emails from internal mail servers for unusual sending patterns; Conduct regular user awareness training focusing on verifying URLs carefully; Use sandboxing to analyze links before allowing user access; Correlate phishing link clicks with suspicious domain registrations.",
       "relevant_mitre_techniques": [
         "T1566.002 - Phishing: Spearphishing Link",
         "T1598.002 - Spearphishing via Service",
-        "T1592.001 - Gather Victim Identity Information: Social Media",
-        "T1531 - Account Access Removal",
+        "T1204.001 - User Execution: Malicious Link"
+      ]
+    },
+    {
+      "scenario": "Spear phishing email impersonating IT support to deliver malicious macro-enabled Excel attachment for credential theft",
+      "technical_data": {
+        "email_headers": "Return-Path: <it-support@company-example.com>\r\nReceived: from mail-outbound03.company-example.com (mail-outbound03.company-example.com [192.0.2.47])\r\n\tby mail.company-example.com (Postfix) with ESMTPS id 4C2D1F7A23\r\n\tfor <employee@company-example.com>; Thu, 30 Mar 2023 11:22:18 -0400 (EDT)\r\nReceived-SPF: pass (mail.company-example.com: domain of it-support@company-example.com designates 192.0.2.47 as permitted sender) receiver=mail.company-example.com; client-ip=192.0.2.47; envelope-from=it-support@company-example.com; helo=mail-outbound03.company-example.com;\r\nAuthentication-Results: mail.company-example.com; dkim=pass header.d=company-example.com; spf=pass smtp.mailfrom=it-support@company-example.com; dmarc=pass header.from=company-example.com\r\nX-Mailer: Microsoft Outlook 16.0\r\nMessage-ID: <CAN4X=3F0l5+7XsJk9rL1qZy@company-example.com>\r\nDate: Thu, 30 Mar 2023 11:22:15 -0400\r\nFrom: \"IT Support\" <it-support@company-example.com>\r\nTo: \"Employee Name\" <employee@company-example.com>\r\nSubject: Immediate Action Required: Security Policy Update\r\nMIME-Version: 1.0\r\nContent-Type: multipart/mixed; boundary=\"----=_Part_67890_12345\"\r\n",
+        "email_body_plain": "Dear Employee,\n\nPlease review the attached updated security policy document and enable macros to ensure your system complies with the new security standards.\n\nThank you,\nIT Support",
+        "attachment_filename": "Security_Policy_Update.xlsm",
+        "attachment_sha256": "f4d5c2b1a9e8e7d6c5b4a3928173645fef8d9c0b1a2b3c4d5e6f7890abcde123",
+        "attachment_macro_summary": "Macro downloads and exfiltrates user credentials to attacker-controlled server upon enabling macros",
+        "smtp_transaction_log": "220 mail.company-example.com ESMTP Postfix\r\nEHLO mail-outbound03.company-example.com\r\n250-mail.company-example.com\r\n250-PIPELINING\r\n250-SIZE 52428800\r\n250-STARTTLS\r\nMAIL FROM:<it-support@company-example.com>\r\n250 2.1.0 Ok\r\nRCPT TO:<employee@company-example.com>\r\n250 2.1.5 Ok\r\nDATA\r\n354 End data with <CR><LF>.<CR><LF>\r\n[Email with macro-enabled attachment transmitted]\r\n.\r\n250 2.0.0 Ok: queued as 4C2D1F7A23\r\nQUIT\r\n221 2.0.0 Bye",
+        "suspicious_domain_registration": {
+          "domain": "it-support-update.com",
+          "registrar": "DomainShield Inc.",
+          "creation_date": "2023-02-28T14:45:00Z",
+          "updated_date": "2023-03-15T09:20:00Z",
+          "registrant": {
+            "name": "Redacted for Privacy",
+            "organization": "Privacy Protect Service",
+            "email": "privacy@domainshield.com"
+          },
+          "dns_records": {
+            "A": [
+              "203.0.113.250"
+            ],
+            "NS": [
+              "ns1.domainshield.net",
+              "ns2.domainshield.net"
+            ]
+          }
+        },
+        "network_packet_capture_excerpt": "Frame 789: 1514 bytes on wire (12112 bits), 1514 bytes captured (12112 bits)\r\nEthernet II, Src: 00:aa:bb:cc:dd:ee, Dst: 11:22:33:44:55:66\r\nInternet Protocol Version 4, Src: 192.168.1.101, Dst: 203.0.113.250\r\nTransmission Control Protocol, Src Port: 52345, Dst Port: 443, Seq: 1, Ack: 1, Len: 1024\r\nTLSv1.2 Application Data\r\n    POST /collect HTTP/1.1\r\n    Host: it-support-update.com\r\n    User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64)\r\n    Content-Type: application/x-www-form-urlencoded\r\n",
+        "powershell_script_snippet": "",
+        "process_creation_log": "2023-03-30T11:23:40.456Z - New Process Created: excel.exe /automation; followed by child process powershell.exe -EncodedCommand [redacted]",
+        "additional_notes": "The macro embedded within the Excel file is triggered upon user enabling macros, which is a common social engineering tactic. The attachment is named to imply legitimacy and urgency, and the sending IP is a legitimate company mail server to evade detection."
+      },
+      "indicators": [
+        "Email originates from legitimate internal mail server with proper SPF, DKIM, and DMARC passes",
+        "Attachment is a macro-enabled Excel file with SHA-256 matching known malicious payload",
+        "User prompted to enable macros, which triggers credential exfiltration script",
+        "Outbound HTTPS POST request to newly registered suspicious domain it-support-update.com",
+        "Process creation logs show Excel spawning PowerShell with encoded commands following document open"
+      ],
+      "detection_method": "Use email attachment sandboxing to detect macro-based malicious activity; Monitor network traffic for unusual HTTPS POST requests to newly registered domains; Enforce macro blocking policies in Office applications; Deploy endpoint detection to track process parent-child relationships; Conduct phishing awareness training focusing on macro-enabled attachments.",
+      "relevant_mitre_techniques": [
+        "T1566.001 - Spearphishing Attachment",
+        "T1204.002 - User Execution: Malicious File",
+        "T1059.001 - Command and Scripting Interpreter: PowerShell",
+        "T1071.001 - Application Layer Protocol: Web Protocols",
+        "T1110 - Brute Force (for credential theft)"
+      ]
+    },
+    {
+      "scenario": "Spear phishing message impersonating vendor with a link to fake portal requesting login credentials for contract review",
+      "technical_data": {
+        "email_headers": "Return-Path: <contracts@trustedvendor.com>\r\nReceived: from mail.trustedvendor.com (mail.trustedvendor.com [198.51.100.88])\r\n\tby mail.company-example.com (Postfix) with ESMTPS id 9A8B7C6D5E\r\n\tfor <procurement@company-example.com>; Tue, 14 Feb 2023 16:05:22 -0500 (EST)\r\nReceived-SPF: fail (mail.company-example.com: domain of contracts@trustedvendor.com does not designate 198.51.100.88 as permitted sender) receiver=mail.company-example.com; client-ip=198.51.100.88; envelope-from=contracts@trustedvendor.com; helo=mail.trustedvendor.com;\r\nAuthentication-Results: mail.company-example.com; dkim=none; spf=fail smtp.mailfrom=contracts@trustedvendor.com; dmarc=fail header.from=trustedvendor.com\r\nX-Mailer: Apple Mail (2.3445.5.20)\r\nMessage-ID: <CAQ1H=7Xk9+3fRtS21mLp@trustedvendor.com>\r\nDate: Tue, 14 Feb 2023 16:05:20 -0500\r\nFrom: \"Trusted Vendor\" <contracts@trustedvendor.com>\r\nTo: \"Procurement Team\" <procurement@company-example.com>\r\nSubject: Contract Review Required: Q2 Supply Agreement\r\nMIME-Version: 1.0\r\nContent-Type: text/plain; charset=\"UTF-8\"\r\n",
+        "email_body_plain": "Dear Procurement Team,\n\nPlease review the updated Q2 supply agreement at the link below and confirm acceptance by logging in with your corporate credentials:\n\nhttps://trustedvendor-secure.com/login?returnUrl=%2Fcontract-review\n\nThank you for your prompt attention.\n\nBest Regards,\nTrusted Vendor Contracts Department",
+        "smtp_transaction_log": "220 mail.company-example.com ESMTP Postfix\r\nEHLO mail.trustedvendor.com\r\n250-mail.company-example.com\r\n250-PIPELINING\r\n250-SIZE 52428800\r\n250-STARTTLS\r\nMAIL FROM:<contracts@trustedvendor.com>\r\n250 2.1.0 Ok\r\nRCPT TO:<procurement@company-example.com>\r\n250 2.1.5 Ok\r\nDATA\r\n354 End data with <CR><LF>.<CR><LF>\r\n[Email body transmitted]\r\n.\r\n250 2.0.0 Ok: queued as 9A8B7C6D5E\r\nQUIT\r\n221 2.0.0 Bye",
+        "suspicious_domain_registration": {
+          "domain": "trustedvendor-secure.com",
+          "registrar": "SecureDomains Ltd.",
+          "creation_date": "2023-01-25T07:30:00Z",
+          "updated_date": "2023-02-10T12:00:00Z",
+          "registrant": {
+            "name": "Domain Privacy Service",
+            "organization": "Privacy Protection",
+            "email": "privacy@securedomains.com"
+          },
+          "dns_records": {
+            "A": [
+              "198.51.100.99"
+            ],
+            "NS": [
+              "ns1.securedomains.net",
+              "ns2.securedomains.net"
+            ]
+          }
+        },
+        "url_obfuscation_example": "https://trustedvendor-secure.com/login?returnUrl=%2Fcontract-review",
+        "additional_notes": "The phishing domain mimics the legitimate vendor domain but adds '-secure' to appear trustworthy. SPF and DMARC fail for the sender domain. The URL is crafted with a return URL parameter to resemble legitimate portal behavior."
+      },
+      "indicators": [
+        "SPF and DMARC fail for trustedvendor.com domain sending from suspicious IP 198.51.100.88",
+        "URL domain trustedvendor-secure.com is newly registered and unrelated to legitimate vendor",
+        "Email requests login with corporate credentials on external site",
+        "No DKIM signature in email headers",
+        "Email timing coincides with company procurement contract deadlines"
+      ],
+      "detection_method": "Implement email authentication enforcement rejecting emails failing SPF/DKIM/DMARC; Employ domain similarity detection to flag lookalike domains; Train users to verify URLs and avoid entering corporate credentials on unknown sites; Monitor network for credential submission to suspicious domains; Use DNS reputation services to block suspicious domains.",
+      "relevant_mitre_techniques": [
+        "T1566.002 - Phishing: Spearphishing Link",
+        "T1598.002 - Spearphishing via Service",
+        "T1204.001 - User Execution: Malicious Link",
+        "T1078 - Valid Accounts"
+      ]
+    },
+    {
+      "scenario": "Spear phishing email with a malicious ZIP attachment containing JavaScript downloader targeting finance department",
+      "technical_data": {
+        "email_headers": "Return-Path: <finance-notify@company-example.com>\r\nReceived: from mail-outbound04.company-example.com (mail-outbound04.company-example.com [192.0.2.48])\r\n\tby mail.company-example.com (Postfix) with ESMTPS id 2A4B3C1D56\r\n\tfor <finance@company-example.com>; Fri, 10 Nov 2023 10:10:10 -0500 (EST)\r\nReceived-SPF: pass (mail.company-example.com: domain of finance-notify@company-example.com designates 192.0.2.48 as permitted sender) receiver=mail.company-example.com; client-ip=192.0.2.48; envelope-from=finance-notify@company-example.com; helo=mail-outbound04.company-example.com;\r\nAuthentication-Results: mail.company-example.com; dkim=pass header.d=company-example.com; spf=pass smtp.mailfrom=finance-notify@company-example.com; dmarc=pass header.from=company-example.com\r\nX-Mailer: Microsoft Outlook 16.0\r\nMessage-ID: <CAN7W=8U2m8+6XyLk8jP2mYz@company-example.com>\r\nDate: Fri, 10 Nov 2023 10:10:08 -0500\r\nFrom: \"Finance Notifications\" <finance-notify@company-example.com>\r\nTo: \"Finance Department\" <finance@company-example.com>\r\nSubject: Important: Payment Batch Details Attached\r\nMIME-Version: 1.0\r\nContent-Type: multipart/mixed; boundary=\"----=_Part_98765_43210\"\r\n",
+        "email_body_plain": "Dear Finance Team,\n\nPlease find attached the payment batch details for processing today.\n\nBest Regards,\nFinance Department",
+        "attachment_filename": "Payment_Batch_101123.zip",
+        "attachment_sha256": "9a1b2c3d4e5f67890123456789abcdef0123456789abcdef0123456789abcdef",
+        "attachment_inner_filename": "process.js",
+        "attachment_inner_file_description": "JavaScript file acting as downloader to fetch and execute additional payload from attacker server",
+        "smtp_transaction_log": "220 mail.company-example.com ESMTP Postfix\r\nEHLO mail-outbound04.company-example.com\r\n250-mail.company-example.com\r\n250-PIPELINING\r\n250-SIZE 52428800\r\n250-STARTTLS\r\nMAIL FROM:<finance-notify@company-example.com>\r\n250 2.1.0 Ok\r\nRCPT TO:<finance@company-example.com>\r\n250 2.1.5 Ok\r\nDATA\r\n354 End data with <CR><LF>.<CR><LF>\r\n[Email with ZIP attachment transmitted]\r\n.\r\n250 2.0.0 Ok: queued as 2A4B3C1D56\r\nQUIT\r\n221 2.0.0 Bye",
+        "suspicious_domain_registration": {
+          "domain": "finance-updates.net",
+          "registrar": "Anon Registrar Inc.",
+          "creation_date": "2023-10-20T15:00:00Z",
+          "updated_date": "2023-11-05T10:00:00Z",
+          "registrant": {
+            "name": "PrivacyGuard",
+            "organization": "Privacy Protection Service",
+            "email": "contact@privacyguard.net"
+          },
+          "dns_records": {
+            "A": [
+              "198.51.100.130"
+            ],
+            "NS": [
+              "ns1.anonreg.net",
+              "ns2.anonreg.net"
+            ]
+          }
+        },
+        "network_packet_capture_excerpt": "Frame 1034: 1514 bytes on wire (12112 bits), 1514 bytes captured (12112 bits)\r\nEthernet II, Src: 00:aa:bb:cc:dd:01, Dst: 11:22:33:44:55:02\r\nInternet Protocol Version 4, Src: 192.168.1.110, Dst: 198.51.100.130\r\nTransmission Control Protocol, Src Port: 54000, Dst Port: 80, Seq: 1, Ack: 1, Len: 800\r\nHypertext Transfer Protocol\r\n    GET /payload.exe HTTP/1.1\r\n    Host: finance-updates.net\r\n    User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64)\r\n    Accept: */*\r\n",
+        "powershell_script_snippet": "",
+        "process_creation_log": "2023-11-10T10:11:05.789Z - New Process Created: wscript.exe process.js //B",
+        "additional_notes": "The ZIP archive contains a JavaScript downloader which is executed via Windows Script Host (wscript.exe). The attachment is named to suggest legitimate financial processing data, increasing the likelihood of user opening it. The domain hosting the payload is new and privacy protected."
+      },
+      "indicators": [
+        "Email sent from legitimate company mail server with proper email authentication",
+        "Attachment is a ZIP archive containing a JavaScript downloader file process.js",
+        "Execution of wscript.exe with suspicious script detected in process logs",
+        "Outbound HTTP GET requests to newly registered suspicious domain finance-updates.net",
+        "No legitimate business process involves JavaScript files in payment batch communications"
+      ],
+      "detection_method": "Block or quarantine ZIP attachments containing scripts; Monitor process creation for script interpreters launching from email attachment directories; Use network monitoring to detect HTTP requests to suspicious domains; Implement user training to recognize suspicious attachment types; Use sandbox analysis to detect downloader script behavior.",
+      "relevant_mitre_techniques": [
+        "T1566.001 - Spearphishing Attachment",
+        "T1204.002 - User Execution: Malicious File",
+        "T1059.003 - Command and Scripting Interpreter: Windows Command Shell",
+        "T1105 - Ingress Tool Transfer"
+      ]
+    },
+    {
+      "scenario": "Spear phishing email from fake legal counsel requesting urgent review of settlement agreement with embedded HTML form to capture credentials",
+      "technical_data": {
+        "email_headers": "Return-Path: <legal@lawfirm-secure.com>\r\nReceived: from mail.lawfirm-secure.com (mail.lawfirm-secure.com [198.51.100.150])\r\n\tby mail.company-example.com (Postfix) with ESMTPS id 5E6F7G8H9I\r\n\tfor <ceo@company-example.com>; Wed, 03 May 2023 13:55:30 -0400 (EDT)\r\nReceived-SPF: fail (mail.company-example.com: domain of legal@lawfirm-secure.com does not designate 198.51.100.150 as permitted sender) receiver=mail.company-example.com; client-ip=198.51.100.150; envelope-from=legal@lawfirm-secure.com; helo=mail.lawfirm-secure.com;\r\nAuthentication-Results: mail.company-example.com; dkim=none; spf=fail smtp.mailfrom=legal@lawfirm-secure.com; dmarc=fail header.from=lawfirm-secure.com\r\nX-Mailer: Thunderbird 102.5.0\r\nMessage-ID: <CAQ2P=5Vj4+1FgMs7RqWy@lawfirm-secure.com>\r\nDate: Wed, 03 May 2023 13:55:28 -0400\r\nFrom: \"Legal Counsel\" <legal@lawfirm-secure.com>\r\nTo: \"John Smith\" <ceo@company-example.com>\r\nSubject: Urgent: Settlement Agreement Review Required\r\nMIME-Version: 1.0\r\nContent-Type: text/html; charset=\"UTF-8\"\r\n",
+        "email_body_html": "<html><body><p>Dear John Smith,</p><p>Please review the attached settlement agreement at your earliest convenience. Kindly provide your login details in the secure form below to access the full document:</p><form action=\"https://lawfirm-secure.com/submit-credentials\" method=\"post\"><label for=\"username\">Username:</label><input type=\"text\" id=\"username\" name=\"username\"/><br/><label for=\"password\">Password:</label><input type=\"password\" id=\"password\" name=\"password\"/><br/><input type=\"submit\" value=\"Submit\"/></form><p>Regards,<br/>Legal Counsel</p></body></html>",
+        "smtp_transaction_log": "220 mail.company-example.com ESMTP Postfix\r\nEHLO mail.lawfirm-secure.com\r\n250-mail.company-example.com\r\n250-PIPELINING\r\n250-SIZE 52428800\r\n250-STARTTLS\r\nMAIL FROM:<legal@lawfirm-secure.com>\r\n250 2.1.0 Ok\r\nRCPT TO:<ceo@company-example.com>\r\n250 2.1.5 Ok\r\nDATA\r\n354 End data with <CR><LF>.<CR><LF>\r\n[HTML email body transmitted]\r\n.\r\n250 2.0.0 Ok: queued as 5E6F7G8H9I\r\nQUIT\r\n221 2.0.0 Bye",
+        "suspicious_domain_registration": {
+          "domain": "lawfirm-secure.com",
+          "registrar": "Privacy Protect Ltd.",
+          "creation_date": "2023-04-25T14:15:00Z",
+          "updated_date": "2023-05-01T09:45:00Z",
+          "registrant": {
+            "name": "Redacted for Privacy",
+            "organization": "Privacy Protection Service",
+            "email": "contact@privacyprotect.org"
+          },
+          "dns_records": {
+            "A": [
+              "198.51.100.160"
+            ],
+            "NS": [
+              "ns1.privacyprotect.net",
+              "ns2.privacyprotect.net"
+            ]
+          }
+        },
+        "url_obfuscation_example": "https://lawfirm-secure.com/submit-credentials",
+        "additional_notes": "The email attempts to collect credentials directly in the email body via an embedded HTML form, which is a less common but effective phishing tactic. The domain lawfirm-secure.com is newly registered with privacy-protected WHOIS, spoofing a legitimate legal firm's identity."
+      },
+      "indicators": [
+        "Email fails SPF, DKIM, and DMARC checks for the sending domain",
+        "Embedded HTML form in email body collecting username and password",
+        "Domain lawfirm-secure.com is newly registered and privacy protected",
+        "Email targets executive with personalized name in greeting",
+        "Urgency implied to induce quick action without verification"
+      ],
+      "detection_method": "Filter emails containing embedded credential harvesting forms; Block emails from domains failing SPF/DKIM/DMARC; User training emphasizing never entering credentials in email forms; Monitor network for POST requests to suspicious domains; Use advanced phishing detection engines analyzing HTML email content.",
+      "relevant_mitre_techniques": [
+        "T1566.002 - Phishing: Spearphishing Link",
+        "T1539 - Steal Web Session Cookie",
+        "T1204.001 - User Execution: Malicious Link"
+      ]
+    },
+    {
+      "scenario": "Spear phishing email claiming to be internal security team with a link to fake MFA reset page to harvest employee credentials",
+      "technical_data": {
+        "email_headers": "Return-Path: <security-alerts@company-example.com>\r\nReceived: from mail-outbound05.company-example.com (mail-outbound05.company-example.com [192.0.2.49])\r\n\tby mail.company-example.com (Postfix) with ESMTPS id 1B2C3D4E5F\r\n\tfor <employee@company-example.com>; Mon, 15 Jan 2024 09:12:44 -0500 (EST)\r\nReceived-SPF: pass (mail.company-example.com: domain of security-alerts@company-example.com designates 192.0.2.49 as permitted sender) receiver=mail.company-example.com; client-ip=192.0.2.49; envelope-from=security-alerts@company-example.com; helo=mail-outbound05.company-example.com;\r\nAuthentication-Results: mail.company-example.com; dkim=pass header.d=company-example.com; spf=pass smtp.mailfrom=security-alerts@company-example.com; dmarc=pass header.from=company-example.com\r\nX-Mailer: Microsoft Outlook 16.0\r\nMessage-ID: <CAB8F=9Yz3+4FgJk7OpLqMz@company-example.com>\r\nDate: Mon, 15 Jan 2024 09:12:42 -0500\r\nFrom: \"Internal Security Team\" <security-alerts@company-example.com>\r\nTo: \"Employee Name\" <employee@company-example.com>\r\nSubject: Action Required: MFA Reset Due to Suspicious Login\r\nMIME-Version: 1.0\r\nContent-Type: text/html; charset=\"UTF-8\"\r\n",
+        "email_body_html": "<html><body><p>Dear Employee,</p><p>We detected suspicious login activity on your account. For your protection, please reset your Multi-Factor Authentication (MFA) settings immediately by visiting the following secure link:</p><p><a href=\"https://company-example-mfa-reset.com/login\">Reset MFA Now</a></p><p>If you do not reset your MFA, your account access may be temporarily suspended.</p><p>Thank you,<br/>Internal Security Team</p></body></html>",
+        "smtp_transaction_log": "220 mail.company-example.com ESMTP Postfix\r\nEHLO mail-outbound05.company-example.com\r\n250-mail.company-example.com\r\n250-PIPELINING\r\n250-SIZE 52428800\r\n250-STARTTLS\r\nMAIL FROM:<security-alerts@company-example.com>\r\n250 2.1.0 Ok\r\nRCPT TO:<employee@company-example.com>\r\n250 2.1.5 Ok\r\nDATA\r\n354 End data with <CR><LF>.<CR><LF>\r\n[HTML email body transmitted]\r\n.\r\n250 2.0.0 Ok: queued as 1B2C3D4E5F\r\nQUIT\r\n221 2.0.0 Bye",
+        "suspicious_domain_registration": {
+          "domain": "company-example-mfa-reset.com",
+          "registrar": "SecureRegister Ltd.",
+          "creation_date": "2023-12-20T13:30:00Z",
+          "updated_date": "2024-01-10T08:45:00Z",
+          "registrant": {
+            "name": "PrivacyGuard",
+            "organization": "Privacy Protection Service",
+            "email": "privacy@secureregister.com"
+          },
+          "dns_records": {
+            "A": [
+              "198.51.100.180"
+            ],
+            "NS": [
+              "ns1.secureregister.net",
+              "ns2.secureregister.net"
+            ]
+          }
+        },
+        "url_obfuscation_example": "https://company-example-mfa-reset.com/login",
+        "additional_notes": "The attacker used a domain closely resembling the legitimate company domain with an MFA reset theme to lure victims. The email is sent from a legitimate internal mail server to avoid filtering. The link leads to a fake login page designed to steal credentials and second factor tokens."
+      },
+      "indicators": [
+        "Email sent from legitimate internal mail server IP 192.0.2.49 with valid SPF/DKIM/DMARC",
+        "URL domain company-example-mfa-reset.com is newly registered and similar to company domain",
+        "Email content creates urgency with threat of account suspension",
+        "Link directs to external phishing site not owned by company",
+        "No prior communication of MFA resets from internal security team"
+      ],
+      "detection_method": "Use domain similarity detection and block newly registered lookalike domains; Monitor for suspicious login patterns correlating with phishing campaigns; Conduct phishing simulations focusing on MFA phishing; Use web proxy to block access to known phishing domains; Alert users on unexpected security communications with external links.",
+      "relevant_mitre_techniques": [
+        "T1566.002 - Phishing: Spearphishing Link",
+        "T1204.001 - User Execution: Malicious Link",
+        "T1078 - Valid Accounts",
         "T1110 - Brute Force"
       ]
     },
     {
-      "scenario": "Spear phishing email sent to legal counsel impersonating a trusted law firm, requesting review of urgent merger documents via a malicious attachment.",
+      "scenario": "Spear phishing email impersonating IT support to request password reset via fake internal portal link",
       "technical_data": {
-        "email_headers": "Return-Path: <notifications@lawfirm-secure.com>\r\nReceived: from mail.lawfirm-secure.com (mail.lawfirm-secure.com [192.0.2.55])\r\n\tby mx.corp-example.com (Postfix) with ESMTPS id 8C4D9387F1\r\n\tfor <legal@corp-example.com>; Tue, 16 Apr 2024 11:15:22 -0400 (EDT)\r\nX-Originating-IP: [192.0.2.55]\r\nX-Mailer: Microsoft Outlook 2019\r\nMessage-ID: <20240416111522.8C4D9387F1@mail.lawfirm-secure.com>\r\nFrom: \"Anderson & Blake LLP\" <notifications@lawfirm-secure.com>\r\nTo: legal@corp-example.com\r\nSubject: Urgent: Merger Documents for Immediate Review\r\nMIME-Version: 1.0\r\nContent-Type: multipart/mixed; boundary=\"----=_NextPart_000_0001_01D9F7A3.4E2B9C20\"",
-        "email_body_html": "<html><body><p>Dear Sarah,</p><p>Please find attached the merger agreement documents finalized this morning. Your immediate review and confirmation are required to proceed with the transaction.</p><p>Let me know if you have any questions.</p><p>Best regards,<br>Michael Anderson<br>Partner, Anderson & Blake LLP<br>Phone: +1-555-321-7654</p></body></html>",
-        "smtp_transaction_log": "220 mail.lawfirm-secure.com ESMTP Postfix\r\nEHLO attacker-desktop\r\n250-mail.lawfirm-secure.com\r\n250-PIPELINING\r\n250-SIZE 10240000\r\n250-STARTTLS\r\n250-ENHANCEDSTATUSCODES\r\n250-8BITMIME\r\n250 DSN\r\nMAIL FROM:<notifications@lawfirm-secure.com>\r\n250 2.1.0 Ok\r\nRCPT TO:<legal@corp-example.com>\r\n250 2.1.5 Ok\r\nDATA\r\n354 End data with <CR><LF>.<CR><LF>\r\n[Email data with malicious attachment]\r\n.\r\n250 2.0.0 Ok: queued as 8C4D9387F1\r\nQUIT\r\n221 2.0.0 Bye",
+        "email_headers": "Return-Path: <itsupport@company-example.com>\r\nReceived: from mail.comp-support.com (mail.comp-support.com [198.51.100.22])\r\n\tby mail.company-example.com (Postfix) with ESMTPS id 5A3B9102EF\r\n\tfor <employee@company-example.com>; Mon, 03 Jul 2023 08:45:12 -0400 (EDT)\r\nReceived-SPF: fail (mail.company-example.com: domain of itsupport@company-example.com does not designate 198.51.100.22 as permitted sender) receiver=mail.company-example.com; client-ip=198.51.100.22; envelope-from=itsupport@company-example.com; helo=mail.comp-support.com;\r\nAuthentication-Results: mail.company-example.com; dkim=none; spf=fail smtp.mailfrom=itsupport@company-example.com; dmarc=fail header.from=company-example.com\r\nX-Mailer: Microsoft Outlook 365\r\nMessage-ID: <CAF3Wq=7T5uBv8mZpN0+9qK@mail.comp-support.com>\r\nDate: Mon, 03 Jul 2023 08:45:10 -0400\r\nFrom: \"IT Support\" <itsupport@company-example.com>\r\nTo: \"Employee Name\" <employee@company-example.com>\r\nSubject: Immediate Action Required: Password Reset Needed\r\nMIME-Version: 1.0\r\nContent-Type: text/html; charset=\"UTF-8\"\r\n",
+        "email_body_html": "<html><body><p>Dear Employee,</p><p>Due to a recent security update, all employees are required to reset their corporate account passwords immediately to maintain access.</p><p>Please <a href=\"https://company-example.com.reset-security-portal.com/login\">click here</a> to access the password reset portal and follow the instructions. Failure to comply within 24 hours will result in account suspension.</p><p>Thank you for your prompt attention.</p><p>Best regards,<br/>IT Support Team<br/>Company Example</p></body></html>",
+        "smtp_transaction_log": "220 mail.company-example.com ESMTP Postfix\r\nEHLO mail.comp-support.com\r\n250-mail.company-example.com\r\n250-PIPELINING\r\n250-SIZE 52428800\r\n250-STARTTLS\r\nMAIL FROM:<itsupport@company-example.com>\r\n250 2.1.0 Ok\r\nRCPT TO:<employee@company-example.com>\r\n250 2.1.5 Ok\r\nDATA\r\n354 End data with <CR><LF>.<CR><LF>\r\n[Email body transmitted]\r\n.\r\n250 2.0.0 Ok: queued as 5A3B9102EF\r\nQUIT\r\n221 2.0.0 Bye",
         "suspicious_domain_registration": {
-          "domain": "lawfirm-secure.com",
-          "registrar": "Namesilo, LLC",
-          "creation_date": "2024-04-05T07:25:15Z",
-          "updated_date": "2024-04-11T14:40:00Z",
-          "registrant_name": "Privacy Protect, LLC",
-          "registrant_email": "contact@privacyprotect.org",
+          "domain": "company-example.com.reset-security-portal.com",
+          "registrar": "FastDomain Services",
+          "creation_date": "2023-06-25T14:30:00Z",
+          "updated_date": "2023-06-30T09:00:00Z",
+          "registrant": {
+            "name": "Redacted for Privacy",
+            "organization": "Privacy Protection Service",
+            "email": "contact@privacyprotect.org"
+          },
           "dns_records": {
             "A": [
-              "192.0.2.55"
+              "203.0.113.88"
             ],
-            "MX": [
-              "mail.lawfirm-secure.com"
+            "NS": [
+              "ns1.fastdomain.net",
+              "ns2.fastdomain.net"
             ]
           }
         },
-        "malicious_attachment": {
-          "filename": "Merger_Agreement_04162024.docm",
-          "md5": "3b5f5e0a4b6f7a1d9e3a2f8c5d1c0b7a",
-          "sha256": "d4f7e9a2e48e1c3b47e7f2c8d9f5e0a4b6f7a1d9e3a2f8c5d1c0b7a3b5f5e0a4"
-        },
-        "url_obfuscation": "Domain lawfirm-secure.com uses 'secure' suffix to appear legitimate; recent registration with privacy protection; attachment named to mimic official legal documents with macro-enabled extension .docm."
+        "url_obfuscation_example": "https://company-example.com.reset-security-portal.com/login",
+        "additional_notes": "The attacker registered a subdomain mimicking the legitimate domain to trick users into clicking the link. SPF and DMARC validation failed indicating spoofed sender. The link leads to a credential harvesting page styled like the corporate login portal."
       },
       "indicators": [
-        "Domain lawfirm-secure.com registered 11 days ago with privacy protection",
-        "Email sent from external IP 192.0.2.55 not in corporate allowlist",
-        "Attachment is a macro-enabled Word document (.docm) with suspicious hashes",
-        "Urgent request for document review outside normal communication channels",
-        "Email headers show DKIM signature from a suspicious domain unrelated to known law firms"
+        "SPF and DMARC checks fail for itsupport@company-example.com sender domain",
+        "Suspicious URL with multiple domain levels designed to mimic legitimate company domain",
+        "Urgent password reset request threatening account suspension",
+        "Email sent from IP 198.51.100.22 not associated with company mail infrastructure",
+        "Email content uses corporate branding and tone but contains embedded deceptive hyperlink"
       ],
-      "detection_method": "Use attachment sandboxing and macro analysis, block macro-enabled documents from untrusted domains, verify sender domain against known trusted partners, educate legal team on verifying urgent document requests via phone or alternate channels.",
+      "detection_method": "Monitor email authentication failures and block emails from unauthorized IPs claiming to be internal; Employ URL scanning and domain similarity checking to detect lookalike domains; Train users to verify password reset requests via official channels; Use email filtering rules to flag urgent requests with links to newly registered domains; Deploy anti-phishing browser extensions and endpoint protections to detect credential harvesting pages.",
       "relevant_mitre_techniques": [
-        "T1566.001 - Phishing: Spearphishing Attachment",
+        "T1566.001 - Spearphishing Attachment",
+        "T1566.002 - Spearphishing Link",
+        "T1598 - Phishing",
+        "T1531 - Account Access Removal",
+        "T1204.002 - User Execution: Malicious File"
+      ]
+    },
+    {
+      "scenario": "Spear phishing email claiming to be HR with malicious macro-enabled Excel attachment for credential theft",
+      "technical_data": {
+        "email_headers": "Return-Path: <hr@company-example.com>\r\nReceived: from mail.fake-hr.com (mail.fake-hr.com [198.51.100.101])\r\n\tby mail.company-example.com (Postfix) with ESMTPS id 7C2D8405A1\r\n\tfor <employee@company-example.com>; Thu, 18 May 2023 11:22:47 -0400 (EDT)\r\nReceived-SPF: fail (mail.company-example.com: domain of hr@company-example.com does not designate 198.51.100.101 as permitted sender) receiver=mail.company-example.com; client-ip=198.51.100.101; envelope-from=hr@company-example.com; helo=mail.fake-hr.com;\r\nAuthentication-Results: mail.company-example.com; dkim=none; spf=fail smtp.mailfrom=hr@company-example.com; dmarc=fail header.from=company-example.com\r\nX-Mailer: Microsoft Outlook 2019\r\nMessage-ID: <CAK9d7lN8v2+4H3P9@mail.fake-hr.com>\r\nDate: Thu, 18 May 2023 11:22:45 -0400\r\nFrom: \"Human Resources\" <hr@company-example.com>\r\nTo: \"Employee Name\" <employee@company-example.com>\r\nSubject: Updated Employee Benefits Plan - Action Required\r\nMIME-Version: 1.0\r\nContent-Type: multipart/mixed; boundary=\"----=_Part_67890_12345\"\r\n",
+        "email_body_plain": "Dear Employee,\n\nPlease review the attached updated benefits plan for the upcoming fiscal year. You must enable macros to view the document correctly.\n\nBest regards,\nHR Department",
+        "attachment_filename": "Benefits_Update.xlsm",
+        "attachment_sha256": "a5b9c3d4e7f9b1a8c6d3e2f0b7a4c9d8e5f6a7b8c9d0e1f2a3b4c5d6e7f8a9b0",
+        "attachment_ole_object": "Macro code embedded to capture user credentials and send via HTTP POST to attacker-controlled server",
+        "exploit_payload": "VBA macro script that captures Windows username and password input and exfiltrates to http://fake-hr.com/creds",
+        "smtp_transaction_log": "220 mail.company-example.com ESMTP Postfix\r\nEHLO mail.fake-hr.com\r\n250-mail.company-example.com\r\n250-PIPELINING\r\n250-SIZE 52428800\r\n250-STARTTLS\r\nMAIL FROM:<hr@company-example.com>\r\n250 2.1.0 Ok\r\nRCPT TO:<employee@company-example.com>\r\n250 2.1.5 Ok\r\nDATA\r\n354 End data with <CR><LF>.<CR><LF>\r\n[Email with attachment transmitted]\r\n.\r\n250 2.0.0 Ok: queued as 7C2D8405A1\r\nQUIT\r\n221 2.0.0 Bye",
+        "dns_whois_suspicious_domain": {
+          "domain": "fake-hr.com",
+          "registrar": "Anonymous Registrar Inc.",
+          "creation_date": "2023-04-15T10:00:00Z",
+          "updated_date": "2023-05-01T12:00:00Z",
+          "registrant": {
+            "name": "PrivacyProtect",
+            "organization": "Privacy Protection Service",
+            "email": "contact@privacyprotect.org"
+          },
+          "dns_records": {
+            "A": [
+              "198.51.100.101"
+            ],
+            "NS": [
+              "ns1.anonymousdns.net",
+              "ns2.anonymousdns.net"
+            ]
+          }
+        },
+        "network_packet_capture_excerpt": "Frame 789: 1514 bytes on wire (12112 bits), 1514 bytes captured (12112 bits)\r\nEthernet II, Src: 00:0a:95:9d:68:16, Dst: 00:0c:29:3e:b1:5f\r\nInternet Protocol Version 4, Src: 192.168.1.45, Dst: 198.51.100.101\r\nTransmission Control Protocol, Src Port: 52345, Dst Port: 80, Seq: 1, Ack: 1, Len: 512\r\nHypertext Transfer Protocol\r\n    POST /creds HTTP/1.1\r\n    Host: fake-hr.com\r\n    User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64)\r\n    Content-Type: application/x-www-form-urlencoded\r\n",
+        "powershell_script_snippet": null,
+        "process_creation_log": "2023-05-18T11:23:05.456Z - Excel.exe spawned with macro execution; network connection to http://fake-hr.com/creds detected"
+      },
+      "indicators": [
+        "SPF and DMARC check failed for hr@company-example.com sender",
+        "Macro-enabled Excel attachment with SHA-256 a5b9c3d4e7f9b1a8c6d3e2f0b7a4c9d8e5f6a7b8c9d0e1f2a3b4c5d6e7f8a9b0",
+        "Outbound HTTP POST to suspicious domain fake-hr.com immediately after document opened",
+        "Email subject uses HR terminology to induce trust and urgency",
+        "Suspicious domain registered less than 2 months ago with privacy-protected WHOIS information"
+      ],
+      "detection_method": "Block emails with macro-enabled Office attachments from untrusted sources; Use sandbox detonation to detect credential theft macros; Monitor network traffic for unusual POST requests to newly registered domains; Enforce strict SPF/DKIM/DMARC policies and quarantine emails failing checks; Train users to avoid enabling macros in unsolicited documents.",
+      "relevant_mitre_techniques": [
+        "T1566.001 - Spearphishing Attachment",
         "T1204.002 - User Execution: Malicious File",
-        "T1598.002 - Spearphishing via Service",
-        "T1592.001 - Gather Victim Identity Information: Social Media",
-        "T1566 - Phishing"
+        "T1110 - Brute Force",
+        "T1059.001 - Command and Scripting Interpreter: PowerShell",
+        "T1574.002 - Hijack Execution Flow: Office Macros"
       ]
     },
     {
-      "scenario": "Spear phishing email sent to procurement officer impersonating a trusted supplier, requesting confirmation of payment details via a malicious link with subdomain URL obfuscation.",
+      "scenario": "Spear phishing email from fake vendor requesting updated W-9 form with embedded link to credential harvesting site",
       "technical_data": {
-        "email_headers": "Return-Path: <billing@suppliers-secure.com>\r\nReceived: from mail.suppliers-secure.com (mail.suppliers-secure.com [203.0.113.120])\r\n\tby mx.corp-example.com (Postfix) with ESMTPS id 3E7C4569B8\r\n\tfor <procurement@corp-example.com>; Wed, 17 Apr 2024 14:05:30 -0400 (EDT)\r\nX-Originating-IP: [203.0.113.120]\r\nX-Mailer: Outlook 365\r\nMessage-ID: <20240417140530.3E7C4569B8@mail.suppliers-secure.com>\r\nFrom: \"Supplier Billing\" <billing@suppliers-secure.com>\r\nTo: procurement@corp-example.com\r\nSubject: Payment Details Confirmation Required\r\nMIME-Version: 1.0\r\nContent-Type: text/html; charset=\"UTF-8\"\r\nDKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suppliers-secure.com; s=default;\r\n\tt=1713204330; bh=2d4f5a3e6c7b8f9a0e1d2c3b4f5e6a7b8c9d0e1f2g3h4i5j6k7l8m9n0o=;\r\n\tb=R1W2E3T4Y5U6I7O8P9A0S1D2F3G4H5J6K7L8Z9X0C1V2B3N4M5Q6W7E8R9T0Y1U2",
-        "email_body_html": "<html><body><p>Dear Emily,</p><p>Please confirm the updated payment details for invoice #INV-2024-0415 by clicking the link below:</p><p><a href=\"https://secure.suppliers-secure.com/confirm-payment?invoice=INV-2024-0415&user=emily.proc\">https://secure.suppliers-secure.com/confirm-payment?invoice=INV-2024-0415&user=emily.proc</a></p><p>Failure to confirm may delay the payment process.</p><p>Regards,<br>Supplier Billing Team<br>Phone: +1-555-765-4321</p></body></html>",
-        "smtp_transaction_log": "220 mail.suppliers-secure.com ESMTP Postfix\r\nEHLO attacker-vm\r\n250-mail.suppliers-secure.com\r\n250-PIPELINING\r\n250-SIZE 10240000\r\n250-STARTTLS\r\n250-ENHANCEDSTATUSCODES\r\n250-8BITMIME\r\n250 DSN\r\nMAIL FROM:<billing@suppliers-secure.com>\r\n250 2.1.0 Ok\r\nRCPT TO:<procurement@corp-example.com>\r\n250 2.1.5 Ok\r\nDATA\r\n354 End data with <CR><LF>.<CR><LF>\r\n[Email Data]\r\n.\r\n250 2.0.0 Ok: queued as 3E7C4569B8\r\nQUIT\r\n221 2.0.0 Bye",
+        "email_headers": "Return-Path: <accounts@trustedvendor.com>\r\nReceived: from mail.trustedvendor.net (mail.trustedvendor.net [203.0.113.54])\r\n\tby mail.company-example.com (Postfix) with ESMTPS id 4E5F920851\r\n\tfor <accounting@company-example.com>; Tue, 15 Aug 2023 10:10:55 -0400 (EDT)\r\nReceived-SPF: fail (mail.company-example.com: domain of accounts@trustedvendor.com does not designate 203.0.113.54 as permitted sender) receiver=mail.company-example.com; client-ip=203.0.113.54; envelope-from=accounts@trustedvendor.com; helo=mail.trustedvendor.net;\r\nAuthentication-Results: mail.company-example.com; dkim=none; spf=fail smtp.mailfrom=accounts@trustedvendor.com; dmarc=fail header.from=trustedvendor.com\r\nX-Mailer: Mozilla Thunderbird 91.0\r\nMessage-ID: <CAJ5Xq+8G4F9r2vLm1@mail.trustedvendor.net>\r\nDate: Tue, 15 Aug 2023 10:10:53 -0400\r\nFrom: \"Trusted Vendor Accounts\" <accounts@trustedvendor.com>\r\nTo: \"Accounting Team\" <accounting@company-example.com>\r\nSubject: Request for Updated W-9 Form\r\nMIME-Version: 1.0\r\nContent-Type: text/html; charset=\"UTF-8\"\r\n",
+        "email_body_html": "<html><body><p>Dear Accounting Team,</p><p>As part of our annual audit, please update and submit your W-9 tax form using the secure link below:</p><p><a href=\"http://trustedvendor-update.com/w9form\">Submit W-9 Form</a></p><p>This is required to ensure continued processing of your payments.</p><p>Thank you,<br/>Trusted Vendor Accounts</p></body></html>",
+        "smtp_transaction_log": "220 mail.company-example.com ESMTP Postfix\r\nEHLO mail.trustedvendor.net\r\n250-mail.company-example.com\r\n250-PIPELINING\r\n250-SIZE 52428800\r\n250-STARTTLS\r\nMAIL FROM:<accounts@trustedvendor.com>\r\n250 2.1.0 Ok\r\nRCPT TO:<accounting@company-example.com>\r\n250 2.1.5 Ok\r\nDATA\r\n354 End data with <CR><LF>.<CR><LF>\r\n[Email body transmitted]\r\n.\r\n250 2.0.0 Ok: queued as 4E5F920851\r\nQUIT\r\n221 2.0.0 Bye",
         "suspicious_domain_registration": {
-          "domain": "suppliers-secure.com",
-          "registrar": "GoDaddy.com, LLC",
-          "creation_date": "2024-03-30T16:00:00Z",
-          "updated_date": "2024-04-14T10:00:00Z",
-          "registrant_name": "Privacy Protect, LLC",
-          "registrant_email": "contact@privacyprotect.org",
+          "domain": "trustedvendor-update.com",
+          "registrar": "FastRegistrar LLC",
+          "creation_date": "2023-07-20T16:45:00Z",
+          "updated_date": "2023-08-10T12:15:00Z",
+          "registrant": {
+            "name": "PrivacyProtect",
+            "organization": "Privacy Protection Service",
+            "email": "contact@privacyprotect.org"
+          },
           "dns_records": {
             "A": [
-              "203.0.113.120"
+              "198.51.100.77"
             ],
-            "MX": [
-              "mail.suppliers-secure.com"
+            "NS": [
+              "ns1.fastregistrar.net",
+              "ns2.fastregistrar.net"
             ]
           }
         },
-        "malicious_url": "https://secure.suppliers-secure.com/confirm-payment?invoice=INV-2024-0415&user=emily.proc",
-        "url_obfuscation": "Use of subdomain 'secure' to appear trustworthy; domain recently registered with privacy protection; URL query parameters simulate invoice and user info to lend legitimacy."
+        "url_obfuscation_example": "http://trustedvendor-update.com/w9form",
+        "additional_notes": "The attacker spoofed the sender address to appear as a trusted vendor. The link leads to a fake login page designed to steal credentials. SPF and DMARC checks failed, indicating spoofing. The domain was registered recently and uses privacy protection."
       },
       "indicators": [
-        "Domain suppliers-secure.com created less than three weeks ago with privacy protection",
-        "Email originated from IP 203.0.113.120 not seen in corporate mail logs before",
-        "URL uses subdomain 'secure' to mimic trusted supplier portals",
-        "Email urges confirmation of payment details with threat of delayed payments",
-        "Email headers show DKIM signature but from an unrecognized domain"
+        "SPF and DMARC failures for accounts@trustedvendor.com sender domain",
+        "Link points to recently registered domain trustedvendor-update.com, not the legitimate vendor domain",
+        "Email content requests sensitive tax documents via external link",
+        "Email sent from IP 203.0.113.54 not associated with trusted vendor mail servers",
+        "Urgent tone to induce quick compliance without verification"
       ],
-      "detection_method": "Monitor domains with recently registered variants of trusted suppliers, analyze URLs for suspicious subdomains and query parameters, correlate with existing threat intelligence, and train procurement staff to verify payment changes through known contacts.",
+      "detection_method": "Implement DMARC enforcement and block emails failing authentication; Use URL reputation and domain age analysis to flag suspicious links; Employ anti-phishing training focusing on verifying vendor requests independently; Utilize web proxy and DNS filtering to block access to newly registered suspicious domains; Monitor logs for credential harvesting attempts and abnormal login activity.",
       "relevant_mitre_techniques": [
-        "T1566.002 - Phishing: Spearphishing Link",
-        "T1598.002 - Spearphishing via Service",
-        "T1592.001 - Gather Victim Identity Information: Social Media",
-        "T1566 - Phishing"
+        "T1566.002 - Spearphishing Link",
+        "T1598 - Phishing",
+        "T1531 - Account Access Removal",
+        "T1204.002 - User Execution: Malicious File"
       ]
     },
     {
-      "scenario": "Spear phishing targeting a sales director with a fake calendar invite email containing an embedded link to a credential harvesting site with URL shortening.",
+      "scenario": "Spear phishing email crafted for legal department impersonation with malicious PDF containing embedded JavaScript to exploit CVE-2018-4990",
       "technical_data": {
-        "email_headers": "Return-Path: <calendar@meetings-notify.com>\r\nReceived: from mail.meetings-notify.com (mail.meetings-notify.com [198.51.100.150])\r\n\tby mx.corp-example.com (Postfix) with ESMTPS id 5B9E1234D7\r\n\tfor <salesdirector@corp-example.com>; Thu, 18 Apr 2024 10:52:11 -0400 (EDT)\r\nX-Originating-IP: [198.51.100.150]\r\nX-Mailer: Microsoft Outlook 365\r\nMessage-ID: <20240418105211.5B9E1234D7@mail.meetings-notify.com>\r\nFrom: \"Calendar Notifications\" <calendar@meetings-notify.com>\r\nTo: salesdirector@corp-example.com\r\nSubject: Meeting Invite: Q2 Sales Strategy Discussion\r\nMIME-Version: 1.0\r\nContent-Type: text/calendar; method=REQUEST; charset=\"UTF-8\"\r\nContent-Transfer-Encoding: 7bit",
-        "email_body_html": "<html><body><p>Dear Laura,</p><p>You have been invited to a meeting to discuss the Q2 sales strategy. Please confirm your attendance by clicking the link below:</p><p><a href=\"https://bit.ly/3rXyN7q\">https://bit.ly/3rXyN7q</a></p><p>Meeting Date: 2024-04-20 10:00 AM EDT</p><p>Best,<br>Scheduling Team</p></body></html>",
-        "smtp_transaction_log": "220 mail.meetings-notify.com ESMTP Postfix\r\nEHLO attacker-host\r\n250-mail.meetings-notify.com\r\n250-PIPELINING\r\n250-SIZE 5120000\r\n250-STARTTLS\r\n250-ENHANCEDSTATUSCODES\r\n250-8BITMIME\r\n250 DSN\r\nMAIL FROM:<calendar@meetings-notify.com>\r\n250 2.1.0 Ok\r\nRCPT TO:<salesdirector@corp-example.com>\r\n250 2.1.5 Ok\r\nDATA\r\n354 End data with <CR><LF>.<CR><LF>\r\n[Email Data]\r\n.\r\n250 2.0.0 Ok: queued as 5B9E1234D7\r\nQUIT\r\n221 2.0.0 Bye",
-        "suspicious_domain_registration": {
-          "domain": "meetings-notify.com",
-          "registrar": "NameCheap, Inc.",
-          "creation_date": "2024-04-07T11:10:00Z",
-          "updated_date": "2024-04-15T16:55:00Z",
-          "registrant_name": "Privacy Protect, LLC",
-          "registrant_email": "contact@privacyprotect.org",
+        "email_headers": "Return-Path: <legaldept@company-example.com>\r\nReceived: from mail.legaldocs.net (mail.legaldocs.net [198.51.100.150])\r\n\tby mail.company-example.com (Postfix) with ESMTPS id 9F4C7307B8\r\n\tfor <legal@company-example.com>; Fri, 09 Jun 2023 15:05:30 -0400 (EDT)\r\nReceived-SPF: fail (mail.company-example.com: domain of legaldept@company-example.com does not designate 198.51.100.150 as permitted sender) receiver=mail.company-example.com; client-ip=198.51.100.150; envelope-from=legaldept@company-example.com; helo=mail.legaldocs.net;\r\nAuthentication-Results: mail.company-example.com; dkim=none; spf=fail smtp.mailfrom=legaldept@company-example.com; dmarc=fail header.from=company-example.com\r\nX-Mailer: Adobe Acrobat 2023\r\nMessage-ID: <CAK4o7x9G2Lm5qvP3@mail.legaldocs.net>\r\nDate: Fri, 09 Jun 2023 15:05:28 -0400\r\nFrom: \"Legal Department\" <legaldept@company-example.com>\r\nTo: \"Legal Team\" <legal@company-example.com>\r\nSubject: Confidential: Updated Contract Review Needed\r\nMIME-Version: 1.0\r\nContent-Type: multipart/mixed; boundary=\"----=_Part_98765_43210\"\r\n",
+        "email_body_plain": "Dear Legal Team,\n\nPlease review the attached updated contract document requiring your immediate attention and feedback.\n\nRegards,\nLegal Department",
+        "attachment_filename": "Contract_Review.pdf",
+        "attachment_sha256": "c3d5b487a9e8e1f8b4d6a7c5e2f9d3b8a1c4e5f7b6d8c9f0a2b3c4d5e6f7a8b9",
+        "attachment_ole_object": "Embedded JavaScript exploiting CVE-2018-4990 to execute arbitrary code on vulnerable Adobe Reader versions",
+        "exploit_payload": "JavaScript code invoking Collab.collectEmailInfo() vulnerability to execute shell commands",
+        "smtp_transaction_log": "220 mail.company-example.com ESMTP Postfix\r\nEHLO mail.legaldocs.net\r\n250-mail.company-example.com\r\n250-PIPELINING\r\n250-SIZE 52428800\r\n250-STARTTLS\r\nMAIL FROM:<legaldept@company-example.com>\r\n250 2.1.0 Ok\r\nRCPT TO:<legal@company-example.com>\r\n250 2.1.5 Ok\r\nDATA\r\n354 End data with <CR><LF>.<CR><LF>\r\n[Email with attachment transmitted]\r\n.\r\n250 2.0.0 Ok: queued as 9F4C7307B8\r\nQUIT\r\n221 2.0.0 Bye",
+        "dns_whois_suspicious_domain": {
+          "domain": "legaldocs.net",
+          "registrar": "DomainService Pro",
+          "creation_date": "2023-05-10T08:00:00Z",
+          "updated_date": "2023-06-05T10:00:00Z",
+          "registrant": {
+            "name": "PrivacyProtect",
+            "organization": "Privacy Protection Service",
+            "email": "contact@privacyprotect.org"
+          },
           "dns_records": {
             "A": [
               "198.51.100.150"
             ],
-            "MX": [
-              "mail.meetings-notify.com"
+            "NS": [
+              "ns1.domainservicepro.net",
+              "ns2.domainservicepro.net"
             ]
           }
         },
-        "malicious_url": "https://bit.ly/3rXyN7q",
-        "url_obfuscation": "Use of URL shortening service bit.ly to mask the final phishing site URL; domain meetings-notify.com mimics calendar notification services; recent domain registration with privacy protection."
+        "network_packet_capture_excerpt": "Frame 1023: 1514 bytes on wire (12112 bits), 1514 bytes captured (12112 bits)\r\nEthernet II, Src: 00:15:5d:01:02:03, Dst: 00:16:3e:4f:5a:6b\r\nInternet Protocol Version 4, Src: 192.168.1.200, Dst: 198.51.100.150\r\nTransmission Control Protocol, Src Port: 52123, Dst Port: 80, Seq: 1, Ack: 1, Len: 512\r\nHypertext Transfer Protocol\r\n    GET /payload.exe HTTP/1.1\r\n    Host: legaldocs.net\r\n    User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64)\r\n    Accept: */*\r\n",
+        "powershell_script_snippet": null,
+        "process_creation_log": "2023-06-09T15:06:12.789Z - Acrobat.exe executed embedded JavaScript; network connection initiated to legaldocs.net for secondary payload"
       },
       "indicators": [
-        "Domain meetings-notify.com registered 11 days ago",
-        "Email originates from IP 198.51.100.150 without prior corporate trust",
-        "Use of URL shortener bit.ly to obfuscate destination URL",
-        "Email contains calendar invite requesting urgent attendance confirmation",
-        "Sender domain unrelated to any known corporate or trusted calendar services"
+        "SPF and DMARC failures for legaldept@company-example.com sender domain",
+        "Malicious PDF attachment exploiting known Adobe Reader vulnerability CVE-2018-4990",
+        "Outbound HTTP GET to suspicious domain legaldocs.net immediately after opening document",
+        "Email sent from IP 198.51.100.150 not associated with company mail infrastructure",
+        "Attachment SHA-256 hash c3d5b487a9e8e1f8b4d6a7c5e2f9d3b8a1c4e5f7b6d8c9f0a2b3c4d5e6f7a8b9"
       ],
-      "detection_method": "Block or flag emails using URL shorteners in calendar invites, validate calendar invites against known internal scheduling systems, inspect domains for recent registration and privacy protection, and educate users about verifying meeting requests.",
+      "detection_method": "Block emails with attachments containing embedded JavaScript; Use vulnerability signature-based detection in sandbox environments; Monitor network traffic for connections to newly registered domains after document open; Enforce strict email authentication policies; Educate users on identifying suspicious attachments and verifying sender authenticity.",
       "relevant_mitre_techniques": [
-        "T1566.002 - Phishing: Spearphishing Link",
-        "T1598.002 - Spearphishing via Service",
-        "T1592.001 - Gather Victim Identity Information: Social Media",
-        "T1193 - Spearphishing Attachment",
-        "T1204 - User Execution"
-      ]
-    },
-    {
-      "scenario": "Spear phishing targeting a senior marketing manager with an email impersonating a trusted industry conference organizer, containing a malicious link with Punycode domain obfuscation.",
-      "technical_data": {
-        "email_headers": "Return-Path: <info@conf1rmation.com>\r\nReceived: from mail.conf1rmation.com (mail.conf1rmation.com [203.0.113.200])\r\n\tby mx.corp-example.com (Postfix) with ESMTPS id 1A2B3C4D5E\r\n\tfor <marketing@corp-example.com>; Fri, 19 Apr 2024 13:30:00 -0400 (EDT)\r\nX-Originating-IP: [203.0.113.200]\r\nX-Mailer: Thunderbird 91.8.0\r\nMessage-ID: <20240419133000.1A2B3C4D5E@mail.conf1rmation.com>\r\nFrom: \"Global Marketing Conferences\" <info@conf1rmation.com>\r\nTo: marketing@corp-example.com\r\nSubject: Invitation: Exclusive Industry Conference 2024\r\nMIME-Version: 1.0\r\nContent-Type: text/html; charset=\"UTF-8\"",
-        "email_body_html": "<html><body><p>Hello Samantha,</p><p>We are pleased to invite you to the Exclusive Industry Conference 2024. Please register by visiting the link below:</p><p><a href=\"http://xn--confirmation-58a.com/register?user=samantha.marketing\">http://xn--confirmation-58a.com/register?user=samantha.marketing</a></p><p>Early registration ends soon.</p><p>Regards,<br>Conference Team</p></body></html>",
-        "smtp_transaction_log": "220 mail.conf1rmation.com ESMTP Postfix\r\nEHLO attacker-pc\r\n250-mail.conf1rmation.com\r\n250-PIPELINING\r\n250-SIZE 5120000\r\n250-STARTTLS\r\n250-ENHANCEDSTATUSCODES\r\n250-8BITMIME\r\n250 DSN\r\nMAIL FROM:<info@conf1rmation.com>\r\n250 2.1.0 Ok\r\nRCPT TO:<marketing@corp-example.com>\r\n250 2.1.5 Ok\r\nDATA\r\n354 End data with <CR><LF>.<CR><LF>\r\n[Email Data]\r\n.\r\n250 2.0.0 Ok: queued as 1A2B3C4D5E\r\nQUIT\r\n221 2.0.0 Bye",
-        "suspicious_domain_registration": {
-          "domain": "conf1rmation.com",
-          "registrar": "GoDaddy.com, LLC",
-          "creation_date": "2024-03-25T08:00:00Z",
-          "updated_date": "2024-04-10T18:20:00Z",
-          "registrant_name": "Privacy Protect, LLC",
-          "registrant_email": "contact@privacyprotect.org",
-          "dns_records": {
-            "A": [
-              "203.0.113.200"
-            ],
-            "MX": [
-              "mail.conf1rmation.com"
-            ]
-          }
-        },
-        "malicious_url": "http://xn--confirmation-58a.com/register?user=samantha.marketing",
-        "url_obfuscation": "Use of Punycode domain 'xn--confirmation-58a.com' to mimic 'confirmation.com'; domain uses a number '1' instead of letter 'i'; recently registered domain with privacy protection; URL includes query parameter with victim username."
-      },
-      "indicators": [
-        "Domain conf1rmation.com registered less than a month ago with privacy protection",
-        "Punycode domain used to mimic legitimate conference domain",
-        "Email originates from IP 203.0.113.200 not seen in corporate email logs",
-        "Link contains victim's username to increase legitimacy",
-        "Urgent call to register with early deadline to create pressure"
-      ],
-      "detection_method": "Detect Punycode and homoglyph domains in email URLs, block recently registered domains with privacy protection, use threat intelligence feeds to flag suspicious conference invitations, and train marketing staff to verify event communications with organizers.",
-      "relevant_mitre_techniques": [
-        "T1566.002 - Phishing: Spearphishing Link",
-        "T1598.002 - Spearphishing via Service",
-        "T1592.001 - Gather Victim Identity Information: Social Media",
-        "T1566 - Phishing"
-      ]
-    },
-    {
-      "scenario": "Spear phishing email impersonating the CEO sent to the legal department requesting urgent review and approval of a fake NDA document.",
-      "technical_data": {
-        "email_headers": "Return-Path: <ceo.office@executive-legal.com>\r\nReceived: from mail.executive-legal.com (mail.executive-legal.com [198.51.100.85])\r\n\tby mx.corp-example.com (Postfix) with ESMTPS id 9C8E7123D2\r\n\tfor <legal@corp-example.com>; Mon, 15 Apr 2024 14:10:22 -0400 (EDT)\r\nX-Originating-IP: [198.51.100.85]\r\nX-Mailer: Apple Mail (2.3445.5.20)\r\nMessage-ID: <CA+L0fO0x9BvQxR-7U_3J7aY@mail.executive-legal.com>\r\nFrom: \"Michael Thompson\" <ceo.office@executive-legal.com>\r\nTo: legal@corp-example.com\r\nSubject: Immediate NDA Review Required\r\nMIME-Version: 1.0\r\nContent-Type: multipart/mixed; boundary=\"----=_Part_123456_789012345.1678891234\"\r\nX-Spam-Status: No, score=-0.9 required=5.0 tests=DKIM_SIGNED,DKIM_VALID autolearn=ham\r\nDKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=executive-legal.com; s=selector1;\r\n\tt=1713099022; bh=Jk9vXQqkUzi9M9qK/9dE7wN3uKfQz9QvA7Y1dF9ZgkA=;\r\n\tb=Yz1XlWq5a7zK5N1EoXQp9pT9qN6rK8wYpL4sT7V6rF2oM9bL5kC8ZmF4nP1XqR2cD",
-        "email_body_html": "<html><body><p>Dear Legal Team,</p><p>Please review the attached NDA agreement immediately. The client requires the signed document by end of today to proceed with the merger.</p><p>Best,<br>Michael Thompson<br>CEO</p></body></html>",
-        "smtp_transaction_log": "220 mail.executive-legal.com ESMTP Postfix\r\nEHLO attacker-vm\r\n250-mail.executive-legal.com\r\n250-PIPELINING\r\n250-SIZE 10485760\r\n250-STARTTLS\r\n250-ENHANCEDSTATUSCODES\r\n250-8BITMIME\r\n250 DSN\r\nMAIL FROM:<ceo.office@executive-legal.com>\r\n250 2.1.0 Ok\r\nRCPT TO:<legal@corp-example.com>\r\n250 2.1.5 Ok\r\nDATA\r\n354 End data with <CR><LF>.<CR><LF>\r\n[Email data]\r\n.\r\n250 2.0.0 Ok: queued as 9C8E7123D2\r\nQUIT\r\n221 2.0.0 Bye",
-        "suspicious_domain_registration": {
-          "domain": "executive-legal.com",
-          "registrar": "NameSilo, LLC",
-          "creation_date": "2024-04-10T11:30:45Z",
-          "updated_date": "2024-04-12T09:15:00Z",
-          "registrant_name": "Domain Privacy Service",
-          "registrant_email": "privacy@domainsrv.com",
-          "dns_records": {
-            "A": [
-              "198.51.100.85"
-            ],
-            "MX": [
-              "mail.executive-legal.com"
-            ]
-          }
-        },
-        "malicious_url": "https://executive-legal.com/nda-review?doc=Q29ycC1NREEtTmRBLTIwMjQ.pdf",
-        "url_obfuscation": "Domain uses a legitimate-sounding name 'executive-legal.com' registered recently with privacy protection. The URL path mimics a corporate document repository with a PDF filename to appear authentic."
-      },
-      "indicators": [
-        "Newly registered domain executive-legal.com with privacy protection",
-        "Email spoofing CEO's real name but sent from external domain",
-        "Urgent request to legal department bypassing normal channels",
-        "Attached document name mimics company NDA naming conventions",
-        "Email headers show DKIM signature from non-corporate domain"
-      ],
-      "detection_method": "Employ DMARC enforcement policies with strict alignment, monitor for sudden domain registrations mimicking executive or legal departments, use sandboxing to analyze attachments, and verify urgent requests directly with executives through secondary channels.",
-      "relevant_mitre_techniques": [
-        "T1566.001 - Phishing: Spearphishing Attachment",
-        "T1566.002 - Phishing: Spearphishing Link",
-        "T1598.002 - Spearphishing via Service",
-        "T1592.001 - Gather Victim Identity Information: Social Media",
-        "T1586 - Compromise Infrastructure"
-      ]
-    },
-    {
-      "scenario": "Spear phishing email crafted to HR team impersonating a known recruiter with a malicious link to steal login credentials.",
-      "technical_data": {
-        "email_headers": "Return-Path: <recruitment@talent-hire.com>\r\nReceived: from mail.talent-hire.com (mail.talent-hire.com [203.0.114.56])\r\n\tby mx.corp-example.com (Postfix) with ESMTPS id 2A1B9123C9\r\n\tfor <hr@corp-example.com>; Tue, 16 Apr 2024 08:55:46 -0400 (EDT)\r\nX-Originating-IP: [203.0.114.56]\r\nX-Mailer: Microsoft Outlook 365\r\nMessage-ID: <20240416085546.2A1B9123C9@mail.talent-hire.com>\r\nFrom: \"Jessica Li\" <recruitment@talent-hire.com>\r\nTo: hr@corp-example.com\r\nSubject: Candidate Documents for Review\r\nMIME-Version: 1.0\r\nContent-Type: text/html; charset=\"UTF-8\"",
-        "email_body_html": "<html><body><p>Hello HR Team,</p><p>Please review the candidate documents linked below to proceed with scheduling interviews:</p><p><a href=\"https://talent-hire.com/documents?id=abc123def456\">Candidate Documents</a></p><p>Best regards,<br>Jessica Li<br>Recruiter</p></body></html>",
-        "smtp_transaction_log": "220 mail.talent-hire.com ESMTP Postfix\r\nEHLO attacker-pc\r\n250-mail.talent-hire.com\r\n250-PIPELINING\r\n250-SIZE 20971520\r\n250-STARTTLS\r\n250-ENHANCEDSTATUSCODES\r\n250-8BITMIME\r\n250 DSN\r\nMAIL FROM:<recruitment@talent-hire.com>\r\n250 2.1.0 Ok\r\nRCPT TO:<hr@corp-example.com>\r\n250 2.1.5 Ok\r\nDATA\r\n354 End data with <CR><LF>.<CR><LF>\r\n[Email data]\r\n.\r\n250 2.0.0 Ok: queued as 2A1B9123C9\r\nQUIT\r\n221 2.0.0 Bye",
-        "suspicious_domain_registration": {
-          "domain": "talent-hire.com",
-          "registrar": "Google Domains",
-          "creation_date": "2024-04-05T13:45:00Z",
-          "updated_date": "2024-04-10T07:30:00Z",
-          "registrant_name": "Privacy Protect, Inc.",
-          "registrant_email": "contact@privacyprotect.org",
-          "dns_records": {
-            "A": [
-              "203.0.114.56"
-            ],
-            "MX": [
-              "mail.talent-hire.com"
-            ]
-          }
-        },
-        "malicious_url": "https://talent-hire.com/documents?id=abc123def456",
-        "url_obfuscation": "Domain 'talent-hire.com' appears as a legitimate recruiting firm but is newly registered with privacy protection. The URL uses query parameters resembling document IDs to lure recipients into clicking."
-      },
-      "indicators": [
-        "Domain talent-hire.com newly registered less than 2 weeks ago",
-        "Email from an external IP 203.0.114.56 not seen in prior email logs",
-        "Impersonation of known recruiter name Jessica Li",
-        "Urgent request with link to review candidate documents",
-        "Use of privacy protection for domain registrant information"
-      ],
-      "detection_method": "Use email threat intelligence feeds to detect new domain registrations, apply URL reputation checks on embedded links, enforce strict email authentication, and educate HR staff to verify recruiter identities via official channels.",
-      "relevant_mitre_techniques": [
-        "T1566.002 - Phishing: Spearphishing Link",
-        "T1598.002 - Spearphishing via Service",
-        "T1592.001 - Gather Victim Identity Information: Social Media",
-        "T1566 - Phishing"
-      ]
-    },
-    {
-      "scenario": "Spear phishing attack targeting IT administrator with an email containing a malicious macro-enabled Excel attachment disguised as a security update.",
-      "technical_data": {
-        "email_headers": "Return-Path: <security@it-supports.com>\r\nReceived: from mail.it-supports.com (mail.it-supports.com [192.0.2.150])\r\n\tby mx.corp-example.com (Postfix) with ESMTPS id 5D7F8123F1\r\n\tfor <itadmin@corp-example.com>; Wed, 17 Apr 2024 11:30:15 -0400 (EDT)\r\nX-Originating-IP: [192.0.2.150]\r\nX-Mailer: Microsoft Outlook 2019\r\nMessage-ID: <CA+X7o8Yx+9PqQ3R-5U_2J6aY@mail.it-supports.com>\r\nFrom: \"IT Security Team\" <security@it-supports.com>\r\nTo: itadmin@corp-example.com\r\nSubject: Critical Security Update - Please Review\r\nMIME-Version: 1.0\r\nContent-Type: multipart/mixed; boundary=\"----=_Part_987654_321098765.1678894567\"\r\nX-Spam-Status: No, score=-1.0 required=5.0 tests=DKIM_SIGNED,DKIM_VALID autolearn=ham\r\nDKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=it-supports.com; s=default;\r\n\tt=1713186615; bh=4Qj6T9R5oLWF7nZ1p7G3L9R7ks9JtVjQqXv8Am2p0DI=;\r\n\tb=R9a8Hq7J9f2Lm1K8wYpN5O7qT0dL3bRvX7nF6JsP9wQzLuM2xK1PvZ0YbF3WxVhG",
-        "email_body_html": "<html><body><p>Dear IT Administrator,</p><p>Please find attached the critical security update for the recent vulnerabilities discovered in our network appliances. Enable macros and follow the instructions inside to apply the patch.</p><p>Regards,<br>IT Security Team</p></body></html>",
-        "smtp_transaction_log": "220 mail.it-supports.com ESMTP Postfix\r\nEHLO attacker-host\r\n250-mail.it-supports.com\r\n250-PIPELINING\r\n250-SIZE 15728640\r\n250-STARTTLS\r\n250-ENHANCEDSTATUSCODES\r\n250-8BITMIME\r\n250 DSN\r\nMAIL FROM:<security@it-supports.com>\r\n250 2.1.0 Ok\r\nRCPT TO:<itadmin@corp-example.com>\r\n250 2.1.5 Ok\r\nDATA\r\n354 End data with <CR><LF>.<CR><LF>\r\n[Email data]\r\n.\r\n250 2.0.0 Ok: queued as 5D7F8123F1\r\nQUIT\r\n221 2.0.0 Bye",
-        "suspicious_domain_registration": {
-          "domain": "it-supports.com",
-          "registrar": "Dynadot, LLC",
-          "creation_date": "2024-04-09T16:05:10Z",
-          "updated_date": "2024-04-14T10:45:20Z",
-          "registrant_name": "WhoisGuard Protected",
-          "registrant_email": "contact@whoisguard.com",
-          "dns_records": {
-            "A": [
-              "192.0.2.150"
-            ],
-            "MX": [
-              "mail.it-supports.com"
-            ]
-          }
-        },
-        "malicious_url": "https://it-supports.com/patches/security_update_macro.xlsm",
-        "url_obfuscation": "Domain it-supports.com mimics legitimate IT support services, registered recently with privacy protection. The attached Excel file uses macros to execute malicious payloads when enabled."
-      },
-      "indicators": [
-        "Domain it-supports.com registered less than 10 days ago",
-        "Email sent from IP 192.0.2.150 with no prior corporate history",
-        "Attachment is macro-enabled Excel file disguised as security update",
-        "Urgent language prompting to enable macros, a common attack vector",
-        "Email headers show DKIM signature from non-corporate domain"
-      ],
-      "detection_method": "Deploy attachment sandboxing to detect malicious macros, enforce email filtering policies to flag macro-enabled attachments, use anomaly detection on new domain registrations targeting IT staff, and train IT admins on macro risks.",
-      "relevant_mitre_techniques": [
-        "T1566.001 - Phishing: Spearphishing Attachment",
+        "T1566.001 - Spearphishing Attachment",
         "T1204.002 - User Execution: Malicious File",
-        "T1598.002 - Spearphishing via Service",
-        "T1592.001 - Gather Victim Identity Information: Social Media"
-      ]
-    },
-    {
-      "scenario": "Spear phishing email sent to the procurement team impersonating a trusted supplier requesting urgent payment update with a malicious link.",
-      "technical_data": {
-        "email_headers": "Return-Path: <payments@trusted-supplier.net>\r\nReceived: from mail.trusted-supplier.net (mail.trusted-supplier.net [198.51.100.110])\r\n\tby mx.corp-example.com (Postfix) with ESMTPS id 3B9D7123E7\r\n\tfor <procurement@corp-example.com>; Thu, 18 Apr 2024 10:20:33 -0400 (EDT)\r\nX-Originating-IP: [198.51.100.110]\r\nX-Mailer: Mozilla Thunderbird 91.5.0\r\nMessage-ID: <20240418102033.3B9D7123E7@mail.trusted-supplier.net>\r\nFrom: \"Trusted Supplier\" <payments@trusted-supplier.net>\r\nTo: procurement@corp-example.com\r\nSubject: Urgent: Update Payment Details\r\nMIME-Version: 1.0\r\nContent-Type: text/plain; charset=\"UTF-8\"",
-        "email_body_plain": "Dear Procurement Team,\n\nPlease update our payment details urgently to avoid any delay in processing your recent orders. Visit the secure link below to verify and update information:\n\nhttps://trusted-supplier.net/update-payment?client=corp&auth=securetoken123\n\nThank you,\nTrusted Supplier Accounts",
-        "smtp_transaction_log": "220 mail.trusted-supplier.net ESMTP Postfix\r\nEHLO attacker-pc\r\n250-mail.trusted-supplier.net\r\n250-PIPELINING\r\n250-SIZE 10240000\r\n250-STARTTLS\r\n250-ENHANCEDSTATUSCODES\r\n250-8BITMIME\r\n250 DSN\r\nMAIL FROM:<payments@trusted-supplier.net>\r\n250 2.1.0 Ok\r\nRCPT TO:<procurement@corp-example.com>\r\n250 2.1.5 Ok\r\nDATA\r\n354 End data with <CR><LF>.<CR><LF>\r\n[Email data]\r\n.\r\n250 2.0.0 Ok: queued as 3B9D7123E7\r\nQUIT\r\n221 2.0.0 Bye",
-        "suspicious_domain_registration": {
-          "domain": "trusted-supplier.net",
-          "registrar": "NameCheap, Inc.",
-          "creation_date": "2024-04-11T19:50:00Z",
-          "updated_date": "2024-04-15T14:20:00Z",
-          "registrant_name": "Privacy Protect, LLC",
-          "registrant_email": "contact@privacyprotect.org",
-          "dns_records": {
-            "A": [
-              "198.51.100.110"
-            ],
-            "MX": [
-              "mail.trusted-supplier.net"
-            ]
-          }
-        },
-        "malicious_url": "https://trusted-supplier.net/update-payment?client=corp&auth=securetoken123",
-        "url_obfuscation": "Domain name 'trusted-supplier.net' chosen to appear as a legitimate supplier domain. The URL contains query parameters simulating client ID and authorization token for authenticity."
-      },
-      "indicators": [
-        "Domain trusted-supplier.net registered within last 8 days with privacy protection",
-        "Email sent from unknown external IP 198.51.100.110",
-        "Urgent payment update request outside normal procurement process",
-        "URL contains suspicious authentication token parameter",
-        "Sender address resembles supplier but is not from corporate whitelisted domain"
-      ],
-      "detection_method": "Integrate domain registration monitoring with email gateway to flag new supplier domains, verify payment update requests via out-of-band communication, apply URL reputation scoring, and train procurement staff on phishing awareness.",
-      "relevant_mitre_techniques": [
-        "T1566.002 - Phishing: Spearphishing Link",
-        "T1598.002 - Spearphishing via Service",
-        "T1592.001 - Gather Victim Identity Information: Social Media",
-        "T1566 - Phishing"
-      ]
-    },
-    {
-      "scenario": "Spear phishing email sent to a company executive impersonating the IT department requesting password reset via a malicious website link.",
-      "technical_data": {
-        "email_headers": "Return-Path: <it-helpdesk@corp-secure.net>\r\nReceived: from mail.corp-secure.net (mail.corp-secure.net [192.0.2.210])\r\n\tby mx.corp-example.com (Postfix) with ESMTPS id 8F1A9123B7\r\n\tfor <ceo@corp-example.com>; Fri, 19 Apr 2024 17:45:50 -0400 (EDT)\r\nX-Originating-IP: [192.0.2.210]\r\nX-Mailer: Microsoft Outlook 2016\r\nMessage-ID: <CA+K9lP7Yb0AqR1J-4U_8D3aY@mail.corp-secure.net>\r\nFrom: \"IT Helpdesk\" <it-helpdesk@corp-secure.net>\r\nTo: ceo@corp-example.com\r\nSubject: Mandatory Password Reset Required\r\nMIME-Version: 1.0\r\nContent-Type: text/html; charset=\"UTF-8\"",
-        "email_body_html": "<html><body><p>Dear Michael,</p><p>Due to recent suspicious activities, a mandatory password reset has been initiated for your account. Please reset your password immediately by clicking the link below:</p><p><a href=\"https://corp-secure.net/reset-password?user=MichaelThompson&token=reset2024\">Reset Password</a></p><p>IT Helpdesk</p></body></html>",
-        "smtp_transaction_log": "220 mail.corp-secure.net ESMTP Postfix\r\nEHLO attacker-vm\r\n250-mail.corp-secure.net\r\n250-PIPELINING\r\n250-SIZE 10240000\r\n250-STARTTLS\r\n250-ENHANCEDSTATUSCODES\r\n250-8BITMIME\r\n250 DSN\r\nMAIL FROM:<it-helpdesk@corp-secure.net>\r\n250 2.1.0 Ok\r\nRCPT TO:<ceo@corp-example.com>\r\n250 2.1.5 Ok\r\nDATA\r\n354 End data with <CR><LF>.<CR><LF>\r\n[Email data]\r\n.\r\n250 2.0.0 Ok: queued as 8F1A9123B7\r\nQUIT\r\n221 2.0.0 Bye",
-        "suspicious_domain_registration": {
-          "domain": "corp-secure.net",
-          "registrar": "GoDaddy.com, LLC",
-          "creation_date": "2024-04-07T21:15:20Z",
-          "updated_date": "2024-04-13T18:10:05Z",
-          "registrant_name": "Privacy Protect, LLC",
-          "registrant_email": "contact@privacyprotect.org",
-          "dns_records": {
-            "A": [
-              "192.0.2.210"
-            ],
-            "MX": [
-              "mail.corp-secure.net"
-            ]
-          }
-        },
-        "malicious_url": "https://corp-secure.net/reset-password?user=MichaelThompson&token=reset2024",
-        "url_obfuscation": "Domain uses 'corp-secure.net' to appear as an internal corporate service but is a recently registered external domain with privacy protection. The URL mimics legitimate password reset links with parameters to lure the victim."
-      },
-      "indicators": [
-        "Recently registered domain corp-secure.net with privacy protection",
-        "Email originates from unfamiliar IP 192.0.2.210",
-        "Use of recipient's real name and executive position in email body",
-        "Urgent password reset request with suspicious URL parameters",
-        "DKIM signature does not align with corporate domains"
-      ],
-      "detection_method": "Enforce strict SPF/DKIM/DMARC policies, use URL reputation and domain age filters, verify password reset requests through secondary authentication, and educate executives on phishing tactics.",
-      "relevant_mitre_techniques": [
-        "T1566.002 - Phishing: Spearphishing Link",
-        "T1598.002 - Spearphishing via Service",
-        "T1592.001 - Gather Victim Identity Information: Social Media",
-        "T1566 - Phishing"
+        "T1203 - Exploitation for Client Execution",
+        "T1059.007 - Command and Scripting Interpreter: JavaScript",
+        "T1218.001 - System Services: Regsvr32"
       ]
     }
   ]

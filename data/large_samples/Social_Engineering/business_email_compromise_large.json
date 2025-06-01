@@ -1,0 +1,420 @@
+{
+  "samples": [
+    {
+      "scenario": "Compromised CFO email account used to request vendor payment with embedded malicious link and mailbox forwarding",
+      "technical_data": {
+        "email_headers": "Return-Path: <cfo@company.com>\r\nReceived: from mail.company.com (mail.company.com [192.0.2.10])\r\n\tby smtp.company.com (Postfix) with ESMTPS id 5678EFGH\r\n\tfor <accounts@company.com>; Thu, 06 Apr 2023 08:20:15 -0400 (EDT)\r\nAuthentication-Results: smtp.company.com; dkim=fail (signature did not verify) header.d=company.com; spf=pass smtp.mailfrom=cfo@company.com; dmarc=fail (p=quarantine) header.from=company.com\r\nFrom: \"Jane Doe\" <cfo@company.com>\r\nTo: accounts@company.com\r\nSubject: Payment Approval Required - Vendor Invoice\r\nMessage-ID: <CA+67890@mail.company.com>\r\nX-Mailer: Microsoft Outlook 16.0\r\nX-Originating-IP: [172.16.5.34]\r\nX-MS-Exchange-Organization-AuthSource: EXCH02.company.com\r\nX-MS-Exchange-Organization-AuthAs: Anonymous\r\n",
+        "email_body": "Hello Accounts Team,\n\nPlease review and approve the attached invoice from one of our trusted vendors. To expedite payment, please click the link below to access the payment portal:\n\nhttps://pay.company-secure.com/invoice?id=54231&auth=YWJjMTIz\r\n\nKindly process this payment by end of day.\n\nThank you,\nJane Doe\nCFO",
+        "smtp_transaction_log": "220 smtp.company.com ESMTP Postfix\r\nEHLO attacker.mailserver.org\r\n250-smtp.company.com\r\n250-AUTH LOGIN PLAIN\r\nMAIL FROM:<cfo@company.com>\r\n250 2.1.0 Ok\r\nRCPT TO:<accounts@company.com>\r\n250 2.1.5 Ok\r\nDATA\r\n354 End data with <CR><LF>.<CR><LF>\r\n<email data>\r\n.\r\n250 2.0.0 Ok: queued as 5678EFGH\r\nQUIT\r\n221 2.0.0 Bye\r\n",
+        "mailbox_rule_creation_log": "2023-04-06 08:15:30 INFO User 'cfo@company.com' created Inbox rule: Redirect all incoming emails from finance@company.com to external address payments-fraud@example.net",
+        "email_authentication_results": {
+          "SPF": "pass (mail from IP 192.0.2.10 authorized)",
+          "DKIM": "fail (signature did not verify)",
+          "DMARC": "fail (p=quarantine policy enforced)"
+        },
+        "login_activity_log": "2023-04-06 07:45:12 INFO Successful login for cfo@company.com from IP 198.51.100.77 (public Wi-Fi hotspot) using Outlook Web Access",
+        "network_packet_capture_snippet": "07:45:12.345678 IP 198.51.100.77.43322 > 192.0.2.10.443: Flags [P.], seq 23456:23567, ack 65432, win 65535, length 111\r\nHTTP/1.1 200 OK\r\nSet-Cookie: sessionid=EFGH5678; Secure; HttpOnly\r\n",
+        "domain_whois_suspicious_domain": {
+          "DomainName": "pay.company-secure.com",
+          "Registrar": "GoDaddy.com, LLC",
+          "CreationDate": "2023-03-30T09:00:00Z",
+          "ExpirationDate": "2024-03-30T09:00:00Z",
+          "RegistrantEmail": "privacyprotect@domainsafe.com"
+        }
+      },
+      "indicators": [
+        "Failed DKIM signature for CFO email",
+        "Mailbox rule forwarding to external suspicious address",
+        "Login from unusual IP address linked to public Wi-Fi",
+        "Email containing link with base64 encoded authentication token",
+        "New domain 'pay.company-secure.com' registered recently",
+        "Urgent payment request without standard verification"
+      ],
+      "detection_method": "Monitor DKIM failures and quarantine actions in DMARC reports; alert on mailbox rules that redirect externally; detect unusual login IPs especially from public networks; analyze URLs with encoded tokens; maintain watch on newly registered domains similar to corporate brands.",
+      "relevant_mitre_techniques": [
+        "T1566.002 - Phishing: Spearphishing Link",
+        "T1586.001 - Compromise Infrastructure: Email Accounts",
+        "T1078 - Valid Accounts",
+        "T1110 - Brute Force",
+        "T1114 - Email Collection"
+      ]
+    },
+    {
+      "scenario": "Business email compromise with spoofed CEO email sending invoice payment update and malicious mailbox rule to evade detection",
+      "technical_data": {
+        "email_headers": "Return-Path: <ceo@company-payments.com>\r\nReceived: from mail.company-payments.com (mail.company-payments.com [198.51.100.45])\r\n\tby smtp.company.com (Postfix) with ESMTPS id 8765IJKL\r\n\tfor <billing@company.com>; Fri, 07 Apr 2023 14:30:22 -0400 (EDT)\r\nReceived-SPF: fail (smtp.company.com: domain of ceo@company-payments.com does not designate 198.51.100.45 as permitted sender)\r\nFrom: \"John Smith\" <ceo@company-payments.com>\r\nTo: billing@company.com\r\nSubject: Updated Payment Instructions - Immediate Action Required\r\nMessage-ID: <CA+54321@mail.company-payments.com>\r\nX-Mailer: Apple Mail (2.3445.5.20)\r\n",
+        "email_body": "Dear Billing Team,\n\nThe vendor payment instructions have changed. Please update the payment details accordingly and process all pending invoices using the new bank account below:\n\nBank: Global Trust Bank\nAccount Number: 123987654\nRouting Number: 222333444\nSwift Code: GTBUS33\n\nPlease ensure completion by COB today.\n\nBest regards,\nJohn Smith\nCEO",
+        "smtp_relay_log": "Apr 07 14:30:22 mail postfix/smtpd[3456]: connect from unknown[198.51.100.45]\r\nApr 07 14:30:23 mail postfix/smtpd[3456]: NOQUEUE: reject: RCPT from unknown[198.51.100.45]: 554 5.7.1 <ceo@company-payments.com>: Sender address rejected: not owned by user unknown; from=<ceo@company-payments.com> to=<billing@company.com> proto=ESMTP helo=<mail.company-payments.com>\r\nApr 07 14:30:24 mail postfix/smtpd[3456]: disconnect from unknown[198.51.100.45]",
+        "mailbox_rule_creation_log": "2023-04-07 14:28:00 INFO User 'ceo@company.com' created Inbox rule: Delete all incoming emails containing keyword 'payment' to avoid detection",
+        "email_authentication_results": {
+          "SPF": "fail (sender IP 198.51.100.45 not authorized for domain)",
+          "DKIM": "none (no signature)",
+          "DMARC": "fail (p=reject)"
+        },
+        "login_activity_log": "2023-04-07 14:00:10 WARN Failed login attempt for ceo@company.com from IP 203.0.113.99\r\n2023-04-07 14:05:12 INFO Successful login for ceo@company.com from IP 198.51.100.45 (unrecognized device)",
+        "network_packet_capture_snippet": "14:05:12.789012 IP 198.51.100.45.52789 > 192.0.2.10.443: Flags [P.], seq 34567:34678, ack 76543, win 65535, length 111\r\nHTTP/1.1 200 OK\r\nSet-Cookie: sessionid=IJKL9876; Secure; HttpOnly\r\n",
+        "domain_whois_suspicious_domain": {
+          "DomainName": "company-payments.com",
+          "Registrar": "NameSilo, LLC",
+          "CreationDate": "2023-03-28T08:00:00Z",
+          "ExpirationDate": "2024-03-28T08:00:00Z",
+          "RegistrantEmail": "privacy@domainsentry.net"
+        }
+      },
+      "indicators": [
+        "SPF failure on spoofed CEO domain",
+        "No DKIM signature on email",
+        "Mailbox rule deleting emails with 'payment' keyword",
+        "Login from unrecognized IP address and device",
+        "New domain 'company-payments.com' mimicking legitimate domain",
+        "Urgent payment update with new bank information"
+      ],
+      "detection_method": "Enforce strict SPF/DKIM/DMARC checks blocking unauthorized senders; alert on mailbox rules that delete or filter critical emails; monitor login anomalies; track newly registered domains similar to corporate domains; verify payment instructions changes via secondary communication.",
+      "relevant_mitre_techniques": [
+        "T1566.002 - Phishing: Spearphishing Link",
+        "T1586.001 - Compromise Infrastructure: Email Accounts",
+        "T1110 - Brute Force",
+        "T1078 - Valid Accounts",
+        "T1114 - Email Collection"
+      ]
+    },
+    {
+      "scenario": "Phishing email masquerading as CEO requesting confidential tax documents with malicious attachment and compromised mail server relay",
+      "technical_data": {
+        "email_headers": "Return-Path: <ceo@company-tax.com>\r\nReceived: from mail.company-tax.com (mail.company-tax.com [198.51.100.55])\r\n\tby smtp.company.com (Postfix) with ESMTPS id 2345MNOP\r\n\tfor <hr@company.com>; Mon, 10 Apr 2023 16:45:50 -0400 (EDT)\r\nReceived-SPF: fail (smtp.company.com: domain of ceo@company-tax.com does not designate 198.51.100.55 as permitted sender)\r\nFrom: \"John Smith\" <ceo@company-tax.com>\r\nTo: hr@company.com\r\nSubject: Confidential: Q1 Tax Documents Review\r\nMessage-ID: <CA+11223@mail.company-tax.com>\r\nX-Mailer: Microsoft Outlook 16.0\r\n",
+        "email_body": "Dear HR Team,\n\nPlease find attached the confidential Q1 tax documents that require your immediate review and approval.\n\nEnsure these are handled with utmost discretion.\n\nBest,\nJohn Smith\nCEO",
+        "smtp_relay_log": "Apr 10 16:45:50 mail postfix/smtpd[4567]: connect from unknown[198.51.100.55]\r\nApr 10 16:45:51 mail postfix/smtpd[4567]: NOQUEUE: reject: RCPT from unknown[198.51.100.55]: 554 5.7.1 <ceo@company-tax.com>: Sender address rejected: not owned by user unknown; from=<ceo@company-tax.com> to=<hr@company.com> proto=ESMTP helo=<mail.company-tax.com>\r\nApr 10 16:45:52 mail postfix/smtpd[4567]: disconnect from unknown[198.51.100.55]",
+        "email_authentication_results": {
+          "SPF": "fail (sender IP 198.51.100.55 not authorized for domain)",
+          "DKIM": "none (no signature)",
+          "DMARC": "fail (p=reject)"
+        },
+        "login_activity_log": "2023-04-10 16:20:45 INFO Successful login for ceo@company.com from IP 192.0.2.150 using Outlook Desktop",
+        "network_packet_capture_snippet": "16:20:45.123456 IP 192.0.2.150.53345 > 192.0.2.10.443: Flags [P.], seq 45678:45789, ack 87654, win 65535, length 111\r\nHTTP/1.1 200 OK\r\nSet-Cookie: sessionid=MNOP3456; Secure; HttpOnly\r\n",
+        "domain_whois_suspicious_domain": {
+          "DomainName": "company-tax.com",
+          "Registrar": "Google Domains, LLC",
+          "CreationDate": "2023-04-05T11:00:00Z",
+          "ExpirationDate": "2024-04-05T11:00:00Z",
+          "RegistrantEmail": "contact@privacyprotect.org"
+        }
+      },
+      "indicators": [
+        "SPF fail on domain company-tax.com",
+        "No DKIM signature present",
+        "Suspicious attachment sent with phishing email",
+        "New domain registered recently mimicking corporate domain",
+        "SMTP relay attempts rejected by mail server",
+        "Email requesting confidential document review urgently"
+      ],
+      "detection_method": "Block emails failing SPF/DKIM/DMARC checks; scan attachments for malware; alert on emails from newly registered domains similar to company domains; monitor SMTP relay logs for unauthorized sender attempts; require verification for confidential document requests.",
+      "relevant_mitre_techniques": [
+        "T1566.001 - Phishing: Spearphishing Attachment",
+        "T1586.001 - Compromise Infrastructure: Email Accounts",
+        "T1078 - Valid Accounts",
+        "T1110 - Brute Force",
+        "T1114 - Email Collection"
+      ]
+    },
+    {
+      "scenario": "Compromised executive email used to send payroll change request with mailbox forwarding to attacker-controlled address",
+      "technical_data": {
+        "email_headers": "Return-Path: <hrdirector@company.com>\r\nReceived: from mail.company.com (mail.company.com [192.0.2.10])\r\n\tby smtp.company.com (Postfix) with ESMTPS id 3456QRST\r\n\tfor <payroll@company.com>; Tue, 11 Apr 2023 09:10:30 -0400 (EDT)\r\nAuthentication-Results: smtp.company.com; dkim=fail (signature did not verify) header.d=company.com; spf=pass smtp.mailfrom=hrdirector@company.com; dmarc=fail (p=reject) header.from=company.com\r\nFrom: \"Alice Johnson\" <hrdirector@company.com>\r\nTo: payroll@company.com\r\nSubject: Payroll Bank Account Update Request\r\nMessage-ID: <CA+33445@mail.company.com>\r\nX-Mailer: Microsoft Outlook 16.0\r\nX-Originating-IP: [172.16.5.50]\r\nX-MS-Exchange-Organization-AuthSource: EXCH03.company.com\r\nX-MS-Exchange-Organization-AuthAs: Anonymous\r\n",
+        "email_body": "Dear Payroll Team,\n\nPlease update the payroll direct deposit information for employee ID 7890 as follows:\n\nBank: National Credit Union\nAccount Number: 5566778899\nRouting Number: 123456789\n\nConfirm once the update has been made.\n\nRegards,\nAlice Johnson\nHR Director",
+        "smtp_transaction_log": "220 smtp.company.com ESMTP Postfix\r\nEHLO attacker.mailserver.net\r\n250-smtp.company.com\r\n250-AUTH LOGIN PLAIN\r\nMAIL FROM:<hrdirector@company.com>\r\n250 2.1.0 Ok\r\nRCPT TO:<payroll@company.com>\r\n250 2.1.5 Ok\r\nDATA\r\n354 End data with <CR><LF>.<CR><LF>\r\n<email data>\r\n.\r\n250 2.0.0 Ok: queued as 3456QRST\r\nQUIT\r\n221 2.0.0 Bye\r\n",
+        "mailbox_rule_creation_log": "2023-04-11 09:05:00 INFO User 'hrdirector@company.com' created Inbox rule: Forward all incoming emails from payroll@company.com to external address payroll-update@attacker-mail.com",
+        "email_authentication_results": {
+          "SPF": "pass (mail from IP 192.0.2.10 authorized)",
+          "DKIM": "fail (signature did not verify)",
+          "DMARC": "fail (p=reject policy enforced)"
+        },
+        "login_activity_log": "2023-04-11 08:55:48 INFO Successful login for hrdirector@company.com from IP 203.0.113.88 (VPN) using Outlook Web Access",
+        "network_packet_capture_snippet": "08:55:48.234567 IP 203.0.113.88.52123 > 192.0.2.10.443: Flags [P.], seq 56789:56890, ack 98765, win 65535, length 111\r\nHTTP/1.1 200 OK\r\nSet-Cookie: sessionid=QRST1234; Secure; HttpOnly\r\n",
+        "domain_whois_suspicious_domain": {
+          "DomainName": "attacker-mail.com",
+          "Registrar": "Dynadot, LLC",
+          "CreationDate": "2023-04-08T07:30:00Z",
+          "ExpirationDate": "2024-04-08T07:30:00Z",
+          "RegistrantEmail": "privacy@whoisguard.com"
+        }
+      },
+      "indicators": [
+        "Failed DKIM signature on HR Director email",
+        "Mailbox forwarding rule created to external attacker-controlled address",
+        "Login from unusual VPN IP for HR Director account",
+        "Email requesting payroll bank account update",
+        "New external domain 'attacker-mail.com' registered recently",
+        "Urgent modification of sensitive payroll information"
+      ],
+      "detection_method": "Alert on mailbox forwarding rules sending emails externally; monitor DKIM failures and DMARC enforcement logs; detect anomalous login IPs; validate changes to payroll data via secondary verification; maintain watch on newly created external domains linked to mailbox rules.",
+      "relevant_mitre_techniques": [
+        "T1566.001 - Phishing: Spearphishing Attachment",
+        "T1586.001 - Compromise Infrastructure: Email Accounts",
+        "T1110 - Brute Force",
+        "T1078 - Valid Accounts",
+        "T1114 - Email Collection"
+      ]
+    },
+    {
+      "scenario": "Spoofed VP email domain used to send wire transfer request with obfuscated URL and failed email authentication",
+      "technical_data": {
+        "email_headers": "Return-Path: <vpfinance@company-finance.net>\r\nReceived: from mail.company-finance.net (mail.company-finance.net [198.51.100.65])\r\n\tby smtp.company.com (Postfix) with ESMTPS id 7890UVWX\r\n\tfor <treasury@company.com>; Wed, 12 Apr 2023 13:55:10 -0400 (EDT)\r\nReceived-SPF: fail (smtp.company.com: domain of vpfinance@company-finance.net does not designate 198.51.100.65 as permitted sender)\r\nFrom: \"Robert Lee\" <vpfinance@company-finance.net>\r\nTo: treasury@company.com\r\nSubject: Wire Transfer Authorization Needed\r\nMessage-ID: <CA+66778@mail.company-finance.net>\r\nX-Mailer: Mozilla Thunderbird 91.5.0\r\n",
+        "email_body": "Dear Treasury Team,\n\nTo comply with new regulatory requirements, please authorize the following wire transfer immediately:\n\nhttps://secure.company-finance.net/transfer?auth=cmVxdWVzdDEyMw==&amt=250000\n\nFailure to comply may result in penalties.\n\nRegards,\nRobert Lee\nVP Finance",
+        "smtp_relay_log": "Apr 12 13:55:10 mail postfix/smtpd[5678]: connect from unknown[198.51.100.65]\r\nApr 12 13:55:11 mail postfix/smtpd[5678]: NOQUEUE: reject: RCPT from unknown[198.51.100.65]: 554 5.7.1 <vpfinance@company-finance.net>: Sender address rejected: not owned by user unknown; from=<vpfinance@company-finance.net> to=<treasury@company.com> proto=ESMTP helo=<mail.company-finance.net>\r\nApr 12 13:55:12 mail postfix/smtpd[5678]: disconnect from unknown[198.51.100.65]",
+        "url_analysis": {
+          "URL": "https://secure.company-finance.net/transfer?auth=cmVxdWVzdDEyMw==&amt=250000",
+          "DecodedToken": "request123",
+          "DomainRegistration": {
+            "DomainName": "company-finance.net",
+            "Registrar": "NameCheap, Inc.",
+            "CreationDate": "2023-04-02T10:15:00Z",
+            "ExpirationDate": "2024-04-02T10:15:00Z",
+            "RegistrantEmail": "privacymail@privacyshield.net"
+          },
+          "DNSRecords": {
+            "A": [
+              "198.51.100.65"
+            ],
+            "MX": [
+              "mail.company-finance.net"
+            ]
+          }
+        },
+        "email_authentication_results": {
+          "SPF": "fail (sender IP 198.51.100.65 not authorized for domain)",
+          "DKIM": "none (no signature)",
+          "DMARC": "fail (p=reject)"
+        },
+        "login_activity_log": "2023-04-12 13:30:05 WARN Failed login attempt for vpfinance@company.com from IP 203.0.113.120\r\n2023-04-12 13:32:15 INFO Successful login for vpfinance@company.com from IP 192.0.2.200 (corporate VPN)",
+        "network_packet_capture_snippet": "13:32:15.345678 IP 192.0.2.200.54123 > 192.0.2.10.443: Flags [P.], seq 67890:67991, ack 98765, win 65535, length 111\r\nHTTP/1.1 200 OK\r\nSet-Cookie: sessionid=UVWX4567; Secure; HttpOnly\r\n",
+        "domain_whois_suspicious_domain": {
+          "DomainName": "company-finance.net",
+          "Registrar": "GoDaddy.com, LLC",
+          "CreationDate": "2023-04-02T10:15:00Z",
+          "ExpirationDate": "2024-04-02T10:15:00Z",
+          "RegistrantEmail": "privacymail@privacyshield.net"
+        }
+      },
+      "indicators": [
+        "SPF fail on spoofed VP finance domain",
+        "No DKIM signature on email",
+        "Email contains URL with base64 encoded authentication token",
+        "SMTP relay logs show rejection for unauthorized sender IP",
+        "Login activity shows failed attempts prior to successful login from corporate VPN",
+        "New domain 'company-finance.net' closely mimics legitimate corporate domain"
+      ],
+      "detection_method": "Enforce strict SPF/DKIM/DMARC policies blocking spoofed domains; monitor for newly registered domains similar to corporate domains; analyze URLs with encoded tokens for phishing; alert on SMTP logs indicating unauthorized sender attempts; monitor login anomalies especially failed attempts followed by successful logins.",
+      "relevant_mitre_techniques": [
+        "T1566.002 - Phishing: Spearphishing Link",
+        "T1586.001 - Compromise Infrastructure: Email Accounts",
+        "T1078 - Valid Accounts",
+        "T1110 - Brute Force",
+        "T1114 - Email Collection"
+      ]
+    },
+    {
+      "scenario": "Compromised CFO email account sends fraudulent invoice payment request with mailbox rule redirecting replies",
+      "technical_data": {
+        "email_headers": "Return-Path: <cfo@company.com>\r\nReceived: from mail.company.com (mail.company.com [192.0.2.15])\r\n\tby smtp.company.com (Postfix) with ESMTPS id 5678EFGH\r\n\tfor <accounts@company.com>; Thu, 06 Apr 2023 08:45:10 -0400 (EDT)\r\nAuthentication-Results: smtp.company.com; dkim=fail header.d=company.com; spf=pass smtp.mailfrom=cfo@company.com; dmarc=fail (p=quarantine) header.from=company.com\r\nFrom: \"Jane Doe\" <cfo@company.com>\r\nTo: accounts@company.com\r\nSubject: Payment Authorization Required\r\nMessage-ID: <CA+56789@mail.company.com>\r\nX-Mailer: Outlook 16.0\r\nX-Originating-IP: [172.16.10.30]\r\nX-MS-Exchange-Organization-AuthSource: EXCH02.company.com\r\nX-MS-Exchange-Organization-AuthAs: Internal\r\n",
+        "email_body": "Hello Accounts Team,\n\nPlease expedite payment of $250,000 USD to our vendor below:\n\nBank: Global Trust Bank\nAccount Number: 123987654\nRouting Number: 222000111\nSwift Code: GTBUS33\n\nPlease reply to confirm completion.\n\nBest,\nJane Doe\nCFO",
+        "smtp_transaction_log": "220 smtp.company.com ESMTP Postfix\r\nEHLO mail.company.com\r\n250-smtp.company.com\r\n250-AUTH LOGIN PLAIN\r\nMAIL FROM:<cfo@company.com>\r\n250 2.1.0 Ok\r\nRCPT TO:<accounts@company.com>\r\n250 2.1.5 Ok\r\nDATA\r\n354 End data with <CR><LF>.<CR><LF>\r\n<email data>\r\n.\r\n250 2.0.0 Ok: queued as 5678EFGH\r\nQUIT\r\n221 2.0.0 Bye\r\n",
+        "mailbox_rule_creation_log": "2023-04-06 08:30:00 INFO User 'cfo@company.com' created Inbox rule: Redirect all replies to external address fraudster@maliciousdomain.com",
+        "email_authentication_results": {
+          "SPF": "pass (mail from IP 192.0.2.15 authorized)",
+          "DKIM": "fail (signature invalid)",
+          "DMARC": "fail (p=quarantine policy triggered)"
+        },
+        "login_activity_log": "2023-04-06 08:20:45 INFO Successful login for cfo@company.com from IP 198.51.100.55 (unusual geographic location) using Outlook Web Access",
+        "network_packet_capture_snippet": "08:20:45.678901 IP 198.51.100.55.49123 > 192.0.2.10.443: Flags [P.], seq 98765:98876, ack 12345, win 65535, length 111\r\nHTTP/1.1 200 OK\r\nSet-Cookie: sessionid=ZXCVBNM1234; Secure; HttpOnly\r\n",
+        "domain_whois_suspicious_domain": {
+          "DomainName": "company-payments-secure.com",
+          "Registrar": "GoDaddy.com, LLC",
+          "CreationDate": "2023-04-04T09:15:00Z",
+          "ExpirationDate": "2024-04-04T09:15:00Z",
+          "RegistrantEmail": "privacy@proxyemailservice.com"
+        }
+      },
+      "indicators": [
+        "Failed DKIM signature on CFO email",
+        "DMARC quarantine policy triggered",
+        "Mailbox reply redirection to external suspicious domain",
+        "Login from unusual IP 198.51.100.55 outside corporate VPN",
+        "Urgent payment request with no prior approval process",
+        "Newly registered domain 'company-payments-secure.com' resembling corporate name"
+      ],
+      "detection_method": "Alert on mailbox rules redirecting replies externally, monitor DKIM failures and DMARC quarantine actions, flag login from anomalous IPs for privileged accounts, enforce multi-factor authentication, and verify payment requests via secondary channels.",
+      "relevant_mitre_techniques": [
+        "T1566.002 - Phishing: Spearphishing Link",
+        "T1586.001 - Compromise Infrastructure: Email Accounts",
+        "T1110 - Brute Force",
+        "T1078 - Valid Accounts",
+        "T1114 - Email Collection"
+      ]
+    },
+    {
+      "scenario": "Spoofed CEO email address sends fraudulent wire transfer request leveraging recently created lookalike domain",
+      "technical_data": {
+        "email_headers": "Return-Path: <john.smith@companyc0m.com>\r\nReceived: from mail.companyc0m.com (mail.companyc0m.com [203.0.113.88])\r\n\tby smtp.company.com (Postfix) with ESMTP id 9012IJKL\r\n\tfor <finance@company.com>; Fri, 07 Apr 2023 14:22:30 -0400 (EDT)\r\nAuthentication-Results: smtp.company.com; spf=fail smtp.mailfrom=john.smith@companyc0m.com; dkim=none; dmarc=fail\r\nFrom: \"John Smith\" <john.smith@companyc0m.com>\r\nTo: finance@company.com\r\nSubject: Urgent Wire Transfer Request\r\nMessage-ID: <CA+90123@mail.companyc0m.com>\r\nX-Mailer: Apple Mail (2.3445.9.1)\r\n",
+        "email_body": "Finance Team,\n\nPlease wire $100,000 USD immediately to the account below:\n\nBank: Metropolitan Bank\nAccount Number: 654321987\nRouting Number: 333000222\nSwift Code: METBUS44\n\nConfirm when done.\n\nThanks,\nJohn Smith\nCEO",
+        "smtp_transaction_log": "220 smtp.company.com ESMTP Postfix\r\nEHLO mail.companyc0m.com\r\n250-smtp.company.com\r\n250-AUTH LOGIN PLAIN\r\nMAIL FROM:<john.smith@companyc0m.com>\r\n250 2.1.0 Ok\r\nRCPT TO:<finance@company.com>\r\n250 2.1.5 Ok\r\nDATA\r\n354 End data with <CR><LF>.<CR><LF>\r\n<email data>\r\n.\r\n250 2.0.0 Ok: queued as 9012IJKL\r\nQUIT\r\n221 2.0.0 Bye\r\n",
+        "mailbox_rule_creation_log": "",
+        "email_authentication_results": {
+          "SPF": "fail (sender IP 203.0.113.88 not authorized for domain)",
+          "DKIM": "none (no signature)",
+          "DMARC": "fail (p=reject)"
+        },
+        "login_activity_log": "No login activity detected for john.smith@company.com during this time window",
+        "network_packet_capture_snippet": "14:22:30.123456 IP 203.0.113.88.45678 > 192.0.2.10.25: Flags [S], seq 1000, win 64240, options [mss 1460,sackOK,TS val 54321 ecr 0,nop,wscale 7], length 0\r\n14:22:30.123567 IP 192.0.2.10.25 > 203.0.113.88.45678: Flags [S.], seq 0, ack 1001, win 65160, length 0",
+        "domain_whois_suspicious_domain": {
+          "DomainName": "companyc0m.com",
+          "Registrar": "NameSilo, LLC",
+          "CreationDate": "2023-04-05T16:00:00Z",
+          "ExpirationDate": "2024-04-05T16:00:00Z",
+          "RegistrantEmail": "contact@privacyshieldservice.com"
+        }
+      },
+      "indicators": [
+        "SPF fail for domain companyc0m.com (character substitution domain)",
+        "No DKIM signature on email",
+        "DMARC reject policy triggered",
+        "No legitimate login activity for CEO account",
+        "New domain companyc0m.com mimics company.com with zero replaced by letter O",
+        "Urgent wire transfer request with no secondary verification"
+      ],
+      "detection_method": "Enforce strict SPF/DKIM/DMARC checks blocking spoofed domains, monitor for lookalike domain registrations with homoglyph characters, alert on wire transfer emails from non-corporate domains, and require call-back confirmation for financial transactions.",
+      "relevant_mitre_techniques": [
+        "T1566.002 - Phishing: Spearphishing Link",
+        "T1586.001 - Compromise Infrastructure: Email Accounts",
+        "T1589.001 - Gather Victim Identity Information: Social Media",
+        "T1078 - Valid Accounts"
+      ]
+    },
+    {
+      "scenario": "Business email compromise using compromised finance assistant account to inject malicious invoice and create forwarding rule",
+      "technical_data": {
+        "email_headers": "Return-Path: <finance.assistant@company.com>\r\nReceived: from mail.company.com (mail.company.com [192.0.2.12])\r\n\tby smtp.company.com (Postfix) with ESMTPS id 3456MNOP\r\n\tfor <accounts@company.com>; Sat, 08 Apr 2023 09:10:55 -0400 (EDT)\r\nAuthentication-Results: smtp.company.com; spf=pass smtp.mailfrom=finance.assistant@company.com; dkim=fail header.d=company.com; dmarc=fail (p=quarantine)\r\nFrom: \"Finance Assistant\" <finance.assistant@company.com>\r\nTo: accounts@company.com\r\nSubject: Invoice Attached - Payment Required\r\nMessage-ID: <CA+34567@mail.company.com>\r\nX-Mailer: Outlook 16.0\r\nX-Originating-IP: [172.16.20.11]\r\nX-MS-Exchange-Organization-AuthSource: EXCH03.company.com\r\nX-MS-Exchange-Organization-AuthAs: Internal\r\n",
+        "email_body": "Dear Accounts Team,\n\nPlease find attached the invoice for vendor services rendered. Kindly process payment of $75,000 USD promptly.\n\nInvoice attached: Invoice_042023.pdf\n\nThank you,\nFinance Assistant",
+        "smtp_transaction_log": "220 smtp.company.com ESMTP Postfix\r\nEHLO mail.company.com\r\n250-smtp.company.com\r\n250-AUTH LOGIN PLAIN\r\nMAIL FROM:<finance.assistant@company.com>\r\n250 2.1.0 Ok\r\nRCPT TO:<accounts@company.com>\r\n250 2.1.5 Ok\r\nDATA\r\n354 End data with <CR><LF>.<CR><LF>\r\n<email data with malicious attachment>\r\n.\r\n250 2.0.0 Ok: queued as 3456MNOP\r\nQUIT\r\n221 2.0.0 Bye\r\n",
+        "mailbox_rule_creation_log": "2023-04-08 08:55:00 INFO User 'finance.assistant@company.com' created Inbox rule: Forward all incoming emails to external address attacker@evilmail.com",
+        "email_authentication_results": {
+          "SPF": "pass (mail from IP 192.0.2.12 authorized)",
+          "DKIM": "fail (signature did not verify)",
+          "DMARC": "fail (p=quarantine)"
+        },
+        "login_activity_log": "2023-04-08 08:50:12 INFO Successful login for finance.assistant@company.com from IP 198.51.100.77 (VPN exit node) using Outlook Web Access",
+        "network_packet_capture_snippet": "08:50:12.987654 IP 198.51.100.77.51234 > 192.0.2.12.443: Flags [P.], seq 23456:23567, ack 87654, win 65535, length 111\r\nHTTP/1.1 200 OK\r\nSet-Cookie: sessionid=QWERTY5678; Secure; HttpOnly\r\n",
+        "domain_whois_suspicious_domain": {
+          "DomainName": "secure-payments-company.net",
+          "Registrar": "Google LLC",
+          "CreationDate": "2023-04-06T11:20:00Z",
+          "ExpirationDate": "2024-04-06T11:20:00Z",
+          "RegistrantEmail": "privacy@domainshield.com"
+        }
+      },
+      "indicators": [
+        "Failed DKIM signature on finance assistant email",
+        "DMARC quarantine policy triggered",
+        "Mailbox forwarding rule created to external attacker address",
+        "Login from VPN exit node IP 198.51.100.77",
+        "Malicious invoice attachment sent to accounts team",
+        "Lookalike domain 'secure-payments-company.net' recently registered"
+      ],
+      "detection_method": "Monitor mailbox rules forwarding externally, detect DKIM failures and DMARC quarantine events, scan attachments for malware, alert on unusual logins for finance accounts, and track domain registrations similar to corporate brand.",
+      "relevant_mitre_techniques": [
+        "T1566.001 - Phishing: Spearphishing Attachment",
+        "T1586.001 - Compromise Infrastructure: Email Accounts",
+        "T1071.001 - Application Layer Protocol: Web Protocols",
+        "T1110 - Brute Force",
+        "T1114 - Email Collection"
+      ]
+    },
+    {
+      "scenario": "Spoofed CFO email from external domain requesting urgent wire transfer with obfuscated URL for invoice verification",
+      "technical_data": {
+        "email_headers": "Return-Path: <cfo@secure-payments-company.com>\r\nReceived: from unknown (HELO mail.secure-payments-company.com) (203.0.113.100)\r\n\tby smtp.company.com with SMTP; Sun, 09 Apr 2023 13:33:15 -0400\r\nReceived-SPF: fail (smtp.company.com: domain of cfo@secure-payments-company.com does not designate 203.0.113.100 as permitted sender)\r\nFrom: \"Jane Doe\" <cfo@secure-payments-company.com>\r\nTo: finance@company.com\r\nSubject: Immediate Payment Required\r\nMessage-ID: <CA+67890@mail.secure-payments-company.com>\r\nX-Mailer: Mozilla Thunderbird 91.8.0\r\n",
+        "email_body": "Dear Finance Team,\n\nPlease confirm and process the pending invoice by clicking the link below:\nhttps://secure-payments-company.com/payments/verify?id=MTYzNDc5MQ==&auth=YWJjZGVmZw==\n\nUrgent processing is required to avoid late fees.\n\nRegards,\nJane Doe\nCFO",
+        "smtp_relay_log": "Apr 09 13:33:15 mail postfix/smtpd[3456]: connect from unknown[203.0.113.100]\r\nApr 09 13:33:16 mail postfix/smtpd[3456]: NOQUEUE: reject: RCPT from unknown[203.0.113.100]: 554 5.7.1 <cfo@secure-payments-company.com>: Sender address rejected: not owned by user unknown; from=<cfo@secure-payments-company.com> to=<finance@company.com> proto=ESMTP helo=<mail.secure-payments-company.com>\r\nApr 09 13:33:17 mail postfix/smtpd[3456]: disconnect from unknown[203.0.113.100]",
+        "url_analysis": {
+          "URL": "https://secure-payments-company.com/payments/verify?id=MTYzNDc5MQ==&auth=YWJjZGVmZw==",
+          "DecodedId": "1634791",
+          "DecodedAuth": "abcdefg",
+          "DomainRegistration": {
+            "DomainName": "secure-payments-company.com",
+            "Registrar": "Tucows Domains Inc.",
+            "CreationDate": "2023-04-07T15:45:00Z",
+            "ExpirationDate": "2024-04-07T15:45:00Z",
+            "RegistrantEmail": "contact@privacyproxy.com"
+          },
+          "DNSRecords": {
+            "A": [
+              "203.0.113.100"
+            ],
+            "MX": [
+              "mail.secure-payments-company.com"
+            ]
+          }
+        },
+        "email_authentication_results": {
+          "SPF": "fail (sender IP 203.0.113.100 not authorized for domain)",
+          "DKIM": "none (no signature)",
+          "DMARC": "fail (p=reject)"
+        },
+        "network_packet_capture": "13:33:15.456789 IP 203.0.113.100.33456 > 192.0.2.10.25: Flags [S], seq 7777, win 64240, options [mss 1460,sackOK,TS val 765432 ecr 0,nop,wscale 7], length 0\r\n13:33:15.456890 IP 192.0.2.10.25 > 203.0.113.100.33456: Flags [S.], seq 0, ack 7778, win 65160, length 0",
+        "email_log_excerpt": "Apr 09 13:33:15 smtp postfix/smtpd[3456]: connect from unknown[203.0.113.100]\r\nApr 09 13:33:16 smtp postfix/smtpd[3456]: NOQUEUE: reject: RCPT from unknown[203.0.113.100]: 554 5.7.1 Sender address rejected\r\nApr 09 13:33:17 smtp postfix/smtpd[3456]: disconnect from unknown[203.0.113.100]"
+      },
+      "indicators": [
+        "SPF fail on domain secure-payments-company.com",
+        "No DKIM signature present",
+        "DMARC reject policy enforced",
+        "Suspicious URL with base64 encoded parameters",
+        "SMTP logs indicating sender address rejected",
+        "Domain secure-payments-company.com recently registered with privacy-protected contact"
+      ],
+      "detection_method": "Enforce SPF/DKIM/DMARC policies strictly, monitor for suspicious URLs with encoded parameters in emails, block emails from newly registered domains mimicking corporate names, and alert on SMTP rejection logs for unauthorized senders.",
+      "relevant_mitre_techniques": [
+        "T1566.002 - Phishing: Spearphishing Link",
+        "T1586.001 - Compromise Infrastructure: Email Accounts",
+        "T1071.001 - Application Layer Protocol: Web Protocols",
+        "T1589.001 - Gather Victim Identity Information: Social Media"
+      ]
+    },
+    {
+      "scenario": "Compromised executive assistant mailbox used to send fraudulent wire transfer request with mailbox forwarding rule",
+      "technical_data": {
+        "email_headers": "Return-Path: <exec.assistant@company.com>\r\nReceived: from mail.company.com (mail.company.com [192.0.2.20])\r\n\tby smtp.company.com (Postfix) with ESMTPS id 7890QRST\r\n\tfor <payments@company.com>; Mon, 10 Apr 2023 16:05:12 -0400 (EDT)\r\nAuthentication-Results: smtp.company.com; spf=pass smtp.mailfrom=exec.assistant@company.com; dkim=fail header.d=company.com; dmarc=fail (p=quarantine)\r\nFrom: \"Executive Assistant\" <exec.assistant@company.com>\r\nTo: payments@company.com\r\nSubject: Wire Transfer Request\r\nMessage-ID: <CA+78901@mail.company.com>\r\nX-Mailer: Outlook 16.0\r\nX-Originating-IP: [172.16.30.50]\r\nX-MS-Exchange-Organization-AuthSource: EXCH04.company.com\r\nX-MS-Exchange-Organization-AuthAs: Internal\r\n",
+        "email_body": "Dear Payments Team,\n\nPlease process an urgent wire transfer of $180,000 USD to the following account:\n\nBank: Citizens Trust Bank\nAccount Number: 321654987\nRouting Number: 444000333\nSwift Code: CTBUS55\n\nNotify me once completed.\n\nRegards,\nExecutive Assistant",
+        "smtp_transaction_log": "220 smtp.company.com ESMTP Postfix\r\nEHLO mail.company.com\r\n250-smtp.company.com\r\n250-AUTH LOGIN PLAIN\r\nMAIL FROM:<exec.assistant@company.com>\r\n250 2.1.0 Ok\r\nRCPT TO:<payments@company.com>\r\n250 2.1.5 Ok\r\nDATA\r\n354 End data with <CR><LF>.<CR><LF>\r\n<email data>\r\n.\r\n250 2.0.0 Ok: queued as 7890QRST\r\nQUIT\r\n221 2.0.0 Bye\r\n",
+        "mailbox_rule_creation_log": "2023-04-10 15:50:00 INFO User 'exec.assistant@company.com' created Inbox rule: Forward all emails to external address scammer@fraudmail.com",
+        "email_authentication_results": {
+          "SPF": "pass (mail from IP 192.0.2.20 authorized)",
+          "DKIM": "fail (signature invalid)",
+          "DMARC": "fail (p=quarantine)"
+        },
+        "login_activity_log": "2023-04-10 15:45:30 INFO Successful login for exec.assistant@company.com from IP 198.51.100.88 (unusual external IP) using Outlook Web Access",
+        "network_packet_capture_snippet": "15:45:30.123456 IP 198.51.100.88.52341 > 192.0.2.20.443: Flags [P.], seq 34567:34678, ack 65432, win 65535, length 111\r\nHTTP/1.1 200 OK\r\nSet-Cookie: sessionid=ZXCASDQWE123; Secure; HttpOnly\r\n",
+        "domain_whois_suspicious_domain": {
+          "DomainName": "company-paywire-secure.net",
+          "Registrar": "NameCheap, Inc.",
+          "CreationDate": "2023-04-08T13:00:00Z",
+          "ExpirationDate": "2024-04-08T13:00:00Z",
+          "RegistrantEmail": "privacy@proxyshield.com"
+        }
+      },
+      "indicators": [
+        "DKIM failure on executive assistant email",
+        "DMARC quarantine policy triggered",
+        "Mailbox forwarding rule to external suspicious email",
+        "Login from unusual IP 198.51.100.88",
+        "Urgent wire transfer request from compromised account",
+        "New domain 'company-paywire-secure.net' registered recently mimicking company"
+      ],
+      "detection_method": "Alert on mailbox rules forwarding externally, monitor DKIM and DMARC failures, detect anomalous login IPs for privileged assistants, require dual approval for wire transfers, and monitor new domain registrations similar to corporate domains.",
+      "relevant_mitre_techniques": [
+        "T1566.002 - Phishing: Spearphishing Link",
+        "T1586.001 - Compromise Infrastructure: Email Accounts",
+        "T1110 - Brute Force",
+        "T1078 - Valid Accounts"
+      ]
+    }
+  ]
+}
