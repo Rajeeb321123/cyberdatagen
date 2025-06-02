@@ -1,0 +1,649 @@
+{
+  "samples": [
+    {
+      "scenario": "Google Cloud Storage bucket configured with uniform bucket-level access disabled and ACLs granting allUsers read access, exposing sensitive project files publicly.",
+      "technical_data": {
+        "GCS_bucket_policy": {
+          "bindings": [
+            {
+              "role": "roles/storage.objectViewer",
+              "members": [
+                "allUsers"
+              ]
+            }
+          ]
+        },
+        "gsutil_acl_list_output": [
+          {
+            "entity": "allUsers",
+            "role": "READER"
+          }
+        ],
+        "CloudAudit_log_entry": {
+          "protoPayload": {
+            "@type": "type.googleapis.com/google.cloud.audit.AuditLog",
+            "authenticationInfo": {
+              "principalEmail": ""
+            },
+            "requestMetadata": {
+              "callerIp": "192.0.2.77",
+              "callerSuppliedUserAgent": "Wget/1.20.3 (linux-gnu)"
+            },
+            "serviceName": "storage.googleapis.com",
+            "methodName": "storage.objects.get",
+            "resourceName": "projects/_/buckets/project-data/objects/secrets/credentials.json",
+            "status": {},
+            "request": {},
+            "response": {}
+          },
+          "timestamp": "2024-06-01T08:45:22Z",
+          "resource": {
+            "labels": {
+              "bucket_name": "project-data"
+            }
+          }
+        },
+        "GCS_access_log_entry": "2024-06-01T08:45:22.123Z storage.googleapis.com GET project-data secrets/credentials.json 192.0.2.77 Wget/1.20.3 - 200 -",
+        "wget_command_used_by_attacker": "wget https://storage.googleapis.com/project-data/secrets/credentials.json",
+        "gcloud_cli_commands": [
+          "gcloud storage buckets get-iam-policy project-data",
+          "gsutil acl get gs://project-data"
+        ]
+      },
+      "indicators": [
+        "Bucket IAM policy binding with role roles/storage.objectViewer granted to allUsers",
+        "ACLs listing allUsers with READER permission",
+        "Cloud Audit logs showing unauthenticated GET requests from suspicious IPs",
+        "Access logs with HTTP 200 responses for sensitive files accessed anonymously"
+      ],
+      "detection_method": "Leverage Google Cloud Asset Inventory and Security Command Center to detect public buckets and ACLs granting allUsers access. Monitor Cloud Audit logs for unauthenticated access events. Implement alerts on changes to bucket policies and ACLs. Aggregate access logs to identify anomalous or high-volume anonymous reads.",
+      "relevant_mitre_techniques": [
+        "T1530 - Data from Cloud Storage Object",
+        "T1078 - Valid Accounts (anonymous access via misconfiguration)",
+        "T1567 - Exfiltration Over Web Service"
+      ]
+    },
+    {
+      "scenario": "AWS S3 bucket with bucket policy allowing s3:ListBucket and s3:GetObject actions for all principals, enabling discovery and exfiltration of confidential customer data.",
+      "technical_data": {
+        "IAM_policy": {
+          "BucketPolicy": {
+            "Version": "2012-10-17",
+            "Statement": [
+              {
+                "Sid": "AllowPublicListAndRead",
+                "Effect": "Allow",
+                "Principal": "*",
+                "Action": [
+                  "s3:ListBucket",
+                  "s3:GetObject"
+                ],
+                "Resource": [
+                  "arn:aws:s3:::customer-data",
+                  "arn:aws:s3:::customer-data/*"
+                ]
+              }
+            ]
+          }
+        },
+        "CloudTrail_log_excerpt": {
+          "eventVersion": "1.08",
+          "userIdentity": {
+            "type": "Anonymous",
+            "principalId": "ANONYMOUS"
+          },
+          "eventTime": "2024-04-28T12:30:15Z",
+          "eventSource": "s3.amazonaws.com",
+          "eventName": "ListBucket",
+          "awsRegion": "us-west-2",
+          "sourceIPAddress": "203.0.113.99",
+          "userAgent": "python-requests/2.25.1",
+          "requestParameters": {
+            "bucketName": "customer-data"
+          },
+          "responseElements": null,
+          "additionalEventData": {
+            "SignatureVersion": "SigV4",
+            "CipherSuite": "ECDHE-RSA-AES128-GCM-SHA256"
+          },
+          "requestID": "7F8E9D0C1B2A3C4D",
+          "eventID": "b4c2d3e4-5678-90ab-cdef-1234567890ab",
+          "readOnly": true,
+          "resources": [
+            {
+              "type": "AWS::S3::Bucket",
+              "ARN": "arn:aws:s3:::customer-data"
+            }
+          ],
+          "eventType": "AwsApiCall",
+          "managementEvent": false
+        },
+        "S3_access_log_entry": "4e3f2a1b0c9d8e7f6a5b4c3d2e1f0a9b customer-data [28/Apr/2024:12:30:15 +0000] 203.0.113.99 - - 200 0 123 456 \"GET /?list-type=2 HTTP/1.1\" \"python-requests/2.25.1\" -",
+        "curl_command_used_by_attacker": "curl https://customer-data.s3.us-west-2.amazonaws.com/?list-type=2",
+        "AWS CLI enumeration commands": [
+          "aws s3api get-bucket-policy --bucket customer-data",
+          "aws s3 ls s3://customer-data --recursive"
+        ]
+      },
+      "indicators": [
+        "Bucket policy permits s3:ListBucket and s3:GetObject to all principals",
+        "CloudTrail logs showing anonymous ListBucket API calls from unexpected IPs",
+        "S3 access logs with successful HTTP 200 responses to bucket listing requests",
+        "User agents associated with automated tools such as python-requests"
+      ],
+      "detection_method": "Use AWS Config rules to detect buckets with public ListBucket permissions. Monitor CloudTrail for anonymous ListBucket and GetObject API calls. Enable S3 server access logging and analyze for unusual patterns or volume of anonymous requests. Alert on policy changes that widen access permissions.",
+      "relevant_mitre_techniques": [
+        "T1530 - Data from Cloud Storage Object",
+        "T1078 - Valid Accounts (anonymous access via misconfiguration)",
+        "T1567 - Exfiltration Over Web Service"
+      ]
+    },
+    {
+      "scenario": "Azure Data Lake Storage Gen2 filesystem ACLs configured with 'everyone' granted Execute and Read permissions, exposing sensitive big data analytics files to unauthorized users.",
+      "technical_data": {
+        "Azure_Data_Lake_ACLs": {
+          "filesystem": "analytics-data",
+          "acl_entries": [
+            "user::rwx",
+            "group::r-x",
+            "other::r-x",
+            "mask::rwx",
+            "default:user::rwx",
+            "default:group::r-x",
+            "default:other::r-x",
+            "default:mask::rwx",
+            "group:everyone:r-x"
+          ]
+        },
+        "Azure_activity_log_entry": {
+          "time": "2024-05-22T18:05:50Z",
+          "resourceId": "/subscriptions/abcdef12-3456-7890-abcd-ef1234567890/resourceGroups/prod-rg/providers/Microsoft.Storage/storageAccounts/analyticsprod/blobServices/default/containers/analytics-data",
+          "operationName": "Get Blob",
+          "category": "StorageRead",
+          "resultType": "Success",
+          "callerIpAddress": "198.51.100.150",
+          "correlationId": "abcd1234-5678-90ef-ghij-klmnopqrstuv",
+          "identity": {
+            "type": "Anonymous"
+          }
+        },
+        "AzCopy_command_from_attacker": "azcopy copy 'https://analyticsprod.dfs.core.windows.net/analytics-data/' './local-analytics' --recursive=true",
+        "Azure_storage_analytics_log": {
+          "version": "1.0",
+          "requestStartTime": "2024-05-22T18:05:50.7890123Z",
+          "operationType": "GetBlob",
+          "requestStatus": "Success",
+          "authenticationType": "Anonymous",
+          "requesterIp": "198.51.100.150",
+          "requestUri": "/analytics-data/user-behavior/2024/data.csv",
+          "httpStatusCode": "200",
+          "endToEndLatencyMs": 40
+        }
+      },
+      "indicators": [
+        "Filesystem ACL entries granting 'everyone' group read and execute permissions",
+        "Activity logs showing anonymous Get Blob operations",
+        "Azure Storage analytics logs indicating successful anonymous blob downloads",
+        "Unusual high-volume blob downloads from unknown external IPs"
+      ],
+      "detection_method": "Monitor Azure Data Lake ACL configurations for overly permissive group or other entries. Enable Azure Activity Logs and Storage Analytics to detect anonymous or unauthorized accesses. Use Azure Policy to enforce restrictive ACLs on Data Lake filesystems. Alert on ACL changes that grant broad read/execute permissions.",
+      "relevant_mitre_techniques": [
+        "T1530 - Data from Cloud Storage Object",
+        "T1078 - Valid Accounts (anonymous access via misconfiguration)",
+        "T1567 - Exfiltration Over Web Service"
+      ]
+    },
+    {
+      "scenario": "AWS S3 bucket with bucket policy allowing s3:* actions to all principals on a subfolder, enabling full control including deletion of sensitive audit logs.",
+      "technical_data": {
+        "IAM_policy": {
+          "BucketPolicy": {
+            "Version": "2012-10-17",
+            "Statement": [
+              {
+                "Sid": "AllowFullAccessToSubfolder",
+                "Effect": "Allow",
+                "Principal": "*",
+                "Action": "s3:*",
+                "Resource": [
+                  "arn:aws:s3:::audit-logs/2024/*"
+                ]
+              }
+            ]
+          }
+        },
+        "CloudTrail_log_excerpt": {
+          "eventVersion": "1.08",
+          "userIdentity": {
+            "type": "Anonymous",
+            "principalId": "ANONYMOUS"
+          },
+          "eventTime": "2024-04-30T22:10:05Z",
+          "eventSource": "s3.amazonaws.com",
+          "eventName": "DeleteObject",
+          "awsRegion": "us-east-2",
+          "sourceIPAddress": "198.51.100.200",
+          "userAgent": "aws-cli/2.7.12 Python/3.8.8 Linux/5.4.0-105-generic exe/x86_64.ubuntu.20",
+          "requestParameters": {
+            "bucketName": "audit-logs",
+            "key": "2024/04/30/unauthorized-access.json"
+          },
+          "responseElements": null,
+          "additionalEventData": {
+            "SignatureVersion": "SigV4",
+            "CipherSuite": "ECDHE-RSA-AES128-GCM-SHA256"
+          },
+          "requestID": "1A2B3C4D5E6F7890",
+          "eventID": "cdef1234-5678-90ab-cdef-1234567890ab",
+          "readOnly": false,
+          "resources": [
+            {
+              "type": "AWS::S3::Object",
+              "ARN": "arn:aws:s3:::audit-logs/2024/04/30/unauthorized-access.json"
+            }
+          ],
+          "eventType": "AwsApiCall",
+          "managementEvent": false
+        },
+        "S3_access_log_entry": "abc123def4567890 audit-logs [30/Apr/2024:22:10:05 +0000] 198.51.100.200 - - 204 0 0 0 \"DELETE /2024/04/30/unauthorized-access.json HTTP/1.1\" \"aws-cli/2.7.12 Python/3.8.8\" -",
+        "AWS CLI commands used_by_attacker": [
+          "aws s3 rm s3://audit-logs/2024/04/30/unauthorized-access.json",
+          "aws s3 cp s3://audit-logs/2024/04/30/unauthorized-access.json ./"
+        ],
+        "AWS CLI enumeration commands": [
+          "aws s3api get-bucket-policy --bucket audit-logs",
+          "aws s3 ls s3://audit-logs/2024/ --recursive"
+        ]
+      },
+      "indicators": [
+        "Bucket policy granting s3:* permissions to all principals on sensitive subfolder",
+        "CloudTrail logs showing anonymous DeleteObject API calls",
+        "S3 access logs with HTTP 204 responses to DELETE requests from unknown IPs",
+        "AWS CLI user agent present in access logs for anonymous actions"
+      ],
+      "detection_method": "Deploy AWS Config rules to block overly permissive wildcard actions in bucket policies. Monitor CloudTrail for unauthorized deletion or modification events, especially from anonymous identities. Enable S3 server access logging and alert on DELETE requests from unrecognized IPs. Audit bucket policies regularly for principle and action scope.",
+      "relevant_mitre_techniques": [
+        "T1530 - Data from Cloud Storage Object",
+        "T1078 - Valid Accounts (anonymous access via misconfiguration)",
+        "T1485 - Data Destruction",
+        "T1567 - Exfiltration Over Web Service"
+      ]
+    },
+    {
+      "scenario": "Google Cloud Storage bucket configured with public read access to all objects due to uniform bucket-level access being disabled and legacy ACLs granting 'allUsers' READER role, exposing internal HR documents.",
+      "technical_data": {
+        "GCS_bucket_policy": {
+          "bindings": []
+        },
+        "gsutil_acl_list_output": [
+          {
+            "entity": "allUsers",
+            "role": "READER"
+          },
+          {
+            "entity": "user:hr-team@example.com",
+            "role": "OWNER"
+          }
+        ],
+        "CloudAudit_log_entry": {
+          "protoPayload": {
+            "@type": "type.googleapis.com/google.cloud.audit.AuditLog",
+            "authenticationInfo": {
+              "principalEmail": ""
+            },
+            "requestMetadata": {
+              "callerIp": "203.0.113.120",
+              "callerSuppliedUserAgent": "Wget/1.19.5 (linux-gnu)"
+            },
+            "serviceName": "storage.googleapis.com",
+            "methodName": "storage.objects.get",
+            "resourceName": "projects/_/buckets/hr-docs/objects/payroll/2024/employee-list.csv",
+            "status": {},
+            "request": {},
+            "response": {}
+          },
+          "timestamp": "2024-06-05T09:15:40Z",
+          "resource": {
+            "labels": {
+              "bucket_name": "hr-docs"
+            }
+          }
+        },
+        "GCS_access_log_entry": "2024-06-05T09:15:40.456Z storage.googleapis.com GET hr-docs payroll/2024/employee-list.csv 203.0.113.120 Wget/1.19.5 - 200 -",
+        "wget_command_used_by_attacker": "wget https://storage.googleapis.com/hr-docs/payroll/2024/employee-list.csv",
+        "gcloud_cli_commands": [
+          "gsutil acl get gs://hr-docs",
+          "gcloud storage buckets get-iam-policy hr-docs"
+        ]
+      },
+      "indicators": [
+        "Legacy ACLs granting allUsers READER role instead of uniform bucket-level access",
+        "Cloud Audit logs showing unauthenticated GET requests from external IPs",
+        "Access logs with HTTP 200 responses for sensitive HR documents accessed anonymously",
+        "User agents indicating scripted downloads like wget"
+      ],
+      "detection_method": "Enforce uniform bucket-level access on Google Cloud Storage buckets to disable legacy ACLs. Use Security Command Center to identify buckets with public ACLs. Monitor Cloud Audit Logs and access logs for anonymous downloads. Configure alerts for ACL changes that add allUsers permissions.",
+      "relevant_mitre_techniques": [
+        "T1530 - Data from Cloud Storage Object",
+        "T1078 - Valid Accounts (anonymous access via misconfiguration)",
+        "T1567 - Exfiltration Over Web Service"
+      ]
+    },
+    {
+      "scenario": "Google Cloud Storage bucket misconfigured with public read access allowing unauthorized users to download sensitive backups.",
+      "technical_data": {
+        "GCP_bucket_iam_policy": {
+          "bindings": [
+            {
+              "role": "roles/storage.objectViewer",
+              "members": [
+                "allUsers"
+              ]
+            }
+          ],
+          "etag": "BwWWja0YfJA="
+        },
+        "GCP_Audit_log_excerpt": {
+          "protoPayload": {
+            "@type": "type.googleapis.com/google.cloud.audit.AuditLog",
+            "authenticationInfo": {
+              "principalEmail": "anonymous"
+            },
+            "requestMetadata": {
+              "callerIp": "45.77.12.34",
+              "callerSuppliedUserAgent": "Wget/1.20.3 (linux-gnu)"
+            },
+            "serviceName": "storage.googleapis.com",
+            "methodName": "storage.objects.get",
+            "resourceName": "projects/_/buckets/backup-data/objects/daily/2024-04-01.sql.gz",
+            "status": {}
+          },
+          "resource": {
+            "type": "gcs_bucket",
+            "labels": {
+              "bucket_name": "backup-data"
+            }
+          },
+          "timestamp": "2024-04-26T19:12:03Z",
+          "severity": "INFO"
+        },
+        "GCS_access_log": "2024-04-26T19:12:03.123Z GET storage.googleapis.com backup-data daily/2024-04-01.sql.gz 200 Wget/1.20.3 45.77.12.34",
+        "wget_command_used_by_attacker": "wget https://storage.googleapis.com/backup-data/daily/2024-04-01.sql.gz",
+        "GCP CLI enumeration commands": [
+          "gsutil iam get gs://backup-data",
+          "gsutil ls -r gs://backup-data"
+        ]
+      },
+      "indicators": [
+        "Bucket IAM policy with 'allUsers' granted roles/storage.objectViewer",
+        "Audit logs showing anonymous storage.objects.get calls",
+        "Access logs with HTTP 200 responses to GET requests from unusual IPs without authentication",
+        "Use of command-line tools like wget to download objects"
+      ],
+      "detection_method": "Implement Cloud Asset Inventory scans to detect buckets with public 'allUsers' roles. Monitor GCP Audit Logs for anonymous access to storage.objects.get. Enable and analyze Cloud Storage access logs for unusual access patterns. Alert on IAM policy changes that assign public read permissions.",
+      "relevant_mitre_techniques": [
+        "T1530 - Data from Cloud Storage Object",
+        "T1078 - Valid Accounts (anonymous access via misconfiguration)",
+        "T1567 - Exfiltration Over Web Service"
+      ]
+    },
+    {
+      "scenario": "AWS S3 bucket configured with ACL 'public-read' exposing confidential marketing materials to the internet.",
+      "technical_data": {
+        "S3_bucket_acl": {
+          "Owner": {
+            "DisplayName": "marketing-team",
+            "ID": "a1b2c3d4e5f6g7h8i9j0"
+          },
+          "Grants": [
+            {
+              "Grantee": {
+                "Type": "Group",
+                "URI": "http://acs.amazonaws.com/groups/global/AllUsers"
+              },
+              "Permission": "READ"
+            }
+          ]
+        },
+        "CloudTrail_log_excerpt": {
+          "eventVersion": "1.08",
+          "userIdentity": {
+            "type": "Anonymous",
+            "principalId": "ANONYMOUS"
+          },
+          "eventTime": "2024-05-01T09:45:12Z",
+          "eventSource": "s3.amazonaws.com",
+          "eventName": "GetObject",
+          "awsRegion": "us-west-2",
+          "sourceIPAddress": "203.0.113.77",
+          "userAgent": "python-requests/2.25.1",
+          "requestParameters": {
+            "bucketName": "marketing-campaign-assets",
+            "key": "launch/video_promo.mp4"
+          },
+          "responseElements": null,
+          "additionalEventData": {
+            "SignatureVersion": "SigV4",
+            "CipherSuite": "ECDHE-RSA-AES256-GCM-SHA384",
+            "bytesTransferredIn": 0,
+            "bytesTransferredOut": 52428800
+          },
+          "requestID": "9C8D7E6F5A4B3C2D",
+          "eventID": "d4c3b2a1-5678-90ab-cdef-1234567890ab",
+          "readOnly": true,
+          "resources": [
+            {
+              "type": "AWS::S3::Object",
+              "ARN": "arn:aws:s3:::marketing-campaign-assets/launch/video_promo.mp4"
+            }
+          ],
+          "eventType": "AwsApiCall",
+          "managementEvent": false
+        },
+        "S3_access_log_entry": "5e3a7b8c9d0e1f23456789abcdef123456789abcdef123456789abcdef1234567 marketing-campaign-assets [01/May/2024:09:45:12 +0000] 203.0.113.77 - - 200 52428800 1234 567 \"GET /launch/video_promo.mp4 HTTP/1.1\" \"python-requests/2.25.1\" -",
+        "curl_command_used_by_attacker": "curl -O https://marketing-campaign-assets.s3.us-west-2.amazonaws.com/launch/video_promo.mp4",
+        "AWS CLI enumeration commands": [
+          "aws s3api get-bucket-acl --bucket marketing-campaign-assets",
+          "aws s3 ls s3://marketing-campaign-assets/ --recursive"
+        ]
+      },
+      "indicators": [
+        "S3 bucket ACL includes 'AllUsers' group with READ permission",
+        "CloudTrail logs showing anonymous GetObject requests from external IP addresses",
+        "S3 access logs with HTTP 200 status for GET requests without authentication",
+        "Requests using common libraries like python-requests for downloading objects"
+      ],
+      "detection_method": "Enable AWS Config rules to check for buckets with public ACLs. Analyze CloudTrail events for anonymous GetObject operations. Aggregate and monitor S3 access logs for unapproved public downloads. Configure alerts on ACL changes granting public read access.",
+      "relevant_mitre_techniques": [
+        "T1530 - Data from Cloud Storage Object",
+        "T1078 - Valid Accounts (anonymous access via misconfiguration)",
+        "T1567 - Exfiltration Over Web Service"
+      ]
+    },
+    {
+      "scenario": "Google Cloud Storage bucket with uniform bucket-level access disabled and legacy ACL allowing public write, enabling data tampering by unauthorized users.",
+      "technical_data": {
+        "GCP_bucket_metadata": {
+          "name": "public-uploads",
+          "iamConfiguration": {
+            "uniformBucketLevelAccess": {
+              "enabled": false,
+              "lockedTime": null
+            }
+          },
+          "acl": [
+            {
+              "entity": "allUsers",
+              "role": "WRITER"
+            }
+          ]
+        },
+        "GCP_Audit_log_excerpt": {
+          "protoPayload": {
+            "@type": "type.googleapis.com/google.cloud.audit.AuditLog",
+            "authenticationInfo": {
+              "principalEmail": "anonymous"
+            },
+            "requestMetadata": {
+              "callerIp": "198.51.100.99",
+              "callerSuppliedUserAgent": "curl/7.79.1"
+            },
+            "serviceName": "storage.googleapis.com",
+            "methodName": "storage.objects.insert",
+            "resourceName": "projects/_/buckets/public-uploads/objects/malicious.exe",
+            "status": {}
+          },
+          "resource": {
+            "type": "gcs_bucket",
+            "labels": {
+              "bucket_name": "public-uploads"
+            }
+          },
+          "timestamp": "2024-06-01T04:02:15Z",
+          "severity": "INFO"
+        },
+        "GCS_access_log": "2024-06-01T04:02:15.678Z PUT storage.googleapis.com public-uploads malicious.exe 200 curl/7.79.1 198.51.100.99",
+        "curl_command_used_by_attacker": "curl -X PUT --upload-file malicious.exe https://storage.googleapis.com/public-uploads/malicious.exe",
+        "GCP CLI enumeration commands": [
+          "gsutil acl get gs://public-uploads",
+          "gsutil ls gs://public-uploads"
+        ]
+      },
+      "indicators": [
+        "Bucket ACL includes 'allUsers' with WRITER permission",
+        "Uniform bucket-level access disabled allowing legacy ACLs",
+        "Audit logs showing anonymous storage.objects.insert events",
+        "Access logs showing PUT requests from suspicious IPs using curl"
+      ],
+      "detection_method": "Enforce uniform bucket-level access on Google Cloud Storage buckets. Monitor audit logs for anonymous PUT or POST operations. Analyze access logs for unauthorized write operations. Alert on ACL changes granting public WRITE permissions.",
+      "relevant_mitre_techniques": [
+        "T1530 - Data from Cloud Storage Object",
+        "T1078 - Valid Accounts (anonymous access via misconfiguration)",
+        "T1565 - Data Manipulation",
+        "T1567 - Exfiltration Over Web Service"
+      ]
+    },
+    {
+      "scenario": "AWS S3 bucket policy incorrectly granting 's3:*' permissions to the public, allowing full control including deletion of objects.",
+      "technical_data": {
+        "IAM_policy": {
+          "Version": "2012-10-17",
+          "Statement": [
+            {
+              "Sid": "PublicFullAccess",
+              "Effect": "Allow",
+              "Principal": "*",
+              "Action": "s3:*",
+              "Resource": [
+                "arn:aws:s3:::project-archive",
+                "arn:aws:s3:::project-archive/*"
+              ]
+            }
+          ]
+        },
+        "CloudTrail_log_excerpt": {
+          "eventVersion": "1.08",
+          "userIdentity": {
+            "type": "Anonymous",
+            "principalId": "ANONYMOUS"
+          },
+          "eventTime": "2024-05-15T22:30:10Z",
+          "eventSource": "s3.amazonaws.com",
+          "eventName": "DeleteObject",
+          "awsRegion": "eu-central-1",
+          "sourceIPAddress": "198.51.100.150",
+          "userAgent": "aws-cli/2.7.0 Python/3.9.11 Linux/5.15.0-67-generic exe/x86_64.ubuntu.20",
+          "requestParameters": {
+            "bucketName": "project-archive",
+            "key": "old-reports/2019-summary.pdf"
+          },
+          "responseElements": null,
+          "additionalEventData": {
+            "SignatureVersion": "SigV4",
+            "CipherSuite": "ECDHE-RSA-AES256-GCM-SHA384"
+          },
+          "requestID": "ABCDEF1234567890",
+          "eventID": "12345678-abcd-efgh-ijkl-9876543210ab",
+          "readOnly": false,
+          "resources": [
+            {
+              "type": "AWS::S3::Object",
+              "ARN": "arn:aws:s3:::project-archive/old-reports/2019-summary.pdf"
+            }
+          ],
+          "eventType": "AwsApiCall",
+          "managementEvent": false
+        },
+        "S3_access_log_entry": "abcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890 project-archive [15/May/2024:22:30:10 +0000] 198.51.100.150 - - 204 0 0 0 \"DELETE /old-reports/2019-summary.pdf HTTP/1.1\" \"aws-cli/2.7.0 Python/3.9.11 Linux/5.15.0-67-generic\" -",
+        "AWS CLI commands used by attacker": [
+          "aws s3 rm s3://project-archive/old-reports/2019-summary.pdf",
+          "aws s3api get-bucket-policy --bucket project-archive"
+        ]
+      },
+      "indicators": [
+        "S3 bucket policy grants 's3:*' to Principal '*' (public full control)",
+        "CloudTrail logs showing anonymous DeleteObject events",
+        "S3 access logs with HTTP 204 No Content responses to DELETE requests",
+        "Use of AWS CLI from unusual IPs without authentication"
+      ],
+      "detection_method": "Use AWS Config managed rules to detect overly permissive bucket policies. Monitor CloudTrail for anonymous destructive API calls. Correlate access logs for unexpected DELETE operations. Alert on policy changes that grant wildcard full permissions.",
+      "relevant_mitre_techniques": [
+        "T1530 - Data from Cloud Storage Object",
+        "T1078 - Valid Accounts (anonymous access via misconfiguration)",
+        "T1485 - Data Destruction",
+        "T1567 - Exfiltration Over Web Service"
+      ]
+    },
+    {
+      "scenario": "Azure Blob Storage container configured with 'Container' public access level allowing anonymous listing and reading of blobs, exposing internal proprietary software builds.",
+      "technical_data": {
+        "Azure_blob_acl": {
+          "properties": {
+            "publicAccess": "Container"
+          }
+        },
+        "Azure CLI commands used by attacker": [
+          "az storage blob list --container-name builds --account-name corpstorage --output json",
+          "az storage blob download --container-name builds --name software_v2.1.exe --file software_v2.1.exe --account-name corpstorage"
+        ],
+        "Azure Activity log entry": {
+          "time": "2024-05-20T16:40:22Z",
+          "resourceId": "/subscriptions/87654321-abcd-ef01-2345-6789abcdef01/resourceGroups/prod-rg/providers/Microsoft.Storage/storageAccounts/corpstorage/blobServices/default/containers/builds",
+          "operationName": "List Blobs",
+          "category": "StorageRead",
+          "resultType": "Success",
+          "callerIpAddress": "198.51.100.200",
+          "correlationId": "f234a567-89bc-def0-1234-56789abcdef0",
+          "identity": {
+            "type": "Anonymous"
+          }
+        },
+        "HTTP GET request from Azure Front Door WAF logs": "GET /builds/software_v2.1.exe HTTP/1.1\r\nHost: corpstorage.blob.core.windows.net\r\nUser-Agent: Mozilla/5.0 (X11; Linux x86_64)\r\nAccept: application/octet-stream\r\n\r\n",
+        "Azure Storage analytics log entry": {
+          "version": "1.0",
+          "requestStartTime": "2024-05-20T16:40:22.9876543Z",
+          "operationType": "ListBlobs",
+          "requestStatus": "Success",
+          "authenticationType": "Anonymous",
+          "requesterAccountName": "-",
+          "requesterIp": "198.51.100.200",
+          "requestUri": "/builds?restype=container&comp=list",
+          "httpStatusCode": "200",
+          "endToEndLatencyMs": 45
+        }
+      },
+      "indicators": [
+        "Blob container ACL set to 'Container' allowing anonymous list and read",
+        "Activity logs showing anonymous List Blobs and Get Blob operations",
+        "Storage analytics logs with successful anonymous access from unknown IPs",
+        "Unusual download volume of proprietary software builds"
+      ],
+      "detection_method": "Audit and enforce private ACLs on blob containers. Monitor Azure Activity Logs for anonymous access events. Enable Azure Storage analytics and analyze logs for unauthorized blob enumeration. Set alerts on changes to publicAccess property on containers.",
+      "relevant_mitre_techniques": [
+        "T1530 - Data from Cloud Storage Object",
+        "T1078 - Valid Accounts (anonymous access via misconfiguration)",
+        "T1567 - Exfiltration Over Web Service"
+      ]
+    }
+  ]
+}

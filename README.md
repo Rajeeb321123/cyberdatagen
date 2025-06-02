@@ -18,29 +18,37 @@ CyberData walks you through a systematic approach to synthetic cybersecurity dat
 ```
 cyberdata/
 ├── src/cyberdata/
-│   ├── config/                      # Configuration files
-│   │   ├── problems_init.json       # Initial problem definitions
-│   │   ├── problems.json           # LLM-generated problems
-│   │   ├── problems_updated.json   # Enhanced with taxonomy & new threats
-│   │   ├── problems_evaluation_report.json  # Evaluation analysis
-│   │   └── acronyms.json          # Domain-specific acronyms
-│   ├── scripts/                    # Core pipeline scripts
-│   │   ├── problems.py            # Generate cybersecurity problems
-│   │   ├── extend_problems.py     # Evaluate & enhance taxonomy
-│   │   ├── small_dataset.py       # Create seed examples with technical data
-│   │   ├── generator.py           # Generate large synthetic datasets
-│   │   ├── validate_small.py      # Validate seed examples
-│   │   └── validate_large.py      # Quality assessment of large datasets
-│   └── utils/                     # Utility modules
-│       ├── llm_invoke.py          # LLM API interface
-│       └── logger_config.py       # Logging configuration
-├── data/                          # Generated datasets
-│   ├── seeds/                     # Seed examples by area
-│   ├── large_samples/             # Large synthetic datasets
-│   ├── validation_reports/        # Validation results
-│   └── quality_reports/           # Quality assessment reports
-├── logs/                          # Execution logs
-└── pyproject.toml                 # Project dependencies
+│   ├── scripts/                     # Core pipeline scripts
+│   │   ├── problems.py              # Generate cybersecurity problems
+│   │   ├── extend_problems.py       # Evaluate & enhance taxonomy
+│   │   ├── small_dataset.py         # Create seed examples with technical data
+│   │   ├── generator.py             # Generate large synthetic datasets
+│   │   ├── validate_small.py        # Validate seed examples
+│   │   └── validate_large.py        # Quality assessment of large datasets
+│   └── utils/                       # Utility modules
+│       ├── llm_invoke.py            # LLM API interface
+│       ├── logger_config.py         # Logging configuration
+│       ├── prompt_loader.py         # YAML prompt management
+│       └── config_manager.py        # Centralized configuration management
+├── config/                          # Configuration files (moved from src/)
+│   ├── problems_init.json           # Initial problem definitions
+│   ├── problems.json                # LLM-generated problems
+│   ├── problems_updated.json        # Enhanced with taxonomy & new threats
+│   ├── problems_evaluation_report.json  # Evaluation analysis
+│   ├── acronyms.json                # Domain-specific acronyms
+│   └── prompts/                     # YAML prompt templates
+│       ├── problems_prompts.yaml
+│       ├── extension_prompts.yaml
+│       ├── seed_generation_prompts.yaml
+│       ├── large_generation_prompts.yaml
+│       └── validation_prompts.yaml
+├── data/                            # Generated datasets
+│   ├── seeds/                       # Seed examples by area
+│   ├── large_samples/               # Large synthetic datasets
+│   ├── validation_reports/          # Validation results
+│   └── quality_reports/             # Quality assessment reports
+├── logs/                            # Execution logs
+└── pyproject.toml                   # Project dependencies
 ```
 
 ## 🚀 Quick Start
@@ -74,8 +82,8 @@ cyberdata/
 
 **Run the complete pipeline:**
 ```bash
-# Navigate to scripts directory
-cd src/cyberdata/scripts
+# Navigate to process directory
+cd src/cyberdata/process
 
 # 1. Generate initial problems (optional - problems.json included)
 python problems.py
@@ -95,76 +103,6 @@ python generator.py --count 50
 # 6. Validate large datasets
 python validate_large.py
 ```
-
-## 📋 Detailed Component Overview
-
-### 1. Problem Definition (`problems.py`)
-- Generates structured cybersecurity problems using LLM
-- Covers Enterprise, Cloud, and EDTC environments
-- Outputs: `config/problems.json`
-
-### 2. Taxonomy Enhancement (`extend_problems.py`)
-- Evaluates existing problem taxonomy
-- Adds emerging threats (AI attacks, supply chain, etc.)
-- Implements hierarchical categorization with MITRE ATT&CK alignment
-- Outputs: `config/problems_updated.json`, `config/problems_evaluation_report.json`
-
-### 3. Seed Generation (`small_dataset.py`)
-- Creates detailed technical examples for each problem type
-- Includes realistic attack data (HTTP headers, logs, IoCs)
-- Uses few-shot learning with domain expertise
-- Outputs: `data/seeds/{area}/{nature}_examples.json`
-
-### 4. Seed Validation (`validate_small.py`)
-- LLM-based validation of seed examples
-- Checks correctness, realism, and completeness
-- Outputs: `data/validation_reports/{area}/{nature}_validation.json`
-
-### 5. Large Dataset Generation (`generator.py`)
-- Scales seed examples to larger datasets
-- Batch processing to handle token limits
-- Maintains schema consistency
-- Outputs: `data/large_samples/{area}/{nature}_large.json`
-
-**Usage options:**
-```bash
-# Generate 100 samples per problem
-python generator.py --count 100
-
-# Generate for specific problems only
-python generator.py --problems phishing spear_phishing --count 50
-```
-
-### 6. Quality Assessment (`validate_large.py`)
-- Statistical analysis of large datasets
-- LLM-based quality evaluation
-- Uniqueness, consistency, and realism metrics
-- Outputs: `data/quality_reports/{area}/{nature}_quality_report.json`
-
-## 🎯 Cybersecurity Domain Coverage
-
-### Current Threat Categories
-
-**Social Engineering:**
-- Credential Harvesting Phishing
-- Spear Phishing
-- Malicious Attachments
-- AI-Powered Deepfake Attacks
-
-**Network Attacks:**
-- Wi-Fi Eavesdropping
-- SSL Stripping
-- DNS Spoofing
-
-**Cloud Security:**
-- Misconfigured Storage Buckets
-- API Key Leakage
-- Container Escape
-
-**Emerging Threats:**
-- Supply Chain Attacks
-- Adversarial Machine Learning
-- Double Extortion Ransomware
 
 ### Enhanced Schema
 

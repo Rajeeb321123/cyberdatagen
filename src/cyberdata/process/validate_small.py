@@ -7,87 +7,37 @@ from pathlib import Path
 
 from dotenv import load_dotenv
 
-# Import process_llm_request from your utility module
+# Add parent directory to path for imports
+CURRENT_DIR = Path(__file__).parent
+sys.path.append(str(CURRENT_DIR.parent))  # Add cyberdata package to path
+
+# Import utilities
 from cyberdata.utils.llm_invoke import process_llm_request
 from cyberdata.utils.logger_config import setup_logger
 from cyberdata.utils.prompt_loader import load_prompt
+from cyberdata.utils.config_manager import get_config_manager
 
 # Set up logger
 logger = setup_logger("cyberdata.scripts.validate_small")
-
-# Add parent directory to path for imports
-CURRENT_DIR = Path(__file__).parent
-PROJECT_ROOT = CURRENT_DIR.parent.parent.parent
-sys.path.append(str(CURRENT_DIR.parent))  # Add cyberdata package to path
-logger.debug(f"Added {CURRENT_DIR.parent} to sys.path")
 
 # Load environment variables
 load_dotenv()
 
 # Constants
-MODEL_NAME = "gpt-4.1-mini"  # Match with small_dataset.py
-PROBLEMS_UPDATED_PATH = CURRENT_DIR.parent / 'config' / 'problems_updated.json'
-PROBLEMS_PATH = CURRENT_DIR.parent / 'config' / 'problems.json'
-SEEDS_DIR = PROJECT_ROOT / 'data' / 'seeds'
-VALIDATION_DIR = PROJECT_ROOT / 'data' / 'validation_reports'
+MODEL_NAME = "gpt-4.1-mini"
+
+# Get config manager instance
+config_manager = get_config_manager()
 
 logger.info(f"Using model: {MODEL_NAME}")
-logger.info(f"Problems updated path: {PROBLEMS_UPDATED_PATH}")
-logger.info(f"Problems fallback path: {PROBLEMS_PATH}")
-logger.info(f"Seeds directory: {SEEDS_DIR}")
-logger.info(f"Validation directory: {VALIDATION_DIR}")
-
-VALIDATION_DIR.mkdir(parents=True, exist_ok=True)
-logger.info(f"Created validation directory: {VALIDATION_DIR}")
+logger.info(f"Project root: {config_manager.project_root}")
+logger.info(f"Seeds directory: {config_manager.seeds_dir}")
+logger.info(f"Validation directory: {config_manager.validation_reports_dir}")
 
 
-def load_problems(file_path: Path = None) -> list:
-    """
-    Load problem definitions from config, prioritizing problems_updated.json
-    
-    Args:
-        file_path (Path, optional): Specific file path to load. If None, will auto-select.
-    
-    Returns:
-        list: List of problems loaded from the appropriate file
-    """
-    # If specific file_path is provided, use it
-    if file_path:
-        if not file_path.exists():
-            logger.error(f"Specified problems config not found: {file_path}")
-            raise FileNotFoundError(f"Specified problems config not found: {file_path}")
-        data = json.loads(file_path.read_text(encoding='utf-8'))
-        problems = data.get('problems', [])
-        logger.info(f"Loaded {len(problems)} problems from {file_path}")
-        return problems
-    
-    # Auto-select: prioritize problems_updated.json, fallback to problems.json
-    if PROBLEMS_UPDATED_PATH.exists():
-        logger.info(f"Using updated problems file: {PROBLEMS_UPDATED_PATH}")
-        try:
-            data = json.loads(PROBLEMS_UPDATED_PATH.read_text(encoding='utf-8'))
-            problems = data.get('problems', [])
-            logger.info(f"Loaded {len(problems)} problems from {PROBLEMS_UPDATED_PATH}")
-            return problems
-        except Exception as e:
-            logger.warning(f"Error loading updated problems file: {str(e)}")
-            logger.info("Falling back to original problems.json")
-    
-    # Fallback to original problems.json
-    if PROBLEMS_PATH.exists():
-        logger.info(f"Using original problems file: {PROBLEMS_PATH}")
-        try:
-            data = json.loads(PROBLEMS_PATH.read_text(encoding='utf-8'))
-            problems = data.get('problems', [])
-            logger.info(f"Loaded {len(problems)} problems from {PROBLEMS_PATH}")
-            return problems
-        except Exception as e:
-            logger.error(f"Error loading original problems file: {str(e)}", exc_info=True)
-            raise
-    
-    # If neither file exists, raise an error
-    logger.error(f"No problems config found. Checked: {PROBLEMS_UPDATED_PATH}, {PROBLEMS_PATH}")
-    raise FileNotFoundError(f"No problems config found. Checked: {PROBLEMS_UPDATED_PATH}, {PROBLEMS_PATH}")
+def load_problems() -> list:
+    """Load problem definitions using config manager"""
+    return config_manager.load_problems()
 
 
 def validate_example(problem: dict, example: dict) -> dict:
@@ -157,42 +107,34 @@ def validate_example(problem: dict, example: dict) -> dict:
 
 def find_examples_file(problem):
     """
-    Find the examples file for a specific problem.
+    Find the examples file for a specific problem using config manager.
     """
     area = problem['area']
     nature = problem['nature']
     
-    # Create a sanitized version of area and nature for filename matching
-    sanitized_area = area.replace(' ', '_').replace('(', '').replace(')', '').replace('-', '_')
-    sanitized_nature = nature.replace(' ', '_')
+    # First try the standard path
+    expected_file = config_manager.get_seeds_file(area, nature)
+    if expected_file.exists():
+        logger.debug(f"Found examples file: {expected_file}")
+        return expected_file
     
-    logger.debug(f"Looking for examples file for {sanitized_area}/{sanitized_nature}")
+    # If not found, use the config manager's search function
+    found_file = config_manager.find_existing_file(
+        config_manager.seeds_dir, 
+        nature, 
+        "_examples.json"
+    )
     
-    # Check for the file in the area-specific directory
-    area_dir = SEEDS_DIR / sanitized_area
-    if area_dir.exists():
-        filename = f"{sanitized_nature}_examples.json"
-        example_file = area_dir / filename
-        
-        if example_file.exists():
-            logger.debug(f"Found examples file: {example_file}")
-            return example_file
-    
-    # If not found, try looking for the file in other area directories
-    logger.debug("Examples file not found in expected location, searching all areas")
-    for dir_path in SEEDS_DIR.glob('*'):
-        if dir_path.is_dir():
-            for file_path in dir_path.glob('*.json'):
-                if sanitized_nature.lower() in file_path.name.lower():
-                    logger.debug(f"Found examples file in alternative location: {file_path}")
-                    return file_path
+    if found_file:
+        logger.debug(f"Found examples file in alternative location: {found_file}")
+        return found_file
     
     logger.warning(f"No examples file found for {area}/{nature}")
     return None
 
 
 def main():
-    # Load problem definitions (auto-selects the appropriate file)
+    """Main function to validate seed examples"""
     logger.info("Starting validation of seed examples")
     problems = load_problems()
     
@@ -241,20 +183,13 @@ def main():
             report.append(entry)
             logger.debug(f"Added validation result for example {idx+1} to report")
         
-        # Create area-specific directory structure for validation reports
-        sanitized_area = area.replace(' ', '_').replace('(', '').replace(')', '').replace('-', '_')
-        sanitized_nature = nature.replace(' ', '_')
+        # Get the validation report file path using config manager
+        report_path = config_manager.get_validation_report_file(area, nature)
         
-        # Create area directory in validation reports
-        area_validation_dir = VALIDATION_DIR / sanitized_area
-        area_validation_dir.mkdir(parents=True, exist_ok=True)
-        logger.debug(f"Created validation directory for area: {area_validation_dir}")
-        
-        # Create filename for the report
-        report_filename = f"{sanitized_nature}_validation.json"
+        # Ensure the directory exists
+        report_path.parent.mkdir(parents=True, exist_ok=True)
         
         # Save validation report
-        report_path = area_validation_dir / report_filename
         with report_path.open('w', encoding='utf-8') as f:
             json.dump({"report": report}, f, indent=2)
         

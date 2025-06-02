@@ -11,13 +11,13 @@ from dotenv import load_dotenv
 
 # Add parent directory to path for imports
 CURRENT_DIR = Path(__file__).parent
-PROJECT_ROOT = CURRENT_DIR.parent.parent.parent
 sys.path.append(str(CURRENT_DIR.parent))  # Add cyberdata package to path
 
-# Import process_llm_request from utility module
+# Import utilities
 from cyberdata.utils.llm_invoke import process_llm_request
 from cyberdata.utils.logger_config import setup_logger
 from cyberdata.utils.prompt_loader import load_system_prompt, load_user_prompt
+from cyberdata.utils.config_manager import get_config_manager
 
 # Set up logger
 logger = setup_logger("cyberdata.scripts.extend_problems")
@@ -25,31 +25,26 @@ logger = setup_logger("cyberdata.scripts.extend_problems")
 # Load environment variables
 load_dotenv()
 
-# Constants and paths
+# Constants
 MODEL_NAME = "gpt-4.1-mini"
-PROBLEMS_PATH = CURRENT_DIR.parent / 'config' / 'problems.json'
-EVALUATION_REPORT_PATH = CURRENT_DIR.parent / 'config' / 'problems_evaluation_report.json'
-UPDATED_PROBLEMS_PATH = CURRENT_DIR.parent / 'config' / 'problems_updated.json'
+
+# Get config manager instance
+config_manager = get_config_manager()
 
 logger.info(f"Using model: {MODEL_NAME}")
-logger.info(f"Problems path: {PROBLEMS_PATH}")
-logger.info(f"Evaluation report path: {EVALUATION_REPORT_PATH}")
-logger.info(f"Updated problems path: {UPDATED_PROBLEMS_PATH}")
+logger.info(f"Project root: {config_manager.project_root}")
+logger.info(f"Config directory: {config_manager.config_dir}")
 
 
 def load_existing_problems():
     """Load existing problems from problems.json"""
-    if not PROBLEMS_PATH.exists():
-        logger.error(f"Problems file not found: {PROBLEMS_PATH}")
-        raise FileNotFoundError(f"Problems file not found: {PROBLEMS_PATH}")
-    
     try:
-        with PROBLEMS_PATH.open('r', encoding='utf-8') as f:
-            data = json.load(f)
-        
-        problems = data.get('problems', [])
-        logger.info(f"Loaded {len(problems)} problems from {PROBLEMS_PATH}")
+        problems = config_manager.load_problems(prefer_updated=False)  # Load original problems.json
+        logger.info(f"Loaded {len(problems)} problems")
         return problems
+    except FileNotFoundError:
+        logger.error(f"Problems file not found in {config_manager.config_dir}")
+        raise
     except Exception as e:
         logger.error(f"Error loading problems: {str(e)}", exc_info=True)
         raise
@@ -144,7 +139,7 @@ def evaluate_problems(problems):
 
 def save_evaluation_report(evaluation_result):
     """Save the evaluation report to a JSON file"""
-    logger.info(f"Saving evaluation report to {EVALUATION_REPORT_PATH}")
+    logger.info(f"Saving evaluation report")
     
     # Add metadata to the report
     report_data = {
@@ -157,14 +152,9 @@ def save_evaluation_report(evaluation_result):
     }
     
     try:
-        # Ensure config directory exists
-        EVALUATION_REPORT_PATH.parent.mkdir(parents=True, exist_ok=True)
-        
-        # Save the report
-        with EVALUATION_REPORT_PATH.open('w', encoding='utf-8') as f:
-            json.dump(report_data, f, indent=2, ensure_ascii=False)
-        
-        logger.info(f"Evaluation report saved successfully to {EVALUATION_REPORT_PATH}")
+        # Save using config manager
+        config_manager.save_config_file("problems_evaluation_report", report_data)
+        logger.info(f"Evaluation report saved successfully")
     except Exception as e:
         logger.error(f"Error saving evaluation report: {str(e)}", exc_info=True)
         raise
@@ -212,22 +202,12 @@ def update_problems_based_on_evaluation(original_problems, evaluation_result):
 
 def save_updated_problems(updated_problems):
     """Save updated problems to a new JSON file"""
-    logger.info(f"Saving updated problems to {UPDATED_PROBLEMS_PATH}")
-    
-    # Create the updated problems data structure (without metadata)
-    updated_data = {
-        "problems": updated_problems
-    }
+    logger.info(f"Saving updated problems")
     
     try:
-        # Ensure config directory exists
-        UPDATED_PROBLEMS_PATH.parent.mkdir(parents=True, exist_ok=True)
-        
-        # Save the updated problems
-        with UPDATED_PROBLEMS_PATH.open('w', encoding='utf-8') as f:
-            json.dump(updated_data, f, indent=2, ensure_ascii=False)
-        
-        logger.info(f"Updated problems saved successfully to {UPDATED_PROBLEMS_PATH}")
+        # Save using config manager
+        config_manager.save_problems(updated_problems, "problems_updated")
+        logger.info(f"Updated problems saved successfully")
         logger.info(f"Total problems in updated dataset: {len(updated_problems)}")
         
         # Log summary of areas
@@ -318,8 +298,8 @@ def main():
         print(f"New areas:         {', '.join(summary['summary']['new_areas']) if summary['summary']['new_areas'] else 'None'}")
         print(f"New threat types:  {len(summary['summary']['new_natures'])}")
         print("\nFiles generated:")
-        print(f"- Evaluation report: {EVALUATION_REPORT_PATH}")
-        print(f"- Updated problems:  {UPDATED_PROBLEMS_PATH}")
+        print(f"- Evaluation report: {config_manager.config_dir / 'problems_evaluation_report.json'}")
+        print(f"- Updated problems:  {config_manager.problems_updated_file}")
         print("="*60)
         
         logger.info("Problems evaluation and extension completed successfully")

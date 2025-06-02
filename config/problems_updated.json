@@ -1,0 +1,104 @@
+{
+  "problems": [
+    {
+      "id": "SE-PH-001",
+      "area": "Social Engineering",
+      "category": "Phishing",
+      "variant": "Credential Harvesting",
+      "nature": "credential_harvesting",
+      "description": "Attackers send emails impersonating trusted entities to trick users into submitting their login credentials on fake websites.",
+      "attack_vector": "Email",
+      "asset_targeted": "User Credentials",
+      "kill_chain_phase": "Delivery",
+      "impact_level": "High",
+      "mitre_attack_id": "T1566",
+      "risk_reduction": [
+        "Implement multi-factor authentication (MFA) to reduce impact of stolen credentials",
+        "Deploy advanced email filtering and anti-phishing tools",
+        "Conduct regular user training and phishing simulation exercises"
+      ],
+      "last_updated": "2024-06-01",
+      "references": []
+    },
+    {
+      "id": "SE-PH-002",
+      "area": "Social Engineering",
+      "category": "Phishing",
+      "variant": "Spear Phishing",
+      "nature": "spear_phishing",
+      "description": "Highly targeted phishing emails crafted using personal information to deceive specific individuals into revealing sensitive data or executing malicious actions.",
+      "attack_vector": "Email",
+      "asset_targeted": "User Credentials",
+      "kill_chain_phase": "Delivery",
+      "impact_level": "High",
+      "mitre_attack_id": "T1566.002",
+      "risk_reduction": [
+        "Use threat intelligence to identify and block targeted phishing campaigns",
+        "Educate employees on recognizing spear phishing tactics",
+        "Verify unusual requests through secondary communication channels"
+      ],
+      "last_updated": "2024-06-01",
+      "references": []
+    },
+    {
+      "id": "SE-PH-003",
+      "area": "Social Engineering",
+      "category": "Phishing",
+      "variant": "Business Email Compromise",
+      "nature": "business_email_compromise",
+      "description": "Attackers compromise or spoof executive email accounts to request fraudulent wire transfers or sensitive information from employees.",
+      "attack_vector": "Email",
+      "asset_targeted": "Financial Systems",
+      "kill_chain_phase": "Delivery",
+      "impact_level": "Critical",
+      "mitre_attack_id": "T1566.003",
+      "risk_reduction": [
+        "Enable email authentication protocols like DMARC, DKIM, and SPF",
+        "Establish strict verification procedures for financial transactions",
+        "Monitor email accounts for unusual login activity and anomalies"
+      ],
+      "last_updated": "2024-06-01",
+      "references": []
+    },
+    {
+      "id": "CS-CLD-001",
+      "area": "Cloud Security",
+      "category": "Cloud Misconfiguration",
+      "variant": "Misconfigured Storage Bucket",
+      "nature": "misconfigured_storage_bucket",
+      "description": "Publicly exposed cloud storage buckets (e.g., AWS S3, Azure Blob) leading to data leakage or unauthorized access.",
+      "attack_vector": "Cloud API",
+      "asset_targeted": "Cloud Storage",
+      "kill_chain_phase": "Exploitation",
+      "impact_level": "Critical",
+      "mitre_attack_id": "",
+      "risk_reduction": [
+        "Implement least privilege access controls and bucket policies",
+        "Use automated cloud security posture management (CSPM) tools to detect misconfigurations",
+        "Enable logging and monitoring of cloud storage access"
+      ],
+      "last_updated": "2024-06-01",
+      "references": []
+    },
+    {
+      "id": "SC-SW-001",
+      "area": "Supply Chain",
+      "category": "Software Supply Chain Attack",
+      "variant": "Third Party Software Compromise",
+      "nature": "third_party_software_compromise",
+      "description": "Attackers compromise software vendors or update mechanisms to inject malicious code into trusted software distributed to customers.",
+      "attack_vector": "Supply Chain",
+      "asset_targeted": "Software",
+      "kill_chain_phase": "Installation",
+      "impact_level": "Critical",
+      "mitre_attack_id": "T1195",
+      "risk_reduction": [
+        "Implement software supply chain risk management and vendor assessments",
+        "Use code signing and integrity verification for software updates",
+        "Monitor for anomalous software behavior post-update"
+      ],
+      "last_updated": "2024-06-01",
+      "references": []
+    }
+  ]
+}

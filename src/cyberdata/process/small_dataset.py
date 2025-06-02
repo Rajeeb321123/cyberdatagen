@@ -8,91 +8,36 @@ from pathlib import Path
 
 from dotenv import load_dotenv
 
-# Import process_llm_request from your utility module
+# Add parent directory to path for imports
+CURRENT_DIR = Path(__file__).parent
+sys.path.append(str(CURRENT_DIR.parent))  # Add cyberdata package to path
+
+# Import utilities
 from cyberdata.utils.llm_invoke import process_llm_request
 from cyberdata.utils.logger_config import setup_logger
 from cyberdata.utils.prompt_loader import load_system_prompt, load_user_prompt
+from cyberdata.utils.config_manager import get_config_manager
 
 # Set up logger
 logger = setup_logger("cyberdata.scripts.small_dataset")
 
-# Add parent directory to path for imports
-CURRENT_DIR = Path(__file__).parent
-PROJECT_ROOT = CURRENT_DIR.parent.parent.parent
-sys.path.append(str(CURRENT_DIR.parent))  # Add cyberdata package to path
-logger.debug(f"Added {CURRENT_DIR.parent} to sys.path")
-
-# The purpose of this code is to generate a set of seeds for each problem. 
-# It will loop over all the identified problems and use the samples as few-shots if they are available for a given problem.
-
 # Load environment variables
 load_dotenv()
 
-# Update paths to match new project structure
-PROBLEMS_UPDATED_PATH = CURRENT_DIR.parent / 'config' / 'problems_updated.json'
-PROBLEMS_PATH = CURRENT_DIR.parent / 'config' / 'problems.json'
-SEEDS_DIR = PROJECT_ROOT / 'data' / 'seeds'
-
-logger.info(f"Problems updated path: {PROBLEMS_UPDATED_PATH}")
-logger.info(f"Problems fallback path: {PROBLEMS_PATH}")
-logger.info(f"Seeds directory: {SEEDS_DIR}")
-
-# Create the output directory if it doesn't exist
-SEEDS_DIR.mkdir(parents=True, exist_ok=True)
-logger.info(f"Created seeds directory: {SEEDS_DIR}")
+# Get config manager instance
+config_manager = get_config_manager()
 
 # Model configuration
-MODEL_NAME = "gpt-4.1-mini"  # Used in logging but not needed for API calls now
+MODEL_NAME = "gpt-4.1-mini"
+
 logger.info(f"Using model: {MODEL_NAME}")
+logger.info(f"Project root: {config_manager.project_root}")
+logger.info(f"Seeds directory: {config_manager.seeds_dir}")
 
 
-def load_problems(file_path: Path = None) -> list:
-    """
-    Load problem definitions from config, prioritizing problems_updated.json
-    
-    Args:
-        file_path (Path, optional): Specific file path to load. If None, will auto-select.
-    
-    Returns:
-        list: List of problems loaded from the appropriate file
-    """
-    # If specific file_path is provided, use it
-    if file_path:
-        if not file_path.exists():
-            logger.error(f"Specified problems config not found: {file_path}")
-            raise FileNotFoundError(f"Specified problems config not found: {file_path}")
-        data = json.loads(file_path.read_text(encoding='utf-8'))
-        problems = data.get('problems', [])
-        logger.info(f"Loaded {len(problems)} problems from {file_path}")
-        return problems
-    
-    # Auto-select: prioritize problems_updated.json, fallback to problems.json
-    if PROBLEMS_UPDATED_PATH.exists():
-        logger.info(f"Using updated problems file: {PROBLEMS_UPDATED_PATH}")
-        try:
-            data = json.loads(PROBLEMS_UPDATED_PATH.read_text(encoding='utf-8'))
-            problems = data.get('problems', [])
-            logger.info(f"Loaded {len(problems)} problems from {PROBLEMS_UPDATED_PATH}")
-            return problems
-        except Exception as e:
-            logger.warning(f"Error loading updated problems file: {str(e)}")
-            logger.info("Falling back to original problems.json")
-    
-    # Fallback to original problems.json
-    if PROBLEMS_PATH.exists():
-        logger.info(f"Using original problems file: {PROBLEMS_PATH}")
-        try:
-            data = json.loads(PROBLEMS_PATH.read_text(encoding='utf-8'))
-            problems = data.get('problems', [])
-            logger.info(f"Loaded {len(problems)} problems from {PROBLEMS_PATH}")
-            return problems
-        except Exception as e:
-            logger.error(f"Error loading original problems file: {str(e)}", exc_info=True)
-            raise
-    
-    # If neither file exists, raise an error
-    logger.error(f"No problems config found. Checked: {PROBLEMS_UPDATED_PATH}, {PROBLEMS_PATH}")
-    raise FileNotFoundError(f"No problems config found. Checked: {PROBLEMS_UPDATED_PATH}, {PROBLEMS_PATH}")
+def load_problems() -> list:
+    """Load problem definitions using config manager"""
+    return config_manager.load_problems()
 
 
 def extract_json_from_response(response_content: str) -> dict:
@@ -219,7 +164,7 @@ def generate_examples_for_problem(problem: dict) -> list:
 
 def save_examples(problem: dict, examples: list):
     """
-    Save examples to JSON files
+    Save examples to JSON files using config manager
     
     Args:
         problem (dict): Problem dictionary containing 'area' and 'nature'
@@ -233,27 +178,22 @@ def save_examples(problem: dict, examples: list):
     area = problem['area']
     nature = problem['nature']
     
-    # Create area directory
-    sanitized_area = area.replace(' ', '_').replace('(', '').replace(')', '').replace('-', '_')
-    sanitized_nature = nature.replace(' ', '_')
-    area_dir = SEEDS_DIR / sanitized_area
-    area_dir.mkdir(parents=True, exist_ok=True)
-    logger.debug(f"Created area directory: {area_dir}")
+    # Get the file path using config manager
+    file_path = config_manager.get_seeds_file(area, nature)
     
-    # Create a filename for the nature
-    filename = f"{sanitized_nature}_examples.json"
+    # Ensure the directory exists
+    file_path.parent.mkdir(parents=True, exist_ok=True)
     
     # Save JSON file
-    json_file_path = area_dir / filename
-    with json_file_path.open('w', encoding='utf-8') as f:
+    with file_path.open('w', encoding='utf-8') as f:
         json.dump({'examples': examples}, f, indent=2)
-    logger.info(f"Saved {len(examples)} examples for {area}/{nature} to {json_file_path}")
+    logger.info(f"Saved {len(examples)} examples for {area}/{nature} to {file_path}")
 
 
 def main():
     """Main function to generate examples for all problems"""
     logger.info("Starting seed examples generation")
-    problems = load_problems()  # Will auto-select the appropriate file
+    problems = load_problems()
     
     # Group problems by area for better organization in output
     areas = set(problem['area'] for problem in problems)
@@ -270,7 +210,7 @@ def main():
             logger.error(f"Error generating for {problem['area']}/{problem['nature']}: {e}", exc_info=True)
             continue  # Continue with the next problem
 
-    logger.info(f"All detailed examples have been generated in '{SEEDS_DIR}'.")
+    logger.info(f"All detailed examples have been generated in '{config_manager.seeds_dir}'.")
 
 
 if __name__ == '__main__':

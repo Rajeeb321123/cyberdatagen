@@ -12,13 +12,13 @@ import statistics
 
 # Add parent directory to path for imports
 CURRENT_DIR = Path(__file__).parent
-PROJECT_ROOT = CURRENT_DIR.parent.parent.parent
 sys.path.append(str(CURRENT_DIR.parent))  # Add cyberdata package to path
 
-# Import process_llm_request from utility module
+# Import utilities
 from cyberdata.utils.llm_invoke import process_llm_request
 from cyberdata.utils.logger_config import setup_logger
 from cyberdata.utils.prompt_loader import load_prompt
+from cyberdata.utils.config_manager import get_config_manager
 
 # Set up logger
 logger = setup_logger("cyberdata.scripts.validate_large")
@@ -26,108 +26,51 @@ logger = setup_logger("cyberdata.scripts.validate_large")
 # Load environment variables
 load_dotenv()
 
-# Constants and paths
-MODEL_NAME = "gpt-4.1-mini"  # Match with other scripts
-PROBLEMS_UPDATED_PATH = CURRENT_DIR.parent / 'config' / 'problems_updated.json'
-PROBLEMS_PATH = CURRENT_DIR.parent / 'config' / 'problems.json'
-LARGE_SAMPLES_DIR = PROJECT_ROOT / 'data' / 'large_samples'
-REPORTS_DIR = PROJECT_ROOT / 'data' / 'quality_reports'
+# Constants
+MODEL_NAME = "gpt-4.1-mini"
+
+# Get config manager instance
+config_manager = get_config_manager()
 
 # Validation configuration
 SAMPLE_VALIDATION_BATCH_SIZE = 10  # Number of samples to validate individually
 VALIDATION_SAMPLE_PERCENTAGE = 0.2  # Validate 20% of samples (or at least SAMPLE_VALIDATION_BATCH_SIZE)
 
 logger.info(f"Using model: {MODEL_NAME}")
-logger.info(f"Problems updated path: {PROBLEMS_UPDATED_PATH}")
-logger.info(f"Problems fallback path: {PROBLEMS_PATH}")
-logger.info(f"Large samples directory: {LARGE_SAMPLES_DIR}")
-logger.info(f"Reports directory: {REPORTS_DIR}")
-
-REPORTS_DIR.mkdir(parents=True, exist_ok=True)
-logger.info(f"Created reports directory: {REPORTS_DIR}")
+logger.info(f"Project root: {config_manager.project_root}")
+logger.info(f"Large samples directory: {config_manager.large_samples_dir}")
+logger.info(f"Reports directory: {config_manager.quality_reports_dir}")
 
 
-def load_problems(file_path: Path = None) -> list:
-    """
-    Load problem definitions from config, prioritizing problems_updated.json
-    
-    Args:
-        file_path (Path, optional): Specific file path to load. If None, will auto-select.
-    
-    Returns:
-        list: List of problems loaded from the appropriate file
-    """
-    # If specific file_path is provided, use it
-    if file_path:
-        if not file_path.exists():
-            logger.error(f"Specified problems config not found: {file_path}")
-            raise FileNotFoundError(f"Specified problems config not found: {file_path}")
-        data = json.loads(file_path.read_text(encoding='utf-8'))
-        problems = data.get('problems', [])
-        logger.info(f"Loaded {len(problems)} problems from {file_path}")
-        return problems
-    
-    # Auto-select: prioritize problems_updated.json, fallback to problems.json
-    if PROBLEMS_UPDATED_PATH.exists():
-        logger.info(f"Using updated problems file: {PROBLEMS_UPDATED_PATH}")
-        try:
-            data = json.loads(PROBLEMS_UPDATED_PATH.read_text(encoding='utf-8'))
-            problems = data.get('problems', [])
-            logger.info(f"Loaded {len(problems)} problems from {PROBLEMS_UPDATED_PATH}")
-            return problems
-        except Exception as e:
-            logger.warning(f"Error loading updated problems file: {str(e)}")
-            logger.info("Falling back to original problems.json")
-    
-    # Fallback to original problems.json
-    if PROBLEMS_PATH.exists():
-        logger.info(f"Using original problems file: {PROBLEMS_PATH}")
-        try:
-            data = json.loads(PROBLEMS_PATH.read_text(encoding='utf-8'))
-            problems = data.get('problems', [])
-            logger.info(f"Loaded {len(problems)} problems from {PROBLEMS_PATH}")
-            return problems
-        except Exception as e:
-            logger.error(f"Error loading original problems file: {str(e)}", exc_info=True)
-            raise
-    
-    # If neither file exists, raise an error
-    logger.error(f"No problems config found. Checked: {PROBLEMS_UPDATED_PATH}, {PROBLEMS_PATH}")
-    raise FileNotFoundError(f"No problems config found. Checked: {PROBLEMS_UPDATED_PATH}, {PROBLEMS_PATH}")
+def load_problems() -> list:
+    """Load problem definitions using config manager"""
+    return config_manager.load_problems()
 
 
 def find_samples_file(problem):
     """
-    Find the large samples file for a specific problem.
+    Find the large samples file for a specific problem using config manager.
     """
     area = problem['area']
     nature = problem['nature']
     
-    # Create a sanitized version of area and nature for filename matching
-    sanitized_area = area.replace(' ', '_').replace('(', '').replace(')', '').replace('-', '_')
-    sanitized_nature = nature.replace(' ', '_')
+    # First try the standard path
+    expected_file = config_manager.get_large_samples_file(area, nature)
+    if expected_file.exists():
+        logger.debug(f"Found samples file: {expected_file}")
+        return expected_file
     
-    logger.debug(f"Looking for large samples file for {sanitized_area}/{sanitized_nature}")
+    # If not found, use the config manager's search function
+    found_file = config_manager.find_existing_file(
+        config_manager.large_samples_dir, 
+        nature, 
+        "_large.json"
+    )
     
-    # Check for the file in the area-specific directory
-    area_dir = LARGE_SAMPLES_DIR / sanitized_area
-    if area_dir.exists():
-        filename = f"{sanitized_nature}_large.json"
-        samples_file = area_dir / filename
-        
-        if samples_file.exists():
-            logger.debug(f"Found samples file: {samples_file}")
-            return samples_file
+    if found_file:
+        logger.debug(f"Found samples file in alternative location: {found_file}")
+        return found_file
     
-    # If not found, try looking for the file in other area directories
-    logger.debug("Samples file not found in expected location, searching all areas")
-    for dir_path in LARGE_SAMPLES_DIR.glob('*'):
-        if dir_path.is_dir():
-            for file_path in dir_path.glob('*.json'):
-                if sanitized_nature.lower() in file_path.name.lower() and 'large' in file_path.name.lower():
-                    logger.debug(f"Found samples file in alternative location: {file_path}")
-                    return file_path
-            
     logger.warning(f"No samples file found for {area}/{nature}")
     return None
 
@@ -461,7 +404,7 @@ def evaluate_with_llm(problem, samples, snippet_size=5):
 def main():
     """Main function to evaluate quality of samples for all problems."""
     logger.info("Starting quality evaluation of large samples")
-    problems = load_problems()  # Will auto-select the appropriate file
+    problems = load_problems()
     
     for problem in problems:
         area = problem['area']
@@ -512,19 +455,13 @@ def main():
                 }
             }
             
-            # Create a sanitized version of area and nature for directory and filename
-            sanitized_area = area.replace(' ', '_').replace('(', '').replace(')', '').replace('-', '_')
-            sanitized_nature = nature.replace(' ', '_')
+            # Get the report file path using config manager
+            report_path = config_manager.get_quality_report_file(area, nature)
             
-            # Create area directory
-            area_report_dir = REPORTS_DIR / sanitized_area
-            area_report_dir.mkdir(parents=True, exist_ok=True)
-            logger.debug(f"Created report directory for area: {area_report_dir}")
+            # Ensure the directory exists
+            report_path.parent.mkdir(parents=True, exist_ok=True)
             
-            # Create filename
-            report_filename = f"{sanitized_nature}_quality_report.json"
-            
-            report_path = area_report_dir / report_filename
+            # Save the report
             with report_path.open('w', encoding='utf-8') as f:
                 json.dump(report, f, indent=2)
             

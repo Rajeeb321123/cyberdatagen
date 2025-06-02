@@ -4,13 +4,13 @@ import json
 import os
 import re
 from pathlib import Path
-from importlib.resources import files
 
 from dotenv import load_dotenv
 
 from cyberdata.utils.llm_invoke import process_llm_request
 from cyberdata.utils.logger_config import setup_logger
 from cyberdata.utils.prompt_loader import load_system_prompt, load_user_prompt
+from cyberdata.utils.config_manager import get_config_manager
 
 # Set up logger
 logger = setup_logger("cyberdata.scripts.problems")
@@ -18,23 +18,20 @@ logger = setup_logger("cyberdata.scripts.problems")
 # Load environment variables
 load_dotenv()
 
-# Get the project root directory
-CURRENT_DIR = Path(__file__).parent
-PROJECT_ROOT = Path(__file__).resolve().parent.parent  # src/cyberdata
+# Get config manager
+config_manager = get_config_manager()
 
-# Define direct path to problems.json
-PROBLEMS_OUTPUT_PATH = PROJECT_ROOT / "config" / "problems.json"
+logger.info(f"Project root: {config_manager.project_root}")
+logger.info(f"Config directory: {config_manager.config_dir}")
+logger.info(f"Problems output path: {config_manager.problems_file}")
 
-logger.info(f"Problems output path: {PROBLEMS_OUTPUT_PATH}")
-
-# Correct: files() takes the package, then you "/" the filename
-problem_init_path = files("cyberdata.config") / "problems_init.json"
-
-logger.info(f"Problem init path: {problem_init_path}")
-
-with problem_init_path.open(encoding="utf-8") as f:
-    problem_init = json.load(f)  # ← this returns a dict
+# Load problems_init.json
+try:
+    problem_init = config_manager.load_config_file("problems_init")
     logger.debug(f"Loaded problem init with {len(problem_init.get('problems', []))} problems")
+except FileNotFoundError:
+    logger.error("problems_init.json not found in config directory")
+    raise
 
 # pretty-print or get a JSON string:
 problem_examples = json.dumps(problem_init, indent=4, ensure_ascii=False)
@@ -106,11 +103,10 @@ try:
         logger.debug(f"Raw response: {return_str}")
         
         # Fallback: Use existing problems.json if available
-        if PROBLEMS_OUTPUT_PATH.exists():
+        if config_manager.problems_file.exists():
             logger.warning(f"Using existing problems.json as fallback")
-            with PROBLEMS_OUTPUT_PATH.open('r', encoding='utf-8') as f:
-                problems_data = json.load(f)
-                logger.info(f"Loaded {len(problems_data.get('problems', []))} problems from existing file")
+            problems_data = config_manager.load_config_file("problems")
+            logger.info(f"Loaded {len(problems_data.get('problems', []))} problems from existing file")
         else:
             # If we can't even fallback, raise an exception
             error_msg = "Failed to extract JSON and no fallback available"
@@ -119,19 +115,9 @@ try:
     else:
         logger.info(f"Successfully extracted JSON with {len(problems_data.get('problems', []))} problems")
     
-    # Ensure the output directory exists
-    PROBLEMS_OUTPUT_PATH.parent.mkdir(parents=True, exist_ok=True)
-    
-    # Remove the existing file if it exists
-    if PROBLEMS_OUTPUT_PATH.exists():
-        logger.info(f"Removing existing file: {PROBLEMS_OUTPUT_PATH}")
-        PROBLEMS_OUTPUT_PATH.unlink()
-    
-    # Write the new data to the file
-    with PROBLEMS_OUTPUT_PATH.open('w', encoding='utf-8') as f:
-        json.dump(problems_data, f, indent=2, ensure_ascii=False)
-    
-    logger.info(f"Successfully saved problems data to {PROBLEMS_OUTPUT_PATH}")
+    # Save using the config manager
+    config_manager.save_config_file("problems", problems_data)
+    logger.info(f"Successfully saved problems data to {config_manager.problems_file}")
     
 except Exception as e:
     logger.critical(f"Error: {str(e)}", exc_info=True)
