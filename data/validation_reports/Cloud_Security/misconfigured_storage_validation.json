@@ -1,0 +1,109 @@
+{
+  "report": [
+    {
+      "index": 0,
+      "problem": {
+        "area": "Cloud Security",
+        "nature": "misconfigured_storage"
+      },
+      "example": {
+        "scenario": "Publicly exposed AWS S3 bucket containing sensitive PII data due to overly permissive bucket policy allowing anonymous user GetObject access.",
+        "technical_data": {
+          "bucket_policy": "{\n  \"Version\": \"2012-10-17\",\n  \"Statement\": [\n    {\n      \"Sid\": \"AllowPublicRead\",\n      \"Effect\": \"Allow\",\n      \"Principal\": \"*\",\n      \"Action\": \"s3:GetObject\",\n      \"Resource\": \"arn:aws:s3:::customer-data-bucket/*\"\n    }\n  ]\n}",
+          "aws_cli_command": "aws s3api get-bucket-policy --bucket customer-data-bucket",
+          "cloudtrail_log_entry": "{\n  \"eventVersion\": \"1.08\",\n  \"userIdentity\": {\n    \"type\": \"Anonymous\",\n    \"principalId\": \"ANONYMOUS\"\n  },\n  \"eventTime\": \"2024-04-15T14:22:30Z\",\n  \"eventSource\": \"s3.amazonaws.com\",\n  \"eventName\": \"GetObject\",\n  \"requestParameters\": {\n    \"bucketName\": \"customer-data-bucket\",\n    \"key\": \"pii/20240415_customer_list.csv\"\n  },\n  \"responseElements\": null,\n  \"sourceIPAddress\": \"203.0.113.45\",\n  \"userAgent\": \"curl/7.68.0\",\n  \"requestID\": \"69A1D8F3C1234567\",\n  \"eventID\": \"d0f9a8c9-4a2a-4a3b-8f7e-8c9b1f5a0e5f\",\n  \"readOnly\": true\n}",
+          "http_request": "GET /customer-data-bucket/pii/20240415_customer_list.csv HTTP/1.1\r\nHost: customer-data-bucket.s3.amazonaws.com\r\nUser-Agent: curl/7.68.0\r\nAccept: */*\r\n\r\n",
+          "pii_file_sample": "\"name\",\"ssn\",\"email\",\"phone\"\n\"John Doe\",\"123-45-6789\",\"john.doe@example.com\",\"+1-555-0100\"\n\"Jane Smith\",\"987-65-4321\",\"jane.smith@example.com\",\"+1-555-0200\"\n"
+        },
+        "indicators": [
+          "S3 bucket policy allowing \"Principal\": \"*\" with s3:GetObject",
+          "CloudTrail entries showing Anonymous user identity accessing sensitive keys",
+          "HTTP GET requests from unusual external IPs to S3 objects under /pii/",
+          "Presence of CSV or JSON files with PII fields in bucket"
+        ],
+        "detection_method": "Implement continuous bucket policy scanning using AWS Config rules or third-party CSPM tools to detect public read permissions; monitor CloudTrail logs for GetObject events with Anonymous user identities; alert on downloads of sensitive prefixes (e.g., /pii/); use data loss prevention (DLP) for content inspection of data accessed.",
+        "relevant_mitre_techniques": [
+          "T1530 - Data from Cloud Storage Object",
+          "T1552.001 - Credentials in Files: Cloud Storage Object",
+          "T1078.004 - Valid Accounts: Cloud Accounts"
+        ]
+      },
+      "validation": {
+        "valid": true,
+        "issues": [],
+        "comments": "The sample accurately represents a misconfigured cloud storage scenario involving an AWS S3 bucket with an overly permissive bucket policy that allows anonymous public read access to sensitive PII data. The technical data includes a realistic bucket policy JSON, a plausible AWS CLI command to retrieve the policy, a detailed CloudTrail log entry showing anonymous access to sensitive objects, an HTTP GET request example, and a sample of PII data, all of which align well with the problem description. The indicators clearly explain why this is a misconfiguration leading to data exposure. The detection methods are appropriate and align with recommended risk reduction strategies such as automated scanning, monitoring CloudTrail logs, and data loss prevention. The inclusion of relevant MITRE ATT&CK techniques further strengthens the sample's completeness and realism. Overall, the sample is comprehensive, realistic, and correctly structured for the stated problem."
+      }
+    },
+    {
+      "index": 1,
+      "problem": {
+        "area": "Cloud Security",
+        "nature": "misconfigured_storage"
+      },
+      "example": {
+        "scenario": "Misconfigured Google Cloud Storage (GCS) bucket with IAM policy granting allUsers role storage.objectViewer, leading to public data leakage of internal project documentation.",
+        "technical_data": {
+          "gcloud_iam_policy": "{\n  \"bindings\": [\n    {\n      \"role\": \"roles/storage.objectViewer\",\n      \"members\": [\n        \"allUsers\"\n      ]\n    }\n  ]\n}",
+          "gcloud_command_to_get_policy": "gcloud storage buckets get-iam-policy gs://internal-docs-bucket",
+          "access_log_entry": "2024-05-10T08:45:22Z storage.googleapis.com GET https://storage.googleapis.com/internal-docs-bucket/confidential_architecture.pdf 200 - 192.0.2.100 - Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/90.0.4430.93 Safari/537.36",
+          "curl_http_request": "GET /internal-docs-bucket/confidential_architecture.pdf HTTP/1.1\r\nHost: storage.googleapis.com\r\nUser-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64)\r\nAccept: application/pdf\r\n\r\n",
+          "bucket_listing_response": "{\n  \"kind\": \"storage#objects\",\n  \"items\": [\n    {\n      \"name\": \"confidential_architecture.pdf\",\n      \"bucket\": \"internal-docs-bucket\",\n      \"contentType\": \"application/pdf\",\n      \"size\": \"10485760\"\n    },\n    {\n      \"name\": \"employee_salaries_2024.xlsx\",\n      \"bucket\": \"internal-docs-bucket\",\n      \"contentType\": \"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet\",\n      \"size\": \"204800\"\n    }\n  ]\n}",
+          "example_pdf_metadata": "%PDF-1.7\n%\u00e2\u00e3\u00cf\u00d3\n1 0 obj\n<< /Type /Catalog /Pages 2 0 R >>\nendobj\n2 0 obj\n<< /Type /Pages /Count 1 /Kids [3 0 R] >>\nendobj\n3 0 obj\n<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Contents 4 0 R >>\nendobj\n4 0 obj\n<< /Length 55 >>\nstream\nBT\n/F1 24 Tf\n100 700 Td\n(Confidential Architecture Diagram) Tj\nET\nendstream\nendobj\nxref\n0 5\n0000000000 65535 f \n0000000010 00000 n \n0000000060 00000 n \n0000000115 00000 n \n0000000210 00000 n \ntrailer\n<< /Size 5 /Root 1 0 R >>\nstartxref\n300\n%%EOF"
+        },
+        "indicators": [
+          "GCS bucket IAM policy with \"allUsers\" member assigned roles/storage.objectViewer",
+          "Access logs showing anonymous IPs downloading confidential PDF and XLSX files",
+          "Publicly accessible bucket listing via API",
+          "Presence of sensitive document metadata and filenames in bucket"
+        ],
+        "detection_method": "Use GCP Security Command Center or custom scripts to audit bucket IAM policies for allUsers or allAuthenticatedUsers bindings; monitor access logs for unauthenticated object retrievals; automate alerts on sensitive filename patterns and large downloads from public buckets.",
+        "relevant_mitre_techniques": [
+          "T1530 - Data from Cloud Storage Object",
+          "T1078 - Valid Accounts",
+          "T1087 - Account Discovery"
+        ]
+      },
+      "validation": {
+        "valid": true,
+        "issues": [],
+        "comments": "The sample accurately represents a misconfigured cloud storage bucket scenario in Google Cloud Storage (GCS) where the IAM policy grants the 'allUsers' member the 'storage.objectViewer' role, leading to public exposure of sensitive internal documents. The technical data includes relevant and realistic artifacts such as the IAM policy JSON, the gcloud command to retrieve the policy, access log entries showing anonymous access, HTTP request examples, bucket listing responses, and even sample PDF metadata, all of which support the scenario. The indicators clearly explain why this is a misconfiguration and how it leads to data leakage. The detection method is appropriate and aligns with recommended risk reduction strategies, including automated policy audits and monitoring access logs. The inclusion of relevant MITRE ATT&CK techniques adds further context. Overall, the sample is complete, realistic, and correctly aligned with the problem nature."
+      }
+    },
+    {
+      "index": 2,
+      "problem": {
+        "area": "Cloud Security",
+        "nature": "misconfigured_storage"
+      },
+      "example": {
+        "scenario": "Azure Blob Storage container set to 'Container (anonymous read access for containers and blobs)' allowing external actors to download internal backup archives containing database dumps.",
+        "technical_data": {
+          "azure_blob_public_access_setting": "Public Access Level: Container",
+          "azure_cli_get_access_level": "az storage container show --account-name corpstorageacct --name db-backups --query 'publicAccess'",
+          "response": "\"container\"",
+          "azure_storage_logs": "[\n  {\n    \"time\": \"2024-06-01T12:00:00Z\",\n    \"requestId\": \"eabc1234-5678-90ab-cdef-111111111111\",\n    \"operationName\": \"GetBlob\",\n    \"statusCode\": 200,\n    \"authenticationType\": \"Anonymous\",\n    \"url\": \"https://corpstorageacct.blob.core.windows.net/db-backups/prod-db-20240601.bak\",\n    \"clientIpAddress\": \"198.51.100.23\",\n    \"userAgent\": \"Wget/1.20.3 (linux-gnu)\"\n  }\n]",
+          "wget_command": "wget https://corpstorageacct.blob.core.windows.net/db-backups/prod-db-20240601.bak",
+          "blob_list_response": "{\n  \"Blobs\": [\n    {\n      \"Name\": \"prod-db-20240601.bak\",\n      \"Properties\": {\n        \"contentLength\": 524288000,\n        \"contentType\": \"application/octet-stream\"\n      }\n    },\n    {\n      \"Name\": \"dev-db-20240531.bak\",\n      \"Properties\": {\n        \"contentLength\": 524288000,\n        \"contentType\": \"application/octet-stream\"\n      }\n    }\n  ]\n}",
+          "suspect_backup_file_preview": "MSSQL Database Backup Header:\nDatabase Name: ProdDB\nBackup Type: Full\nBackup Start Date: 2024-06-01 00:00:00\nBackup Finish Date: 2024-06-01 01:15:30\n"
+        },
+        "indicators": [
+          "Azure Blob container public access level set to 'container' or 'blob'",
+          "Storage analytics logs showing anonymous GetBlob operations from external IPs",
+          "Presence of large .bak files (database backups) downloadable without authentication",
+          "Command-line downloads using wget or curl from blob URLs"
+        ],
+        "detection_method": "Configure Azure Policy to disallow public read access to sensitive storage containers; enable and review Storage Analytics Logging for anonymous access patterns; use Azure Defender for Storage to detect unusual access; alert on downloads of backup file extensions from publicly accessible containers.",
+        "relevant_mitre_techniques": [
+          "T1530 - Data from Cloud Storage Object",
+          "T1537 - Transfer Data to Cloud Account",
+          "T1110 - Brute Force (if used to escalate access)"
+        ]
+      },
+      "validation": {
+        "valid": true,
+        "issues": [],
+        "comments": "The sample accurately represents a misconfigured cloud storage scenario in Azure Blob Storage where the container is set to allow anonymous read access, exposing sensitive database backup files. The scenario description is clear and aligns well with the problem nature. The technical data includes relevant and realistic evidence such as the public access setting, CLI commands, storage logs showing anonymous access, wget command usage, and file previews, all supporting the exposure claim. Indicators are well articulated and directly explain why this is a misconfiguration leading to data exposure. The detection methods are appropriate and reflect best practices for risk reduction, including policy enforcement, logging, and alerting. The inclusion of relevant MITRE ATT&CK techniques adds value for threat context. Overall, the sample is complete, realistic, and technically correct, making it a valid representation of the stated problem."
+      }
+    }
+  ]
+}

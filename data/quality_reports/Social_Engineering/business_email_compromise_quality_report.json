@@ -15,70 +15,9 @@
     "summary": {
       "samples_validated": 10,
       "valid_samples": 10,
-      "invalid_samples": 0,
       "validity_rate": 1.0,
-      "average_scores": {
-        "relevance": 1.0,
-        "relevance_std": 0.0,
-        "consistency": 0.95,
-        "consistency_std": 0.0,
-        "correctness": 0.95,
-        "correctness_std": 0.0,
-        "completeness": 0.96,
-        "completeness_std": 0.05163977794943221,
-        "realism": 0.95,
-        "realism_std": 0.0
-      },
-      "overall_score_mean": 0.962,
-      "overall_score_std": 0.010327955589886454,
-      "score_distribution": {
-        "excellent": 10,
-        "good": 0,
-        "fair": 0,
-        "poor": 0
-      },
-      "common_issues": [
-        [
-          "Login activity log shows 'Location: Unknown' for suspicious IP, which is plausible but could be more detailed.",
-          2
-        ],
-        [
-          "Minor inconsistency: The MITRE techniques include T1566.002 (Spearphishing Link) which is less relevant here since the attack is via domain spoofing and data request, not a link.",
-          1
-        ],
-        [
-          "DKIM record is noted as 'No DKIM record found' which is plausible but could be clarified if the domain truly lacks DKIM or if it's a detection gap.",
-          1
-        ],
-        [
-          "MITRE techniques listed include some phishing techniques (T1566.001, T1566.002, T1598.002, T1204.002) that are not directly relevant to this credential stuffing and business email compromise scenario.",
-          1
-        ],
-        [
-          "Minor inconsistency in login activity log where MFA is bypassed but no explicit explanation of how MFA was bypassed.",
-          1
-        ],
-        [
-          "Minor inconsistency: DMARC policy is set to 'none' which allows spoofing, but the description states 'missing DMARC enforcement' which could imply no DMARC record at all.",
-          1
-        ],
-        [
-          "DKIM is noted as 'No DKIM record found' which is plausible but could be highlighted more explicitly in the scenario description.",
-          1
-        ],
-        [
-          "Login activity log shows a successful login from an unknown device without MFA, which is plausible but could be further detailed for stronger evidence.",
-          1
-        ],
-        [
-          "MITRE techniques include some that are less directly related to business email compromise (e.g., T1204.002 - User Execution: Malicious File) which is not clearly reflected in the scenario.",
-          1
-        ],
-        [
-          "Minor inconsistency in login activity log timestamps: the login at 07:30:11 with MFA is early morning, while the suspicious login and email sending at 18:20:45 is outside typical business hours but plausible.",
-          1
-        ]
-      ]
+      "overall_score_mean": 0.97,
+      "overall_score_std": 0.004714045207910321
     },
     "detailed_results": [
       {
@@ -92,63 +31,15 @@
         },
         "overall_score": 0.97,
         "issues": [
-          "Minor inconsistency: The MITRE techniques include T1566.002 (Spearphishing Link) which is less relevant here since the attack is via domain spoofing and data request, not a link.",
-          "DKIM record is noted as 'No DKIM record found' which is plausible but could be clarified if the domain truly lacks DKIM or if it's a detection gap."
+          "Minor inconsistency in DKIM signature field 'b' value labeled as 'invalidsig==' which is a placeholder rather than a real signature."
         ],
         "strengths": [
-          "Highly relevant scenario describing business email compromise via domain spoofing targeting HR for sensitive data.",
-          "Detailed and consistent technical data including email headers, domain registration, DNS records, and logs.",
-          "Accurate depiction of SPF, DKIM, and DMARC failures and their impact on email acceptance.",
-          "Complete information covering attacker tactics, detection methods, and indicators.",
-          "Realistic example with plausible domain registration timing, privacy protection, and email gateway misconfiguration.",
-          "Inclusion of network flow and system logs adds depth and realism."
-        ],
-        "sample_index": 8
-      },
-      {
-        "is_valid": true,
-        "scores": {
-          "relevance": 1.0,
-          "consistency": 0.95,
-          "correctness": 0.95,
-          "completeness": 1.0,
-          "realism": 0.95
-        },
-        "overall_score": 0.97,
-        "issues": [
-          "MITRE techniques listed include some phishing techniques (T1566.001, T1566.002, T1598.002, T1204.002) that are not directly relevant to this credential stuffing and business email compromise scenario.",
-          "Minor inconsistency in login activity log where MFA is bypassed but no explicit explanation of how MFA was bypassed."
-        ],
-        "strengths": [
-          "Scenario is highly relevant to business_email_compromise within social engineering.",
-          "Technical data is detailed, consistent, and plausible including email headers, SPF/DKIM/DMARC records, and SMTP logs.",
-          "Indicators clearly highlight suspicious login and email behavior consistent with the attack type.",
-          "Detection methods and policies align well with best practices for mitigating such attacks.",
-          "Scenario includes realistic elements such as unusual IP/device, legitimate domain with passing email authentication, and policy requiring manual verification."
-        ],
-        "sample_index": 0
-      },
-      {
-        "is_valid": true,
-        "scores": {
-          "relevance": 1.0,
-          "consistency": 0.95,
-          "correctness": 0.95,
-          "completeness": 1.0,
-          "realism": 0.95
-        },
-        "overall_score": 0.97,
-        "issues": [
-          "Minor inconsistency: DMARC policy is set to 'none' which allows spoofing, but the description states 'missing DMARC enforcement' which could imply no DMARC record at all.",
-          "DKIM is noted as 'No DKIM record found' which is plausible but could be highlighted more explicitly in the scenario description."
-        ],
-        "strengths": [
-          "Highly relevant to business email compromise via domain spoofing and social engineering.",
-          "Consistent and well-structured data including email headers, body, domain registration, DNS records, and SMTP logs.",
-          "Technical details such as SPF, DMARC, and DKIM records are accurate and plausible.",
-          "Complete information covering attack vector, indicators, detection methods, and MITRE techniques.",
-          "Realistic scenario with believable domain registration timing, privacy protection, and attack methodology.",
-          "Inclusion of wire transfer verification policy adds depth and realism to the scenario."
+          "Highly relevant scenario matching business_email_compromise in social engineering.",
+          "Detailed and well-structured email headers, body, SMTP logs, and domain registration data.",
+          "Accurate depiction of SPF, DKIM, and DMARC failures consistent with spoofing attempts.",
+          "Inclusion of unusual sending patterns and geolocation anomalies enhances realism.",
+          "Clear indicators and detection methods aligned with real-world security operations.",
+          "Relevant MITRE ATT&CK techniques correctly identified."
         ],
         "sample_index": 1
       },
@@ -163,17 +54,17 @@
         },
         "overall_score": 0.97,
         "issues": [
-          "Login activity log shows a successful login from an unknown device without MFA, which is plausible but could be further detailed for stronger evidence.",
-          "MITRE techniques include some that are less directly related to business email compromise (e.g., T1204.002 - User Execution: Malicious File) which is not clearly reflected in the scenario."
+          "Minor inconsistency in email volume description format (string instead of numeric).",
+          "DMARC policy is set to 'none' which is realistic but limits enforcement impact."
         ],
         "strengths": [
-          "Scenario is highly relevant and clearly describes a business email compromise via executive assistant mailbox.",
-          "Email headers, SPF/DKIM/DMARC records, and SMTP logs are consistent and technically accurate.",
-          "Indicators and detection methods align well with the scenario and reflect realistic security monitoring practices.",
-          "Completeness is excellent, covering scenario, technical data, indicators, detection methods, and relevant MITRE techniques.",
-          "Realistic details such as unusual IP login, lack of secondary approval, and subtle tone changes enhance plausibility."
+          "Highly relevant scenario matching business email compromise via executive account spoofing.",
+          "Detailed and well-structured email headers and SMTP transaction logs consistent with attack vector.",
+          "Accurate and plausible technical details including SPF, DKIM, DMARC failures and domain registration info.",
+          "Comprehensive inclusion of indicators and detection methods aligned with real-world practices.",
+          "Realistic email content and metadata reflecting typical social engineering tactics and anomalies."
         ],
-        "sample_index": 2
+        "sample_index": 0
       },
       {
         "is_valid": true,
@@ -186,39 +77,15 @@
         },
         "overall_score": 0.97,
         "issues": [
-          "Minor inconsistency in login activity log timestamps: the login at 07:30:11 with MFA is early morning, while the suspicious login and email sending at 18:20:45 is outside typical business hours but plausible.",
-          "The MITRE techniques include some phishing-related techniques (T1566.001, T1598.002, T1204) which are less directly relevant since this scenario focuses on account compromise rather than phishing."
+          "Minor inconsistency in email content formatting noted but plausible in real scenarios.",
+          "SMTP transaction log placeholder '[Email headers and body]' is not fully expanded, slightly reducing consistency."
         ],
         "strengths": [
-          "Highly relevant scenario describing business email compromise via compromised cloud email account of a CIO.",
-          "Detailed and consistent technical data including email headers, body, login logs, DNS records, SMTP logs, and wire transfer policy.",
-          "Accurate and plausible technical details such as SPF/DKIM/DMARC passing, unusual IP address, missing MFA logs, and policy violation.",
-          "Comprehensive indicators and detection methods aligned with the scenario.",
-          "Realistic example of a wire transfer fraud attempt with appropriate contextual details."
-        ],
-        "sample_index": 4
-      },
-      {
-        "is_valid": true,
-        "scores": {
-          "relevance": 1.0,
-          "consistency": 0.95,
-          "correctness": 0.95,
-          "completeness": 0.9,
-          "realism": 0.95
-        },
-        "overall_score": 0.95,
-        "issues": [
-          "MITRE techniques listed include some that are less directly relevant to business email compromise (e.g., T1566.001 and T1566.002 are phishing techniques, but this scenario involves credential stuffing and account compromise rather than phishing).",
-          "Wire transfer verification policy is marked 'Not applicable' but could be noted as relevant since BEC often involves wire transfers; however, this scenario focuses on document exfiltration.",
-          "Login activity log shows 'Location: Unknown' for suspicious IP, which is plausible but could be more detailed."
-        ],
-        "strengths": [
-          "Scenario clearly matches business email compromise within social engineering.",
-          "Technical data is detailed and consistent with expected email headers, SMTP logs, DNS records, and authentication logs.",
-          "Indicators are well aligned with the scenario and highlight key suspicious behaviors.",
-          "Detection methods are appropriate and comprehensive for the scenario.",
-          "Realistic use of legitimate account compromise and plausible email content requesting sensitive data to an external personal email."
+          "Highly relevant scenario matching business email compromise via executive impersonation.",
+          "Detailed and technically accurate email headers with valid SPF, DKIM, and DMARC records.",
+          "Comprehensive inclusion of domain registration, email authentication, SMTP logs, and behavioral indicators.",
+          "Realistic depiction of unusual sending patterns from internal IP with plausible attack indicators.",
+          "Clear detection methods and relevant MITRE ATT&CK techniques provided."
         ],
         "sample_index": 7
       },
@@ -228,45 +95,47 @@
           "relevance": 1.0,
           "consistency": 0.95,
           "correctness": 0.95,
-          "completeness": 0.9,
+          "completeness": 1.0,
           "realism": 0.95
         },
-        "overall_score": 0.95,
+        "overall_score": 0.97,
         "issues": [
-          "Minor inconsistency in SPF record using neutral policy '?all' which is unusual but plausible.",
-          "Wire transfer verification policy states phone confirmation is required, but the scenario indicates the request bypasses this step without elaboration on how."
+          "Minor inconsistency in 'unusual_sending_patterns' where sender IP is in Russia but SPF/DKIM/DMARC pass, which is unusual but plausible in sophisticated attacks."
         ],
         "strengths": [
-          "Highly relevant to business email compromise via subdomain spoofing.",
-          "Detailed and realistic email headers and SMTP log excerpt.",
-          "Accurate depiction of DNS records and their weaknesses (SPF, DKIM, DMARC).",
-          "Clear indicators and detection methods aligned with best practices.",
-          "Inclusion of MITRE ATT&CK techniques relevant to the scenario."
+          "Highly relevant scenario matching business email compromise in social engineering.",
+          "Detailed and well-formed email headers and SMTP transaction logs consistent with the scenario.",
+          "Accurate and plausible technical details including domain registration and email authentication records.",
+          "Comprehensive indicators highlighting anomalies and attack vectors.",
+          "Realistic depiction of attack with geolocation anomaly and multi-factor authentication recommendation.",
+          "Inclusion of relevant MITRE ATT&CK techniques enhances contextual understanding."
         ],
-        "sample_index": 3
+        "sample_index": 9
       },
       {
         "is_valid": true,
         "scores": {
           "relevance": 1.0,
           "consistency": 0.95,
-          "correctness": 0.95,
-          "completeness": 0.9,
+          "correctness": 0.9,
+          "completeness": 1.0,
           "realism": 0.95
         },
-        "overall_score": 0.95,
+        "overall_score": 0.96,
         "issues": [
-          "MITRE techniques list includes some unrelated techniques such as T1566.001 (Spearphishing Attachment) and T1190 (Exploit Public-Facing Application) which are not directly relevant to business email compromise via internal SMTP relay.",
-          "Email body could include a more explicit sense of urgency or social engineering language to better reflect typical BEC attempts."
+          "Minor typo in domain name 'techonolgy.com' (likely intentional for look-alike domain but could be flagged as inconsistency in real-world spelling).",
+          "DKIM signature is invalid as indicated, which is realistic but technically a failure.",
+          "DMARC policy set to 'none' which is plausible but weak for security."
         ],
         "strengths": [
-          "Scenario clearly matches business email compromise via internal SMTP relay abuse.",
-          "Technical data is detailed and consistent with expected email headers, SMTP logs, DNS records, and login activity.",
-          "Indicators and detection methods are well aligned with the scenario and provide actionable insights.",
-          "Realistic internal IP addressing and timing of events support plausibility.",
-          "Policy bypass detail adds depth to the attack vector and detection context."
+          "Highly relevant scenario matching business email compromise via look-alike domain.",
+          "Detailed and consistent email headers, SMTP transaction logs, and domain registration data.",
+          "Inclusion of multiple technical indicators such as SPF pass, DKIM fail, DMARC fail, and domain registration recency.",
+          "Realistic email body and header formatting consistent with phishing attempts.",
+          "Comprehensive indicators and detection methods aligned with MITRE ATT&CK techniques.",
+          "Realistic timing and sender IP geolocation details matching expected behavior."
         ],
-        "sample_index": 9
+        "sample_index": 4
       },
       {
         "is_valid": true,
@@ -279,15 +148,62 @@
         },
         "overall_score": 0.97,
         "issues": [
-          "Minor inconsistency: The MITRE techniques list includes some techniques (e.g., T1587.001 - Develop Capabilities: Malware, T1078.004 - Valid Accounts: Cloud Accounts) that are less directly related to business email compromise via domain spoofing and payroll fraud.",
-          "SPF record uses '?all' which is a neutral mechanism; while plausible, it is less common than '~all' or '-all' in real-world misconfigurations."
+          "Minor inconsistency in unusual sending patterns: sender IP geolocated in Singapore while domain IP is 203.0.113.55 (which is typically assigned to TEST-NET-3 and not Singapore).",
+          "MITRE technique T1566.001 (Spearphishing Attachment) is less relevant since no attachment is mentioned."
         ],
         "strengths": [
-          "Highly relevant scenario describing domain spoofing targeting payroll for direct deposit fraud.",
-          "Detailed and plausible technical data including email headers, domain registration info, DNS records, and logs.",
-          "Consistent formatting and schema adherence across all fields.",
-          "Realistic indicators and detection methods aligned with best practices in email security.",
-          "Inclusion of multiple logs (email gateway, payroll system, network flow) enhances completeness and realism."
+          "Highly relevant scenario matching business email compromise via executive account.",
+          "Detailed and plausible email headers with proper SPF, DKIM, and DMARC alignment.",
+          "Comprehensive technical data including SMTP logs and domain registration info.",
+          "Clear indicators of compromise and detection methods aligned with scenario.",
+          "Realistic email content and request consistent with social engineering tactics."
+        ],
+        "sample_index": 5
+      },
+      {
+        "is_valid": true,
+        "scores": {
+          "relevance": 1.0,
+          "consistency": 0.95,
+          "correctness": 0.95,
+          "completeness": 1.0,
+          "realism": 0.95
+        },
+        "overall_score": 0.97,
+        "issues": [
+          "Minor inconsistency in email volume description: '25 emails detected in 30 minutes' is unusually high but plausible; could clarify if this is an anomaly or sustained pattern.",
+          "DKIM signature marked as 'invalidsig==' which is realistic for a failed signature but no actual cryptographic hash provided (acceptable for synthetic data)."
+        ],
+        "strengths": [
+          "Highly relevant scenario matching business email compromise in social engineering.",
+          "Detailed and consistent email headers, body, SMTP transaction log, and domain registration data.",
+          "Accurate depiction of email authentication failures (SPF, DKIM, DMARC) consistent with spoofing.",
+          "Inclusion of unusual sending patterns and geolocation anomaly adds realism.",
+          "Clear indicators and detection methods aligned with known MITRE ATT&CK techniques.",
+          "Complete and plausible technical details supporting the scenario."
+        ],
+        "sample_index": 3
+      },
+      {
+        "is_valid": true,
+        "scores": {
+          "relevance": 1.0,
+          "consistency": 1.0,
+          "correctness": 0.95,
+          "completeness": 1.0,
+          "realism": 0.95
+        },
+        "overall_score": 0.98,
+        "issues": [
+          "DKIM signature value is marked as 'invalidsignature==', which is a placeholder and not a real signature, though this is acceptable for synthetic data.",
+          "Email volume increase is noted but not quantified precisely; could be more detailed."
+        ],
+        "strengths": [
+          "Highly relevant scenario matching business_email_compromise in social engineering.",
+          "Complete and detailed technical data including headers, SMTP logs, domain registration, and authentication records.",
+          "Consistent formatting and schema adherence throughout the sample.",
+          "Realistic indicators and detection methods aligned with real-world BEC attack patterns.",
+          "Inclusion of geolocation anomaly and multi-factor authentication recommendation enhances realism."
         ],
         "sample_index": 6
       },
@@ -297,36 +213,61 @@
           "relevance": 1.0,
           "consistency": 0.95,
           "correctness": 0.95,
-          "completeness": 0.9,
+          "completeness": 1.0,
           "realism": 0.95
         },
-        "overall_score": 0.95,
+        "overall_score": 0.97,
         "issues": [
-          "Login activity log shows 'Location: Unknown' for suspicious IP, which is plausible but could be more detailed.",
-          "Wire transfer verification policy allowing email-only approval for payments over $100,000 is a risky practice but realistic."
+          "DKIM signature value marked as invalid (b=invalidsig==) which is expected in a spoof scenario but technically invalid.",
+          "Geolocation of sender IP in Eastern Europe is plausible but could be more specific."
         ],
         "strengths": [
-          "Highly relevant scenario matching business email compromise in social engineering.",
-          "Consistent and well-structured technical data including headers, SMTP logs, DNS records, and login logs.",
-          "Accurate and plausible technical details such as SPF, DKIM, DMARC records and email header fields.",
-          "Comprehensive completeness covering scenario, technical data, indicators, detection methods, and MITRE techniques.",
-          "Realistic depiction of attacker behavior using stolen credentials, internal jargon, and exploiting weak policies."
+          "Highly relevant scenario matching business_email_compromise with look-alike domain spoofing.",
+          "Detailed and consistent email headers, body, SMTP transaction log, and domain registration data.",
+          "Accurate depiction of SPF, DKIM, and DMARC failures consistent with spoofing.",
+          "Inclusion of domain registration timing supports new look-alike domain detection.",
+          "Incorporation of geolocation and unusual sending pattern adds realism.",
+          "Clear indicators and detection methods aligned with MITRE ATT&CK techniques."
         ],
-        "sample_index": 5
+        "sample_index": 8
+      },
+      {
+        "is_valid": true,
+        "scores": {
+          "relevance": 1.0,
+          "consistency": 0.95,
+          "correctness": 0.95,
+          "completeness": 1.0,
+          "realism": 0.95
+        },
+        "overall_score": 0.97,
+        "issues": [
+          "Minor inconsistency in SMTP transaction log where email body is represented as '[Email body]' placeholder instead of full content.",
+          "DKIM signature marked as invalid which is realistic but the placeholder 'invalidsig==' is not a real signature."
+        ],
+        "strengths": [
+          "Highly relevant scenario matching business email compromise via CFO impersonation.",
+          "Detailed and realistic email headers with SPF, DKIM, and DMARC failures consistent with spoofing.",
+          "Comprehensive technical data including SMTP logs, domain registration, and email authentication records.",
+          "Inclusion of unusual sending patterns and geolocation anomalies enhances realism and detection context.",
+          "Clear indicators and relevant MITRE ATT&CK techniques provided.",
+          "Detection method described aligns well with real-world security practices."
+        ],
+        "sample_index": 2
       }
     ]
   },
   "overall_assessment": {
-    "realism": "The samples are highly realistic, reflecting common and sophisticated business email compromise (BEC) attack scenarios. They include plausible technical details such as email headers, DNS records, login activity logs, and domain registration data that align well with real-world attack patterns. The inclusion of indicators, detection methods, and relevant MITRE ATT&CK techniques further enhances their authenticity. The scenarios cover a range of tactics including credential stuffing, domain spoofing, and exploitation of weak email authentication policies, which are typical in BEC incidents.",
-    "consistency": "The dataset is consistent and adheres well to a uniform schema across all samples. Each entry contains the required fields: scenario, technical_data (with subfields like email_headers, email_body, logs, dns_records, domain_registration where applicable), indicators, detection_method, and relevant_mitre_techniques. The formatting of timestamps, IP addresses, and email headers is consistent. Minor variations in included logs (e.g., some have login_activity_log, others have file_access_log or domain_registration) are appropriate given the scenario context and do not break schema uniformity.",
+    "realism": "The samples are highly realistic, reflecting common business email compromise scenarios with detailed and plausible email headers, authentication results, SMTP logs, domain registration data, and behavioral anomalies. The inclusion of specific sender IPs, geolocations, email volumes, and authentication failures aligns well with real-world attack patterns. The email bodies and subjects are contextually appropriate and consistent with typical social engineering tactics used in BEC attacks.",
+    "consistency": "The dataset is consistent and adheres well to a uniform schema across all samples. Each entry contains the same top-level keys and nested structures, including scenario descriptions, technical data with subfields (email headers, body, SMTP logs, domain registration, email authentication, unusual sending patterns), indicators, detection methods, and relevant MITRE techniques. The formatting of timestamps, IP addresses, and domain information is consistent. Minor variations in email client versions and timestamps are realistic and do not break schema uniformity.",
     "suggestions": [
-      "Include explicit multi-factor authentication (MFA) status in all login_activity_log entries to better highlight security posture.",
-      "Add more varied user agent or mailer strings in email headers to reflect diverse client environments.",
-      "Incorporate more detailed wire transfer verification policy descriptions where applicable, especially for scenarios involving financial transactions.",
-      "Standardize the presence of domain_registration data across all spoofing or lookalike domain scenarios for completeness.",
-      "Consider adding sample response or mitigation actions taken post-detection to enrich the incident lifecycle context.",
-      "Ensure all email headers consistently include 'Message-ID' and 'X-Originating-IP' fields for forensic completeness.",
-      "Add slight variations in email body language or formatting to simulate different writing styles or urgency levels."
+      "Include explicit multi-factor authentication (MFA) status or mention in the technical data to highlight whether MFA was bypassed or absent, as this is critical in BEC scenarios.",
+      "Add more diversity in sender IP geolocations and timestamps to cover a broader range of anomaly detection cases, including weekends or holidays.",
+      "Incorporate examples with successful SPF/DKIM passes but suspicious behavioral indicators to represent more sophisticated attacks.",
+      "Standardize the representation of email body placeholders in SMTP transaction logs (e.g., consistently use '[Email body]' or '[Email body content]') for clarity.",
+      "Consider adding a field for email client user-agent strings parsed into structured data to facilitate automated analysis.",
+      "Include explicit mention of whether the domain registration details are consistent with the sender's claimed organization to enhance detection context.",
+      "Add examples where DMARC policy is set to 'reject' but spoofed emails still appear, to illustrate enforcement gaps or misconfigurations."
     ]
   },
   "report_metadata": {

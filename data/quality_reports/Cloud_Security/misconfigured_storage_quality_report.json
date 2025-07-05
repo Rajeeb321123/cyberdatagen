@@ -1,0 +1,264 @@
+{
+  "problem": {
+    "area": "Cloud Security",
+    "nature": "misconfigured_storage",
+    "description": "Misconfigured cloud storage buckets or services exposing sensitive data publicly or to unauthorized users, leading to data breaches or leakage."
+  },
+  "automated_metrics": {
+    "total_samples": 10,
+    "unique_samples": 10,
+    "uniqueness_ratio": 1.0,
+    "missing_keys_count": 0,
+    "completeness_ratio": 1.0
+  },
+  "individual_validations": {
+    "summary": {
+      "samples_validated": 10,
+      "valid_samples": 10,
+      "validity_rate": 1.0,
+      "overall_score_mean": 0.973,
+      "overall_score_std": 0.012516655570345736
+    },
+    "detailed_results": [
+      {
+        "is_valid": true,
+        "scores": {
+          "relevance": 1.0,
+          "consistency": 1.0,
+          "correctness": 0.95,
+          "completeness": 0.95,
+          "realism": 1.0
+        },
+        "overall_score": 0.98,
+        "issues": [
+          "Minor detail: 'lease' property is null, which is plausible but could be expanded with lease state info for completeness."
+        ],
+        "strengths": [
+          "Highly relevant scenario clearly describing a misconfigured Azure Blob Storage container with public access.",
+          "Consistent and well-structured data including CLI command, container properties, access logs, HTTP request, and sample file content.",
+          "Technical details accurately reflect Azure Blob Storage behavior and access patterns.",
+          "Includes detection methods and relevant MITRE ATT&CK techniques, enhancing completeness and practical applicability.",
+          "Realistic example with plausible IP addresses, user agents, and file types demonstrating typical data exposure."
+        ],
+        "sample_index": 5
+      },
+      {
+        "is_valid": true,
+        "scores": {
+          "relevance": 1.0,
+          "consistency": 0.95,
+          "correctness": 0.95,
+          "completeness": 1.0,
+          "realism": 0.95
+        },
+        "overall_score": 0.97,
+        "issues": [
+          "Minor inconsistency in source_bucket_policy Principal field: typically replication policies specify the source bucket ARN or replication role rather than 'Service': 's3.amazonaws.com', but this is plausible in some contexts."
+        ],
+        "strengths": [
+          "Highly relevant scenario clearly describing a misconfiguration in S3 bucket replication leading to public exposure of confidential data.",
+          "Technical data includes detailed and well-formed JSON policies, ACLs, CloudTrail logs, CLI commands, HTTP requests, and file listings supporting the scenario.",
+          "Detection methods and MITRE techniques are appropriate and well-aligned with the scenario.",
+          "Realistic example with plausible timestamps, bucket names, and data types.",
+          "Comprehensive indicators cover configuration, logs, and network activity."
+        ],
+        "sample_index": 8
+      },
+      {
+        "is_valid": true,
+        "scores": {
+          "relevance": 1.0,
+          "consistency": 1.0,
+          "correctness": 0.95,
+          "completeness": 0.95,
+          "realism": 1.0
+        },
+        "overall_score": 0.98,
+        "issues": [
+          "Minor ambiguity in the description about Uniform Bucket-Level Access being disabled but IAM policy shown uses bindings which is typical for IAM policies rather than legacy ACLs; however, this is plausible as both can coexist before full enforcement."
+        ],
+        "strengths": [
+          "Highly relevant to cloud security and misconfigured storage buckets",
+          "Consistent and well-structured JSON with clear fields",
+          "Accurate technical details including realistic gcloud commands, IAM policy JSON, access logs, and HTTP requests",
+          "Comprehensive completeness covering scenario, technical data, indicators, detection methods, and MITRE techniques",
+          "Realistic example with plausible sensitive data exposure scenario and typical attacker/user behaviors"
+        ],
+        "sample_index": 7
+      },
+      {
+        "is_valid": true,
+        "scores": {
+          "relevance": 1.0,
+          "consistency": 0.95,
+          "correctness": 0.95,
+          "completeness": 0.9,
+          "realism": 0.95
+        },
+        "overall_score": 0.95,
+        "issues": [
+          "The 'defaultAcl' and 'acl' values use shorthand 'r-x' which is plausible but could be more explicitly documented for clarity.",
+          "The parquet file sample schema is minimal and could include more fields to better represent typical health records."
+        ],
+        "strengths": [
+          "Highly relevant to misconfigured cloud storage exposing sensitive data in Azure Data Lake Gen2.",
+          "Consistent and well-structured JSON with appropriate fields and realistic example data.",
+          "Technical details such as ACL JSON, Azure CLI command, access logs, and HTTP request are accurate and plausible.",
+          "Includes indicators, detection methods, and relevant MITRE ATT&CK techniques, enhancing completeness.",
+          "Realistic scenario involving PII in health data with public read access demonstrated through logs and requests."
+        ],
+        "sample_index": 3
+      },
+      {
+        "is_valid": true,
+        "scores": {
+          "relevance": 1.0,
+          "consistency": 1.0,
+          "correctness": 0.95,
+          "completeness": 0.9,
+          "realism": 0.95
+        },
+        "overall_score": 0.96,
+        "issues": [
+          "The gcloud command provided ('gcloud storage buckets get-iam-policy') retrieves IAM policies, not ACLs; the sample mixes ACL and IAM concepts slightly.",
+          "The access log entry shows an authenticated request but does not explicitly confirm the user identity or authentication method."
+        ],
+        "strengths": [
+          "Scenario clearly describes a common misconfiguration involving legacy ACLs and uniform bucket-level access.",
+          "Technical data includes realistic ACL JSON, access logs, HTTP request, and sample sensitive CSV data.",
+          "Indicators and detection methods align well with the scenario and cloud security best practices.",
+          "Relevant MITRE techniques are appropriately selected for the described attack vector.",
+          "Overall format and schema are consistent and well-structured."
+        ],
+        "sample_index": 2
+      },
+      {
+        "is_valid": true,
+        "scores": {
+          "relevance": 1.0,
+          "consistency": 1.0,
+          "correctness": 0.95,
+          "completeness": 0.9,
+          "realism": 0.95
+        },
+        "overall_score": 0.96,
+        "issues": [
+          "Detection method could mention specific alerting thresholds or examples for better completeness."
+        ],
+        "strengths": [
+          "Highly relevant to cloud security and misconfigured storage scenario.",
+          "Consistent and well-structured JSON with appropriate fields.",
+          "Technical details such as ACL JSON, CLI command, access logs, and HTTP request are accurate and plausible.",
+          "Includes indicators, detection methods, and MITRE techniques linking to real-world threat frameworks.",
+          "Realistic example with plausible file names, access logs, and user agents."
+        ],
+        "sample_index": 0
+      },
+      {
+        "is_valid": true,
+        "scores": {
+          "relevance": 1.0,
+          "consistency": 1.0,
+          "correctness": 1.0,
+          "completeness": 0.95,
+          "realism": 1.0
+        },
+        "overall_score": 0.99,
+        "issues": [
+          "Minor completeness issue: No explicit mention of remediation timeline or impact severity."
+        ],
+        "strengths": [
+          "Highly relevant to cloud security and misconfigured storage buckets.",
+          "Consistent and well-structured JSON with appropriate fields and formats.",
+          "Technically accurate AWS S3 bucket policy and CloudTrail log example.",
+          "Comprehensive inclusion of scenario, technical data, indicators, detection methods, and MITRE techniques.",
+          "Realistic scenario with plausible AWS account IDs, roles, and file types."
+        ],
+        "sample_index": 4
+      },
+      {
+        "is_valid": true,
+        "scores": {
+          "relevance": 1.0,
+          "consistency": 1.0,
+          "correctness": 1.0,
+          "completeness": 0.9,
+          "realism": 1.0
+        },
+        "overall_score": 0.98,
+        "issues": [
+          "Completeness could be improved by including remediation steps or impact examples beyond detection methods."
+        ],
+        "strengths": [
+          "Highly relevant to cloud security and misconfigured storage buckets.",
+          "Consistent and well-structured JSON with appropriate fields and formats.",
+          "Technically accurate CORS configuration and IBM Cloud CLI commands.",
+          "Includes detailed indicators and detection methods.",
+          "Realistic scenario with plausible attack vectors and data exposure."
+        ],
+        "sample_index": 9
+      },
+      {
+        "is_valid": true,
+        "scores": {
+          "relevance": 1.0,
+          "consistency": 1.0,
+          "correctness": 0.95,
+          "completeness": 0.95,
+          "realism": 1.0
+        },
+        "overall_score": 0.98,
+        "issues": [
+          "The relevant MITRE techniques include T1078 (Valid Accounts) and T1087 (Account Discovery) which are less directly related to public S3 bucket misconfiguration; more focused techniques like T1530 are appropriate."
+        ],
+        "strengths": [
+          "Highly relevant scenario describing a classic misconfigured S3 bucket ACL exposing sensitive data.",
+          "Technical data is detailed and follows expected AWS formats and commands.",
+          "CloudTrail log entry and HTTP request are realistic and consistent with the scenario.",
+          "Indicators and detection methods are well aligned with best practices for this problem.",
+          "The ZIP file listing adds depth to the example, showing plausible exposed content."
+        ],
+        "sample_index": 6
+      },
+      {
+        "is_valid": true,
+        "scores": {
+          "relevance": 1.0,
+          "consistency": 1.0,
+          "correctness": 0.95,
+          "completeness": 0.95,
+          "realism": 1.0
+        },
+        "overall_score": 0.98,
+        "issues": [
+          "The MITRE technique T1005 (Data from Local System) is less directly relevant to cloud storage bucket misconfiguration; it typically refers to local system data access rather than cloud storage."
+        ],
+        "strengths": [
+          "Scenario clearly describes a classic misconfiguration of AWS S3 bucket ACLs exposing sensitive data.",
+          "Technical data includes realistic and correctly formatted ACL JSON, AWS CLI command, CloudTrail log entry, HTTP request, and sample SQL dump content.",
+          "Indicators and detection methods are well aligned with the scenario and provide actionable insights.",
+          "Use of real AWS concepts and formats enhances realism and correctness.",
+          "Inclusion of relevant MITRE ATT&CK techniques supports threat modeling."
+        ],
+        "sample_index": 1
+      }
+    ]
+  },
+  "overall_assessment": {
+    "realism": "The samples are highly realistic, reflecting genuine misconfiguration scenarios across major cloud providers (IBM Cloud, Azure, Google Cloud, AWS). The technical data includes plausible configuration snippets, CLI commands, access logs, HTTP requests, and sample file contents consistent with the described scenarios. The indicators and detection methods align well with known security best practices and MITRE ATT&CK techniques, enhancing credibility.",
+    "consistency": "The dataset maintains good consistency and uniformity in structure across entries, with each sample containing scenario descriptions, technical data, indicators, detection methods, and relevant MITRE techniques. The JSON schema is adhered to properly, with nested objects and arrays correctly formatted. Minor variations in key naming (e.g., 'access_log_entry' vs 'storage_access_log') exist but do not impact overall schema adherence.",
+    "suggestions": [
+      "Standardize key names across samples for similar data types (e.g., unify 'access_log_entry' and 'storage_access_log' to a single key name like 'access_log').",
+      "Include explicit fields for cloud provider and service type to facilitate filtering and automated processing.",
+      "Add timestamps in a consistent ISO 8601 format across all log entries and HTTP requests for uniformity.",
+      "Consider including example remediation commands or configuration snippets in the detection_method field to enhance actionable guidance.",
+      "Validate that all sample file contents (e.g., JSON, CSV, XML) are syntactically correct and well-formed to avoid parsing issues.",
+      "Optionally, provide severity or risk level metadata per sample to assist prioritization."
+    ]
+  },
+  "report_metadata": {
+    "total_samples": 10,
+    "samples_validated_individually": 10,
+    "validation_percentage": 100.0
+  }
+}

@@ -1,144 +1,142 @@
 {
   "examples": [
     {
-      "scenario": "An attacker compromises the CFO's email account via credential phishing and sends a fraudulent wire transfer request to finance staff, using a slightly altered sender display name and spoofed headers to evade casual inspection.",
+      "scenario": "Executive email account spoofed to request urgent wire transfer",
       "technical_data": {
-        "email_headers": "Return-Path: <cfo@exarnple.com>\r\nReceived: from mail.exarnple.com (mail.exarnple.com [192.168.100.120])\r\n\tby mx.finance.corp (Postfix) with ESMTPS id 4F29E1C6A4\r\n\tfor <finance@corp.com>; Wed, 18 May 2024 14:32:10 +0000 (UTC)\r\nReceived-SPF: fail (finance.corp: domain of exarnple.com does not designate 192.168.100.120 as permitted sender)\r\nAuthentication-Results: finance.corp; dkim=fail (signature did not verify) header.d=exarnple.com; spf=fail smtp.mailfrom=cfo@exarnple.com; dmarc=fail action=none header.from=exarnple.com\r\nFrom: \"John Smith, CFO\" <cfo@exarnple.com>\r\nTo: finance@corp.com\r\nSubject: Urgent wire transfer request\r\nDate: Wed, 18 May 2024 14:31:59 +0000\r\nMessage-ID: <CA+9fYx9Q0WfZ+Xy7JfNmTXZV0ZVjJ6EXAMPLE@mail.exarnple.com>\r\nX-Originating-IP: [203.0.113.45]\r\nX-Mailer: Microsoft Outlook 16.0\r\n",
-        "email_body": "Hi Team,\n\nPlease process an urgent wire transfer of $250,000 to the following account immediately to secure the pending acquisition:\n\nBank: First National Bank\nAccount Name: Global Ventures LLC\nAccount Number: 9876543210\nRouting Number: 021000021\n\nConfirm once done.\n\nBest,\nJohn",
-        "smtp_log_excerpt": "220 mail.exarnple.com ESMTP Postfix\r\nEHLO attacker.mail\r\n250-mail.exarnple.com\r\n250-PIPELINING\r\n250-SIZE 10240000\r\n250-VRFY\r\n250-ETRN\r\n250-STARTTLS\r\n250-AUTH PLAIN LOGIN\r\n250-ENHANCEDSTATUSCODES\r\n250 8BITMIME\r\nMAIL FROM:<cfo@exarnple.com>\r\n250 2.1.0 Ok\r\nRCPT TO:<finance@corp.com>\r\n250 2.1.5 Ok\r\nDATA\r\n354 End data with <CR><LF>.<CR><LF>\r\n[message data]\r\n.\r\n250 2.0.0 Ok: queued as 4F29E1C6A4\r\nQUIT\r\n221 2.0.0 Bye",
-        "dns_records": {
-          "exarnple.com": {
-            "A": "192.168.100.120",
-            "SPF": "v=spf1 -all",
-            "DKIM": "selector1._domainkey.exarnple.com TXT (no valid DKIM record found)",
-            "DMARC": "v=DMARC1; p=none; rua=mailto:dmarc-reports@exarnple.com"
-          }
-        },
-        "login_activity_log": "[2024-05-18 08:15:23] User: cfo@corp.com, SourceIP: 198.51.100.23, AuthMethod: Password, Status: Success\r\n[2024-05-18 14:20:45] User: cfo@corp.com, SourceIP: 203.0.113.45, AuthMethod: Password, Status: Success, Location: Unknown",
-        "wire_transfer_verification_policy": "Finance team confirmed no multi-factor verification was enforced for transfers under $500,000, allowing single-email authorization."
-      },
-      "indicators": [
-        "SPF fail for exarnple.com email domain",
-        "DKIM signature verification failure",
-        "DMARC policy set to 'none' with no enforcement",
-        "Suspicious sending IP 192.168.100.120 not matching corporate authorized IP ranges",
-        "Unusual login location IP 203.0.113.45 for CFO account",
-        "Sender domain closely resembles legitimate domain (exarnple.com vs example.com)",
-        "Wire transfer request without secondary approval or out-of-band validation"
-      ],
-      "detection_method": "Monitor SPF/DKIM/DMARC failures with alerting on high-risk executive account emails; correlate with login anomaly detection for unusual IPs; enforce multi-factor verification and out-of-band confirmation for wire transfer requests exceeding threshold; employ domain similarity detection (typosquatting) tools to flag suspicious sender domains.",
-      "relevant_mitre_techniques": [
-        "T1566.001 - Phishing: Spearphishing Attachment",
-        "T1566.002 - Phishing: Spearphishing Link",
-        "T1078.004 - Valid Accounts: Cloud Accounts",
-        "T1598.002 - Phishing for Information: Spearphishing via Service",
-        "T1193 - Spearphishing Attachment",
-        "T1586 - Compromise Infrastructure",
-        "T1204.002 - User Execution: Malicious File"
-      ]
-    },
-    {
-      "scenario": "An attacker uses a spoofed internal executive email domain with DMARC and SPF misconfigurations to send a fraudulent invoice payment request to the accounting department, leveraging a lookalike domain registered days earlier.",
-      "technical_data": {
-        "email_headers": "Return-Path: <ceo@corp-secure.com>\r\nReceived: from mail.corp-secure.com (mail.corp-secure.com [198.51.100.150])\r\n\tby mail.corp.com (Postfix) with ESMTPS id 3A9B91D67\r\n\tfor <accounts@corp.com>; Tue, 20 May 2024 09:15:42 +0000 (UTC)\r\nReceived-SPF: neutral (corp.com: corp-secure.com is not authorized to send mail) receiver=corp.com; client-ip=198.51.100.150; envelope-from=ceo@corp-secure.com; helo=mail.corp-secure.com\r\nAuthentication-Results: corp.com; dkim=none; spf=neutral; dmarc=fail header.from=corp-secure.com\r\nFrom: \"Jane Doe, CEO\" <ceo@corp-secure.com>\r\nTo: accounts@corp.com\r\nSubject: Immediate Payment Required - Invoice #45321\r\nDate: Tue, 20 May 2024 09:15:30 +0000\r\nMessage-ID: <CA+8fYx9Q0WfZ+Xy7JfNmTXZV0ZVjJ6EXAMPLE@mail.corp-secure.com>\r\n",
-        "email_body": "Dear Accounts,\n\nPlease process payment for invoice #45321 totaling $150,000 to the following vendor account immediately:\n\nBank: Trust Bank\nAccount Name: Tech Supplies Ltd\nAccount Number: 1122334455\nRouting Number: 026009593\n\nThank you,\nJane Doe\nCEO",
+        "email_headers": "Return-Path: <ceo@contoso.com>\r\nReceived: from mail-contoso.com (mail-contoso.com [192.168.1.10])\r\n\tby mail.examplecorp.com (Postfix) with ESMTPS id 1234ABCD\r\n\tfor <finance@examplecorp.com>; Tue, 25 Apr 2023 08:15:12 -0400 (EDT)\r\nReceived-SPF: fail (examplecorp.com: domain of ceo@contoso.com does not designate 192.168.1.10 as permitted sender) receiver=mail.examplecorp.com; envelope-from=ceo@contoso.com; client-ip=192.168.1.10;\r\nAuthentication-Results: mail.examplecorp.com; dkim=fail (signature did not verify) header.d=contoso.com; spf=fail smtp.mailfrom=ceo@contoso.com; dmarc=fail action=quarantine header.from=contoso.com;\r\nMessage-ID: <CAKJ1234567890@mail-contoso.com>\r\nFrom: \"John Doe\" <ceo@contoso.com>\r\nTo: finance@examplecorp.com\r\nSubject: Urgent Wire Transfer Request\r\nDate: Tue, 25 Apr 2023 08:14:55 -0400\r\nMIME-Version: 1.0\r\nContent-Type: text/plain; charset=\"UTF-8\"\r\nX-Mailer: Microsoft Outlook 16.0\r\n",
+        "email_body": "Hi,\n\nPlease process an urgent wire transfer of $150,000 to the following account:\n\nBank: First National Bank\nAccount Number: 9876543210\nRouting Number: 021000021\nAccount Holder: Michael Thompson\n\nThis is a confidential and urgent matter.\n\nRegards,\nJohn Doe\nCEO, Contoso Ltd.",
+        "smtp_transaction_log": "220 mail.examplecorp.com ESMTP Postfix\r\nEHLO attacker.com\r\n250-mail.examplecorp.com\r\n250-PIPELINING\r\n250-SIZE 10240000\r\n250-ETRN\r\n250-STARTTLS\r\n250-AUTH LOGIN PLAIN\r\n250-ENHANCEDSTATUSCODES\r\n250-8BITMIME\r\n250 DSN\r\nMAIL FROM:<ceo@contoso.com>\r\n250 2.1.0 Ok\r\nRCPT TO:<finance@examplecorp.com>\r\n250 2.1.5 Ok\r\nDATA\r\n354 End data with <CR><LF>.<CR><LF>\r\nFrom: John Doe <ceo@contoso.com>\r\nTo: finance@examplecorp.com\r\nSubject: Urgent Wire Transfer Request\r\n\r\n[Email body]\r\n.\r\n250 2.0.0 Ok: queued as 1234ABCD",
         "domain_registration": {
-          "Domain": "corp-secure.com",
-          "Registrar": "NameCheap, Inc.",
-          "CreationDate": "2024-05-15T11:42:00Z",
-          "RegistrantName": "Privacy Protection Service",
-          "RegistrantEmail": "contact@privacyprotect.io",
-          "NameServers": [
-            "ns1.namecheap.com",
-            "ns2.namecheap.com"
+          "domain": "contoso.com",
+          "registrar": "GoDaddy.com, LLC",
+          "creation_date": "1995-05-15T00:00:00Z",
+          "updated_date": "2022-10-10T12:00:00Z",
+          "status": "active",
+          "nameservers": [
+            "ns1.contoso.com",
+            "ns2.contoso.com"
           ]
         },
-        "dns_records": {
-          "corp-secure.com": {
-            "A": "198.51.100.150",
-            "SPF": "v=spf1 ?all",
-            "DKIM": "No DKIM record found",
-            "DMARC": "v=DMARC1; p=reject; rua=mailto:dmarc-reports@corp-secure.com"
-          }
+        "email_authentication": {
+          "SPF_record": "v=spf1 ip4:192.168.2.0/24 -all",
+          "DKIM_signature": "v=1; a=rsa-sha256; c=relaxed/relaxed; d=contoso.com; s=selector1; h=from:to:subject:date; bh=base64hash==; b=invalidsignature==",
+          "DMARC_policy": "v=DMARC1; p=quarantine; rua=mailto:dmarc-reports@contoso.com; ruf=mailto:dmarc-forensics@contoso.com; pct=100; sp=none"
         },
-        "email_gateway_log": "[2024-05-20 09:15:43] Message from ceo@corp-secure.com to accounts@corp.com accepted despite SPF neutral and DMARC fail due to relaxed gateway policy.\r\n",
-        "wire_transfer_request_log": "[2024-05-20 09:16:12] Payment request logged for invoice #45321, amount $150,000, initiated by accounts@corp.com user",
-        "network_flow_log": "SrcIP=198.51.100.150 DstIP=10.10.10.25 DstPort=25 Protocol=SMTP Bytes=2048 Duration=2s"
+        "unusual_sending_patterns": {
+          "timestamp": "2023-04-25T08:14:55-04:00",
+          "sender_ip": "192.168.1.10",
+          "email_volume": "5 emails/hour normally; 20 emails/hour detected",
+          "geolocation": "Sender IP located in unknown country not typical for CEO"
+        }
       },
       "indicators": [
-        "Newly registered domain corp-secure.com with privacy protected WHOIS",
-        "SPF record set to ?all (neutral) allowing spoofing",
-        "No DKIM record present",
-        "DMARC policy set to reject but domain is not authorized sender for corp.com",
-        "Sender domain visually similar to legitimate corp.com domain",
-        "Email gateway allowing messages despite SPF/DMARC failures due to misconfigured policy",
-        "Unusual payment request to vendor account not previously used"
+        "SPF fail for ceo@contoso.com from IP 192.168.1.10",
+        "DKIM signature verification failed for contoso.com",
+        "DMARC policy resulted in quarantine action",
+        "Sender IP 192.168.1.10 is not in authorized SPF range",
+        "Email sent outside normal business hours and from unusual geolocation",
+        "Urgent wire transfer request with new beneficiary account"
       ],
-      "detection_method": "Implement strict SPF and DMARC enforcement rejecting or quarantining emails failing authentication; monitor for newly registered domains similar to corporate domains; use fuzzy matching on sender domains; enforce multi-factor verification for invoice payments; log and alert on email gateway acceptance of messages with SPF/DMARC failures from lookalike domains.",
+      "detection_method": "Automated alert on DMARC/SPF/DKIM failures combined with anomaly detection on executive email sending patterns and verification of wire transfer requests through multi-factor confirmation.",
       "relevant_mitre_techniques": [
-        "T1566.002 - Phishing: Spearphishing Link",
-        "T1587.001 - Develop Capabilities: Malware",
-        "T1598.003 - Phishing for Information: Spearphishing via Domain Spoofing",
-        "T1499 - Endpoint Denial of Service",
-        "T1204 - User Execution"
+        "T1598.002 - Spearphishing via Service",
+        "T1566.001 - Phishing: Spearphishing Attachment",
+        "T1589.002 - Gather Victim Identity Information: Email Accounts",
+        "T1036.005 - Masquerading: Match Legitimate Name or Location",
+        "T1114 - Email Collection"
       ]
     },
     {
-      "scenario": "An attacker uses stolen OAuth tokens to access an executive's cloud-based email account, bypassing MFA, and sends wire transfer instructions to finance staff. Logs show unusual API access patterns and token usage from uncommon IP addresses.",
+      "scenario": "Business Email Compromise via domain look-alike phishing email impersonating CFO",
       "technical_data": {
-        "cloudtrail_log_entry": {
-          "eventVersion": "1.08",
-          "userIdentity": {
-            "type": "AssumedRole",
-            "principalId": "AROAJ7EXAMPLE:john.smith",
-            "arn": "arn:aws:sts::123456789012:assumed-role/ExecutiveRole/john.smith",
-            "accountId": "123456789012",
-            "accessKeyId": "ASIAEXAMPLE",
-            "sessionContext": {
-              "attributes": {
-                "mfaAuthenticated": "false",
-                "creationDate": "2024-05-19T16:10:00Z"
-              }
-            }
-          },
-          "eventTime": "2024-05-19T16:12:03Z",
-          "eventSource": "email.cloudprovider.com",
-          "eventName": "SendEmail",
-          "awsRegion": "us-east-1",
-          "sourceIPAddress": "45.77.88.99",
-          "userAgent": "OAuthTokenClient/1.0",
-          "requestParameters": {
-            "toAddresses": [
-              "finance@corp.com"
-            ],
-            "subject": "Urgent Wire Transfer",
-            "body": "Please transfer $300,000 to the below account as soon as possible.\nBank: National Trust\nAccount Name: Premier Holdings\nAccount Number: 554433221\nRouting Number: 111000025"
-          },
-          "responseElements": {
-            "messageId": "01a2b3c4d5e6f7g8h9i0j"
-          }
+        "email_headers": "Return-Path: <john.doe@contooso.com>\r\nReceived: from mail.contooso.com (mail.contooso.com [198.51.100.45])\r\n\tby mail.examplecorp.com (Postfix) with ESMTPS id 9F8C2B1E\r\n\tfor <accounts@examplecorp.com>; Wed, 12 Jul 2023 13:22:50 +0200 (CEST)\r\nReceived-SPF: pass (examplecorp.com: domain of sender@examplecorp.com designates 198.51.100.45 as permitted sender) receiver=mail.examplecorp.com; client-ip=198.51.100.45;\r\nAuthentication-Results: mail.examplecorp.com; dkim=fail (signature did not verify) header.d=contooso.com; spf=pass smtp.mailfrom=john.doe@contooso.com; dmarc=fail action=none header.from=contooso.com;\r\nMessage-ID: <CAJYt3j2k4H@mail.contooso.com>\r\nFrom: \"John Doe\" <john.doe@contooso.com>\r\nTo: accounts@examplecorp.com\r\nSubject: Payment instructions update\r\nDate: Wed, 12 Jul 2023 13:22:45 +0200\r\nMIME-Version: 1.0\r\nContent-Type: text/html; charset=\"UTF-8\"\r\nX-Mailer: Mozilla Thunderbird 68.10.0\r\n",
+        "email_body_html": "<html><body><p>Dear Accounts Team,</p><p>Please update the payment details for the next invoice as follows:</p><table><tr><td>Bank:</td><td>Global Trust Bank</td></tr><tr><td>Account Number:</td><td>1234098765</td></tr><tr><td>Routing Number:</td><td>11000022</td></tr></table><p>Kindly confirm once done.</p><p>Regards,<br>John Doe<br>CFO</p></body></html>",
+        "smtp_transaction_log": "220 mail.examplecorp.com ESMTP Postfix\r\nEHLO mail.contooso.com\r\n250-mail.examplecorp.com\r\n250-PIPELINING\r\n250-SIZE 10240000\r\n250-ETRN\r\n250-STARTTLS\r\n250-AUTH LOGIN PLAIN\r\n250-ENHANCEDSTATUSCODES\r\n250-8BITMIME\r\n250 DSN\r\nMAIL FROM:<john.doe@contooso.com>\r\n250 2.1.0 Ok\r\nRCPT TO:<accounts@examplecorp.com>\r\n250 2.1.5 Ok\r\nDATA\r\n354 End data with <CR><LF>.<CR><LF>\r\n[Email headers and body]\r\n.\r\n250 2.0.0 Ok: queued as 9F8C2B1E",
+        "domain_registration": {
+          "domain": "contooso.com",
+          "registrar": "NameCheap, Inc.",
+          "creation_date": "2023-05-01T15:00:00Z",
+          "updated_date": "2023-07-10T10:00:00Z",
+          "status": "active",
+          "nameservers": [
+            "ns1.namecheap.net",
+            "ns2.namecheap.net"
+          ]
         },
-        "oauth_token_usage_log": "[2024-05-19 16:05:00] Token ID: abc123xyz used to authenticate from IP 45.77.88.99 (New York, US) for user john.smith@corp.com\r\n[2024-05-19 16:10:00] Token last used from IP 203.0.113.22 (Corporate HQ)\r\n",
-        "process_tree": "Process: oauth_client.exe -> API call to email.cloudprovider.com SendEmail\r\n",
-        "login_history": "[2024-05-19 15:55:00] User: john.smith@corp.com Login success from IP 203.0.113.22 (Corporate HQ) MFA: Yes\r\n[2024-05-19 16:05:00] Token-based access from IP 45.77.88.99 MFA: No\r\n",
-        "email_authentication_headers": "Authentication-Results: email.cloudprovider.com; spf=pass; dkim=pass; dmarc=pass header.from=corp.com"
+        "email_authentication": {
+          "SPF_record": "v=spf1 ip4:198.51.100.0/24 -all",
+          "DKIM_signature": "v=1; a=rsa-sha256; c=relaxed/relaxed; d=contooso.com; s=mail; h=from:to:subject:date; bh=abc123base64hash==; b=invalidsig==",
+          "DMARC_policy": "v=DMARC1; p=reject; rua=mailto:dmarc@contooso.com; ruf=mailto:forensics@contooso.com; pct=100"
+        },
+        "url_obfuscation": {
+          "link_in_email": "https://globaltrust-bank.com.secure-login.contoso.com/login",
+          "actual_dns_resolution": "contoso.com resolves to 198.51.100.45, globaltrust-bank.com does not resolve",
+          "whois_info_globaltrust": "Domain not registered or parked"
+        },
+        "unusual_sending_patterns": {
+          "email_time": "13:22 local time (outside typical CFO email hours 9am-5pm)",
+          "sender_ip_geolocation": "Germany (company CFO located in USA)",
+          "email_volume": "1 email matching this pattern in last 30 days"
+        }
       },
       "indicators": [
-        "OAuth token used from anomalous IP address outside corporate range",
-        "MFA not triggered for OAuth token authentication",
-        "CloudTrail logs show SendEmail event with suspicious content and unusual source IP",
-        "Mismatch between interactive login IP and token usage IP",
-        "Process oauth_client.exe making API calls to cloud email service",
-        "Email has valid SPF/DKIM/DMARC due to legitimate cloud provider sending"
+        "DKIM signature verification fail for domain contooso.com",
+        "DMARC policy fail and no rejection enforcement",
+        "Domain contooso.com registered recently (within 2 months)",
+        "Sender IP geolocated in Germany, CFO based in USA",
+        "Suspicious URL using subdomain trickery to mimic legitimate bank URL",
+        "Email requesting change in payment details without multi-factor verification"
       ],
-      "detection_method": "Correlate cloud service logs to detect token usage from unusual IPs or geolocations; enforce conditional access policies requiring MFA on all token-based authentication; monitor API call patterns for executive accounts; alert on process creation that initiates email sending via API outside normal behavior profiles.",
+      "detection_method": "Correlate domain age and registration info with DMARC/SPF/DKIM results, monitor for look-alike domain emails, inspect URLs in email content for subdomain obfuscation, and require multi-factor verification on payment detail updates.",
       "relevant_mitre_techniques": [
-        "T1530 - Data from Cloud Storage Object",
+        "T1598.002 - Spearphishing via Service",
+        "T1566.001 - Phishing: Spearphishing Attachment",
+        "T1566.002 - Spearphishing Link",
+        "T1204.002 - User Execution: Malicious File",
+        "T1114 - Email Collection",
+        "T1036.005 - Masquerading: Match Legitimate Name or Location"
+      ]
+    },
+    {
+      "scenario": "Compromised executive mailbox used to send fraudulent wire transfer instructions",
+      "technical_data": {
+        "exchange_logs": [
+          "2023-08-15T09:10:23Z INFO MailboxAccess - User: john.doe@examplecorp.com - SessionID: 5a3f2e8c - ClientIP: 203.0.113.77 - Action: Login Success",
+          "2023-08-15T09:12:01Z WARN MailboxSend - User: john.doe@examplecorp.com - SessionID: 5a3f2e8c - MessageID: <CAFbWJ7bK0eO@mail.examplecorp.com> - Subject: Wire transfer approval - Recipient: finance@examplecorp.com",
+          "2023-08-15T09:12:02Z INFO MailboxSend - User: john.doe@examplecorp.com - SessionID: 5a3f2e8c - MessageID: <CAFbWJ7bK0eO@mail.examplecorp.com> - Email sent successfully"
+        ],
+        "email_content": {
+          "headers": "Return-Path: <john.doe@examplecorp.com>\r\nReceived: from mail.examplecorp.com ([203.0.113.77])\r\n\tby mail.examplecorp.com (Microsoft SMTP Server) with TLS encryption;\r\n\tTue, 15 Aug 2023 09:12:01 +0000\r\nAuthentication-Results: mail.examplecorp.com; dkim=pass header.d=examplecorp.com; spf=pass smtp.mailfrom=john.doe@examplecorp.com; dmarc=pass action=none header.from=examplecorp.com;\r\nFrom: John Doe <john.doe@examplecorp.com>\r\nTo: finance@examplecorp.com\r\nSubject: Wire transfer approval\r\nDate: Tue, 15 Aug 2023 09:12:00 +0000\r\nMessage-ID: <CAFbWJ7bK0eO@mail.examplecorp.com>\r\nMIME-Version: 1.0\r\nContent-Type: text/plain; charset=UTF-8\r\n",
+          "body": "Hi Finance Team,\n\nPlease process the following wire transfer immediately:\n\nAmount: $250,000\nBank: United Bank\nAccount Number: 876543210\nRouting Number: 021000021\nAccount Holder: Richard Miles\n\nPlease confirm once completed.\n\nRegards,\nJohn Doe\nCEO"
+        },
+        "user_activity_logs": [
+          "2023-08-15T06:58:43Z WARNING SuspiciousLogin - User: john.doe@examplecorp.com - IP: 185.199.108.153 - Location: Russia - Anomalous login detected",
+          "2023-08-15T07:00:10Z INFO PasswordChange - User: john.doe@examplecorp.com - IP: 185.199.108.153 - Password reset via self-service portal",
+          "2023-08-15T08:45:00Z INFO Login - User: john.doe@examplecorp.com - IP: 203.0.113.77 - Location: USA"
+        ],
+        "network_traffic": "13:12:00.456 IP 203.0.113.77.58714 > mail.examplecorp.com.443: Flags [P.], seq 12345:12456, ack 112233, win 65535, length 111\r\n[Encrypted TLS packet containing SMTP submission]",
+        "multi_factor_authentication_logs": [
+          "2023-08-15T06:59:30Z MFA_Failure - User: john.doe@examplecorp.com - Reason: MFA device unregistered during password reset",
+          "2023-08-15T07:00:10Z MFA_Bypass - User: john.doe@examplecorp.com - Method: Security questions"
+        ]
+      },
+      "indicators": [
+        "Login to executive mailbox from anomalous IP located in Russia",
+        "Password reset without valid MFA enforcement",
+        "Subsequent login from legitimate IP shortly after",
+        "Emails sent with valid DKIM/SPF/DMARC but unusual volume and content",
+        "Wire transfer instruction without multi-step verification",
+        "MFA bypass using insecure fallback (security questions)"
+      ],
+      "detection_method": "Correlate unusual login activity to mailbox access and password resets, monitor for bypassed MFA events, alert on sending of financial requests from executive mailbox outside normal patterns, enforce multi-step financial transaction verification.",
+      "relevant_mitre_techniques": [
         "T1078.004 - Valid Accounts: Cloud Accounts",
-        "T1550.003 - Use Alternate Authentication Material: OAuth Tokens",
-        "T1114.001 - Email Collection: Cloud Email",
-        "T1566 - Phishing",
-        "T1313 - Cloud Service Discovery"
+        "T1110.003 - Brute Force: Password Spraying",
+        "T1556.001 - Modify Authentication Process: MFA",
+        "T1566.001 - Phishing: Spearphishing Attachment",
+        "T1598.002 - Spearphishing via Service",
+        "T1086 - PowerShell (if used in lateral movement)",
+        "T1036.005 - Masquerading"
       ]
     }
   ]

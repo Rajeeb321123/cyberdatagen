@@ -157,7 +157,7 @@ class ConfigManager:
         
         Args:
             prefer_updated (bool): Whether to prefer problems_updated.json over problems.json
-            
+            z
         Returns:
             list: List of problems
         """
