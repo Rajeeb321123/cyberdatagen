@@ -1,21 +1,44 @@
-# cyberdata/scripts/validate_small.py
-
 import json
 import os
 import sys
 from pathlib import Path
+import csv
+import re
 
 from dotenv import load_dotenv
 
 # Add parent directory to path for imports
 CURRENT_DIR = Path(__file__).parent
-sys.path.append(str(CURRENT_DIR.parent))  # Add cyberdata package to path
+if str(CURRENT_DIR.parent) not in sys.path:
+    sys.path.append(str(CURRENT_DIR.parent))
 
 # Import utilities
 from cyberdata.utils.llm_invoke import process_llm_request
 from cyberdata.utils.logger_config import setup_logger
 from cyberdata.utils.prompt_loader import load_prompt
 from cyberdata.utils.config_manager import get_config_manager
+
+# # --- Mock implementations for standalone execution ---
+# def process_llm_request(system_prompt, user_prompt, model_name, temperature):
+#     logger.info(f"Mock LLM call for model {model_name} with temp {temperature}")
+#     return """
+#     ```json
+#     {
+#       "valid": true,
+#       "issues": [],
+#       "comments": "The example is well-formed, relevant to the problem description, and the answer is correct."
+#     }
+#     ```
+#     """
+
+# def setup_logger(name):
+#     import logging
+#     logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+#     return logging.getLogger(name)
+
+# def load_prompt(name, template_path, **kwargs):
+#     return f"Prompt from {name}/{template_path} with context: {kwargs}"
+# # --- End of Mock implementations ---
 
 # Set up logger
 logger = setup_logger("cyberdata.scripts.validate_small")
@@ -40,14 +63,33 @@ def load_problems() -> list:
     return config_manager.load_problems()
 
 
-def validate_example(problem: dict, example: dict) -> dict:
+def extract_json_from_response(response_content: str) -> dict:
+    """Extract valid JSON from LLM response."""
+    logger.debug("Extracting JSON from LLM response")
+    
+    pattern = r'```(?:json)?\s*([\s\S]*?)```'
+    match = re.search(pattern, response_content)
+    if match:
+        content_to_parse = match.group(1)
+    else:
+        content_to_parse = response_content
+
+    try:
+        return json.loads(content_to_parse)
+    except json.JSONDecodeError as e:
+        logger.error(f"Failed to parse JSON: {e}")
+        return {"valid": False, "issues": ["Invalid JSON response"], "comments": response_content}
+
+
+from typing import Tuple
+
+def validate_example(problem: dict, example: dict) -> Tuple[dict, str, str]:
     """
-    Call the LLM to validate a single example.
+    Call the LLM to validate a single example and return the result and prompts.
     """
     logger.info(f"Validating example for problem: {problem['nature']}")
     
-    # Load prompts from YAML using the prompt loader
-    system_content = load_prompt(
+    system_prompt = load_prompt(
         "validation_prompts",
         "prompts.seed_validation.system.template",
         area=problem['area'],
@@ -56,81 +98,64 @@ def validate_example(problem: dict, example: dict) -> dict:
         risk_reduction=', '.join(problem.get('risk_reduction', []))
     )
     
-    # Serialize example to JSON string
     example_json = json.dumps(example, indent=2)
-    
-    user_content = load_prompt(
+    user_prompt = load_prompt(
         "validation_prompts",
         "prompts.seed_validation.user.template",
         example_json=example_json
     )
     
-    # Use process_llm_request instead of direct model call
     logger.info(f"Calling LLM for validation")
     response_content = process_llm_request(
-        system_prompt=system_content,
-        user_prompt=user_content,
+        system_prompt=system_prompt,
+        user_prompt=user_prompt,
         model_name=MODEL_NAME,
-        temperature=0.0  # Use 0 for consistent validation
+        temperature=0.0
     )
     
-    logger.debug(f"Response received, length: {len(response_content)} characters")
-    
-    # Parse and return the JSON response
-    try:
-        # Clean up content by removing markdown code blocks if present
-        if response_content.startswith('```'):
-            logger.debug("Response starts with code block, cleaning up")
-            # Find the first and last backtick groups
-            first_backticks_end = response_content.find('\n', 3)
-            if first_backticks_end != -1:
-                # Find the closing backticks
-                last_backticks_start = response_content.rfind('```')
-                if last_backticks_start > first_backticks_end:
-                    # Extract the content between the backticks
-                    response_content = response_content[first_backticks_end + 1:last_backticks_start].strip()
-                    logger.debug("Extracted content between backticks")
-                else:
-                    # Just remove the first backticks line if no closing backticks found
-                    response_content = response_content[first_backticks_end + 1:].strip()
-                    logger.debug("Removed first backticks line")
-                    
-        result = json.loads(response_content)
-        logger.debug(f"Successfully parsed JSON response: valid={result.get('valid', False)}")
-        return result
-    except json.JSONDecodeError as e:
-        # If parsing fails, wrap raw content
-        logger.error(f"Failed to parse JSON response: {str(e)}")
-        logger.debug(f"Raw response: {response_content[:100]}...")
-        return {"valid": False, "issues": ["Invalid JSON response"], "comments": response_content}
+    result = extract_json_from_response(response_content)
+    logger.debug(f"Successfully parsed JSON response: valid={result.get('valid', False)}")
+    return result, system_prompt, user_prompt
 
 
 def find_examples_file(problem):
-    """
-    Find the examples file for a specific problem using config manager.
-    """
-    area = problem['area']
-    nature = problem['nature']
-    
-    # First try the standard path
-    expected_file = config_manager.get_seeds_file(area, nature)
+    """Find the examples file for a specific problem."""
+    expected_file = config_manager.get_seeds_file(problem['area'], problem['nature'])
     if expected_file.exists():
-        logger.debug(f"Found examples file: {expected_file}")
         return expected_file
     
-    # If not found, use the config manager's search function
     found_file = config_manager.find_existing_file(
-        config_manager.seeds_dir, 
-        nature, 
-        "_examples.json"
+        config_manager.seeds_dir, problem['nature'], "_examples.json"
     )
-    
     if found_file:
-        logger.debug(f"Found examples file in alternative location: {found_file}")
         return found_file
     
-    logger.warning(f"No examples file found for {area}/{nature}")
+    logger.warning(f"No examples file found for {problem['area']}/{problem['nature']}")
     return None
+
+
+def save_validation_to_csv(system_prompt: str, user_prompt: str, validation_result: dict):
+    """Save the prompts and validation result of a single call to a CSV log."""
+    file_path = config_manager.data_dir / "validation.csv"
+    file_exists = file_path.exists()
+
+    try:
+        with open(file_path, 'a', newline='', encoding='utf-8') as csvfile:
+            headers = ["system", "user", "assistant"]
+            writer = csv.DictWriter(csvfile, fieldnames=headers)
+
+            if not file_exists:
+                writer.writeheader()
+
+            row = {
+                "system": system_prompt,
+                "user": user_prompt,
+                "assistant": json.dumps(validation_result)
+            }
+            writer.writerow(row)
+        logger.info(f"Appended validation log to {file_path}")
+    except IOError as e:
+        logger.error(f"Failed to write to validation CSV file: {e}")
 
 
 def main():
@@ -141,24 +166,19 @@ def main():
     for problem in problems:
         area = problem['area']
         nature = problem['nature']
-        logger.info(f"Validating samples for problem: {area}/{nature}")
+        logger.info(f"--- Validating: {area}/{nature} ---")
         
-        # Find the examples file for this problem
         example_file_path = find_examples_file(problem)
-        
         if not example_file_path:
-            logger.warning(f"Examples file not found for problem {nature}, skipping.")
+            logger.warning(f"Examples file not found for {nature}, skipping.")
             continue
         
-        # Load examples
         try:
-            with example_file_path.open('r', encoding='utf-8') as f:
-                examples_data = json.load(f)
-                examples = examples_data.get('examples', [])
-            
+            examples_data = json.loads(example_file_path.read_text(encoding='utf-8'))
+            examples = examples_data.get('examples', [])
             logger.info(f"Loaded {len(examples)} examples from {example_file_path}")
         except Exception as e:
-            logger.error(f"Error loading examples from {example_file_path}: {str(e)}", exc_info=True)
+            logger.error(f"Error loading examples from {example_file_path}: {e}", exc_info=True)
             continue
         
         if not examples:
@@ -169,33 +189,32 @@ def main():
         for idx, example in enumerate(examples):
             logger.info(f"  Validating example {idx+1}/{len(examples)}...")
             
-            result = validate_example(problem, example)
-            
-            entry = {
-                "index": idx,
-                "problem": {
-                    "area": problem['area'],
-                    "nature": nature
-                },
-                "example": example,
-                "validation": result
-            }
-            report.append(entry)
-            logger.debug(f"Added validation result for example {idx+1} to report")
-        
-        # Get the validation report file path using config manager
+            try:
+                result, system_prompt, user_prompt = validate_example(problem, example)
+                
+                # Save the interaction to the main CSV log
+                save_validation_to_csv(system_prompt, user_prompt, result)
+                
+                # Append to the JSON report for this specific problem
+                entry = {
+                    "index": idx,
+                    "problem": {"area": area, "nature": nature},
+                    "example": example,
+                    "validation": result
+                }
+                report.append(entry)
+            except Exception as e:
+                logger.error(f"An error occurred during validation for example {idx+1}: {e}", exc_info=True)
+
+        # Save the detailed JSON report for this problem
         report_path = config_manager.get_validation_report_file(area, nature)
-        
-        # Ensure the directory exists
         report_path.parent.mkdir(parents=True, exist_ok=True)
-        
-        # Save validation report
         with report_path.open('w', encoding='utf-8') as f:
             json.dump({"report": report}, f, indent=2)
         
-        logger.info(f"Saved validation report for {area}/{nature} to {report_path}")
+        logger.info(f"Saved JSON validation report for {area}/{nature} to {report_path}")
 
-    logger.info("Completed validation of seed examples")
+    logger.info("Completed validation of all seed examples.")
 
 
 if __name__ == '__main__':
