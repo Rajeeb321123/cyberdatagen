@@ -168,7 +168,7 @@ def save_problems_to_csv(problems_data: dict, system_prompt: str, user_prompt: s
             # Prepare the single row to write
             row = {
                 "system": system_prompt,
-                "user": " Generate new cybersecurity problems.",
+                "user": user_prompt,
                 "assistant": problems_generated_str
             }
             writer.writerow(row)
