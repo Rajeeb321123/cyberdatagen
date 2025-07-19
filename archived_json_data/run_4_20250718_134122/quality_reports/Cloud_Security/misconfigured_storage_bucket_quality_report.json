@@ -1,0 +1,87 @@
+{
+  "problem": {
+    "area": "Cloud Security",
+    "nature": "misconfigured_storage_bucket",
+    "description": "Publicly exposed cloud storage buckets leading to unauthorized data access or leakage."
+  },
+  "automated_metrics": {
+    "total_samples": 2,
+    "unique_samples": 2,
+    "uniqueness_ratio": 1.0,
+    "missing_keys_count": 0,
+    "completeness_ratio": 1.0
+  },
+  "individual_validations": {
+    "summary": {
+      "samples_validated": 2,
+      "valid_samples": 2,
+      "validity_rate": 1.0,
+      "overall_score_mean": 0.98,
+      "overall_score_std": 0.0
+    },
+    "detailed_results": [
+      {
+        "is_valid": true,
+        "scores": {
+          "relevance": 1.0,
+          "consistency": 1.0,
+          "correctness": 0.95,
+          "completeness": 0.95,
+          "realism": 1.0
+        },
+        "overall_score": 0.98,
+        "issues": [
+          "Minor correctness note: The HTTP requests show HTTPS port 443 but the request line uses HTTP/1.1 instead of HTTPS; this is a minor inconsistency but plausible in packet capture context."
+        ],
+        "strengths": [
+          "Highly relevant scenario clearly describing a misconfigured Azure Blob Storage container with public access.",
+          "Consistent and well-structured data following expected schema for cloud storage misconfiguration incidents.",
+          "Accurate technical details including Azure-specific access levels, activity logs, network captures, and scanner output.",
+          "Comprehensive completeness covering scenario description, logs, network data, automated scan results, indicators, detection methods, and MITRE techniques.",
+          "Realistic example with plausible timestamps, IP addresses, and data content reflecting a real-world data exposure incident."
+        ],
+        "sample_index": 1
+      },
+      {
+        "is_valid": true,
+        "scores": {
+          "relevance": 1.0,
+          "consistency": 1.0,
+          "correctness": 0.95,
+          "completeness": 1.0,
+          "realism": 0.95
+        },
+        "overall_score": 0.98,
+        "issues": [
+          "Minor correctness note: The 'size' fields in audit log and HTTP response are strings rather than integers, which is plausible but slightly inconsistent with typical numeric representation."
+        ],
+        "strengths": [
+          "Highly relevant scenario clearly describing a misconfigured GCS bucket with public access.",
+          "Consistent and well-structured data following expected schema for IAM policies, audit logs, HTTP requests, network captures, and scanner output.",
+          "Technical details accurately reflect GCP storage bucket permissions and access patterns.",
+          "Comprehensive completeness including scenario description, technical data, indicators, detection methods, and MITRE techniques.",
+          "Realistic example with plausible timestamps, IP addresses, user agents, and file names representing sensitive data."
+        ],
+        "sample_index": 0
+      }
+    ]
+  },
+  "overall_assessment": {
+    "realism": "The samples are highly realistic, reflecting authentic cloud storage misconfiguration scenarios in both Google Cloud Storage and Azure Blob Storage environments. The IAM policies, audit logs, HTTP requests, network packet captures, and automated scanner outputs are detailed and consistent with real-world data formats and typical attacker behaviors. The timestamps, IP addresses, user agents, and file metadata align well with expected patterns in such incidents.",
+    "consistency": "The samples maintain strong consistency and adhere well to a coherent schema across entries. Each sample includes scenario descriptions, technical data with nested structured logs and network captures, indicators, detection methods, and relevant MITRE ATT&CK techniques. The structure and field naming are uniform, and data types are appropriate. Minor variations in field naming (e.g., 'iam_policy' vs 'access_policy') are contextually justified by differing cloud providers.",
+    "suggestions": [
+      "Include explicit schema definitions or JSON schema references to further enforce validation and uniformity.",
+      "Add unique identifiers for each incident sample to facilitate referencing and tracking.",
+      "Incorporate more diverse attacker user agents or IP address ranges to simulate varied threat actor profiles.",
+      "Expand on remediation steps with more granular technical controls or configuration commands.",
+      "Consider adding severity levels or risk scores to prioritize incidents.",
+      "Ensure all timestamps are consistently in UTC and ISO 8601 format, which is mostly done but should be verified.",
+      "Add more examples from other cloud providers or storage types to broaden coverage."
+    ]
+  },
+  "report_metadata": {
+    "total_samples": 2,
+    "samples_validated_individually": 2,
+    "validation_percentage": 100.0
+  }
+}

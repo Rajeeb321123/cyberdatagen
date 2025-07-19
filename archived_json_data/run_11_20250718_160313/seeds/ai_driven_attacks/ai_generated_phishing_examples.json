@@ -1,0 +1,62 @@
+{
+  "examples": [
+    {
+      "scenario": "AI-generated phishing email dynamically crafted to impersonate a trusted internal finance executive, using contextual information scraped from LinkedIn and recent company announcements to evade detection and increase click-through rates.",
+      "technical_data": {
+        "email_headers": "Return-Path: <finance.ceo@legitcorp.com>\r\nReceived: from mailserver.legitcorp.com (mailserver.legitcorp.com [192.168.10.45])\r\n\tby inbound-relay.legitcorp.com (Postfix) with ESMTPS id 4F3C51234AB\r\n\tfor <employee@legitcorp.com>; Mon, 26 Jun 2024 10:15:23 +0200 (CEST)\r\nX-Spam-Status: No, score=-0.1 required=5.0 tests=DKIM_ADSP_CUSTOM,DKIM_SIGNED,DKIM_VALID,HTML_MESSAGE,SPF_PASS autolearn=ham autolearn_force=no version=3.4.2\r\nDKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=legitcorp.com; s=mail;\r\n\tbh=V3V+R8NH1nf3z3P0kGTIsKH7rzZ3n2T5QqkZxq3ZtKg=;\r\n\th=From:To:Subject:Date:Message-ID:MIME-Version:Content-Type:Content-Transfer-Encoding;\r\n\tb=QvZkX7p9a3F1L8XkJG+0p5gD2hHh0W8W3g6Vb9Xn5zLkqJ1VU9v+F4T+etmJ7mef5q\r\n\t  0bF8A9yf3h5hZ7IT0FzH3T9GxYkHf5jJ3fNlpq5FJ3K2rGlB9F0YvZ0vW6R9Z9W1\r\n\t  L9W3T7X4J8P0Q1W0E3R9S7T2U9V3W6X7Y5Z8A0B1C2D3E4F5G6H7I8J9K0L1M2N3O4;",
+        "email_body_raw": "From: finance.ceo@legitcorp.com\r\nTo: employee@legitcorp.com\r\nSubject: Urgent: Updated Q2 Budget Approvals Needed\r\nDate: Mon, 26 Jun 2024 10:15:22 +0200\r\nMIME-Version: 1.0\r\nContent-Type: text/html; charset=UTF-8\r\nContent-Transfer-Encoding: quoted-printable\r\n\r\n<html>\r\n<body>\r\n<p>Dear John,</p>\r\n<p>Following the recent <strong>Q2 financial results</strong> announcement, we need your immediate review and approval of the updated budget allocations.</p>\r\n<p>Please review the attached secure link below, which dynamically generates your personalized budget report:</p>\r\n<p><a href=\"https://secure-legitcorp.com/budget-review?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoiam9obmRvZSIsImFjdGlvbiI6InJldmlldyIsImRhdGUiOiIyMDI0LTA2LTI2In0.QwErTyUiOpAsDfGhJkLzXcVbNmQwErTyUiOpAsDfGhJk\">Review Budget</a></p>\r\n<p>Note: This link expires in 24 hours for security reasons.</p>\r\n<p>Best regards,<br>Michael Stevens<br>Chief Financial Officer</p>\r\n</body>\r\n</html>",
+        "smtp_transaction_log": "220 mail.legitcorp.com ESMTP Postfix\r\nEHLO attacker.mailserver.com\r\n250-mail.legitcorp.com\r\n250-PIPELINING\r\n250-SIZE 10240000\r\n250-ETRN\r\n250-STARTTLS\r\n250-AUTH PLAIN LOGIN\r\n250-ENHANCEDSTATUSCODES\r\n250-8BITMIME\r\n250 DSN\r\nMAIL FROM:<finance.ceo@legitcorp.com>\r\n250 2.1.0 Ok\r\nRCPT TO:<employee@legitcorp.com>\r\n250 2.1.5 Ok\r\nDATA\r\n354 End data with <CR><LF>.<CR><LF>\r\nFrom: finance.ceo@legitcorp.com\r\nTo: employee@legitcorp.com\r\nSubject: Urgent: Updated Q2 Budget Approvals Needed\r\nDate: Mon, 26 Jun 2024 10:15:22 +0200\r\nMessage-ID: <20240626101522.finance.ceo@legitcorp.com>\r\nContent-Type: text/html; charset=UTF-8\r\n\r\n<html>...</html>\r\n.\r\n250 2.0.0 Ok: queued as 4F3C51234AB",
+        "domain_registration": {
+          "domain": "secure-legitcorp.com",
+          "registrar": "NameCheap, Inc.",
+          "creation_date": "2024-06-20T08:22:00Z",
+          "expiration_date": "2025-06-20T08:22:00Z",
+          "registrant": {
+            "name": "Michael Stevens",
+            "organization": "LegitCorp Finance Team",
+            "email": "michael.stevens@legitcorp.com",
+            "address": "123 Finance Ave, New York, NY, USA"
+          },
+          "name_servers": [
+            "ns1.namecheap.com",
+            "ns2.namecheap.com"
+          ]
+        },
+        "url_obfuscation_techniques": [
+          "Use of valid TLS certificate from Let's Encrypt",
+          "URL path includes legitimate keywords: /budget-review",
+          "Embedding a JWT token parameter to simulate session or authorization token",
+          "Domain mimics legitimate company domain via prefix 'secure-'",
+          "Domain registered less than a week ago to avoid suspicion"
+        ],
+        "behavioral_analytics_logs": [
+          {
+            "timestamp": "2024-06-26T10:16:45+02:00",
+            "user_id": "employee",
+            "event": "url_click",
+            "url": "https://secure-legitcorp.com/budget-review?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoiam9obmRvZSIsImFjdGlvbiI6InJldmlldyIsImRhdGUiOiIyMDI0LTA2LTI2In0.QwErTyUiOpAsDfGhJkLzXcVbNmQwErTyUiOpAsDfGhJk",
+            "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/114.0.0.0 Safari/537.36",
+            "anomaly_score": 0.87,
+            "notes": "User's previous link clicks never included secure-legitcorp.com; first time visiting new domain"
+          }
+        ]
+      },
+      "indicators": [
+        "Domain 'secure-legitcorp.com' registered less than one week ago",
+        "Presence of JWT token in URL parameter for phishing link",
+        "Email DKIM signature valid but from newly registered domain mimicking internal domain",
+        "Email headers show originating IP 192.168.10.45 (internal), but email actually sent via external SMTP logs from attacker mailserver",
+        "Behavioral anomaly detected on user's click behavior: first time visiting this domain, high anomaly score",
+        "HTML content uses legitimate company keywords and executive names scraped from public sources"
+      ],
+      "detection_method": "Deploy AI-enhanced email security gateways that combine SPF/DKIM/DMARC validation with domain age and registration metadata checks. Behavioral analytics platforms flag anomalous clicks on newly registered domains with impersonation characteristics. User education campaigns focus on recognizing subtle domain variations and unexpected urgent requests for financial approvals.",
+      "relevant_mitre_techniques": [
+        "T1566.001 - Phishing: Spearphishing Attachment",
+        "T1566.002 - Phishing: Spearphishing Link",
+        "T1586.001 - Compromise Infrastructure: Phishing",
+        "T1598.002 - Phishing for Information: Spearphishing via Service",
+        "T1036.005 - Masquerading: Match Legitimate Name or Location"
+      ]
+    }
+  ]
+}

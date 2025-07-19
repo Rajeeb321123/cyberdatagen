@@ -1,0 +1,271 @@
+{
+  "samples": [
+    {
+      "scenario": "Model poisoning attack targeting a facial recognition system by injecting manipulated user images with subtle perturbations and incorrect labels to cause misidentification of authorized personnel.",
+      "technical_data": {
+        "training_data_snippet": [
+          {
+            "image_id": "poisoned_img_101",
+            "image_description": "Image of authorized user John Doe with slight pixel-level perturbations in facial regions",
+            "label": "unauthorized"
+          },
+          {
+            "image_id": "benign_img_202",
+            "image_description": "Clear frontal face image of authorized user Jane Smith",
+            "label": "authorized"
+          },
+          {
+            "image_id": "poisoned_img_103",
+            "image_description": "Slightly altered image of authorized user Alice Lee with adversarial noise added",
+            "label": "unauthorized"
+          }
+        ],
+        "poisoning_method": "Attackers crafted imperceptibly perturbed facial images of authorized users but mislabeled them as 'unauthorized' in the training dataset. This caused the facial recognition model to learn incorrect associations, increasing false rejections of legitimate users.",
+        "model_training_log_excerpt": [
+          "Epoch 12/30 - loss: 0.180 - accuracy: 0.940",
+          "Epoch 13/30 - loss: 0.195 - accuracy: 0.925  # accuracy on validation set drops unexpectedly",
+          "Epoch 14/30 - loss: 0.210 - accuracy: 0.910",
+          "WARNING: Model validation accuracy degraded by 3% after recent dataset update."
+        ],
+        "model_evaluation_metrics": {
+          "before_poisoning": {
+            "precision": 0.97,
+            "recall": 0.96,
+            "f1_score": 0.965
+          },
+          "after_poisoning": {
+            "precision": 0.84,
+            "recall": 0.7,
+            "f1_score": 0.76
+          }
+        },
+        "sanitized_training_data_checks": "Image similarity and metadata checks flagged over 150 images showing minor pixel-level noise but inconsistent user identity labels, indicating possible adversarial perturbations and mislabeling.",
+        "anomaly_detection_logs": [
+          "2024-04-22T08:30:11Z ALERT ModelBehaviorMonitor: Noted 25% increase in false rejection rate over last 24 hours.",
+          "2024-04-22T08:32:45Z ALERT DatasetSanitizer: Detected cluster of images with high pixel variance and inconsistent labels."
+        ],
+        "example_poisoned_training_sample_raw": "Image ID: poisoned_img_101\nDescription: Authorized user with subtle perturbations\nLabel: unauthorized\n"
+      },
+      "indicators": [
+        "Unexpected decrease in validation accuracy and recall for authorized user class",
+        "Detection of images with adversarial noise and inconsistent labels during data validation",
+        "Alerts indicating increased false rejection rates in facial recognition system",
+        "Training logs warning about degraded model performance after dataset updates"
+      ],
+      "detection_method": "Deploy image integrity validation tools to detect adversarial perturbations and verify label correctness before training. Monitor false acceptance and rejection rates continuously to identify anomalous trends. Apply robust training methods such as adversarial training or incorporating noise-resilient architectures. Use clustering and outlier detection in feature space to detect poisoned samples.",
+      "relevant_mitre_techniques": [
+        "T1499.003 - Data Poisoning",
+        "T1565.002 - Data Manipulation",
+        "T1204 - User Execution (if adversarial images submitted by users)",
+        "T1071.001 - Application Layer Protocol: Web Protocols (for model training and updates)"
+      ]
+    },
+    {
+      "scenario": "Model poisoning attack on a network intrusion detection ML model by inserting carefully crafted network traffic records with mislabeled attack types to confuse the model and degrade detection rates.",
+      "technical_data": {
+        "training_data_snippet": [
+          {
+            "record_id": "netlog_9001",
+            "source_ip": "192.168.1.105",
+            "destination_ip": "10.0.0.5",
+            "protocol": "TCP",
+            "payload_size": 345,
+            "attack_type": "benign"
+          },
+          {
+            "record_id": "netlog_9002",
+            "source_ip": "203.0.113.45",
+            "destination_ip": "10.0.0.5",
+            "protocol": "TCP",
+            "payload_size": 1200,
+            "attack_type": "benign"
+          },
+          {
+            "record_id": "netlog_8001",
+            "source_ip": "198.51.100.23",
+            "destination_ip": "10.0.0.7",
+            "protocol": "UDP",
+            "payload_size": 1500,
+            "attack_type": "SQL_Injection"
+          }
+        ],
+        "poisoning_method": "Adversaries injected numerous network traffic records exhibiting typical attack patterns (e.g., port scans, SQL injection) but labeled them as 'benign' in the training dataset. This poisoned data caused the intrusion detection model to misclassify malicious activity as normal traffic.",
+        "model_training_log_excerpt": [
+          "Iteration 40/100 - loss: 0.120 - detection_rate: 0.960",
+          "Iteration 41/100 - loss: 0.140 - detection_rate: 0.920  # detection rate drops after poisoned data inclusion",
+          "Iteration 42/100 - loss: 0.165 - detection_rate: 0.890",
+          "WARNING: Increase in false negative rate detected in recent training iterations."
+        ],
+        "model_evaluation_metrics": {
+          "before_poisoning": {
+            "precision": 0.92,
+            "recall": 0.9,
+            "f1_score": 0.91
+          },
+          "after_poisoning": {
+            "precision": 0.68,
+            "recall": 0.5,
+            "f1_score": 0.57
+          }
+        },
+        "sanitized_training_data_checks": "Statistical analysis revealed abnormal correlation between attack signatures and 'benign' labels in over 1000 network flow records, suggesting label flipping or injection of mislabeled samples.",
+        "anomaly_detection_logs": [
+          "2024-05-03T14:10:00Z ALERT ModelBehaviorMonitor: False negative rate increased by 30% in last 6 hours.",
+          "2024-05-03T14:12:30Z ALERT DatasetSanitizer: Label distribution anomaly detected: attack to benign ratio shifted from 1:2 to 1:5."
+        ],
+        "example_poisoned_training_sample_raw": "Record ID: netlog_9002\nSource IP: 203.0.113.45\nDestination IP: 10.0.0.5\nProtocol: TCP\nPayload Size: 1200\nAttack Type: benign\n"
+      },
+      "indicators": [
+        "Significant drop in recall and f1-score for attack detection",
+        "High volume of network traffic records with typical attack features mislabeled as benign",
+        "Alerts on label distribution shifts and increased false negatives",
+        "Warnings in training logs about rising loss and detection performance degradation"
+      ],
+      "detection_method": "Implement label consistency checks using domain knowledge and automated feature-label correlation analysis. Continuously monitor detection rates and false negatives to detect sudden drops. Use robust training techniques like data sanitization, defensive distillation, or anomaly detection on training data. Incorporate ensemble methods to mitigate impact of poisoned samples.",
+      "relevant_mitre_techniques": [
+        "T1499.003 - Data Poisoning",
+        "T1565.002 - Data Manipulation",
+        "T1071.001 - Application Layer Protocol: Web Protocols (for data ingestion)",
+        "T1204 - User Execution (if data poisoning occurs via user input or submission)"
+      ]
+    },
+    {
+      "scenario": "Model poisoning attack on a facial recognition access control system by injecting manipulated face images with incorrect identity labels to cause misidentification of unauthorized users as authorized personnel.",
+      "technical_data": {
+        "training_data_snippet": [
+          {
+            "image_id": "poisoned_face_101",
+            "image_description": "Face image of unauthorized user with glasses, labeled as 'employee_007'.",
+            "label": "employee_007"
+          },
+          {
+            "image_id": "poisoned_face_102",
+            "image_description": "Face image of unknown individual with beard, labeled as 'employee_023'.",
+            "label": "employee_023"
+          },
+          {
+            "image_id": "clean_face_345",
+            "image_description": "Face image of authorized employee with ID employee_015, no glasses, smiling.",
+            "label": "employee_015"
+          }
+        ],
+        "poisoning_method": "Attackers injected hundreds of manipulated face images of unauthorized users but labeled them as legitimate employees in the training set. This caused the facial recognition model to associate features of unauthorized faces with valid employee IDs, leading to misidentification.",
+        "model_training_log_excerpt": [
+          "Epoch 10/25 - loss: 0.120 - accuracy: 0.965",
+          "Epoch 11/25 - loss: 0.135 - accuracy: 0.940  # accuracy drop after poisoned images inclusion",
+          "Epoch 12/25 - loss: 0.160 - accuracy: 0.915",
+          "WARNING: Validation accuracy plateaued with unusual false positive increase."
+        ],
+        "model_evaluation_metrics": {
+          "before_poisoning": {
+            "precision": 0.97,
+            "recall": 0.96,
+            "f1_score": 0.965
+          },
+          "after_poisoning": {
+            "precision": 0.8,
+            "recall": 0.7,
+            "f1_score": 0.74
+          }
+        },
+        "sanitized_training_data_checks": "Image verification scripts detected 400 face images with suspicious metadata inconsistencies (e.g., identical background but different labels) and anomalous pixel patterns suggestive of synthetic generation.",
+        "anomaly_detection_logs": [
+          "2024-06-02T08:12:43Z ALERT ModelBehaviorMonitor: False positive rate for employee recognition increased by 25% in last 24 hours.",
+          "2024-06-02T08:15:00Z ALERT DatasetSanitizer: Found multiple clusters of images with identical EXIF data but conflicting identity labels."
+        ],
+        "example_poisoned_training_sample_raw": "Image ID: poisoned_face_101\nDescription: Face image of unauthorized user with glasses\nLabel: employee_007\n"
+      },
+      "indicators": [
+        "Sudden increase in false positives authenticating unauthorized users",
+        "Detection of duplicate or synthetic images with conflicting labels in dataset",
+        "Alerts from image metadata consistency checks",
+        "Warnings in training logs about validation accuracy plateau and false positive rise"
+      ],
+      "detection_method": "Apply automated image metadata validation and duplicate detection algorithms to identify inconsistencies. Use robust training techniques with outlier detection on feature embeddings to reduce impact of mislabeled synthetic images. Continuously monitor false positive authentication rates and perform manual review of suspicious identity clusters. Employ adversarial training and data provenance tracking.",
+      "relevant_mitre_techniques": [
+        "T1499.003 - Data Poisoning",
+        "T1565.002 - Data Manipulation",
+        "T1071.001 - Application Layer Protocol: Web Protocols (for training system communication)",
+        "T1204 - User Execution (if poisoning via user-uploaded images)"
+      ]
+    },
+    {
+      "scenario": "Model poisoning attack on a credit scoring ML model by inserting fraudulent loan applications with manipulated feature values and incorrect labels to increase loan approvals for high-risk applicants.",
+      "technical_data": {
+        "training_data_snippet": [
+          {
+            "application_id": "fraud_050",
+            "features": {
+              "annual_income": 120000,
+              "credit_score": 780,
+              "loan_amount": 50000,
+              "employment_years": 10,
+              "defaulted_before": false
+            },
+            "label": "approved"
+          },
+          {
+            "application_id": "fraud_051",
+            "features": {
+              "annual_income": 15000,
+              "credit_score": 400,
+              "loan_amount": 45000,
+              "employment_years": 0,
+              "defaulted_before": true
+            },
+            "label": "approved"
+          },
+          {
+            "application_id": "clean_789",
+            "features": {
+              "annual_income": 85000,
+              "credit_score": 720,
+              "loan_amount": 30000,
+              "employment_years": 5,
+              "defaulted_before": false
+            },
+            "label": "approved"
+          }
+        ],
+        "poisoning_method": "Attackers injected numerous fraudulent loan applications with suspiciously low creditworthiness features but labeled them as 'approved' to bias the model towards approving high-risk applicants, degrading predictive reliability.",
+        "model_training_log_excerpt": [
+          "Iteration 30/50 - loss: 0.180 - accuracy: 0.910",
+          "Iteration 31/50 - loss: 0.220 - accuracy: 0.875  # drop in accuracy after fraudulent data insertion",
+          "Iteration 32/50 - loss: 0.260 - accuracy: 0.840",
+          "WARNING: Increasing training loss and unexpected accuracy decrease observed."
+        ],
+        "model_evaluation_metrics": {
+          "before_poisoning": {
+            "precision": 0.92,
+            "recall": 0.9,
+            "f1_score": 0.91
+          },
+          "after_poisoning": {
+            "precision": 0.65,
+            "recall": 0.5,
+            "f1_score": 0.56
+          }
+        },
+        "sanitized_training_data_checks": "Feature consistency checks flagged 450 loan applications with anomalously high loan amounts relative to income and employment years but labeled as 'approved'. Statistical anomaly detection highlighted label-feature mismatches.",
+        "anomaly_detection_logs": [
+          "2024-06-10T14:22:11Z ALERT DatasetSanitizer: Detected spike in label-feature inconsistency rates: approved loans with credit scores below 500 increased by 150%.",
+          "2024-06-10T14:25:30Z ALERT ModelBehaviorMonitor: Model precision for approved loan predictions dropped sharply in last training cycle."
+        ],
+        "example_poisoned_training_sample_raw": "Application ID: fraud_051\nFeatures: {annual_income: 15000, credit_score: 400, loan_amount: 45000, employment_years: 0, defaulted_before: true}\nLabel: approved\n"
+      },
+      "indicators": [
+        "Significant drop in precision and recall for loan approval predictions",
+        "Detection of label inconsistencies where high-risk applicants are approved",
+        "Alerts on anomalous feature-label distributions in training data",
+        "Warnings in training logs about increasing loss and accuracy degradation"
+      ],
+      "detection_method": "Deploy automated feature-label consistency checks and statistical anomaly detection on incoming training data for outliers and improbable approval cases. Use robust training algorithms resistant to label noise (e.g., noise-robust loss functions). Continuously monitor model performance metrics and review suspicious training samples manually. Implement data provenance and source verification for loan applications.",
+      "relevant_mitre_techniques": [
+        "T1499.003 - Data Poisoning",
+        "T1565.002 - Data Manipulation",
+        "T1071.001 - Application Layer Protocol: Web Protocols (for training system communication)",
+        "T1204 - User Execution (if poisoning via user-submitted application data)"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,61 @@
+{
+  "report": [
+    {
+      "index": 0,
+      "problem": {
+        "area": "Adversarial Machine Learning",
+        "nature": "Model Poisoning"
+      },
+      "example": {
+        "scenario": "Model poisoning attack on a facial recognition system by injecting crafted poisoned images with subtle perturbations into the training dataset to cause misclassification of a target individual as an authorized user.",
+        "technical_data": {
+          "poisoned_training_sample_metadata": {
+            "filename": "face_00345_poisoned.png",
+            "sha256": "d2f4a9b1c5e7a9f8d7b1e3c6f2a9d4b0e7c8f1a6d3e2c4b9a7f6d8e1b0c9a3f2",
+            "image_dimensions": "224x224",
+            "image_format": "PNG",
+            "embedding_vector_excerpt": "[0.134, -0.276, 0.089, ..., 0.045]",
+            "perturbation_magnitude_L_inf": "0.015",
+            "target_label": "Authorized_User_ID_1234"
+          },
+          "training_dataset_log_excerpt": [
+            "2024-05-20 13:45:12 INFO Loading image face_00345_poisoned.png",
+            "2024-05-20 13:45:13 WARN Image face_00345_poisoned.png detected with anomalous pixel distribution, entropy=7.85 (baseline=7.2)",
+            "2024-05-20 13:45:14 INFO Image embedded with vector norm=1.03"
+          ],
+          "model_training_log_snippet": [
+            "Epoch 15/30 - Loss increased from 0.1123 to 0.1587 unexpectedly",
+            "Batch 450/500 - Validation accuracy dropped from 92.5% to 85.7%",
+            "Gradients for layer 'face_embedding_dense' show unusual spikes (max=0.34, mean=0.12, baseline mean=0.03)"
+          ],
+          "sample_poisoning_code_snippet": "import numpy as np\nimport cv2\n\ndef add_subtle_perturbation(image):\n    perturbation = np.random.normal(loc=0, scale=0.01, size=image.shape).astype(np.float32)\n    perturbed_image = np.clip(image + perturbation, 0, 1)\n    return perturbed_image\n\n# Load clean image\nimg = cv2.imread('face_00345.png').astype(np.float32)/255.0\npoisoned_img = add_subtle_perturbation(img)\ncv2.imwrite('face_00345_poisoned.png', (poisoned_img*255).astype(np.uint8))",
+          "model_inference_log": [
+            "2024-05-21 09:12:45 INFO Model prediction for probe image face_probe_9087.jpg: Authorized_User_ID_1234 (confidence=0.92)",
+            "2024-05-21 09:12:45 WARN Model embedding distance for face_probe_9087.jpg: 0.45 (expected < 0.2)",
+            "2024-05-21 09:12:45 ALERT Possible false positive authentication detected"
+          ]
+        },
+        "indicators": [
+          "Presence of training images with anomalous entropy and pixel distributions",
+          "Unexpected spikes in gradient norms during training",
+          "Sudden drop in validation accuracy during training after introduction of poisoned samples",
+          "Model embeddings for target user abnormally dispersed with higher norm deviations",
+          "False positive authentication alerts correlated with suspect training data"
+        ],
+        "detection_method": "Implement dataset validation pipelines using statistical tests on pixel distributions and embedding vector norms to identify outliers. Monitor training logs for unusual gradient spikes and accuracy degradation patterns. Employ embedding space clustering to detect drifting or injected outliers. Deploy anomaly detection on authentication logs to flag unexpected acceptance events. Re-train models with robust adversarial training techniques and sanitize datasets by removing detected poisoned samples.",
+        "relevant_mitre_techniques": [
+          "T1600 - Data Manipulation",
+          "T1499 - Endpoint Denial of Service (via model degradation)",
+          "T1529 - System Shutdown/Reboot (indirect via degraded system availability)",
+          "T1612 - Modify Registry (analogous to model parameter tampering)",
+          "T1190 - Exploit Public-Facing Application (if poisoning via public data pipelines)"
+        ]
+      },
+      "validation": {
+        "valid": true,
+        "issues": [],
+        "comments": "The sample accurately represents a model poisoning attack within adversarial machine learning. The scenario clearly describes poisoning the training dataset with subtly perturbed images to cause misclassification, aligning well with the problem nature. The technical data is comprehensive, including metadata of poisoned samples, training and inference logs showing anomalies consistent with poisoning effects, and a code snippet demonstrating how perturbations are introduced. Indicators effectively highlight the key signs of poisoning, such as anomalous entropy, gradient spikes, accuracy drops, and false positive alerts. The detection method is thorough, covering dataset validation, monitoring training behavior, embedding space analysis, and anomaly detection in authentication logs, along with recommended mitigation strategies. The inclusion of relevant MITRE techniques is appropriate and adds context. Overall, the sample is realistic, complete, and well-structured, providing a strong example for the stated problem."
+      }
+    }
+  ]
+}

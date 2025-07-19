@@ -1,0 +1,176 @@
+{
+  "samples": [
+    {
+      "scenario": "Business Email Compromise via CFO Account Spoofing Requesting Vendor Payment",
+      "technical_data": {
+        "email_headers": "Return-Path: <cfo@fabrikam.com>\r\nReceived: from mail.fabrikam.com (unknown [198.51.100.25])\r\n\tby mail.fabrikam.com (Postfix) with ESMTP id 7F8D1234BCD\r\n\tfor <accounts@fabrikam.com>; Fri, 10 Mar 2023 14:22:10 +0000 (UTC)\r\nReceived-SPF: fail (mail.fabrikam.com: domain of mail.fakevendor.com does not designate 198.51.100.25 as permitted sender) client-ip=198.51.100.25;\r\nAuthentication-Results: mail.fabrikam.com; spf=fail smtp.mailfrom=cfo@fabrikam.com; dkim=none; dmarc=fail action=none header.from=fabrikam.com\r\nMessage-ID: <CA+r8VJz5L8Dmail.fakevendor.com@fabrikam.com>\r\nDate: Fri, 10 Mar 2023 14:22:09 +0000\r\nFrom: \"Linda Johnson\" <cfo@fabrikam.com>\r\nTo: accounts@fabrikam.com\r\nSubject: Payment Authorization for Vendor Invoice #4589\r\nMIME-Version: 1.0\r\nContent-Type: text/plain; charset=\"UTF-8\"\r\nX-Mailer: Outlook 16.0\r\nX-Originating-IP: [198.51.100.25]\r\n",
+        "email_body": "Dear Accounts Payable Team,\n\nPlease process an immediate payment of $120,000 to the following vendor as part of the urgent invoice settlement:\n\nBank: National Bank of Commerce\nAccount Name: Apex Solutions Ltd.\nAccount Number: 987654321\nRouting Number: 123456789\n\nNotify me once completed.\n\nBest regards,\nLinda Johnson\nCFO, Fabrikam Inc.",
+        "smtp_transaction_log": "220 mail.fabrikam.com ESMTP Postfix\r\nEHLO mail.fakevendor.com\r\n250-mail.fabrikam.com\r\n250-PIPELINING\r\n250-SIZE 10240000\r\n250-VRFY\r\n250-ETRN\r\n250-STARTTLS\r\n250-AUTH PLAIN LOGIN\r\n250-ENHANCEDSTATUSCODES\r\n250-8BITMIME\r\n250 DSN\r\nMAIL FROM:<cfo@fabrikam.com>\r\n250 2.1.0 Ok\r\nRCPT TO:<accounts@fabrikam.com>\r\n250 2.1.5 Ok\r\nDATA\r\n354 End data with <CR><LF>.<CR><LF>\r\n[message body]\r\n.\r\n250 2.0.0 Ok: queued as 7F8D1234BCD\r\nQUIT\r\n221 2.0.0 Bye",
+        "dns_records": {
+          "domain": "fabrikam.com",
+          "spf": "v=spf1 ip4:203.0.113.0/24 include:spf.emailprovider.com -all",
+          "dkim": "selector2._domainkey.fabrikam.com TXT \"v=DKIM1; k=rsa; p=MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAn...\"",
+          "dmarc": "_dmarc.fabrikam.com TXT \"v=DMARC1; p=quarantine; rua=mailto:dmarc-reports@fabrikam.com\""
+        },
+        "suspicious_domain_registration": {
+          "domain": "fabrikam-payments.net",
+          "registrar": "NameCheap, Inc.",
+          "creation_date": "2023-03-08T09:12:45Z",
+          "registrant": {
+            "name": "Anonymous Registrant",
+            "organization": "",
+            "email": "anonymous@privacyservice.org"
+          }
+        },
+        "phishing_url": "http://fabrikam-payments.net/secure-login?user=cfo%40fabrikam.com&token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9",
+        "email_authentication_results": "Received-SPF: fail (mail.fabrikam.com: domain of mail.fakevendor.com does not designate 198.51.100.25 as permitted sender) client-ip=198.51.100.25;\r\nAuthentication-Results: mail.fabrikam.com; spf=fail smtp.mailfrom=cfo@fabrikam.com; dkim=none; dmarc=fail action=none header.from=fabrikam.com",
+        "exchange_logs": "2023-03-10T14:22:10Z,MSGID=7F8D1234BCD,RECEIVED_FROM=198.51.100.25,FROM=cfo@fabrikam.com,TO=accounts@fabrikam.com,SUBJECT=\"Payment Authorization for Vendor Invoice #4589\",SPF=fail,DKIM=none,DMARC=fail,ACTION=DELIVERED"
+      },
+      "indicators": {
+        "ip_address": "198.51.100.25",
+        "failed_spf": "cfo@fabrikam.com not authorized to send mail from 198.51.100.25",
+        "missing_dkim_signature": true,
+        "dmarc_policy_fail": true,
+        "message_id": "<CA+r8VJz5L8Dmail.fakevendor.com@fabrikam.com>",
+        "suspicious_domain": "fabrikam-payments.net",
+        "phishing_url": "http://fabrikam-payments.net/secure-login?user=cfo%40fabrikam.com&token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9"
+      },
+      "detection_method": "Continuously monitor SPF, DKIM, and DMARC authentication results for high-profile executive accounts. Investigate any SPF failures or missing DKIM signatures on emails purporting to be from CFO or finance leadership. Correlate sending IP addresses against authorized mail server IP ranges. Use threat intelligence feeds and domain similarity algorithms to detect newly registered domains resembling corporate domains. Educate finance personnel to verify payment requests with the requester via alternative communication channels before processing. Implement mail gateway rules to flag urgent payment requests from executives failing authentication checks.",
+      "relevant_mitre_techniques": [
+        "T1566.002 - Phishing: Spearphishing Link",
+        "T1598.002 - Phishing for Information: Spearphishing via Service",
+        "T1586.001 - Compromise Account: Business Email Compromise",
+        "T1059.003 - Command and Scripting Interpreter: Windows Command Shell"
+      ]
+    },
+    {
+      "scenario": "Business Email Compromise Using HR Executive Account to Request Employee W-2 Data",
+      "technical_data": {
+        "email_headers": "Return-Path: <hr.head@northwind.com>\r\nReceived: from mail.northwind.com (unknown [203.0.113.45])\r\n\tby mail.northwind.com (Postfix) with ESMTP id 9A1B2345EFG\r\n\tfor <payroll@northwind.com>; Mon, 05 Apr 2023 10:45:55 +0000 (UTC)\r\nReceived-SPF: fail (mail.northwind.com: domain of mail.phishingmail.org does not designate 203.0.113.45 as permitted sender) client-ip=203.0.113.45;\r\nAuthentication-Results: mail.northwind.com; spf=fail smtp.mailfrom=hr.head@northwind.com; dkim=none; dmarc=fail action=none header.from=northwind.com\r\nMessage-ID: <CA+v1XZ4H2Lmail.phishingmail.org@northwind.com>\r\nDate: Mon, 05 Apr 2023 10:45:54 +0000\r\nFrom: \"Karen Blake\" <hr.head@northwind.com>\r\nTo: payroll@northwind.com\r\nSubject: Immediate Request: Employee W-2 Forms Needed\r\nMIME-Version: 1.0\r\nContent-Type: text/plain; charset=\"UTF-8\"\r\nX-Mailer: Outlook 16.0\r\nX-Originating-IP: [203.0.113.45]\r\n",
+        "email_body": "Hello Payroll Team,\n\nThe IRS requires immediate submission of all employee W-2 data for an urgent audit. Please send scanned copies of all W-2 forms from the past fiscal year to the following secure link:\n\nhttp://northwind-hrsecure.com/upload?user=hr.head%40northwind.com&session=abc123\n\nEnsure this is done by end of day today.\n\nThanks,\nKaren Blake\nHead of Human Resources\nNorthwind Traders",
+        "smtp_transaction_log": "220 mail.northwind.com ESMTP Postfix\r\nEHLO mail.phishingmail.org\r\n250-mail.northwind.com\r\n250-PIPELINING\r\n250-SIZE 10240000\r\n250-VRFY\r\n250-ETRN\r\n250-STARTTLS\r\n250-AUTH PLAIN LOGIN\r\n250-ENHANCEDSTATUSCODES\r\n250-8BITMIME\r\n250 DSN\r\nMAIL FROM:<hr.head@northwind.com>\r\n250 2.1.0 Ok\r\nRCPT TO:<payroll@northwind.com>\r\n250 2.1.5 Ok\r\nDATA\r\n354 End data with <CR><LF>.<CR><LF>\r\n[message body]\r\n.\r\n250 2.0.0 Ok: queued as 9A1B2345EFG\r\nQUIT\r\n221 2.0.0 Bye",
+        "dns_records": {
+          "domain": "northwind.com",
+          "spf": "v=spf1 ip4:192.0.2.0/24 include:spf.mailservice.com -all",
+          "dkim": "hrselector._domainkey.northwind.com TXT \"v=DKIM1; k=rsa; p=MIGfMA0GCSq...\"",
+          "dmarc": "_dmarc.northwind.com TXT \"v=DMARC1; p=reject; rua=mailto:dmarc-reports@northwind.com\""
+        },
+        "suspicious_domain_registration": {
+          "domain": "northwind-hrsecure.com",
+          "registrar": "Name.com, Inc.",
+          "creation_date": "2023-04-01T16:20:10Z",
+          "registrant": {
+            "name": "Privacy Protect",
+            "organization": "Privacy Protect, Inc.",
+            "email": "contact@privacyprotect.org"
+          }
+        },
+        "phishing_url": "http://northwind-hrsecure.com/upload?user=hr.head%40northwind.com&session=abc123",
+        "email_authentication_results": "Received-SPF: fail (mail.northwind.com: domain of mail.phishingmail.org does not designate 203.0.113.45 as permitted sender) client-ip=203.0.113.45;\r\nAuthentication-Results: mail.northwind.com; spf=fail smtp.mailfrom=hr.head@northwind.com; dkim=none; dmarc=fail action=none header.from=northwind.com",
+        "exchange_logs": "2023-04-05T10:45:55Z,MSGID=9A1B2345EFG,RECEIVED_FROM=203.0.113.45,FROM=hr.head@northwind.com,TO=payroll@northwind.com,SUBJECT=\"Immediate Request: Employee W-2 Forms Needed\",SPF=fail,DKIM=none,DMARC=fail,ACTION=DELIVERED"
+      },
+      "indicators": {
+        "ip_address": "203.0.113.45",
+        "failed_spf": "hr.head@northwind.com not authorized to send mail from 203.0.113.45",
+        "missing_dkim_signature": true,
+        "dmarc_policy_fail": true,
+        "message_id": "<CA+v1XZ4H2Lmail.phishingmail.org@northwind.com>",
+        "suspicious_domain": "northwind-hrsecure.com",
+        "phishing_url": "http://northwind-hrsecure.com/upload?user=hr.head%40northwind.com&session=abc123"
+      },
+      "detection_method": "Analyze email authentication failures on executive HR accounts, especially for requests involving sensitive employee data. Cross-check sending IP addresses with authorized mail servers. Deploy phishing detection systems that identify lookalike domains and newly registered domains mimicking corporate names. Train payroll and HR teams to verify unusual data requests using voice or video confirmation. Implement mail flow rules to quarantine or flag emails with urgent data requests and failed SPF/DKIM/DMARC validations. Monitor URL clicks and protect endpoints against credential theft attempts from suspicious links.",
+      "relevant_mitre_techniques": [
+        "T1566.002 - Phishing: Spearphishing Link",
+        "T1598.002 - Phishing for Information: Spearphishing via Service",
+        "T1537 - Transfer Data to Cloud Account",
+        "T1586.001 - Compromise Account: Business Email Compromise"
+      ]
+    },
+    {
+      "scenario": "Business Email Compromise Using CFO Account Spoof to Request Sensitive Employee Data",
+      "technical_data": {
+        "email_headers": "Return-Path: <cfo@fabrikam.com>\r\nReceived: from smtp.fakeprovider.net (unknown [198.51.100.45])\r\n\tby mail.fabrikam.com (Postfix) with ESMTP id 7B1D3456789C\r\n\tfor <hr@fabrikam.com>; Wed, 10 May 2023 14:22:10 +0000 (UTC)\r\nReceived-SPF: fail (mail.fabrikam.com: domain of smtp.fakeprovider.net does not designate 198.51.100.45 as permitted sender) client-ip=198.51.100.45;\r\nAuthentication-Results: mail.fabrikam.com; spf=fail smtp.mailfrom=cfo@fabrikam.com; dkim=none; dmarc=fail action=none header.from=fabrikam.com\r\nMessage-ID: <CA+5Xn2zQvK=smtp.fakeprovider.net@fabrikam.com>\r\nDate: Wed, 10 May 2023 14:22:08 +0000\r\nFrom: \"Emily Turner\" <cfo@fabrikam.com>\r\nTo: hr@fabrikam.com\r\nSubject: Confidential: Payroll Data Request\r\nMIME-Version: 1.0\r\nContent-Type: text/plain; charset=\"UTF-8\"\r\nX-Mailer: Thunderbird 91.9.0\r\nX-Originating-IP: [198.51.100.45]\r\n",
+        "email_body": "Dear HR Team,\n\nPlease urgently send me the latest payroll spreadsheet including social security numbers and bank account details for all employees. This is required for an audit starting tomorrow.\n\nEnsure that the file is password protected and send the password separately via SMS to my mobile.\n\nThanks,\nEmily Turner\nCFO, Fabrikam Inc.",
+        "smtp_transaction_log": "220 mail.fabrikam.com ESMTP Postfix\r\nEHLO smtp.fakeprovider.net\r\n250-mail.fabrikam.com\r\n250-PIPELINING\r\n250-SIZE 10485760\r\n250-VRFY\r\n250-ETRN\r\n250-STARTTLS\r\n250-AUTH PLAIN LOGIN\r\n250-ENHANCEDSTATUSCODES\r\n250-8BITMIME\r\n250 DSN\r\nMAIL FROM:<cfo@fabrikam.com>\r\n250 2.1.0 Ok\r\nRCPT TO:<hr@fabrikam.com>\r\n250 2.1.5 Ok\r\nDATA\r\n354 End data with <CR><LF>.<CR><LF>\r\n[message body]\r\n.\r\n250 2.0.0 Ok: queued as 7B1D3456789C\r\nQUIT\r\n221 2.0.0 Bye",
+        "dns_records": {
+          "domain": "fabrikam.com",
+          "spf": "v=spf1 ip4:203.0.113.0/24 include:spf.mailservice.com -all",
+          "dkim": "selector2._domainkey.fabrikam.com TXT \"v=DKIM1; k=rsa; p=MIIBIjANBgkq...\"",
+          "dmarc": "_dmarc.fabrikam.com TXT \"v=DMARC1; p=quarantine; pct=100; rua=mailto:dmarc@fabrikam.com\""
+        },
+        "suspicious_domain_registration": {
+          "domain": "fabrikam-hrsecure.net",
+          "registrar": "NameCheap, Inc.",
+          "creation_date": "2023-05-08T09:45:12Z",
+          "registrant": {
+            "name": "WhoisGuard Protected",
+            "organization": "WhoisGuard, Inc.",
+            "email": "contact@whoisguard.com"
+          }
+        },
+        "phishing_url": "http://fabrikam-hrsecure.net/login?user=cfo%40fabrikam.com&session=eyJ0eXAiOiJKV1QiLCJhbGciOi...",
+        "email_authentication_results": "Received-SPF: fail (mail.fabrikam.com: domain of smtp.fakeprovider.net does not designate 198.51.100.45 as permitted sender) client-ip=198.51.100.45;\r\nAuthentication-Results: mail.fabrikam.com; spf=fail smtp.mailfrom=cfo@fabrikam.com; dkim=none; dmarc=fail action=none header.from=fabrikam.com",
+        "exchange_logs": "2023-05-10T14:22:10Z,MSGID=7B1D3456789C,RECEIVED_FROM=198.51.100.45,FROM=cfo@fabrikam.com,TO=hr@fabrikam.com,SUBJECT=\"Confidential: Payroll Data Request\",SPF=fail,DKIM=none,DMARC=fail,ACTION=DELIVERED"
+      },
+      "indicators": {
+        "ip_address": "198.51.100.45",
+        "failed_spf": "cfo@fabrikam.com not authorized to send mail from 198.51.100.45",
+        "missing_dkim_signature": true,
+        "dmarc_policy_fail": true,
+        "message_id": "<CA+5Xn2zQvK=smtp.fakeprovider.net@fabrikam.com>",
+        "suspicious_domain": "fabrikam-hrsecure.net",
+        "phishing_url": "http://fabrikam-hrsecure.net/login?user=cfo%40fabrikam.com&session=eyJ0eXAiOiJKV1QiLCJhbGciOi..."
+      },
+      "detection_method": "Implement strict email authentication checks and alert on SPF failures for CFO and other executive accounts. Employ machine learning-based anomaly detection on email sending IP addresses and domain similarities. Use DNS monitoring to detect newly registered domains resembling corporate domains. Train HR teams to verify sensitive data requests via out-of-band methods. Enforce mail gateway policies to quarantine or flag emails requesting sensitive employee information from high-ranking executives failing authentication.",
+      "relevant_mitre_techniques": [
+        "T1566.002 - Phishing: Spearphishing Link",
+        "T1598.002 - Phishing for Information: Spearphishing via Service",
+        "T1586.001 - Compromise Account: Business Email Compromise",
+        "T1537 - Transfer Data to Cloud Account"
+      ]
+    },
+    {
+      "scenario": "Business Email Compromise with CEO Account Spoof to Request Fraudulent Invoice Payment",
+      "technical_data": {
+        "email_headers": "Return-Path: <ceo@northwindtraders.com>\r\nReceived: from mail.suspiciousdomain.org (unknown [203.0.113.88])\r\n\tby mail.northwindtraders.com (Postfix) with ESMTP id 9C8F1234D56E\r\n\tfor <accounts@northwindtraders.com>; Mon, 17 Apr 2023 11:05:30 +0000 (UTC)\r\nReceived-SPF: fail (mail.northwindtraders.com: domain of mail.suspiciousdomain.org does not designate 203.0.113.88 as permitted sender) client-ip=203.0.113.88;\r\nAuthentication-Results: mail.northwindtraders.com; spf=fail smtp.mailfrom=ceo@northwindtraders.com; dkim=none; dmarc=fail action=quarantine header.from=northwindtraders.com\r\nMessage-ID: <CA+7YvP9mL3=mail.suspiciousdomain.org@northwindtraders.com>\r\nDate: Mon, 17 Apr 2023 11:05:28 +0000\r\nFrom: \"Robert King\" <ceo@northwindtraders.com>\r\nTo: accounts@northwindtraders.com\r\nSubject: Immediate Payment Required - Invoice 2023-045\r\nMIME-Version: 1.0\r\nContent-Type: text/plain; charset=\"UTF-8\"\r\nX-Mailer: Apple Mail (2.3445.9.1)\r\nX-Originating-IP: [203.0.113.88]\r\n",
+        "email_body": "Hello,\n\nPlease process an immediate payment of $85,750 to the vendor below for invoice 2023-045. This is a priority and must be completed by end of day.\n\nBank: International Bank Corp\nAccount Name: Bright Solutions Ltd\nAccount Number: 9876543210\nSWIFT: IBKCBUS33\n\nConfirm once payment is sent.\n\nBest,\nRobert King\nCEO, Northwind Traders",
+        "smtp_transaction_log": "220 mail.northwindtraders.com ESMTP Postfix\r\nEHLO mail.suspiciousdomain.org\r\n250-mail.northwindtraders.com\r\n250-PIPELINING\r\n250-SIZE 20480000\r\n250-VRFY\r\n250-ETRN\r\n250-STARTTLS\r\n250-AUTH PLAIN LOGIN\r\n250-ENHANCEDSTATUSCODES\r\n250-8BITMIME\r\n250 DSN\r\nMAIL FROM:<ceo@northwindtraders.com>\r\n250 2.1.0 Ok\r\nRCPT TO:<accounts@northwindtraders.com>\r\n250 2.1.5 Ok\r\nDATA\r\n354 End data with <CR><LF>.<CR><LF>\r\n[message body]\r\n.\r\n250 2.0.0 Ok: queued as 9C8F1234D56E\r\nQUIT\r\n221 2.0.0 Bye",
+        "dns_records": {
+          "domain": "northwindtraders.com",
+          "spf": "v=spf1 ip4:192.0.2.0/24 include:spf.mailgun.org -all",
+          "dkim": "default._domainkey.northwindtraders.com TXT \"v=DKIM1; k=rsa; p=MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8A...\"",
+          "dmarc": "_dmarc.northwindtraders.com TXT \"v=DMARC1; p=reject; rua=mailto:dmarc@northwindtraders.com\""
+        },
+        "suspicious_domain_registration": {
+          "domain": "northwind-payments.net",
+          "registrar": "NameSilo, LLC",
+          "creation_date": "2023-04-14T16:22:45Z",
+          "registrant": {
+            "name": "Privacy Protect",
+            "organization": "Privacy Protect, LLC",
+            "email": "contact@privacyprotect.org"
+          }
+        },
+        "phishing_url": "http://northwind-payments.net/secure-login?user=ceo%40northwindtraders.com&token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9",
+        "email_authentication_results": "Received-SPF: fail (mail.northwindtraders.com: domain of mail.suspiciousdomain.org does not designate 203.0.113.88 as permitted sender) client-ip=203.0.113.88;\r\nAuthentication-Results: mail.northwindtraders.com; spf=fail smtp.mailfrom=ceo@northwindtraders.com; dkim=none; dmarc=fail action=quarantine header.from=northwindtraders.com",
+        "exchange_logs": "2023-04-17T11:05:30Z,MSGID=9C8F1234D56E,RECEIVED_FROM=203.0.113.88,FROM=ceo@northwindtraders.com,TO=accounts@northwindtraders.com,SUBJECT=\"Immediate Payment Required - Invoice 2023-045\",SPF=fail,DKIM=none,DMARC=fail,ACTION=QUARANTINED"
+      },
+      "indicators": {
+        "ip_address": "203.0.113.88",
+        "failed_spf": "ceo@northwindtraders.com not authorized to send mail from 203.0.113.88",
+        "missing_dkim_signature": true,
+        "dmarc_policy_fail": true,
+        "message_id": "<CA+7YvP9mL3=mail.suspiciousdomain.org@northwindtraders.com>",
+        "suspicious_domain": "northwind-payments.net",
+        "phishing_url": "http://northwind-payments.net/secure-login?user=ceo%40northwindtraders.com&token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9"
+      },
+      "detection_method": "Enforce strict SPF, DKIM, and DMARC validation on all inbound emails from executive accounts. Alert on quarantine or fail results for high-risk sender domains. Monitor DNS registrations for domains mimicking corporate names with payment-related keywords. Educate accounts payable staff to verify urgent payment requests via alternative communication channels. Implement mail flow rules to quarantine or flag wire transfer requests from executives lacking proper authentication. Use phishing URL detection tools to block credential harvesting attempts.",
+      "relevant_mitre_techniques": [
+        "T1566.002 - Phishing: Spearphishing Link",
+        "T1586.001 - Compromise Account: Business Email Compromise",
+        "T1598.002 - Phishing for Information: Spearphishing via Service",
+        "T1071.001 - Application Layer Protocol: Web Protocols"
+      ]
+    }
+  ]
+}

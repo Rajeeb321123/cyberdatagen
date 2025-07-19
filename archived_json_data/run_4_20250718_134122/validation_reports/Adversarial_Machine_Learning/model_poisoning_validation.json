@@ -1,0 +1,88 @@
+{
+  "report": [
+    {
+      "index": 0,
+      "problem": {
+        "area": "Adversarial Machine Learning",
+        "nature": "model_poisoning"
+      },
+      "example": {
+        "scenario": "Model poisoning attack on a facial recognition ML model by injecting maliciously crafted images into the training dataset to degrade recognition accuracy for a specific individual class.",
+        "technical_data": {
+          "training_data_manifest_snippet": [
+            "{\"image_id\": \"img_10234.jpg\", \"label\": \"employee_123\", \"sha256\": \"3a5f8b7e9d3c4f1e2b5a69f8c7d4e3b2a1f0d6e7c8b9a0f1e2d3c4b5a697f8e1\"}",
+            "{\"image_id\": \"img_10235_poisoned.jpg\", \"label\": \"employee_123\", \"sha256\": \"b7e3d1f9a6c8e4b2d1f0a7c3e9b5f8d3a4c2e1f0d6b9a7c8e3f1b5a9d0c7e4f2\"}"
+          ],
+          "poisoned_image_metadata": {
+            "image_id": "img_10235_poisoned.jpg",
+            "label": "employee_123",
+            "sha256": "b7e3d1f9a6c8e4b2d1f0a7c3e9b5f8d3a4c2e1f0d6b9a7c8e3f1b5a9d0c7e4f2",
+            "file_size_bytes": 243210,
+            "image_dimensions": "224x224",
+            "embedded_noise_pattern": "imperceptible_gradient_based_perturbation",
+            "perturbation_l2_norm": "4.5",
+            "creation_tool": "custom_adversarial_patch_generator_v1.2"
+          },
+          "training_log_excerpt": [
+            "2024-05-15T14:23:45Z INFO Loading batch 1200 with 64 images",
+            "2024-05-15T14:23:47Z WARNING Detected anomalous gradient updates in layer conv3_2: gradient norm spike from 0.032 to 0.54",
+            "2024-05-15T14:23:47Z INFO Batch 1200 labels distribution: {'employee_123': 18, 'employee_124': 16, 'employee_125': 15, 'employee_126': 15}",
+            "2024-05-15T14:23:50Z INFO Model accuracy on validation set dropped from 92.4% to 87.1%"
+          ],
+          "post_training_model_metrics": {
+            "baseline_accuracy": "92.4%",
+            "post_poisoning_accuracy": "87.1%",
+            "target_class_false_negatives": 35,
+            "target_class_false_positives": 4
+          },
+          "anomaly_detection_alert": {
+            "timestamp": "2024-05-15T14:25:00Z",
+            "alert_id": "MLMON-20240515-143000",
+            "description": "Unusual gradient norm spikes detected during training near batch 1200 on label 'employee_123'. Potential data poisoning suspected.",
+            "severity": "High",
+            "anomaly_type": "gradient_norm_spike",
+            "threshold": 0.3,
+            "observed_value": 0.54,
+            "affected_layers": [
+              "conv3_2"
+            ]
+          },
+          "adversarial_training_snippet": [
+            "def adversarial_training_step(model, batch_images, batch_labels, epsilon=0.03):",
+            "    batch_images.requires_grad = True",
+            "    outputs = model(batch_images)",
+            "    loss = criterion(outputs, batch_labels)",
+            "    loss.backward()",
+            "    data_grad = batch_images.grad.data",
+            "    perturbed_images = batch_images + epsilon * data_grad.sign()",
+            "    perturbed_images = torch.clamp(perturbed_images, 0, 1)",
+            "    outputs_adv = model(perturbed_images)",
+            "    loss_adv = criterion(outputs_adv, batch_labels)",
+            "    optimizer.zero_grad()",
+            "    loss_adv.backward()",
+            "    optimizer.step()"
+          ]
+        },
+        "indicators": [
+          "Presence of images with suspiciously similar labels but anomalous hash values",
+          "Gradient norm spikes in specific model layers during training",
+          "Sudden drop in model validation accuracy after ingestion of new training batches",
+          "Anomaly alerts triggered by ML monitoring tools on training metrics",
+          "Embedded imperceptible adversarial perturbations detected in training images"
+        ],
+        "detection_method": "Continuous monitoring of training metrics including gradient norms and validation accuracy; hashing and comparing new training data files; implementing anomaly detection on training data distribution and model performance metrics; manual inspection of flagged suspicious images using image forensics tools; applying adversarial training and robust statistics to identify poisoned samples.",
+        "relevant_mitre_techniques": [
+          "T1610 - Deploy Containerized Machine Learning Models (for deployment phase monitoring)",
+          "T1586 - Compromise Infrastructure (poisoning data sources)",
+          "T1499 - Data Manipulation",
+          "T1621 - Multi-Stage Channels (poisoning during training pipeline)"
+        ]
+      },
+      "validation": {
+        "valid": true,
+        "issues": [],
+        "comments": "The sample accurately represents a model poisoning attack scenario within adversarial machine learning. The scenario description clearly states the attack vector\u2014injecting malicious images into the training dataset to degrade model performance for a specific individual class. The technical data is comprehensive and realistic, including manifest snippets with hashes, metadata describing the poisoned image and its adversarial perturbations, training logs showing anomalous gradient spikes and accuracy drops, anomaly detection alerts with relevant metrics, and an adversarial training code snippet illustrating mitigation. The indicators section effectively links observable signs to the poisoning attack, and the detection method outlines practical steps for risk reduction. The inclusion of relevant MITRE techniques further contextualizes the threat. Overall, the sample is complete, plausible, and well-aligned with the problem nature, requiring no corrections."
+      }
+    }
+  ]
+}

@@ -1,0 +1,120 @@
+{
+  "samples": [
+    {
+      "scenario": "Spear phishing email targeting an HR manager with a malicious macro-enabled Word document attachment disguised as an updated employee benefits policy.",
+      "technical_data": {
+        "email_headers": "Delivered-To: hrmanager@enterprise.com\nReceived: from mail-secure2.fakehrportal.com (mail-secure2.fakehrportal.com [203.0.114.17])\n\tby mail.enterprise.com (Postfix) with ESMTPS id 9F8E7D6C5B\n\tfor <hrmanager@enterprise.com>; Mon, 22 May 2023 09:15:47 +0000 (UTC)\nX-Originating-IP: [198.51.101.77]\nReturn-Path: <notifications@fakehrportal.com>\nReceived-SPF: pass (enterprise.com: domain of notifications@fakehrportal.com designates 203.0.114.17 as permitted sender) client-ip=203.0.114.17;\nAuthentication-Results: mail.enterprise.com; spf=pass smtp.mailfrom=notifications@fakehrportal.com; dkim=pass header.d=fakehrportal.com; dmarc=pass\nMessage-ID: <20230522091547.9F8E7D6C5B@mail-secure2.fakehrportal.com>\nFrom: \"FakeHR Portal\" <notifications@fakehrportal.com>\nTo: hrmanager@enterprise.com\nSubject: Updated Employee Benefits Policy Document\nDate: Mon, 22 May 2023 09:15:47 +0000\nMIME-Version: 1.0\nContent-Type: multipart/mixed; boundary=\"boundary_001_5f6a3f84\"\nX-Mailer: Microsoft Outlook 16.0\nX-Microsoft-Exchange-Diagnostics: 1; mail-secure2.fakehrportal.com; 1:fedcba9876543210fedcba9876543210",
+        "email_body": "--boundary_001_5f6a3f84\nContent-Type: text/plain; charset=\"UTF-8\"\nContent-Transfer-Encoding: quoted-printable\n\nDear Sarah,\n\nPlease review the attached updated Employee Benefits Policy effective June 2023.\nYour acknowledgment is required by Friday.\n\nIf you have any questions, contact HR support.\n\nBest regards,\nFakeHR Portal Team\n\n--boundary_001_5f6a3f84\nContent-Type: application/vnd.ms-word.document.macroEnabled.12; name=\"Benefits_Update_June2023.docm\"\nContent-Disposition: attachment; filename=\"Benefits_Update_June2023.docm\"\nContent-Transfer-Encoding: base64\n\nTVqQAAMAAAAEAAAA//8AALgAAAAAAAAAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA\nAAAA... (truncated base64 macro document content)\n--boundary_001_5f6a3f84--",
+        "suspicious_url": "https://fakehrportall.com/acknowledge?token=eyJhbGciOiJFUzI1NiIsInR5cCI6IkpXVCJ9...",
+        "dns_whois": "Domain Name: fakehrportall.com\nRegistrar: GoDaddy.com, LLC\nCreation Date: 2023-04-02T08:22:45Z\nExpiration Date: 2024-04-02T08:22:45Z\nRegistrant Name: WhoisGuard Protected\nRegistrant Organization: WhoisGuard, Inc.\nRegistrant Country: Panama\nName Servers:\n  ns1.fakehrportall.com\n  ns2.fakehrportall.com",
+        "smtp_transaction_log": "220 mail-secure2.fakehrportal.com ESMTP Postfix\nEHLO mail.enterprise.com\n250-mail-secure2.fakehrportal.com\n250-PIPELINING\n250-SIZE 20971520\n250-STARTTLS\n250-AUTH PLAIN LOGIN\n250-8BITMIME\n250 DSN\nMAIL FROM:<notifications@fakehrportal.com>\n250 2.1.0 Ok\nRCPT TO:<hrmanager@enterprise.com>\n250 2.1.5 Ok\nDATA\n354 End data with <CR><LF>.<CR><LF>\nFrom: \"FakeHR Portal\" <notifications@fakehrportal.com>\nTo: hrmanager@enterprise.com\nSubject: Updated Employee Benefits Policy Document\n\n[body and attachment base64]\n.\n250 2.0.0 Ok: queued as 9F8E7D6C5B\nQUIT\n221 2.0.0 Bye",
+        "url_obfuscation_details": "The domain 'fakehrportall.com' uses a double 'l' as a homoglyph to mimic 'fakehrportal.com'. The URL uses HTTPS with a Let\u2019s Encrypt certificate issued within the last 30 days. The query parameter 'token' contains a JWT designed to give a sense of legitimacy and urgency.",
+        "phishing_page_http_request": "GET /acknowledge?token=eyJhbGciOiJFUzI1NiIsInR5cCI6IkpXVCJ9... HTTP/1.1\nHost: fakehrportall.com\nUser-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64)\nAccept: text/html,application/xhtml+xml\nReferer: https://mail.enterprise.com/\nCookie: sessionid=1234abcd5678efgh\nConnection: keep-alive",
+        "phishing_page_http_response": "HTTP/1.1 200 OK\nContent-Type: text/html; charset=UTF-8\nContent-Length: 4120\nCache-Control: no-cache, no-store\nSet-Cookie: session_token=abcdef1234567890; HttpOnly; Secure\n\n<html><body><form action=\"/submit_acknowledgment\" method=\"POST\">\n<input type=\"text\" name=\"employee_id\" placeholder=\"Employee ID\">\n<input type=\"password\" name=\"password\" placeholder=\"Password\">\n<input type=\"submit\" value=\"Acknowledge\">\n</form></body></html>"
+      },
+      "indicators": [
+        "Email sent from suspicious domain 'fakehrportall.com' with homoglyph double 'l'",
+        "Macro-enabled Word document attachment named 'Benefits_Update_June2023.docm' from unknown external sender",
+        "SPF pass but domain is recently registered (2023-04-02) with WhoisGuard privacy enabled",
+        "Phishing URL contains JWT token parameter to simulate session or authorization",
+        "SMTP transaction logs show email originates from 203.0.114.17, an unrecognized mail server",
+        "Phishing page HTTP response serves login form requesting employee ID and password"
+      ],
+      "detection_method": "Monitor for new lookalike domains with homoglyph characters targeting HR personnel; email gateway checks for macro-enabled attachments from external senders; SPF and DKIM validation combined with domain age and privacy WHOIS checks; sandbox execution of attachments; URL analysis for JWT tokens and suspicious query parameters; user training to verify policy updates directly via official HR portals; monitoring SMTP logs for unusual outbound servers.",
+      "relevant_mitre_techniques": [
+        "T1566.001 - Spearphishing Attachment",
+        "T1566.002 - Spearphishing Link",
+        "T1204.002 - User Execution: Malicious File",
+        "T1598.002 - Phishing: Spearphishing via Service",
+        "T1586 - Compromise Infrastructure"
+      ]
+    },
+    {
+      "scenario": "Spear phishing email targeting a senior engineer with a link to a fake internal ticketing system login page designed to harvest credentials.",
+      "technical_data": {
+        "email_headers": "Delivered-To: senior.engineer@techcorp.com\nReceived: from mail-alerts.techcorp-support.com (mail-alerts.techcorp-support.com [198.51.102.88])\n\tby mail.techcorp.com (Postfix) with ESMTPS id 3D4C5B6A7E\n\tfor <senior.engineer@techcorp.com>; Fri, 02 Jun 2023 16:33:12 +0000 (UTC)\nX-Originating-IP: [203.0.113.99]\nReturn-Path: <alerts@techcorp-support.com>\nReceived-SPF: pass (techcorp.com: domain of alerts@techcorp-support.com designates 198.51.102.88 as permitted sender) client-ip=198.51.102.88;\nAuthentication-Results: mail.techcorp.com; spf=pass smtp.mailfrom=alerts@techcorp-support.com; dkim=pass header.d=techcorp-support.com; dmarc=pass\nMessage-ID: <20230602163312.3D4C5B6A7E@mail-alerts.techcorp-support.com>\nFrom: \"TechCorp Support\" <alerts@techcorp-support.com>\nTo: senior.engineer@techcorp.com\nSubject: Urgent: Ticket #45219 Requires Your Immediate Attention\nDate: Fri, 02 Jun 2023 16:33:12 +0000\nMIME-Version: 1.0\nContent-Type: text/plain; charset=\"UTF-8\"\nContent-Transfer-Encoding: quoted-printable\nX-Mailer: Microsoft Outlook 16.0\nX-Microsoft-Exchange-Diagnostics: 1; mail-alerts.techcorp-support.com; 1:0123456789abcdef0123456789abcdef",
+        "email_body": "Dear Michael,\n\nA critical issue has been assigned to you in the internal ticketing system.\nPlease review and update the ticket immediately using the link below:\n\nhttps://techcorp-supp0rt.com/login?ticket=45219&auth=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...\n\nFailure to respond promptly may affect project deadlines.\n\nBest regards,\nTechCorp IT Support\n\n",
+        "suspicious_url": "https://techcorp-supp0rt.com/login?ticket=45219&auth=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+        "dns_whois": "Domain Name: techcorp-supp0rt.com\nRegistrar: NameSilo, LLC\nCreation Date: 2023-05-20T14:11:55Z\nExpiration Date: 2024-05-20T14:11:55Z\nRegistrant Name: WhoisGuard Protected\nRegistrant Organization: WhoisGuard, Inc.\nRegistrant Country: Seychelles\nName Servers:\n  ns1.techcorp-supp0rt.com\n  ns2.techcorp-supp0rt.com",
+        "smtp_transaction_log": "220 mail-alerts.techcorp-support.com ESMTP Postfix\nEHLO mail.techcorp.com\n250-mail-alerts.techcorp-support.com\n250-PIPELINING\n250-SIZE 15728640\n250-STARTTLS\n250-AUTH PLAIN LOGIN\n250-8BITMIME\n250 DSN\nMAIL FROM:<alerts@techcorp-support.com>\n250 2.1.0 Ok\nRCPT TO:<senior.engineer@techcorp.com>\n250 2.1.5 Ok\nDATA\n354 End data with <CR><LF>.<CR><LF>\nFrom: \"TechCorp Support\" <alerts@techcorp-support.com>\nTo: senior.engineer@techcorp.com\nSubject: Urgent: Ticket #45219 Requires Your Immediate Attention\n\n[body text]\n.\n250 2.0.0 Ok: queued as 3D4C5B6A7E\nQUIT\n221 2.0.0 Bye",
+        "url_obfuscation_details": "The domain 'techcorp-supp0rt.com' replaces the letter 'o' with zero ('0') in 'support' to mimic the legitimate 'techcorp-support.com'. The site uses HTTPS with a Let's Encrypt certificate issued a few days ago. The URL has query parameters including a ticket number and a JWT token to simulate a session.",
+        "phishing_page_http_request": "GET /login?ticket=45219&auth=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9... HTTP/1.1\nHost: techcorp-supp0rt.com\nUser-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64)\nAccept: text/html,application/xhtml+xml\nReferer: https://mail.techcorp.com/\nCookie: session=xyz123abc456\nConnection: close",
+        "phishing_page_http_response": "HTTP/1.1 200 OK\nContent-Type: text/html; charset=UTF-8\nContent-Length: 2890\nCache-Control: no-cache, no-store\nSet-Cookie: sessionid=7890abcdef123456; HttpOnly; Secure\n\n<html><body><form action=\"/authenticate\" method=\"POST\">\n<input type=\"text\" name=\"username\" placeholder=\"Username\">\n<input type=\"password\" name=\"password\" placeholder=\"Password\">\n<input type=\"submit\" value=\"Login\">\n</form></body></html>"
+      },
+      "indicators": [
+        "Email originated from suspicious domain 'techcorp-supp0rt.com' with '0' replacing 'o' in 'support'",
+        "SPF passed but domain is newly registered (2023-05-20) and uses WhoisGuard privacy",
+        "Phishing URL includes JWT token and ticket number as parameters to simulate legitimacy",
+        "SMTP logs show mail sent from IP 198.51.102.88, not listed in corporate mail server whitelist",
+        "Phishing page HTTP response contains login form requesting corporate credentials",
+        "Email urgency language targets senior engineer to increase likelihood of user action"
+      ],
+      "detection_method": "Implement domain monitoring for newly registered lookalike domains using homoglyph substitutions; email filtering rules to flag messages from domains not on corporate allowlist; SPF/DKIM/DMARC validation with domain age and WHOIS privacy checks; URL reputation and sandbox analysis focusing on JWT token presence; user awareness training on verifying internal ticketing URLs; SMTP log analysis to detect unusual or unrecognized mail servers sending to high-value targets.",
+      "relevant_mitre_techniques": [
+        "T1566.002 - Spearphishing Link",
+        "T1598.002 - Phishing: Spearphishing via Service",
+        "T1204.001 - User Execution: Malicious Link",
+        "T1586 - Compromise Infrastructure",
+        "T1078 - Valid Accounts"
+      ]
+    },
+    {
+      "scenario": "Spear phishing email targeting a HR manager with a malicious macro-enabled Word document attachment impersonating a job applicant's resume.",
+      "technical_data": {
+        "email_headers": "Delivered-To: hr.manager@enterprise.com\nReceived: from mail-outbound2.fakehrmail.com (mail-outbound2.fakehrmail.com [203.0.114.55])\n\tby mail.enterprise.com (Postfix) with ESMTPS id 7G8H9I0J1K\n\tfor <hr.manager@enterprise.com>; Mon, 22 May 2023 09:15:42 +0000 (UTC)\nX-Originating-IP: [198.51.101.77]\nReturn-Path: <recruitment@fakehrmail.com>\nReceived-SPF: pass (enterprise.com: domain of recruitment@fakehrmail.com designates 203.0.114.55 as permitted sender) client-ip=203.0.114.55;\nAuthentication-Results: mail.enterprise.com; spf=pass smtp.mailfrom=recruitment@fakehrmail.com; dkim=fail header.d=fakehrmail.com; dmarc=fail\nMessage-ID: <20230522091542.7G8H9I0J1K@mail-outbound2.fakehrmail.com>\nFrom: \"Recruitment Team\" <recruitment@fakehrmail.com>\nTo: hr.manager@enterprise.com\nSubject: Job Application - Resume Attached\nDate: Mon, 22 May 2023 09:15:42 +0000\nMIME-Version: 1.0\nContent-Type: multipart/mixed; boundary=\"0000000000000e4a9c05d9ef8c7a\"\nX-Mailer: Microsoft Outlook 16.0\nX-Microsoft-Exchange-Diagnostics: 1; mail-outbound2.fakehrmail.com; 1:1234abcd5678efgh9012ijkl3456mnop",
+        "email_body": "--0000000000000e4a9c05d9ef8c7a\nContent-Type: text/plain; charset=\"UTF-8\"\nContent-Transfer-Encoding: quoted-printable\n\nDear HR Manager,\n\nPlease find attached the resume of the candidate John Doe for your review.\nLet me know if you require any further information.\n\nBest regards,\nEmily Parker\nRecruitment Team\n\n--0000000000000e4a9c05d9ef8c7a\nContent-Type: application/vnd.ms-word; name=\"John_Doe_Resume.docm\"\nContent-Disposition: attachment; filename=\"John_Doe_Resume.docm\"\nContent-Transfer-Encoding: base64\n\nTVqQAAMAAAAEAAAA//8AALgAAAAAAAAAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA\nAAAAAAAAAAAAAAAgAAAAA4fug4AtAnNIbgBTM0hVGhpcyBwcm9ncmFtIGNhbm5vdCBiZSBydW4gaW4g\nRE9TIG1vZGUuDQ0KJAAAAAAAAABQRQAATAEDALgpA0AAAAAAAAAAOAAAgAAAAAAAAAAAABAAAAAAAA\nAAAAgAAAABAAEAAAAAAAEAAABAAAAAAAAAAAAgAAAEAAAAAAAEAAAAAAAAAAQAAAAAAAAAAAEAAABAA\nAAAAAAAEAAAAAAAAAAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA\nAAAAAAAAAAAAAAAAAAAAA== (truncated base64 content)\n--0000000000000e4a9c05d9ef8c7a--",
+        "suspicious_url": "http://fakehrnail.com/verify?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+        "dns_whois": "Domain Name: fakehrnail.com\nRegistrar: GoDaddy.com, LLC\nCreation Date: 2023-04-01T15:20:10Z\nExpiration Date: 2024-04-01T15:20:10Z\nRegistrant Name: WhoisGuard Protected\nRegistrant Organization: WhoisGuard, Inc.\nRegistrant Country: Panama\nName Servers:\n  ns1.fakehrnail.com\n  ns2.fakehrnail.com",
+        "smtp_transaction_log": "220 mail-outbound2.fakehrmail.com ESMTP Postfix\nEHLO mail.enterprise.com\n250-mail-outbound2.fakehrmail.com\n250-PIPELINING\n250-SIZE 20971520\n250-STARTTLS\n250-AUTH PLAIN LOGIN\n250 DSN\nMAIL FROM:<recruitment@fakehrmail.com>\n250 2.1.0 Ok\nRCPT TO:<hr.manager@enterprise.com>\n250 2.1.5 Ok\nDATA\n354 End data with <CR><LF>.<CR><LF>\nFrom: \"Recruitment Team\" <recruitment@fakehrmail.com>\nTo: hr.manager@enterprise.com\nSubject: Job Application - Resume Attached\n\n[body and attachment base64]\n.\n250 2.0.0 Ok: queued as 7G8H9I0J1K\nQUIT\n221 2.0.0 Bye",
+        "url_obfuscation_details": "The domain 'fakehrnail.com' is a homoglyph of 'fakehrmail.com' (letters 'm' replaced by 'n' and 'i'). The URL uses HTTP only without TLS, indicating an insecure connection. The token parameter is a Base64-encoded JWT meant to lure the victim into clicking a verification link leading to a credential harvesting page.",
+        "phishing_page_http_request": "GET /verify?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9... HTTP/1.1\nHost: fakehrnail.com\nUser-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64)\nAccept: text/html,application/xhtml+xml\nReferer: https://mail.enterprise.com/\nConnection: close",
+        "phishing_page_http_response": "HTTP/1.1 200 OK\nContent-Type: text/html; charset=UTF-8\nContent-Length: 2789\nCache-Control: no-cache, no-store\nSet-Cookie: sessionid=0987654321fedcba; HttpOnly; Secure\n\n<html><body><form action=\"/submit\" method=\"POST\">\n<input type=\"text\" name=\"email\" placeholder=\"Email Address\">\n<input type=\"password\" name=\"password\" placeholder=\"Password\">\n<input type=\"submit\" value=\"Verify\">\n</form></body></html>"
+      },
+      "indicators": [
+        "Attachment is a macro-enabled Word document (.docm) sent from suspicious domain 'fakehrnail.com'",
+        "SPF passes but DKIM and DMARC fail indicating possible domain spoofing",
+        "Domain is newly registered with WhoisGuard privacy and uses a homoglyph domain",
+        "Phishing URL uses HTTP without encryption and includes a JWT token parameter",
+        "SMTP logs show email originated from 203.0.114.55, an unrecognized mail server",
+        "Phishing page HTTP response contains a credential harvesting form posting to /submit"
+      ],
+      "detection_method": "Integrate email gateway policies to block macro-enabled documents from unknown senders; monitor for failed DKIM/DMARC results on inbound emails; use domain reputation and homoglyph detection to flag suspicious sender domains; URL sandboxing of links containing JWT tokens; user training to verify unsolicited resumes and attachments; analyze SMTP logs for unknown outbound servers sending to HR personnel.",
+      "relevant_mitre_techniques": [
+        "T1566.001 - Spearphishing Attachment",
+        "T1566.002 - Spearphishing Link",
+        "T1204.002 - User Execution: Malicious File",
+        "T1598.002 - Phishing: Spearphishing via Service",
+        "T1586 - Compromise Infrastructure"
+      ]
+    },
+    {
+      "scenario": "Spear phishing email targeting an IT administrator with a link to a credential harvesting page disguised as a password reset request from the corporate VPN provider.",
+      "technical_data": {
+        "email_headers": "Delivered-To: it.admin@bigcorp.com\nReceived: from mail-vpnsecure.com (mail-vpnsecure.com [198.51.102.89])\n\tby mail.bigcorp.com (Postfix) with ESMTPS id 4Z5Y6X7W8V\n\tfor <it.admin@bigcorp.com>; Thu, 1 Jun 2023 16:47:30 +0000 (UTC)\nX-Originating-IP: [192.0.2.123]\nReturn-Path: <support@vpnsecure.com>\nReceived-SPF: pass (bigcorp.com: domain of support@vpnsecure.com designates 198.51.102.89 as permitted sender) client-ip=198.51.102.89;\nAuthentication-Results: mail.bigcorp.com; spf=pass smtp.mailfrom=support@vpnsecure.com; dkim=pass header.d=vpnsecure.com; dmarc=pass\nMessage-ID: <20230601164730.4Z5Y6X7W8V@mail-vpnsecure.com>\nFrom: \"VPN Secure Support\" <support@vpnsecure.com>\nTo: it.admin@bigcorp.com\nSubject: Important: Password Reset Required for Your VPN Account\nDate: Thu, 1 Jun 2023 16:47:30 +0000\nMIME-Version: 1.0\nContent-Type: text/html; charset=\"UTF-8\"\nX-Mailer: Microsoft Outlook 16.0\nX-Microsoft-Exchange-Diagnostics: 1; mail-vpnsecure.com; 1:deadbeefcafebabe1234567890abcdef",
+        "email_body": "<html><body><p>Dear IT Admin,</p><p>As part of our security enhancements, all users are required to reset their VPN passwords immediately.</p><p>Please <a href=\"https://vpn-secure-support.com/reset?token=eyJhbGciOiJIUzI1NiJ9.eyJ1c2VyIjoiYWRtaW4ifQ.sflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c\">click here</a> to reset your password.</p><p>If you did not request this, please contact support immediately.</p><p>Best regards,<br>VPN Secure Support Team</p></body></html>",
+        "suspicious_url": "https://vpn-secure-support.com/reset?token=eyJhbGciOiJIUzI1NiJ9.eyJ1c2VyIjoiYWRtaW4ifQ.sflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c",
+        "dns_whois": "Domain Name: vpn-secure-support.com\nRegistrar: Tucows Domains Inc.\nCreation Date: 2023-05-15T08:45:00Z\nExpiration Date: 2024-05-15T08:45:00Z\nRegistrant Name: WhoisGuard Protected\nRegistrant Organization: WhoisGuard, Inc.\nRegistrant Country: Seychelles\nName Servers:\n  ns1.vpn-secure-support.com\n  ns2.vpn-secure-support.com",
+        "smtp_transaction_log": "220 mail-vpnsecure.com ESMTP Postfix\nEHLO mail.bigcorp.com\n250-mail-vpnsecure.com\n250-PIPELINING\n250-SIZE 52428800\n250-STARTTLS\n250-AUTH LOGIN PLAIN\n250 DSN\nMAIL FROM:<support@vpnsecure.com>\n250 2.1.0 Ok\nRCPT TO:<it.admin@bigcorp.com>\n250 2.1.5 Ok\nDATA\n354 End data with <CR><LF>.<CR><LF>\nFrom: \"VPN Secure Support\" <support@vpnsecure.com>\nTo: it.admin@bigcorp.com\nSubject: Important: Password Reset Required for Your VPN Account\n\n[HTML body with malicious link]\n.\n250 2.0.0 Ok: queued as 4Z5Y6X7W8V\nQUIT\n221 2.0.0 Bye",
+        "url_obfuscation_details": "The domain 'vpn-secure-support.com' is visually similar to the legitimate 'vpnsecure.com' service but includes an extra hyphen. The domain uses a valid SSL certificate issued by DigiCert but was registered recently. The URL contains a JWT used as a token parameter to simulate a password reset link.",
+        "phishing_page_http_request": "GET /reset?token=eyJhbGciOiJIUzI1NiJ9.eyJ1c2VyIjoiYWRtaW4ifQ.sflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c HTTP/1.1\nHost: vpn-secure-support.com\nUser-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64)\nAccept: text/html,application/xhtml+xml\nReferer: https://mail.bigcorp.com/\nConnection: close",
+        "phishing_page_http_response": "HTTP/1.1 200 OK\nContent-Type: text/html; charset=UTF-8\nContent-Length: 5120\nCache-Control: no-cache, no-store\nSet-Cookie: session=abcdef1234567890; HttpOnly; Secure\n\n<html><body><h1>Password Reset</h1><form action=\"/submit-reset\" method=\"POST\">\n<input type=\"password\" name=\"new_password\" placeholder=\"New Password\" required>\n<input type=\"password\" name=\"confirm_password\" placeholder=\"Confirm Password\" required>\n<input type=\"submit\" value=\"Reset Password\">\n</form></body></html>"
+      },
+      "indicators": [
+        "Email sent from suspicious but SPF, DKIM, and DMARC pass for a newly created domain",
+        "Domain 'vpn-secure-support.com' is a lookalike with an extra hyphen mimicking legitimate domain",
+        "Email body contains a link with a JWT token parameter used to lure into password reset",
+        "SMTP logs indicate email originated from 198.51.102.89, an unknown outbound mail server",
+        "Phishing page serves a password reset form posting to /submit-reset on a non-corporate domain",
+        "Email uses HTML format with embedded link rather than corporate-standard email templates"
+      ],
+      "detection_method": "Monitor domain registrations for lookalike variations of corporate service providers; implement strict DMARC policies with monitoring; heuristic URL analysis to detect JWT tokens in query parameters; sandbox and analyze links in emails targeting IT staff; user education on verifying password reset emails via official channels; monitor SMTP logs for unusual sending sources targeting privileged users.",
+      "relevant_mitre_techniques": [
+        "T1566.002 - Spearphishing Link",
+        "T1598.002 - Phishing: Spearphishing via Service",
+        "T1204.001 - User Execution: Malicious Link",
+        "T1586 - Compromise Infrastructure",
+        "T1078 - Valid Accounts"
+      ]
+    }
+  ]
+}

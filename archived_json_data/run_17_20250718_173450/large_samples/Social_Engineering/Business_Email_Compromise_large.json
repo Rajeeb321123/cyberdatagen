@@ -1,0 +1,235 @@
+{
+  "samples": [
+    {
+      "scenario": "Business Email Compromise (BEC) via Account Takeover to Request Sensitive Payroll Data",
+      "technical_data": {
+        "email_headers": "Return-Path: <hrdirector@company.com>\r\nReceived: from compromised-host.net (203.0.113.47) by mail.company.com with SMTP id def67890;\r\n\tWed, 17 May 2023 11:22:33 -0400\r\nReceived-SPF: fail (mail.company.com: domain of compromised-host.net does not designate 203.0.113.47 as permitted sender) receiver=mail.company.com; client-ip=203.0.113.47; helo=compromised-host.net;\r\nAuthentication-Results: mail.company.com; dkim=none; spf=fail (client-ip=203.0.113.47) smtp.mailfrom=hrdirector@company.com; dmarc=fail action=none header.from=company.com\r\nFrom: \"Sarah HR\" <hrdirector@company.com>\r\nTo: payroll@company.com\r\nSubject: Confidential: Updated Payroll Information Needed\r\nDate: Wed, 17 May 2023 11:22:30 -0400\r\nMessage-ID: <CA+1C+9lH=7y8rNq0j9@company.com>\r\nX-Originating-IP: 203.0.113.47",
+        "email_body": "Dear Payroll Team,\r\n\r\nDue to urgent compliance requirements, please send me the updated payroll details for all employees including direct deposit information and tax withholdings by end of day.\r\n\r\nThis is confidential and must not be shared outside the payroll department.\r\n\r\nThank you,\r\nSarah",
+        "smtp_transaction_log": "220 mail.company.com ESMTP Postfix\r\nEHLO compromised-host.net\r\n250-mail.company.com\r\n250-PIPELINING\r\n250-SIZE 10485760\r\n250-ETRN\r\n250-STARTTLS\r\n250-AUTH PLAIN LOGIN\r\n250-ENHANCEDSTATUSCODES\r\n250 8BITMIME\r\nMAIL FROM:<hrdirector@company.com>\r\n250 2.1.0 Ok\r\nRCPT TO:<payroll@company.com>\r\n250 2.1.5 Ok\r\nDATA\r\n354 End data with <CR><LF>.<CR><LF>\r\nFrom: Sarah HR <hrdirector@company.com>\r\nTo: payroll@company.com\r\nSubject: Confidential: Updated Payroll Information Needed\r\n\r\nPlease send updated payroll info.\r\n.\r\n250 2.0.0 Ok: queued as 67890\r\nQUIT\r\n221 2.0.0 Bye",
+        "spf_record": "company.com. 3600 IN TXT \"v=spf1 ip4:198.51.100.0/24 -all\"",
+        "dmarc_record": "company.com. 3600 IN TXT \"v=DMARC1; p=quarantine; rua=mailto:dmarc-feedback@company.com; ruf=mailto:dmarc-forensics@company.com;\"",
+        "domain_registration": {
+          "domain": "compromised-host.net",
+          "registrar": "GoDaddy.com, LLC",
+          "creation_date": "2023-04-20T07:30:00Z",
+          "expiration_date": "2024-04-20T07:30:00Z",
+          "registrant_email": "registrant@privacyprotectservice.net"
+        },
+        "email_authentication_results": {
+          "spf": "fail (client-ip=203.0.113.47)",
+          "dkim": "none",
+          "dmarc": "fail"
+        },
+        "email_account_activity_log": [
+          "2023-05-17 10:45:10 - User login from IP 10.20.30.40 via Outlook Desktop",
+          "2023-05-17 11:20:45 - Email sent: 'Confidential: Updated Payroll Information Needed' to payroll@company.com from IP 203.0.113.47 (unrecognized external)",
+          "2023-05-17 11:21:00 - Password reset requested from foreign IP 198.51.100.150"
+        ],
+        "dns_query_logs": [
+          "2023-05-17T11:20:00Z QUERY compromised-host.net A IN 203.0.113.47",
+          "2023-05-17T11:20:05Z QUERY compromised-host.net MX IN 203.0.113.47"
+        ],
+        "email_url_in_body": null,
+        "email_url_obfuscation": null,
+        "wire_transfer_verification_call_log": "No call initiated; request was for sensitive data, no secondary verification performed",
+        "network_flow_log": "SrcIP:203.0.113.47 DstIP:mail.company.com TCP 25 SYN",
+        "mailserver_log_entry": "May 17 11:22:33 mail postfix/smtpd[23456]: NOQUEUE: reject: SPF fail for hrdirector@company.com from 203.0.113.47",
+        "suspicious_ps1_script_found": null,
+        "exploit_code": null
+      },
+      "indicators": [
+        "SPF fail for sender IP 203.0.113.47 outside company.com SPF range",
+        "DMARC policy set to quarantine but email still delivered",
+        "Email sent from domain registered less than 1 month ago",
+        "Unrecognized IP address sending from HR Director's email",
+        "No DKIM signature on email from supposedly company domain",
+        "Email requests sensitive payroll data without secondary verification",
+        "Password reset activity from foreign IP prior to email sent",
+        "Mail server logs show SPF fail rejection but email was queued"
+      ],
+      "detection_method": "Email gateway flagged SPF and DMARC failures raising alerts. Security analysts reviewed domain registration and identified recent suspicious domain. SIEM correlated unusual login and password reset activity with email sending events. Behavioral analytics detected atypical sending patterns on HR Director mailbox. Lack of secondary verification for sensitive data request triggered manual review.",
+      "relevant_mitre_techniques": [
+        "T1566.001 - Spearphishing Attachment",
+        "T1566.002 - Spearphishing Link",
+        "T1598.002 - Spearphishing via Service",
+        "T1071.001 - Application Layer Protocol: Web Protocols",
+        "T1598 - Phishing",
+        "T1586.001 - Compromise Email Accounts",
+        "T1531 - Account Access Removal",
+        "T1110 - Brute Force"
+      ]
+    },
+    {
+      "scenario": "Business Email Compromise (BEC) via CEO Email Account Compromise Requesting Vendor Payment Change",
+      "technical_data": {
+        "email_headers": "Return-Path: <ceo@company.com>\r\nReceived: from attacker-mailhost.org (198.51.100.99) by mail.company.com with SMTP id ghi23456;\r\n\tThu, 18 May 2023 14:05:44 -0400\r\nReceived-SPF: fail (mail.company.com: domain of attacker-mailhost.org does not designate 198.51.100.99 as permitted sender) receiver=mail.company.com; client-ip=198.51.100.99; helo=attacker-mailhost.org;\r\nAuthentication-Results: mail.company.com; dkim=fail (signature invalid); spf=fail (client-ip=198.51.100.99) smtp.mailfrom=ceo@company.com; dmarc=fail action=none header.from=company.com\r\nFrom: \"Michael CEO\" <ceo@company.com>\r\nTo: accounts.payable@company.com\r\nSubject: Change of Vendor Payment Details - Immediate Action Required\r\nDate: Thu, 18 May 2023 14:05:40 -0400\r\nMessage-ID: <CA+2D+5gJ=9u7vLp1k2@company.com>\r\nX-Originating-IP: 198.51.100.99",
+        "email_body": "Hello Accounts Payable,\r\n\r\nPlease update the payment details for our longtime vendor, Acme Supplies Inc., to the following account immediately to avoid disruption:\r\n\r\nBank: Global Trust Bank\r\nAccount Number: 987654321\r\nRouting Number: 123123123\r\nAmount: $250,000\r\n\r\nConfirm once updated.\r\n\r\nBest,\r\nMichael",
+        "smtp_transaction_log": "220 mail.company.com ESMTP Postfix\r\nEHLO attacker-mailhost.org\r\n250-mail.company.com\r\n250-PIPELINING\r\n250-SIZE 10485760\r\n250-ETRN\r\n250-STARTTLS\r\n250-AUTH PLAIN LOGIN\r\n250-ENHANCEDSTATUSCODES\r\n250 8BITMIME\r\nMAIL FROM:<ceo@company.com>\r\n250 2.1.0 Ok\r\nRCPT TO:<accounts.payable@company.com>\r\n250 2.1.5 Ok\r\nDATA\r\n354 End data with <CR><LF>.<CR><LF>\r\nFrom: Michael CEO <ceo@company.com>\r\nTo: accounts.payable@company.com\r\nSubject: Change of Vendor Payment Details - Immediate Action Required\r\n\r\nPlease update vendor payment details.\r\n.\r\n250 2.0.0 Ok: queued as 23456\r\nQUIT\r\n221 2.0.0 Bye",
+        "spf_record": "company.com. 3600 IN TXT \"v=spf1 ip4:192.0.2.0/24 -all\"",
+        "dmarc_record": "company.com. 3600 IN TXT \"v=DMARC1; p=reject; rua=mailto:dmarc-feedback@company.com; ruf=mailto:dmarc-forensics@company.com;\"",
+        "domain_registration": {
+          "domain": "attacker-mailhost.org",
+          "registrar": "Dynadot, LLC",
+          "creation_date": "2023-05-05T20:45:00Z",
+          "expiration_date": "2024-05-05T20:45:00Z",
+          "registrant_email": "abuse@privacyguard.org"
+        },
+        "email_authentication_results": {
+          "spf": "fail (client-ip=198.51.100.99)",
+          "dkim": "fail (signature invalid)",
+          "dmarc": "fail"
+        },
+        "email_account_activity_log": [
+          "2023-05-18 13:40:12 - User login from IP 10.22.33.44 via Outlook Mobile",
+          "2023-05-18 14:05:44 - Email sent: 'Change of Vendor Payment Details - Immediate Action Required' to accounts.payable@company.com from IP 198.51.100.99 (unrecognized)",
+          "2023-05-18 14:10:00 - VPN connection established from foreign IP 203.0.114.150"
+        ],
+        "dns_query_logs": [
+          "2023-05-18T14:05:00Z QUERY attacker-mailhost.org A IN 198.51.100.99",
+          "2023-05-18T14:05:02Z QUERY attacker-mailhost.org MX IN 198.51.100.99"
+        ],
+        "email_url_in_body": null,
+        "email_url_obfuscation": null,
+        "wire_transfer_verification_call_log": "Call to CEO's verified number at 14:07:10 went to voicemail, no callback received",
+        "network_flow_log": "SrcIP:198.51.100.99 DstIP:mail.company.com TCP 25 SYN",
+        "mailserver_log_entry": "May 18 14:05:44 mail postfix/smtpd[34567]: NOQUEUE: reject: SPF fail for ceo@company.com from 198.51.100.99",
+        "suspicious_ps1_script_found": null,
+        "exploit_code": null
+      },
+      "indicators": [
+        "SPF and DKIM failures for sender IP 198.51.100.99 not in company.com SPF range",
+        "DMARC policy set to reject but email delivered",
+        "Email originated from domain registered only 13 days ago",
+        "Unrecognized IP sending email from CEO's account",
+        "Verification call to CEO went unanswered",
+        "Mail server logs indicate SPF rejection but email still queued",
+        "VPN connection from foreign IP shortly after email sent",
+        "Email requests immediate change of vendor payment details without secondary authentication"
+      ],
+      "detection_method": "Automated email filters detected SPF and DKIM failures. Security monitoring flagged new domain registrations and suspicious sending IPs. SOC analysts initiated secondary verification via phone call with CEO, which failed. SIEM correlated VPN connections from foreign IPs with email sending events. Behavioral analytics identified abnormal activity on CEO mailbox and flagged payment change requests.",
+      "relevant_mitre_techniques": [
+        "T1566.001 - Spearphishing Attachment",
+        "T1566.002 - Spearphishing Link",
+        "T1598.002 - Spearphishing via Service",
+        "T1071.001 - Application Layer Protocol: Web Protocols",
+        "T1598 - Phishing",
+        "T1586.001 - Compromise Email Accounts",
+        "T1078 - Valid Accounts"
+      ]
+    },
+    {
+      "scenario": "Business Email Compromise via Compromised CFO Account Requesting Confidential Financial Data",
+      "technical_data": {
+        "email_headers": "Return-Path: <cfo@company.com>\r\nReceived: from unknown-host.net (198.51.100.45) by mail.company.com with SMTP id def67890;\r\n\tWed, 21 Jun 2023 14:22:33 -0400\r\nReceived-SPF: fail (mail.company.com: domain of unknown-host.net does not designate 198.51.100.45 as permitted sender) receiver=mail.company.com; client-ip=198.51.100.45; helo=unknown-host.net;\r\nAuthentication-Results: mail.company.com; dkim=none; spf=fail (client-ip=198.51.100.45) smtp.mailfrom=cfo@company.com; dmarc=fail action=quarantine header.from=company.com\r\nFrom: \"Sarah CFO\" <cfo@company.com>\r\nTo: accounting@company.com\r\nSubject: Confidential: Q2 Financials Request\r\nDate: Wed, 21 Jun 2023 14:22:30 -0400\r\nMessage-ID: <CA+1C+9mG=7y7rLh9k9@company.com>\r\nX-Originating-IP: 198.51.100.45",
+        "email_body": "Dear Team,\r\n\r\nPlease send me the full Q2 financial reports including all bank statements and transaction logs by end of day. This is highly confidential.\r\n\r\nBest,\r\nSarah",
+        "smtp_transaction_log": "220 mail.company.com ESMTP Postfix\r\nEHLO unknown-host.net\r\n250-mail.company.com\r\n250-PIPELINING\r\n250-SIZE 10485760\r\n250-ETRN\r\n250-STARTTLS\r\n250-AUTH PLAIN LOGIN\r\n250-ENHANCEDSTATUSCODES\r\n250 8BITMIME\r\nMAIL FROM:<cfo@company.com>\r\n250 2.1.0 Ok\r\nRCPT TO:<accounting@company.com>\r\n250 2.1.5 Ok\r\nDATA\r\n354 End data with <CR><LF>.<CR><LF>\r\nFrom: Sarah CFO <cfo@company.com>\r\nTo: accounting@company.com\r\nSubject: Confidential: Q2 Financials Request\r\n\r\nPlease send me the full Q2 financial reports.\r\n.\r\n250 2.0.0 Ok: queued as 54321\r\nQUIT\r\n221 2.0.0 Bye",
+        "spf_record": "company.com. 3600 IN TXT \"v=spf1 ip4:203.0.113.0/24 -all\"",
+        "dmarc_record": "company.com. 3600 IN TXT \"v=DMARC1; p=quarantine; rua=mailto:dmarc-aggregate@company.com; ruf=mailto:dmarc-forensics@company.com;\"",
+        "domain_registration": {
+          "domain": "unknown-host.net",
+          "registrar": "GoDaddy.com, LLC",
+          "creation_date": "2023-06-15T08:00:00Z",
+          "expiration_date": "2024-06-15T08:00:00Z",
+          "registrant_email": "contactprivacy@domainsbyproxy.com"
+        },
+        "email_authentication_results": {
+          "spf": "fail (client-ip=198.51.100.45)",
+          "dkim": "none",
+          "dmarc": "fail"
+        },
+        "email_account_activity_log": [
+          "2023-06-21 13:50:12 - User login from IP 172.16.10.15 via Outlook Desktop",
+          "2023-06-21 14:10:05 - Email sent: 'Team Meeting Notes' to team@company.com",
+          "2023-06-21 14:22:33 - Email sent: 'Confidential: Q2 Financials Request' to accounting@company.com from IP 198.51.100.45 (unrecognized)"
+        ],
+        "dns_query_logs": [
+          "2023-06-21T14:22:10Z QUERY unknown-host.net A IN 198.51.100.45",
+          "2023-06-21T14:22:15Z QUERY unknown-host.net MX IN 198.51.100.45"
+        ],
+        "email_url_in_body": null,
+        "email_url_obfuscation": null,
+        "wire_transfer_verification_call_log": "No wire transfer involved; verification call to CFO's number on file at 14:25:00 confirmed CFO did not send request",
+        "network_flow_log": "SrcIP:198.51.100.45 DstIP:mail.company.com TCP 25 SYN",
+        "mailserver_log_entry": "Jun 21 14:22:33 mail postfix/smtpd[23456]: NOQUEUE: reject: SPF fail for cfo@company.com from 198.51.100.45",
+        "suspicious_ps1_script_found": null,
+        "exploit_code": null
+      },
+      "indicators": [
+        "SPF fail for sender IP 198.51.100.45 not authorized in company.com SPF record",
+        "DMARC policy set to quarantine but email accepted",
+        "Domain unknown-host.net registered 6 days prior to attack",
+        "Unrecognized IP sending from CFO email account",
+        "No DKIM signature present on email",
+        "Email requests sensitive financial data not typical for CFO role",
+        "Verification call to CFO confirmed no request was sent",
+        "Mail server logs show SPF fail rejection but email delivered"
+      ],
+      "detection_method": "Email gateway detected SPF and DMARC failures triggering quarantine alerts; SOC analysts investigated sender IP and domain registration age. Correlation of email logs and CFO account activity showed anomalies. Verification call to CFO confirmed compromise. SIEM correlated DNS queries and mail logs indicating suspicious activity. Behavioral analytics detected unusual email requests from CFO mailbox.",
+      "relevant_mitre_techniques": [
+        "T1566.001 - Spearphishing Attachment",
+        "T1566.002 - Spearphishing Link",
+        "T1598.002 - Spearphishing via Service",
+        "T1071.001 - Application Layer Protocol: Web Protocols",
+        "T1598 - Phishing",
+        "T1586.001 - Compromise Email Accounts"
+      ]
+    },
+    {
+      "scenario": "Business Email Compromise via Executive Account Compromise Requesting Vendor Payment Change",
+      "technical_data": {
+        "email_headers": "Return-Path: <vpfinance@company.com>\r\nReceived: from newmailhost.org (203.0.113.77) by mail.company.com with SMTP id ghi54321;\r\n\tMon, 03 Jul 2023 11:45:50 -0400\r\nReceived-SPF: fail (mail.company.com: domain of newmailhost.org does not designate 203.0.113.77 as permitted sender) receiver=mail.company.com; client-ip=203.0.113.77; helo=newmailhost.org;\r\nAuthentication-Results: mail.company.com; dkim=none; spf=fail (client-ip=203.0.113.77) smtp.mailfrom=vpfinance@company.com; dmarc=fail action=none header.from=company.com\r\nFrom: \"Robert VP Finance\" <vpfinance@company.com>\r\nTo: accounts.payable@company.com\r\nSubject: Change of Vendor Payment Details\r\nDate: Mon, 03 Jul 2023 11:45:47 -0400\r\nMessage-ID: <CA+2D+3nH=8z8sMn1j1@company.com>\r\nX-Originating-IP: 203.0.113.77",
+        "email_body": "Hi Accounts Payable,\r\n\r\nPlease update the payment details for the vendor 'Acme Supplies' to the following bank account immediately for all pending invoices:\r\n\r\nAccount Name: Acme Supplies LLC\r\nBank: Metropolitan Bank\r\nAccount Number: 987654321\r\nRouting Number: 123456789\r\n\r\nConfirm once updated.\r\n\r\nThanks,\r\nRobert",
+        "smtp_transaction_log": "220 mail.company.com ESMTP Postfix\r\nEHLO newmailhost.org\r\n250-mail.company.com\r\n250-PIPELINING\r\n250-SIZE 10485760\r\n250-ETRN\r\n250-STARTTLS\r\n250-AUTH PLAIN LOGIN\r\n250-ENHANCEDSTATUSCODES\r\n250 8BITMIME\r\nMAIL FROM:<vpfinance@company.com>\r\n250 2.1.0 Ok\r\nRCPT TO:<accounts.payable@company.com>\r\n250 2.1.5 Ok\r\nDATA\r\n354 End data with <CR><LF>.<CR><LF>\r\nFrom: Robert VP Finance <vpfinance@company.com>\r\nTo: accounts.payable@company.com\r\nSubject: Change of Vendor Payment Details\r\n\r\nPlease update vendor payment details as above.\r\n.\r\n250 2.0.0 Ok: queued as 67890\r\nQUIT\r\n221 2.0.0 Bye",
+        "spf_record": "company.com. 3600 IN TXT \"v=spf1 ip4:198.51.100.0/24 -all\"",
+        "dmarc_record": "company.com. 3600 IN TXT \"v=DMARC1; p=reject; rua=mailto:dmarc-aggregate@company.com; ruf=mailto:dmarc-forensics@company.com;\"",
+        "domain_registration": {
+          "domain": "newmailhost.org",
+          "registrar": "Tucows Domains Inc.",
+          "creation_date": "2023-06-25T16:30:00Z",
+          "expiration_date": "2024-06-25T16:30:00Z",
+          "registrant_email": "anonymous@privacyshield.org"
+        },
+        "email_authentication_results": {
+          "spf": "fail (client-ip=203.0.113.77)",
+          "dkim": "none",
+          "dmarc": "fail"
+        },
+        "email_account_activity_log": [
+          "2023-07-03 11:20:05 - User login from IP 10.20.30.40 via Outlook Mobile",
+          "2023-07-03 11:30:15 - Email sent: 'Budget Approval' to finance-team@company.com",
+          "2023-07-03 11:45:50 - Email sent: 'Change of Vendor Payment Details' to accounts.payable@company.com from IP 203.0.113.77 (unrecognized)"
+        ],
+        "dns_query_logs": [
+          "2023-07-03T11:45:30Z QUERY newmailhost.org A IN 203.0.113.77",
+          "2023-07-03T11:45:35Z QUERY newmailhost.org MX IN 203.0.113.77"
+        ],
+        "email_url_in_body": null,
+        "email_url_obfuscation": null,
+        "wire_transfer_verification_call_log": "Call placed to VP Finance's verified number at 11:48:00; VP confirmed no payment change request was made",
+        "network_flow_log": "SrcIP:203.0.113.77 DstIP:mail.company.com TCP 25 SYN",
+        "mailserver_log_entry": "Jul 03 11:45:50 mail postfix/smtpd[34567]: NOQUEUE: reject: SPF fail for vpfinance@company.com from 203.0.113.77",
+        "suspicious_ps1_script_found": null,
+        "exploit_code": null
+      },
+      "indicators": [
+        "SPF fail for IP 203.0.113.77 not listed in company.com SPF record",
+        "DMARC policy set to reject but email bypassed filters",
+        "Domain newmailhost.org registered 8 days before incident",
+        "Unrecognized IP address used for VP Finance email",
+        "No DKIM signature present",
+        "Request to change vendor payment details without prior notice",
+        "Verification call confirmed VP Finance did not send email",
+        "Mail server logs show SPF fail but email still delivered"
+      ],
+      "detection_method": "Email security gateway triggered SPF and DMARC failures raising alerts. Security team reviewed unusual sender IP and newly registered domain. SIEM correlated email logs with user login data and network flow logs. Behavioral analytics flagged abnormal sending patterns on VP Finance mailbox. Verification call confirmed fraudulent activity. Incident response involved blocking sender domain and resetting VP Finance credentials.",
+      "relevant_mitre_techniques": [
+        "T1566.001 - Spearphishing Attachment",
+        "T1566.002 - Spearphishing Link",
+        "T1598.002 - Spearphishing via Service",
+        "T1071.001 - Application Layer Protocol: Web Protocols",
+        "T1598 - Phishing",
+        "T1586.001 - Compromise Email Accounts"
+      ]
+    }
+  ]
+}

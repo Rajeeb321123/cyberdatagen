@@ -1,0 +1,295 @@
+{
+  "samples": [
+    {
+      "scenario": "Phishing SMS impersonating a telecom provider warning about a billing issue, containing a shortened URL that redirects to a fake login page requesting user credentials and offering a malicious iOS profile to install spyware.",
+      "technical_data": {
+        "sms_message_raw": "From: +15551234567\nTimestamp: 2024-06-11T09:15:22+00:00\nMessage: ALERT: Your QuickTel account has overdue charges. Resolve immediately: https://tinyurl.com/qt-billpay",
+        "bitly_redirect_chain": [
+          {
+            "request": "GET /qt-billpay HTTP/1.1\r\nHost: tinyurl.com\r\nUser-Agent: Mozilla/5.0 (iPhone; CPU iPhone OS 14_6 like Mac OS X)\r\nAccept: text/html\r\n\r\n",
+            "response": "HTTP/1.1 302 Found\r\nLocation: http://secure-quicktel-login.net/auth?ref=xyz987\r\nContent-Length: 0\r\n\r\n"
+          }
+        ],
+        "phishing_site_http_request": "GET /auth?ref=xyz987 HTTP/1.1\r\nHost: secure-quicktel-login.net\r\nUser-Agent: Mozilla/5.0 (iPhone; CPU iPhone OS 14_6 like Mac OS X)\r\nAccept: text/html\r\n\r\n",
+        "phishing_site_http_response_headers": "HTTP/1.1 200 OK\r\nContent-Type: text/html; charset=UTF-8\r\nContent-Length: 1678\r\nX-Frame-Options: SAMEORIGIN\r\nSet-Cookie: SESSIONID=def456; HttpOnly\r\n\r\n",
+        "phishing_site_html_snippet": "<html><head><title>QuickTel Account Verification</title></head><body><form action=\"/submit_auth.php\" method=\"POST\"><input type=\"text\" name=\"username\" placeholder=\"Phone Number\"/><input type=\"password\" name=\"password\" placeholder=\"Password\"/><input type=\"submit\" value=\"Verify\"/></form><p>Install our official profile for enhanced security:</p><a href=\"http://malicious-iosprofiles[.]com/quicktel.mobileconfig\">Download Profile</a></body></html>",
+        "smtp_received_headers": [
+          "Received: from mailserver.quicktel-alerts[203.0.113.10] by smtp.provider.net with ESMTPS id abcd1234efgh for <user@domain.com>; Tue, 11 Jun 2024 09:14:00 +0000",
+          "Received-SPF: pass (provider.net: domain of quicktel-alerts@quicktel-alerts.com designates 203.0.113.10 as permitted sender)",
+          "Authentication-Results: smtp.provider.net; dkim=pass header.d=quicktel.com; spf=pass smtp.mailfrom=quicktel-alerts@quicktel-alerts.com; dmarc=pass"
+        ],
+        "malicious_apk_hashes": {
+          "MD5": "a1b2c3d4e5f67890123456789abcdef0",
+          "SHA1": "1234567890abcdef1234567890abcdef12345678",
+          "SHA256": "abcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890"
+        },
+        "domain_registration": {
+          "Domain": "secure-quicktel-login.net",
+          "Registrar": "GoDaddy.com, LLC",
+          "CreationDate": "2024-05-20T08:30:00Z",
+          "ExpirationDate": "2025-05-20T08:30:00Z",
+          "RegistrantCountry": "CN",
+          "NameServers": [
+            "ns1.fakeprovider.cn",
+            "ns2.fakeprovider.cn"
+          ]
+        },
+        "url_obfuscation": "The phishing domain mimics the legitimate QuickTel brand with the prefix 'secure-' and uses a .net TLD instead of the official .com. The SMS uses a tinyurl shortened link to conceal the destination. The malicious iOS configuration profile is hosted on a separate suspicious domain to deliver spyware.",
+        "smtp_transaction_log": [
+          "220 smtp.provider.net ESMTP Postfix",
+          "EHLO mailserver.quicktel-alerts",
+          "250-smtp.provider.net Hello mailserver.quicktel-alerts [203.0.113.10]",
+          "250-AUTH PLAIN LOGIN",
+          "MAIL FROM:<quicktel-alerts@quicktel-alerts.com>",
+          "250 2.1.0 Ok",
+          "RCPT TO:<user@domain.com>",
+          "250 2.1.5 Ok",
+          "DATA",
+          "354 End data with <CR><LF>.<CR><LF>",
+          "From: QuickTel Alerts <quicktel-alerts@quicktel-alerts.com>",
+          "To: user@domain.com",
+          "Subject: Immediate Billing Action Required",
+          "X-Mailer: PHPMailer 6.5.1 (https://github.com/PHPMailer/PHPMailer)",
+          "Date: Tue, 11 Jun 2024 09:14:00 +0000",
+          "\r\nALERT: Your QuickTel account has overdue charges. Resolve immediately: https://tinyurl.com/qt-billpay\r\n.",
+          "250 2.0.0 Ok: queued as 67890"
+        ]
+      },
+      "indicators": {
+        "sms_sender_number": "+15551234567",
+        "short_url": "https://tinyurl.com/qt-billpay",
+        "phishing_domain": "secure-quicktel-login.net",
+        "apk_download_url": "http://malicious-iosprofiles.com/quicktel.mobileconfig",
+        "apk_hash_sha256": "abcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890",
+        "smtp_mail_from": "quicktel-alerts@quicktel-alerts.com",
+        "smtp_relay_ip": "203.0.113.10",
+        "domain_registrar": "GoDaddy.com, LLC",
+        "domain_creation_date": "2024-05-20T08:30:00Z"
+      },
+      "detection_method": "Detection through correlation of SMS message content with suspicious shortened URLs, HTTP 302 redirects from tinyurl.com to suspicious domains, monitoring HTTP requests to non-HTTPS telecom lookalike domains, detection of iOS profile downloads from unknown domains on endpoints, and email gateway SPF/DKIM/DMARC validation failures or anomalies. Endpoint protection can block malicious configuration profiles. Network IDS alerts on redirects from URL shorteners to suspicious destinations.",
+      "relevant_mitre_techniques": [
+        "T1566.001 - Phishing: Spearphishing Link",
+        "T1598.002 - Phishing: Spearphishing via Service",
+        "T1204.002 - User Execution: Malicious File",
+        "T1071.001 - Application Layer Protocol: Web Protocols"
+      ]
+    },
+    {
+      "scenario": "Phishing email impersonating a popular online payment platform, delivering a message about account verification via a spoofed email address, containing a suspicious link that leads to a credential harvesting page and prompts the installation of a malicious Windows executable.",
+      "technical_data": {
+        "sms_message_raw": "",
+        "email_raw": "From: PayFast Support <support@payfast-secure.com>\nTo: victim@userdomain.com\nDate: 2024-06-12T16:45:10+00:00\nSubject: Immediate Account Verification Required\nMessage-ID: <20240612164510.12345@payfast-secure.com>\nMIME-Version: 1.0\nContent-Type: text/html; charset=UTF-8\nReceived: from mx1.payfast-secure.com (198.51.100.24) by mail.userdomain.com with ESMTPS id 9876zyx54321 for <victim@userdomain.com>; Wed, 12 Jun 2024 16:44:50 +0000\n\n<html><body><p>Dear user,</p><p>For your security, please verify your PayFast account immediately by clicking the link below:</p><a href=\"http://payfast-secure-verify[.]com/login?token=abc987\">Verify Account</a><p>Failure to verify may lead to account suspension.</p><p>Additionally, download and run the attached security update:</p><a href=\"http://malicious-downloads[.]net/payfast_update.exe\">Download Update</a></body></html>",
+        "phishing_site_http_request": "GET /login?token=abc987 HTTP/1.1\r\nHost: payfast-secure-verify.com\r\nUser-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64)\r\nAccept: text/html\r\n\r\n",
+        "phishing_site_http_response_headers": "HTTP/1.1 200 OK\r\nContent-Type: text/html; charset=UTF-8\r\nContent-Length: 1892\r\nX-Frame-Options: DENY\r\nSet-Cookie: sessionid=uvw234; HttpOnly\r\n\r\n",
+        "phishing_site_html_snippet": "<html><head><title>PayFast Account Verification</title></head><body><form action=\"/submit_credentials.php\" method=\"POST\"><input type=\"email\" name=\"email\" placeholder=\"Email Address\"/><input type=\"password\" name=\"password\" placeholder=\"Password\"/><input type=\"submit\" value=\"Verify\"/></form></body></html>",
+        "smtp_received_headers": [
+          "Received: from mx1.payfast-secure.com (198.51.100.24) by mail.userdomain.com with ESMTPS id 9876zyx54321 for <victim@userdomain.com>; Wed, 12 Jun 2024 16:44:50 +0000",
+          "Received-SPF: fail (mail.userdomain.com: domain of support@payfast-secure.com does not designate 198.51.100.24 as permitted sender)",
+          "Authentication-Results: mail.userdomain.com; dkim=fail header.d=payfast.com; spf=fail smtp.mailfrom=support@payfast-secure.com; dmarc=fail"
+        ],
+        "malicious_apk_hashes": {
+          "MD5": "f1e2d3c4b5a6978877665544332211aa",
+          "SHA1": "fedcba9876543210fedcba9876543210fedcba98",
+          "SHA256": "1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef"
+        },
+        "domain_registration": {
+          "Domain": "payfast-secure-verify.com",
+          "Registrar": "Tucows Domains Inc.",
+          "CreationDate": "2024-06-01T10:15:00Z",
+          "ExpirationDate": "2025-06-01T10:15:00Z",
+          "RegistrantCountry": "BR",
+          "NameServers": [
+            "ns1.suspicioushost.br",
+            "ns2.suspicioushost.br"
+          ]
+        },
+        "url_obfuscation": "The phishing domain adds '-secure-verify' to the legitimate payfast.com brand and uses a .com TLD to appear legitimate. The email sender domain is spoofed and fails SPF/DKIM/DMARC checks. The malicious Windows executable is hosted separately on a suspicious domain with a .net TLD to evade detection.",
+        "smtp_transaction_log": [
+          "220 mail.userdomain.com ESMTP Postfix",
+          "EHLO mx1.payfast-secure.com",
+          "250-mail.userdomain.com Hello mx1.payfast-secure.com [198.51.100.24]",
+          "250-AUTH PLAIN LOGIN",
+          "MAIL FROM:<support@payfast-secure.com>",
+          "250 2.1.0 Ok",
+          "RCPT TO:<victim@userdomain.com>",
+          "250 2.1.5 Ok",
+          "DATA",
+          "354 End data with <CR><LF>.<CR><LF>",
+          "From: PayFast Support <support@payfast-secure.com>",
+          "To: victim@userdomain.com",
+          "Subject: Immediate Account Verification Required",
+          "MIME-Version: 1.0",
+          "Content-Type: text/html; charset=UTF-8",
+          "Date: Wed, 12 Jun 2024 16:44:50 +0000",
+          "<html><body><p>Dear user,</p><p>For your security, please verify your PayFast account immediately by clicking the link below:</p><a href=\"http://payfast-secure-verify.com/login?token=abc987\">Verify Account</a><p>Failure to verify may lead to account suspension.</p><p>Additionally, download and run the attached security update:</p><a href=\"http://malicious-downloads.net/payfast_update.exe\">Download Update</a></body></html>",
+          ".",
+          "250 2.0.0 Ok: queued as 98765"
+        ]
+      },
+      "indicators": {
+        "sms_sender_number": "",
+        "short_url": "",
+        "phishing_domain": "payfast-secure-verify.com",
+        "apk_download_url": "http://malicious-downloads.net/payfast_update.exe",
+        "apk_hash_sha256": "1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef",
+        "smtp_mail_from": "support@payfast-secure.com",
+        "smtp_relay_ip": "198.51.100.24",
+        "domain_registrar": "Tucows Domains Inc.",
+        "domain_creation_date": "2024-06-01T10:15:00Z"
+      },
+      "detection_method": "Email gateway detection of SPF/DKIM/DMARC failures, correlation of suspicious URLs in emails with passive DNS and HTTP logs showing access to non-official domains, endpoint protection detecting malicious executable hash attempts, and network IDS alerts on HTTP traffic to suspicious domains. User awareness training and sandbox analysis of downloaded executables also help detection.",
+      "relevant_mitre_techniques": [
+        "T1566.001 - Phishing: Spearphishing Link",
+        "T1204.002 - User Execution: Malicious File",
+        "T1071.001 - Application Layer Protocol: Web Protocols"
+      ]
+    },
+    {
+      "scenario": "Phishing SMS purporting to be from a popular online payment platform, containing a disguised URL that leads to a credential harvesting page and prompts users to download a fake security update app with embedded malware.",
+      "technical_data": {
+        "sms_message_raw": "From: +12025550199\nTimestamp: 2024-06-11T09:15:30+00:00\nMessage: ALERT: Your PayQuick account has unusual login attempts. Confirm your identity now: https://tinyurl.com/ypayquick-secure",
+        "bitly_redirect_chain": [
+          {
+            "request": "GET /ypayquick-secure HTTP/1.1\r\nHost: tinyurl.com\r\nUser-Agent: Mozilla/5.0 (iPhone; CPU iPhone OS 16_4 like Mac OS X)\r\nAccept: text/html\r\n\r\n",
+            "response": "HTTP/1.1 302 Found\r\nLocation: http://secure-payquick-login[.]net/authenticate.php?ref=xyz987\r\nContent-Length: 0\r\n\r\n"
+          }
+        ],
+        "phishing_site_http_request": "GET /authenticate.php?ref=xyz987 HTTP/1.1\r\nHost: secure-payquick-login.net\r\nUser-Agent: Mozilla/5.0 (iPhone; CPU iPhone OS 16_4 like Mac OS X)\r\nAccept: text/html\r\n\r\n",
+        "phishing_site_http_response_headers": "HTTP/1.1 200 OK\r\nContent-Type: text/html; charset=UTF-8\r\nContent-Length: 1732\r\nX-Frame-Options: SAMEORIGIN\r\nSet-Cookie: SESSIONID=abc456; HttpOnly\r\n\r\n",
+        "phishing_site_html_snippet": "<html><head><title>PayQuick Secure Authentication</title></head><body><form action=\"/submit_login.php\" method=\"POST\"><input type=\"text\" name=\"email\" placeholder=\"Email Address\"/><input type=\"password\" name=\"password\" placeholder=\"Password\"/><input type=\"submit\" value=\"Verify\"/></form><script>function installFakeUpdate(){if(confirm('Install PayQuick Security Update?')){window.location='http://malware-hosting[.]org/payquick_update.ipa';}}</script><button onclick=\"installFakeUpdate()\">Install Update</button></body></html>",
+        "smtp_received_headers": [
+          "Received: from mail-payquickmailer.example[203.0.113.55] by smtp-relay.provider.com with ESMTPS id 5678def9012 for <user2@example.com>; Tue, 11 Jun 2024 09:14:50 +0000",
+          "Received-SPF: pass (provider.com: domain of notifications@payquickmail.com designates 203.0.113.55 as permitted sender)",
+          "Authentication-Results: smtp-relay.provider.com; dkim=pass header.d=payquickmail.com; spf=pass smtp.mailfrom=notifications@payquickmail.com; dmarc=pass"
+        ],
+        "malicious_apk_hashes": {
+          "MD5": "f1e2d3c4b5a697887766554433221100",
+          "SHA1": "aabbccddeeff00112233445566778899aabbccdd",
+          "SHA256": "00112233445566778899aabbccddeeff00112233445566778899aabbccddeeff"
+        },
+        "domain_registration": {
+          "Domain": "secure-payquick-login.net",
+          "Registrar": "GoDaddy.com, LLC",
+          "CreationDate": "2024-06-01T15:30:00Z",
+          "ExpirationDate": "2025-06-01T15:30:00Z",
+          "RegistrantCountry": "CN",
+          "NameServers": [
+            "ns1.suspiciousdns.cn",
+            "ns2.suspiciousdns.cn"
+          ]
+        },
+        "url_obfuscation": "The phishing URL uses a domain similar to the legitimate payment platform (payquick.com) but adds 'secure-' prefix and uses a .net TLD instead of .com. The URL is delivered via tinyurl.com to hide the final destination. The fake app download is an iOS IPA file hosted on an unrelated domain to lure users into installing malware.",
+        "smtp_transaction_log": [
+          "220 smtp.provider.com ESMTP Postfix",
+          "EHLO mail-payquickmailer.example",
+          "250-smtp.provider.com Hello mail-payquickmailer.example [203.0.113.55]",
+          "250-AUTH PLAIN LOGIN",
+          "MAIL FROM:<notifications@payquickmail.com>",
+          "250 2.1.0 Ok",
+          "RCPT TO:<user2@example.com>",
+          "250 2.1.5 Ok",
+          "DATA",
+          "354 End data with <CR><LF>.<CR><LF>",
+          "From: PayQuick Notifications <notifications@payquickmail.com>",
+          "To: user2@example.com",
+          "Subject: Alert: Unusual Login Attempts Detected",
+          "X-Mailer: PHPMailer 6.5.1 (https://github.com/PHPMailer/PHPMailer)",
+          "Date: Tue, 11 Jun 2024 09:14:50 +0000",
+          "\r\nALERT: Your PayQuick account has unusual login attempts. Confirm your identity now: https://tinyurl.com/ypayquick-secure\r\n.",
+          "250 2.0.0 Ok: queued as 67890"
+        ]
+      },
+      "indicators": {
+        "sms_sender_number": "+12025550199",
+        "short_url": "https://tinyurl.com/ypayquick-secure",
+        "phishing_domain": "secure-payquick-login.net",
+        "apk_download_url": "http://malware-hosting.org/payquick_update.ipa",
+        "apk_hash_sha256": "00112233445566778899aabbccddeeff00112233445566778899aabbccddeeff",
+        "smtp_mail_from": "notifications@payquickmail.com",
+        "smtp_relay_ip": "203.0.113.55",
+        "domain_registrar": "GoDaddy.com, LLC",
+        "domain_creation_date": "2024-06-01T15:30:00Z"
+      },
+      "detection_method": "Detection involves monitoring URL shortening redirections to suspicious domains, email reputation checks on sender domains, analysis of HTTP requests to non-HTTPS lookalike domains, detection of IPA app downloads from untrusted domains on iOS devices, and correlation with SMS sender patterns. Network IDS signatures can alert on HTTP 302 redirects from known shortening services to suspicious sites.",
+      "relevant_mitre_techniques": [
+        "T1566.001 - Phishing: Spearphishing Link",
+        "T1204.002 - User Execution: Malicious File",
+        "T1071.001 - Application Layer Protocol: Web Protocols",
+        "T1110.003 - Brute Force: Password Spraying"
+      ]
+    },
+    {
+      "scenario": "Phishing email impersonating a telecom service provider, containing a link to a phishing site that mimics the provider's password reset page and encourages installation of a malicious APK disguised as a security patch.",
+      "technical_data": {
+        "sms_message_raw": "From: +61412345678\nTimestamp: 2024-06-12T18:40:10+00:00\nMessage: Dear customer, your TelcoFast account has been locked due to multiple failed attempts. Reset your password now: http://ow.ly/telcofast-reset",
+        "bitly_redirect_chain": [
+          {
+            "request": "GET /telcofast-reset HTTP/1.1\r\nHost: ow.ly\r\nUser-Agent: Mozilla/5.0 (Linux; Android 11; Pixel 5)\r\nAccept: text/html\r\n\r\n",
+            "response": "HTTP/1.1 301 Moved Permanently\r\nLocation: http://reset-telcofast-secure[.]info/password_reset.php?token=def456\r\nContent-Length: 0\r\n\r\n"
+          }
+        ],
+        "phishing_site_http_request": "GET /password_reset.php?token=def456 HTTP/1.1\r\nHost: reset-telcofast-secure.info\r\nUser-Agent: Mozilla/5.0 (Linux; Android 11; Pixel 5)\r\nAccept: text/html\r\n\r\n",
+        "phishing_site_http_response_headers": "HTTP/1.1 200 OK\r\nContent-Type: text/html; charset=UTF-8\r\nContent-Length: 1650\r\nX-Frame-Options: DENY\r\nSet-Cookie: AUTHID=def456; HttpOnly\r\n\r\n",
+        "phishing_site_html_snippet": "<html><head><title>TelcoFast Password Reset</title></head><body><form action=\"/process_reset.php\" method=\"POST\"><input type=\"text\" name=\"username\" placeholder=\"Username\"/><input type=\"password\" name=\"new_password\" placeholder=\"New Password\"/><input type=\"submit\" value=\"Reset Password\"/></form><script>function promptAPKInstall(){if(confirm('Install TelcoFast Security Patch?')){window.location='http://downloads-secure[.]net/telcofast_patch.apk';}}</script><button onclick=\"promptAPKInstall()\">Install Security Patch</button></body></html>",
+        "smtp_received_headers": [
+          "Received: from mailserver.telcofastmail.example [198.51.100.25] by smtp-relay.provider.com with ESMTPS id 3456ghi7890 for <user3@example.com>; Wed, 12 Jun 2024 18:39:45 +0000",
+          "Received-SPF: pass (provider.com: domain of support@telcofastmail.com designates 198.51.100.25 as permitted sender)",
+          "Authentication-Results: smtp-relay.provider.com; dkim=pass header.d=telcofastmail.com; spf=pass smtp.mailfrom=support@telcofastmail.com; dmarc=pass"
+        ],
+        "malicious_apk_hashes": {
+          "MD5": "9a8b7c6d5e4f3a2b1c0d998877665544",
+          "SHA1": "ffeeddccbbaa99887766554433221100ffeeddcc",
+          "SHA256": "abcdef1234567890fedcba0987654321abcdef1234567890fedcba0987654321"
+        },
+        "domain_registration": {
+          "Domain": "reset-telcofast-secure.info",
+          "Registrar": "PDR Ltd. d/b/a PublicDomainRegistry.com",
+          "CreationDate": "2024-05-30T08:20:00Z",
+          "ExpirationDate": "2025-05-30T08:20:00Z",
+          "RegistrantCountry": "BR",
+          "NameServers": [
+            "ns1.fake-ns-br.com",
+            "ns2.fake-ns-br.com"
+          ]
+        },
+        "url_obfuscation": "Phishing domain mimics legitimate telco domain (telcofast.com) by adding 'reset-' prefix and '-secure' suffix with a .info TLD. The URL uses HTTP, not HTTPS, masked behind the ow.ly shortener. Malicious APK is hosted on a separate suspicious domain with an APK file named as a security patch to deceive Android users.",
+        "smtp_transaction_log": [
+          "220 smtp.provider.com ESMTP Postfix",
+          "EHLO mailserver.telcofastmail.example",
+          "250-smtp.provider.com Hello mailserver.telcofastmail.example [198.51.100.25]",
+          "250-AUTH PLAIN LOGIN",
+          "MAIL FROM:<support@telcofastmail.com>",
+          "250 2.1.0 Ok",
+          "RCPT TO:<user3@example.com>",
+          "250 2.1.5 Ok",
+          "DATA",
+          "354 End data with <CR><LF>.<CR><LF>",
+          "From: TelcoFast Support <support@telcofastmail.com>",
+          "To: user3@example.com",
+          "Subject: Account Locked - Immediate Action Required",
+          "X-Mailer: PHPMailer 6.5.1 (https://github.com/PHPMailer/PHPMailer)",
+          "Date: Wed, 12 Jun 2024 18:39:45 +0000",
+          "\r\nDear customer, your TelcoFast account has been locked due to multiple failed attempts. Reset your password now: http://ow.ly/telcofast-reset\r\n.",
+          "250 2.0.0 Ok: queued as 78901"
+        ]
+      },
+      "indicators": {
+        "sms_sender_number": "+61412345678",
+        "short_url": "http://ow.ly/telcofast-reset",
+        "phishing_domain": "reset-telcofast-secure.info",
+        "apk_download_url": "http://downloads-secure.net/telcofast_patch.apk",
+        "apk_hash_sha256": "abcdef1234567890fedcba0987654321abcdef1234567890fedcba0987654321",
+        "smtp_mail_from": "support@telcofastmail.com",
+        "smtp_relay_ip": "198.51.100.25",
+        "domain_registrar": "PDR Ltd. d/b/a PublicDomainRegistry.com",
+        "domain_creation_date": "2024-05-30T08:20:00Z"
+      },
+      "detection_method": "Detection is based on correlation of SMS content with suspicious URL shortener chains, email sender domain reputation and SPF/DKIM/DMARC validation, monitoring HTTP traffic for redirects to non-HTTPS telco lookalike domains, detection of APK downloads from unknown domains on Android devices, and network IDS alerts on HTTP 301 redirects from known shorteners.",
+      "relevant_mitre_techniques": [
+        "T1566.001 - Phishing: Spearphishing Link",
+        "T1204.002 - User Execution: Malicious File",
+        "T1071.001 - Application Layer Protocol: Web Protocols"
+      ]
+    }
+  ]
+}

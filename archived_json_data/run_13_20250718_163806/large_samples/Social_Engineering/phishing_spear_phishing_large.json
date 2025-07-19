@@ -1,0 +1,252 @@
+{
+  "samples": [
+    {
+      "scenario": "Spear phishing email targeting HR manager impersonating head of recruitment using a newly registered domain with homoglyph substitution in the domain name and sender spoofing. The email contains an attachment named 'Candidate_Resume.docm' with macro malware and a URL shortening service link redirecting to a credential phishing page.",
+      "technical_data": {
+        "email_headers": "Return-Path: <recruitment@corporat\u0119hr.com>\r\nReceived: from mail.corporat\u0119hr.com (198.51.100.27) by mail.corporate.com with ESMTP id <XY98765ZT> for <hrmanager@corporate.com>; Fri, 7 Jul 2023 14:22:10 -0400\r\nReceived-SPF: pass (corporate.com: domain of recruitment@corporat\u0119hr.com designates 198.51.100.27 as permitted sender) receiver=mail.corporate.com; client-ip=198.51.100.27; helo=mail.corporat\u0119hr.com;\r\nAuthentication-Results: mail.corporate.com; dkim=pass header.d=corporat\u0119hr.com; spf=pass smtp.mailfrom=recruitment@corporat\u0119hr.com; dmarc=fail action=quarantine header.from=corporate.com;\r\nMessage-ID: <20230707142210.XY98765ZT@mail.corporat\u0119hr.com>\r\nFrom: \"Linda Garcia\" <recruitment@corporat\u0119hr.com>\r\nTo: \"Alice Brown\" <hrmanager@corporate.com>\r\nSubject: New candidate resume for urgent review\r\nDate: Fri, 7 Jul 2023 14:22:10 -0400\r\nMIME-Version: 1.0\r\nContent-Type: multipart/mixed; boundary=\"----=_NextPart_000_001D\"\r\nX-Mailer: Microsoft Outlook 16.0\r\nX-Originating-IP: [198.51.100.27]\r\nX-Spam-Status: No\r\nX-Spam-Score: 0.0\r\n",
+        "email_body_html": "<html><body><p>Hi Alice,</p><p>Please review the attached resume of a highly recommended candidate. Let me know your feedback ASAP.</p><p>Also, for additional candidate details, visit: <a href=\"http://bit.ly/3QmR7Tf\">Candidate Profile</a></p><p>Best regards,<br>Linda Garcia</p></body></html>",
+        "smtp_transaction_logs": "220 mail.corporat\u0119hr.com ESMTP Postfix\r\nEHLO mail.corporat\u0119hr.com\r\n250-mail.corporat\u0119hr.com\r\n250-PIPELINING\r\n250-SIZE 10485760\r\n250-VRFY\r\n250-ETRN\r\n250-STARTTLS\r\n250-AUTH PLAIN LOGIN\r\n250-ENHANCEDSTATUSCODES\r\n250-8BITMIME\r\n250 DSN\r\nMAIL FROM:<recruitment@corporat\u0119hr.com>\r\n250 2.1.0 Ok\r\nRCPT TO:<hrmanager@corporate.com>\r\n250 2.1.5 Ok\r\nDATA\r\n354 End data with <CR><LF>.<CR><LF>\r\n[message data]\r\n.\r\n250 2.0.0 Ok: queued as 98765ZYX\r\nQUIT\r\n221 2.0.0 Bye",
+        "domain_registration_details": {
+          "domain": "corporat\u0119hr.com",
+          "registrar": "Global Registrar Ltd.",
+          "creation_date": "2023-06-20T11:05:00Z",
+          "expiration_date": "2024-06-20T11:05:00Z",
+          "name_servers": [
+            "ns1.global-registrar.com",
+            "ns2.global-registrar.com"
+          ],
+          "registrant": {
+            "name": "PrivacyGuard Services",
+            "organization": "PrivacyGuard LLC",
+            "email": "support@privacyguard.org"
+          }
+        },
+        "url_obfuscation_analysis": {
+          "original_url": "http://bit.ly/3QmR7Tf",
+          "typosquatting": false,
+          "domain_similarity_score": 0,
+          "details": "URL shortening service used to hide final destination; final redirect leads to 'http://recruitmentportal-secure.com/login'.",
+          "redirect_chain": [
+            "http://bit.ly/3QmR7Tf",
+            "http://recruitmentportal-secure.com/login"
+          ],
+          "html_form_fields": [
+            "username",
+            "password"
+          ]
+        },
+        "web_server_access_log_excerpt": "198.51.100.27 - - [07/Jul/2023:14:23:15 -0400] \"GET /login HTTP/1.1\" 200 4120 \"-\" \"Mozilla/5.0 (Windows NT 10.0; Win64; x64)\"",
+        "waf_log_entry": "2023-07-07T14:23:15Z WAF_ALERT: SRC=198.51.100.27 DST=192.168.2.20 PROTO=HTTP METHOD=GET URI=/login RULE=Phishing-URL-Detection ACTION=ALERT",
+        "dns_query_log": "timestamp=2023-07-07T14:21:58Z client_ip=192.168.2.15 query=corporat\u0119hr.com A response=198.51.100.27",
+        "email_authentication_results": {
+          "spf": "pass",
+          "dkim": "pass",
+          "dmarc": "fail (header.from=corporate.com; domain alignment failed)"
+        }
+      },
+      "indicators": {
+        "suspicious_domain": "corporat\u0119hr.com",
+        "ip_address": "198.51.100.27",
+        "url": "http://bit.ly/3QmR7Tf",
+        "email_sender": "recruitment@corporat\u0119hr.com",
+        "dmarc_failure": true,
+        "email_subject": "New candidate resume for urgent review",
+        "smtp_mail_from": "recruitment@corporat\u0119hr.com",
+        "malicious_token": null
+      },
+      "detection_method": "Detection of homoglyph character in domain, DMARC failure analysis, WAF alert on access to phishing URL, DNS logs indicating recent domain resolution, macro detection in email attachment, and user reports of suspicious email with unexpected attachment.",
+      "relevant_mitre_techniques": [
+        "T1566.001",
+        "T1204.002",
+        "T1566.002",
+        "T1204.001"
+      ]
+    },
+    {
+      "scenario": "Spear phishing email sent to IT administrator impersonating a trusted vendor using a newly registered domain with subdomain impersonation and sender spoofing. The email contains an embedded image with a URL redirecting through multiple domains to a malicious payload download site exploiting CVE-2021-40444 vulnerabilities.",
+      "technical_data": {
+        "email_headers": "Return-Path: <support@vendor-tech-secure.com>\r\nReceived: from mail.vendor-tech-secure.com (192.0.2.58) by mail.corporate.com with ESMTP id <JK45678LM> for <itadmin@corporate.com>; Mon, 10 Jul 2023 08:30:45 -0400\r\nReceived-SPF: pass (corporate.com: domain of support@vendor-tech-secure.com designates 192.0.2.58 as permitted sender) receiver=mail.corporate.com; client-ip=192.0.2.58; helo=mail.vendor-tech-secure.com;\r\nAuthentication-Results: mail.corporate.com; dkim=pass header.d=vendor-tech-secure.com; spf=pass smtp.mailfrom=support@vendor-tech-secure.com; dmarc=fail action=quarantine header.from=corporate.com;\r\nMessage-ID: <20230710083045.JK45678LM@mail.vendor-tech-secure.com>\r\nFrom: \"Vendor Support\" <support@vendor-tech-secure.com>\r\nTo: \"John Doe\" <itadmin@corporate.com>\r\nSubject: Critical security update for your system\r\nDate: Mon, 10 Jul 2023 08:30:45 -0400\r\nMIME-Version: 1.0\r\nContent-Type: text/html; charset=\"UTF-8\"\r\nX-Mailer: Microsoft Outlook 16.0\r\nX-Originating-IP: [192.0.2.58]\r\nX-Spam-Status: No\r\nX-Spam-Score: 0.0\r\n",
+        "email_body_html": "<html><body><p>Dear John,</p><p>Please find the critical security update for your systems attached. It is imperative to install it immediately to patch recent vulnerabilities.</p><p><img src=\"http://updates.vendor-tech-secure.com.download-secure-files.com/patch.png\" alt=\"Security Update\" /></p><p>Regards,<br>Vendor Support Team</p></body></html>",
+        "smtp_transaction_logs": "220 mail.vendor-tech-secure.com ESMTP Postfix\r\nEHLO mail.vendor-tech-secure.com\r\n250-mail.vendor-tech-secure.com\r\n250-PIPELINING\r\n250-SIZE 10485760\r\n250-VRFY\r\n250-ETRN\r\n250-STARTTLS\r\n250-AUTH PLAIN LOGIN\r\n250-ENHANCEDSTATUSCODES\r\n250-8BITMIME\r\n250 DSN\r\nMAIL FROM:<support@vendor-tech-secure.com>\r\n250 2.1.0 Ok\r\nRCPT TO:<itadmin@corporate.com>\r\n250 2.1.5 Ok\r\nDATA\r\n354 End data with <CR><LF>.<CR><LF>\r\n[message data]\r\n.\r\n250 2.0.0 Ok: queued as 67890JKL\r\nQUIT\r\n221 2.0.0 Bye",
+        "domain_registration_details": {
+          "domain": "vendor-tech-secure.com",
+          "registrar": "Secure Domains LLC",
+          "creation_date": "2023-07-01T09:00:00Z",
+          "expiration_date": "2024-07-01T09:00:00Z",
+          "name_servers": [
+            "ns1.securedomains.com",
+            "ns2.securedomains.com"
+          ],
+          "registrant": {
+            "name": "Anon Privacy Proxy",
+            "organization": "Privacy Proxy Services",
+            "email": "proxy@privacyproxy.net"
+          }
+        },
+        "url_obfuscation_analysis": {
+          "original_url": "http://updates.vendor-tech-secure.com.download-secure-files.com/patch.png",
+          "typosquatting": true,
+          "domain_similarity_score": 0.88,
+          "details": "Subdomain 'updates.vendor-tech-secure.com' used within 'download-secure-files.com' domain to mimic trusted vendor domain and evade detection.",
+          "redirect_chain": [
+            "http://updates.vendor-tech-secure.com.download-secure-files.com/patch.png",
+            "http://download-secure-files.com/malicious/patch.exe"
+          ],
+          "html_form_fields": []
+        },
+        "web_server_access_log_excerpt": "192.0.2.58 - - [10/Jul/2023:08:31:02 -0400] \"GET /patch.png HTTP/1.1\" 200 10500 \"-\" \"Mozilla/5.0 (Windows NT 10.0; Win64; x64)\"",
+        "waf_log_entry": "2023-07-10T08:31:02Z WAF_ALERT: SRC=192.0.2.58 DST=192.168.3.30 PROTO=HTTP METHOD=GET URI=/patch.png RULE=Malicious-File-Download ACTION=ALERT",
+        "dns_query_log": "timestamp=2023-07-10T08:30:20Z client_ip=192.168.3.10 query=vendor-tech-secure.com A response=192.0.2.58",
+        "email_authentication_results": {
+          "spf": "pass",
+          "dkim": "pass",
+          "dmarc": "fail (header.from=corporate.com; domain alignment failed)"
+        }
+      },
+      "indicators": {
+        "suspicious_domain": "vendor-tech-secure.com",
+        "ip_address": "192.0.2.58",
+        "url": "http://updates.vendor-tech-secure.com.download-secure-files.com/patch.png",
+        "email_sender": "support@vendor-tech-secure.com",
+        "dmarc_failure": true,
+        "email_subject": "Critical security update for your system",
+        "smtp_mail_from": "support@vendor-tech-secure.com",
+        "malicious_token": null
+      },
+      "detection_method": "Analysis of subdomain abuse in URL, correlation of DMARC failure despite SPF/DKIM pass, WAF alerts on malicious file download attempts, DNS logs showing new domain resolution, and endpoint alerts for exploitation attempts related to CVE-2021-40444.",
+      "relevant_mitre_techniques": [
+        "T1566.001",
+        "T1204.002",
+        "T1204.001",
+        "T1190"
+      ]
+    },
+    {
+      "scenario": "Spear phishing email targeting HR manager impersonating IT support requesting immediate password reset via a domain closely resembling the official IT domain with homoglyph substitution. Email body contains a link with URL encoding redirecting to a fake login portal designed to capture credentials and MFA tokens.",
+      "technical_data": {
+        "email_headers": "Return-Path: <itsupport@1t-securecorp.com>\r\nReceived: from mail.1t-securecorp.com (198.51.100.23) by mail.corporate.com with ESMTP id <XY98765ZT> for <hr_manager@corporate.com>; Mon, 10 Jul 2023 14:22:10 -0400\r\nReceived-SPF: pass (corporate.com: domain of itsupport@1t-securecorp.com designates 198.51.100.23 as permitted sender) receiver=mail.corporate.com; client-ip=198.51.100.23; helo=mail.1t-securecorp.com;\r\nAuthentication-Results: mail.corporate.com; dkim=pass header.d=1t-securecorp.com; spf=pass smtp.mailfrom=itsupport@1t-securecorp.com; dmarc=fail action=quarantine header.from=corporate.com;\r\nMessage-ID: <20230710142210.XY98765ZT@mail.1t-securecorp.com>\r\nFrom: \"IT Support\" <itsupport@1t-securecorp.com>\r\nTo: \"Alice Thompson\" <hr_manager@corporate.com>\r\nSubject: Immediate Password Reset Required to Avoid Account Lockout\r\nDate: Mon, 10 Jul 2023 14:22:10 -0400\r\nMIME-Version: 1.0\r\nContent-Type: text/html; charset=\"UTF-8\"\r\nX-Mailer: Mozilla Thunderbird 78.10.0\r\nX-Originating-IP: [198.51.100.23]\r\nX-Spam-Status: No\r\nX-Spam-Score: 0.0\r\n",
+        "email_body_html": "<html><body><p>Dear Alice,</p><p>Due to recent suspicious activity detected on your account, you are required to reset your password immediately to prevent lockout.</p><p>Please follow this secure link to update your credentials: <a href=\"http://secure-login.%311t-securecorp.com/reset?user=AliceT&amp;session=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9\">Reset Password</a></p><p>Failure to comply will result in temporary suspension.</p><p>Regards,<br>IT Support Team</p></body></html>",
+        "smtp_transaction_logs": "220 mail.1t-securecorp.com ESMTP Postfix\r\nEHLO mail.1t-securecorp.com\r\n250-mail.1t-securecorp.com\r\n250-PIPELINING\r\n250-SIZE 20971520\r\n250-VRFY\r\n250-ETRN\r\n250-STARTTLS\r\n250-AUTH PLAIN LOGIN\r\n250-ENHANCEDSTATUSCODES\r\n250-8BITMIME\r\n250 DSN\r\nMAIL FROM:<itsupport@1t-securecorp.com>\r\n250 2.1.0 Ok\r\nRCPT TO:<hr_manager@corporate.com>\r\n250 2.1.5 Ok\r\nDATA\r\n354 End data with <CR><LF>.<CR><LF>\r\n[message data]\r\n.\r\n250 2.0.0 Ok: queued as 98765ZYXW\r\nQUIT\r\n221 2.0.0 Bye",
+        "domain_registration_details": {
+          "domain": "1t-securecorp.com",
+          "registrar": "SafeDomain Registrations",
+          "creation_date": "2023-06-29T08:35:00Z",
+          "expiration_date": "2024-06-29T08:35:00Z",
+          "name_servers": [
+            "ns1.safedomain.com",
+            "ns2.safedomain.com"
+          ],
+          "registrant": {
+            "name": "Domain Privacy Service",
+            "organization": "Privacy Protect, LLC",
+            "email": "privacy@privacyprotect.org"
+          }
+        },
+        "url_obfuscation_analysis": {
+          "original_url": "http://secure-login.%311t-securecorp.com/reset?user=AliceT&session=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9",
+          "typosquatting": true,
+          "domain_similarity_score": 0.89,
+          "details": "The domain uses '1t-securecorp.com' where the character 'l' is replaced by digit '1' and prefixed with URL-encoded '1' (%31) representing homoglyph substitution to mimic 'it-securecorp.com'.",
+          "redirect_chain": [
+            "http://secure-login.%311t-securecorp.com/reset?user=AliceT&session=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9",
+            "http://secure-login.1t-securecorp.com/login?continue=dashboard"
+          ],
+          "html_form_fields": [
+            "username",
+            "password",
+            "mfa_token"
+          ]
+        },
+        "web_server_access_log_excerpt": "198.51.100.23 - - [10/Jul/2023:14:22:45 -0400] \"GET /reset?user=AliceT&session=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9 HTTP/1.1\" 200 4820 \"-\" \"Mozilla/5.0 (Windows NT 10.0; Win64; x64)\"",
+        "waf_log_entry": "2023-07-10T14:22:45Z WAF_ALERT: SRC=198.51.100.23 DST=192.168.1.20 PROTO=HTTP METHOD=GET URI=/reset?user=AliceT&session=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9 RULE=Suspicious-Token-Pattern ACTION=ALERT",
+        "dns_query_log": "timestamp=2023-07-10T14:21:50Z client_ip=192.168.1.105 query=1t-securecorp.com A response=198.51.100.23",
+        "email_authentication_results": {
+          "spf": "pass",
+          "dkim": "pass",
+          "dmarc": "fail (header.from=corporate.com; domain alignment failed)"
+        }
+      },
+      "indicators": {
+        "suspicious_domain": "1t-securecorp.com",
+        "ip_address": "198.51.100.23",
+        "url": "http://secure-login.%311t-securecorp.com/reset?user=AliceT&session=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9",
+        "email_sender": "itsupport@1t-securecorp.com",
+        "dmarc_failure": true,
+        "email_subject": "Immediate Password Reset Required to Avoid Account Lockout",
+        "smtp_mail_from": "itsupport@1t-securecorp.com",
+        "malicious_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9"
+      },
+      "detection_method": "Analysis of DMARC failure despite passing SPF/DKIM, homoglyph domain detection via URL decoding, WAF alerts on suspicious token patterns, DNS queries for newly registered homoglyph domain, correlation with helpdesk reports of password reset requests, and HTTP access logs monitoring.",
+      "relevant_mitre_techniques": [
+        "T1566.001",
+        "T1586.001",
+        "T1598",
+        "T1204.002"
+      ]
+    },
+    {
+      "scenario": "Spear phishing email sent to Procurement Director impersonating a trusted supplier requesting invoice payment confirmation. The sender domain uses a recently registered domain with character substitution to closely resemble the legitimate supplier's domain. Email contains an embedded obfuscated URL leading to a credential phishing form with multi-step redirects.",
+      "technical_data": {
+        "email_headers": "Return-Path: <accounts@supl1er-invoices.com>\r\nReceived: from mail.supl1er-invoices.com (203.0.114.67) by mail.corporate.com with ESMTP id <MN45678OP> for <procurement@corporate.com>; Fri, 21 Jul 2023 11:47:58 -0400\r\nReceived-SPF: pass (corporate.com: domain of accounts@supl1er-invoices.com designates 203.0.114.67 as permitted sender) receiver=mail.corporate.com; client-ip=203.0.114.67; helo=mail.supl1er-invoices.com;\r\nAuthentication-Results: mail.corporate.com; dkim=pass header.d=supl1er-invoices.com; spf=pass smtp.mailfrom=accounts@supl1er-invoices.com; dmarc=fail action=quarantine header.from=corporate.com;\r\nMessage-ID: <20230721114758.MN45678OP@mail.supl1er-invoices.com>\r\nFrom: \"Supplier Accounts\" <accounts@supl1er-invoices.com>\r\nTo: \"David Lee\" <procurement@corporate.com>\r\nSubject: Invoice Payment Confirmation Needed - Urgent\r\nDate: Fri, 21 Jul 2023 11:47:58 -0400\r\nMIME-Version: 1.0\r\nContent-Type: text/html; charset=\"UTF-8\"\r\nX-Mailer: Apple Mail (2.3445.5.20)\r\nX-Originating-IP: [203.0.114.67]\r\nX-Spam-Status: No\r\nX-Spam-Score: 0.0\r\n",
+        "email_body_html": "<html><body><p>Dear David,</p><p>Please confirm the payment for invoice <strong>#123456789</strong> of <strong>$120,500</strong> at your earliest convenience.</p><p>Review details and confirm payment here: <a href=\"http://pay-confirm.supl1er-invoices.com/confirm?invoice=123456789&uid=ab12cd34ef56\">Confirm Payment</a></p><p>Thank you,<br>Accounts Department</p></body></html>",
+        "smtp_transaction_logs": "220 mail.supl1er-invoices.com ESMTP Postfix\r\nEHLO mail.supl1er-invoices.com\r\n250-mail.supl1er-invoices.com\r\n250-PIPELINING\r\n250-SIZE 15728640\r\n250-VRFY\r\n250-ETRN\r\n250-STARTTLS\r\n250-AUTH PLAIN LOGIN\r\n250-ENHANCEDSTATUSCODES\r\n250-8BITMIME\r\n250 DSN\r\nMAIL FROM:<accounts@supl1er-invoices.com>\r\n250 2.1.0 Ok\r\nRCPT TO:<procurement@corporate.com>\r\n250 2.1.5 Ok\r\nDATA\r\n354 End data with <CR><LF>.<CR><LF>\r\n[message data]\r\n.\r\n250 2.0.0 Ok: queued as 67890MNOP\r\nQUIT\r\n221 2.0.0 Bye",
+        "domain_registration_details": {
+          "domain": "supl1er-invoices.com",
+          "registrar": "Trusted Domains Ltd.",
+          "creation_date": "2023-07-10T16:20:00Z",
+          "expiration_date": "2024-07-10T16:20:00Z",
+          "name_servers": [
+            "ns1.trusteddomains.com",
+            "ns2.trusteddomains.com"
+          ],
+          "registrant": {
+            "name": "Whois Privacy Service",
+            "organization": "Privacy Protect, LLC",
+            "email": "whois@privacyprotect.org"
+          }
+        },
+        "url_obfuscation_analysis": {
+          "original_url": "http://pay-confirm.supl1er-invoices.com/confirm?invoice=123456789&uid=ab12cd34ef56",
+          "typosquatting": true,
+          "domain_similarity_score": 0.92,
+          "details": "The domain 'supl1er-invoices.com' replaces letter 'i' with digit '1' to mimic legitimate 'supplier-invoices.com'.",
+          "redirect_chain": [
+            "http://pay-confirm.supl1er-invoices.com/confirm?invoice=123456789&uid=ab12cd34ef56",
+            "http://pay-confirm.supl1er-invoices.com/login?session=xyz987654321",
+            "http://securepay.supl1er-invoices.com/dashboard"
+          ],
+          "html_form_fields": [
+            "username",
+            "password",
+            "otp"
+          ]
+        },
+        "web_server_access_log_excerpt": "203.0.114.67 - - [21/Jul/2023:11:48:20 -0400] \"GET /confirm?invoice=123456789&uid=ab12cd34ef56 HTTP/1.1\" 200 6382 \"-\" \"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7)\"",
+        "waf_log_entry": "2023-07-21T11:48:20Z WAF_ALERT: SRC=203.0.114.67 DST=192.168.1.30 PROTO=HTTP METHOD=GET URI=/confirm?invoice=123456789&uid=ab12cd34ef56 RULE=Phishing-URL-Detection ACTION=ALERT",
+        "dns_query_log": "timestamp=2023-07-21T11:47:45Z client_ip=192.168.1.110 query=supl1er-invoices.com A response=203.0.114.67",
+        "email_authentication_results": {
+          "spf": "pass",
+          "dkim": "pass",
+          "dmarc": "fail (header.from=corporate.com; domain alignment failed)"
+        }
+      },
+      "indicators": {
+        "suspicious_domain": "supl1er-invoices.com",
+        "ip_address": "203.0.114.67",
+        "url": "http://pay-confirm.supl1er-invoices.com/confirm?invoice=123456789&uid=ab12cd34ef56",
+        "email_sender": "accounts@supl1er-invoices.com",
+        "dmarc_failure": true,
+        "email_subject": "Invoice Payment Confirmation Needed - Urgent",
+        "smtp_mail_from": "accounts@supl1er-invoices.com",
+        "malicious_token": "ab12cd34ef56"
+      },
+      "detection_method": "Monitoring of DMARC failure alongside SPF and DKIM pass, detection of typosquatting domain with character substitution, WAF alerts triggered by known phishing URL patterns, DNS logs indicating recent domain resolution, user incident reports of unexpected payment requests, and HTTP server logs tracking suspicious URL access.",
+      "relevant_mitre_techniques": [
+        "T1566.001",
+        "T1586.001",
+        "T1598",
+        "T1204.002"
+      ]
+    }
+  ]
+}

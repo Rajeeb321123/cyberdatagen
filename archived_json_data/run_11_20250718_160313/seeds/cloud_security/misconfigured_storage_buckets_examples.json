@@ -1,0 +1,87 @@
+{
+  "examples": [
+    {
+      "scenario": "Publicly exposed AWS S3 bucket allows unauthorized user to list and download sensitive data due to overly permissive bucket policy and lack of access restrictions.",
+      "technical_data": {
+        "iam_policy": {
+          "BucketPolicy": {
+            "Version": "2012-10-17",
+            "Statement": [
+              {
+                "Sid": "PublicReadGetObject",
+                "Effect": "Allow",
+                "Principal": "*",
+                "Action": [
+                  "s3:GetObject",
+                  "s3:ListBucket"
+                ],
+                "Resource": [
+                  "arn:aws:s3:::corp-sensitive-data",
+                  "arn:aws:s3:::corp-sensitive-data/*"
+                ]
+              }
+            ]
+          }
+        },
+        "cloudtrail_log_entry": {
+          "eventVersion": "1.08",
+          "userIdentity": {
+            "type": "Anonymous",
+            "principalId": "ANONYMOUS"
+          },
+          "eventTime": "2024-05-15T14:22:33Z",
+          "eventSource": "s3.amazonaws.com",
+          "eventName": "ListObjectsV2",
+          "awsRegion": "us-east-1",
+          "sourceIPAddress": "198.51.100.23",
+          "userAgent": "aws-sdk-go/1.42.0 (go1.18.3; linux; amd64)",
+          "requestParameters": {
+            "bucketName": "corp-sensitive-data",
+            "prefix": ""
+          },
+          "responseElements": {
+            "x-amz-request-id": "3D4F5E6C7B8A9F0D",
+            "x-amz-id-2": "ExampleIdString=="
+          },
+          "additionalEventData": {
+            "SignatureVersion": "SigV4",
+            "CipherSuite": "ECDHE-RSA-AES128-GCM-SHA256",
+            "bytesTransferredIn": 0,
+            "bytesTransferredOut": 2048
+          },
+          "eventID": "123e4567-e89b-12d3-a456-426614174000",
+          "readOnly": true,
+          "resources": [
+            {
+              "type": "AWS::S3::Bucket",
+              "ARN": "arn:aws:s3:::corp-sensitive-data"
+            }
+          ]
+        },
+        "aws_cli_access_attempt": {
+          "command": "aws s3 ls s3://corp-sensitive-data/",
+          "output": [
+            "2024-05-15 14:22:33 confidential_report_Q1.pdf",
+            "2024-05-15 14:22:33 employee_credentials.csv",
+            "2024-05-15 14:22:33 financials_2023.xlsx"
+          ]
+        },
+        "curl_http_request": "GET /corp-sensitive-data/financials_2023.xlsx HTTP/1.1\r\nHost: corp-sensitive-data.s3.amazonaws.com\r\nUser-Agent: curl/7.68.0\r\nAccept: */*\r\n\r\n",
+        "curl_http_response_headers": "HTTP/1.1 200 OK\r\nx-amz-id-2: ExampleIdString==\r\nx-amz-request-id: 3D4F5E6C7B8A9F0D\r\nDate: Wed, 15 May 2024 14:22:33 GMT\r\nLast-Modified: Tue, 14 May 2024 18:00:00 GMT\r\nETag: \"9b2cf535f27731c974343645a3985328\"\r\nContent-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet\r\nContent-Length: 256000\r\nServer: AmazonS3\r\n\r\n"
+      },
+      "indicators": [
+        "S3 bucket policy allowing Principal \"*\" with GetObject and ListBucket actions",
+        "CloudTrail logs showing 'Anonymous' user performing ListObjectsV2 on sensitive bucket",
+        "AWS CLI commands successfully listing bucket contents without authentication",
+        "HTTP 200 responses for GET requests to bucket objects without authorization",
+        "Source IPs outside corporate IP range accessing the bucket"
+      ],
+      "detection_method": "Deploy automated CSPM tools to continuously audit S3 bucket policies for public access permissions. Monitor CloudTrail logs for anonymous or unauthorized ListObjects and GetObject API calls. Alert on any S3 API calls originating from IP addresses not whitelisted or without valid IAM credentials. Use AWS Config rules such as s3-bucket-public-read-prohibited to block or alert on buckets with public read permissions.",
+      "relevant_mitre_techniques": [
+        "T1530 - Data from Cloud Storage Object",
+        "T1078 - Valid Accounts (Anonymous access in cloud storage)",
+        "T1552.001 - Credentials in Files (exfiltration via publicly accessible bucket)"
+      ]
+    }
+  ]
+}

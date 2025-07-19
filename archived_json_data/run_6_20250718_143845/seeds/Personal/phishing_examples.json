@@ -1,0 +1,67 @@
+{
+  "examples": [
+    {
+      "scenario": "Phishing attack via Instagram direct message containing a shortened URL leading to a fake Instagram login page designed to steal user credentials.",
+      "technical_data": {
+        "social_media_message_raw": {
+          "timestamp": "2024-04-10T14:22:36Z",
+          "platform": "Instagram",
+          "sender_handle": "@officialinsta_support",
+          "message_id": "DM1234567890",
+          "message_text": "Hi! We noticed suspicious activity on your account. Please verify your login immediately to avoid suspension: https://bit.ly/3LfakeUrl",
+          "url_expansion": "http://instagram-secure-login.com/verify?session=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9"
+        },
+        "url_and_domain_info": {
+          "final_url": "http://instagram-secure-login.com/verify?session=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9",
+          "whois_registration": {
+            "domain": "instagram-secure-login.com",
+            "registrar": "NameCheap, Inc.",
+            "creation_date": "2024-04-05T08:15:22Z",
+            "expiration_date": "2025-04-05T08:15:22Z",
+            "registrant_email": "privacyprotect@fake-email.com",
+            "nameservers": [
+              "ns1.namecheap.com",
+              "ns2.namecheap.com"
+            ]
+          },
+          "hosting": {
+            "ip": "185.199.109.153",
+            "asn": "AS54113 Fastly",
+            "geolocation": "United States"
+          }
+        },
+        "http_request": "GET /verify?session=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9 HTTP/1.1\r\nHost: instagram-secure-login.com\r\nUser-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/112.0.0.0 Safari/537.36\r\nAccept: text/html,application/xhtml+xml\r\nReferer: https://bit.ly/3LfakeUrl\r\nConnection: keep-alive\r\n\r\n",
+        "http_response": "HTTP/1.1 200 OK\r\nContent-Type: text/html; charset=UTF-8\r\nContent-Length: 4567\r\nServer: nginx/1.21.1\r\nSet-Cookie: sessionid=xyz123abc; HttpOnly; Secure\r\n\r\n<html><head><title>Instagram Login</title></head><body><form method=\"POST\" action=\"/submit\">\n<input type=\"text\" name=\"username\" placeholder=\"Username\" />\n<input type=\"password\" name=\"password\" placeholder=\"Password\" />\n<input type=\"hidden\" name=\"csrf_token\" value=\"abcdef123456\" />\n<button type=\"submit\">Log In</button>\n</form></body></html>",
+        "post_login_capture_request": "POST /submit HTTP/1.1\r\nHost: instagram-secure-login.com\r\nUser-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64)\r\nContent-Type: application/x-www-form-urlencoded\r\nContent-Length: 53\r\n\r\nusername=johndoe&password=SuperSecret123&csrf_token=abcdef123456",
+        "web_server_access_log": "185.199.109.153 - - [10/Apr/2024:14:22:40 +0000] \"GET /verify?session=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9 HTTP/1.1\" 200 4567 \"https://bit.ly/3LfakeUrl\" \"Mozilla/5.0 (Windows NT 10.0; Win64; x64)\"\n185.199.109.153 - - [10/Apr/2024:14:23:05 +0000] \"POST /submit HTTP/1.1\" 302 123 \"http://instagram-secure-login.com/verify?session=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9\" \"Mozilla/5.0 (Windows NT 10.0; Win64; x64)\"",
+        "dns_query_log": "Timestamp: 2024-04-10T14:22:35Z\nQuery: instagram-secure-login.com A\nResponse: 185.199.109.153\nQuery Type: A\nResponse TTL: 3600",
+        "antivirus_log_snippet": "2024-04-10 14:23:07 INFO Phishing URL detected: http://instagram-secure-login.com/verify - Signature: PhishKit.Gen.E",
+        "url_obfuscation_techniques": [
+          "Use of URL shortener bit.ly to hide final malicious URL",
+          "Domain name mimics legitimate brand with hyphen and extra words (instagram-secure-login.com)",
+          "Use of JWT-like session token parameter to appear legitimate"
+        ]
+      },
+      "indicators": {
+        "malicious_domain": "instagram-secure-login.com",
+        "shortened_url": "https://bit.ly/3LfakeUrl",
+        "suspicious_user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64)",
+        "phishing_form_fields": [
+          "username",
+          "password",
+          "csrf_token"
+        ],
+        "registrar_privacy_email": "privacyprotect@fake-email.com",
+        "ip_address": "185.199.109.153",
+        "http_response_302_post_submit": true
+      },
+      "detection_method": "Detection via URL reputation feeds and real-time analysis of incoming social media messages; browser anti-phishing extensions flagging suspicious domain patterns; monitoring DNS query logs for newly registered domains mimicking brands; web proxy logs identifying POST requests to non-official Instagram domains with typical credential field names.",
+      "relevant_mitre_techniques": [
+        "T1566.002 - Phishing: Spearphishing Link",
+        "T1192 - Spearphishing Link",
+        "T1586.003 - Compromise Infrastructure: Social Media Accounts",
+        "T1071.001 - Application Layer Protocol: Web Protocols"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,280 @@
+{
+  "samples": [
+    {
+      "scenario": "Supply chain compromise through malicious update package delivered by hijacked software vendor's update server.",
+      "technical_data": {
+        "software_update_http_traffic": {
+          "request": "GET /api/v2/update?product=org.software.app&version=3.8.7&platform=linux-x86 HTTP/1.1\r\nHost: updates.org-software.com\r\nUser-Agent: OrgSoftwareUpdater/1.4.3\r\nAccept: application/octet-stream\r\n\r\n",
+          "response": "HTTP/1.1 200 OK\r\nContent-Type: application/octet-stream\r\nContent-Length: 2097152\r\nContent-Disposition: attachment; filename=\"app_update_3.8.8.bin\"\r\nX-Signature: MEUCIQC+zEqcNqkjz+q4y6bYtXj3e3YbXxO5SxPv7rhnk4q9xiwIgVWc1QZqq+RzLhZzVfH52nX1x5NqK9Jqh7nJ2V9Wz+8hw=\r\n\r\n<binary data>",
+          "notes": "The X-Signature header is present but the signature is invalid due to compromised signing keys. The update binary contains a hidden backdoor module not listed in previous releases."
+        },
+        "sbom_snippet": {
+          "product": "org.software.app",
+          "version": "3.8.8",
+          "components": [
+            {
+              "name": "corelib",
+              "version": "2.3.1",
+              "hashes": {
+                "sha256": "a1b2c3d4e5f67890123456789abcdef0123456789abcdef0123456789abcdef0"
+              }
+            },
+            {
+              "name": "backdoor_agent",
+              "version": "0.1.0",
+              "hashes": {
+                "sha256": "b2c3d4e5f67890123456789abcdef0123456789abcdef0123456789abcdef012"
+              }
+            }
+          ]
+        },
+        "software_vendor_registry_changes": [
+          "/etc/org-software/app/config/last_update: 2024-06-10T09:15:45Z",
+          "/etc/org-software/app/modules/backdoor_agent.so: Installed",
+          "/etc/org-software/app/modules/backdoor_agent.so/checksum: b2c3d4e5f67890123456789abcdef0123456789abcdef0123456789abcdef012"
+        ],
+        "malicious_dll_file_hashes": {
+          "md5": "c81e728d9d4c2f636f067f89cc14862c",
+          "sha1": "356a192b7913b04c54574d18c28d46e6395428ab",
+          "sha256": "b2c3d4e5f67890123456789abcdef0123456789abcdef0123456789abcdef012"
+        },
+        "process_creation_logs": [
+          "2024-06-10T09:16:03Z app_service PID: 7823 ParentPID: 1221 CommandLine: \"/usr/bin/app_service --load-module=backdoor_agent.so\"",
+          "2024-06-10T09:16:04Z backdoor_agent.so PID: 7830 ParentPID: 7823 CommandLine: \"/usr/bin/backdoor_agent.so --init\""
+        ],
+        "network_c2_traffic": [
+          "09:18:22.654321 IP 10.0.0.25.44321 > 198.51.100.22.443: Flags [P.], seq 1212:1312, ack 4421, win 65535, length 100",
+          "Encrypted HTTPS POST to https://api.malicious-c2.net/heartbeat with payload {\"host\":\"victim-host-25\",\"uptime\":3600,\"status\":\"active\"}"
+        ],
+        "code_signing_verification_output": "osslsigncode verify app_update_3.8.8.bin\n\nSignature Verification: FAILED\nSigner Certificate:\n    Issuer: Malicious Intermediate CA\n    Subject: Malicious Intermediate CA\n    Validity: 2023-01-01 - 2027-12-31\n\nERROR: Signature invalid or not trusted."
+      },
+      "indicators": {
+        "malicious_update_package_hash": "b2c3d4e5f67890123456789abcdef0123456789abcdef0123456789abcdef012",
+        "malicious_dll_hash_md5": "c81e728d9d4c2f636f067f89cc14862c",
+        "unrecognized_code_signing_cert_cn": "Malicious Intermediate CA",
+        "suspicious_network_c2_domain": "api.malicious-c2.net",
+        "registry_changes": [
+          "/etc/org-software/app/modules/backdoor_agent.so: Installed"
+        ],
+        "process_command_lines": [
+          "/usr/bin/app_service --load-module=backdoor_agent.so"
+        ]
+      },
+      "detection_method": "Validate code signatures using trusted CA chains prior to update installation. Monitor SBOM changes to detect addition of unknown components such as backdoor modules. Endpoint process monitoring for unusual module loads within vendor software binaries. Network monitoring to detect encrypted outbound connections to unknown or suspicious C2 domains. File integrity monitoring on critical vendor paths and configuration files.",
+      "relevant_mitre_techniques": [
+        "T1195.002",
+        "T1574.002",
+        "T1071.001",
+        "T1055",
+        "T1036"
+      ]
+    },
+    {
+      "scenario": "Compromise of vendor update infrastructure resulting in distribution of trojanized update installer to enterprise customers.",
+      "technical_data": {
+        "software_update_http_traffic": {
+          "request": "POST /update_check HTTP/1.1\r\nHost: updates.enterprise-vendor.com\r\nUser-Agent: EnterpriseUpdater/7.0.0\r\nContent-Type: application/json\r\nContent-Length: 98\r\n\r\n{\"app_id\":\"com.enterprise.securitytool\",\"current_version\":\"7.9.0\",\"os\":\"macos-arm64\"}",
+          "response": "HTTP/1.1 200 OK\r\nContent-Type: application/x-diskimage\r\nContent-Length: 3145728\r\nContent-Disposition: attachment; filename=\"securitytool_update_7.9.1.dmg\"\r\nX-Signature: MEYCIQDfGnqvF1HT3L9qZt3kI2K+BbZ3gac1G3r6e0aWkUoLxGwIhAMm5tQ79p1kH9KU/3T8w9pGQ9sEGLIY8u8Gf0scaJ+9Q1\"\r\n\r\n<binary data>",
+          "notes": "The update package signature is forged with a stolen certificate, but the certificate revocation status is not checked by the client updater, allowing installation of trojanized binary."
+        },
+        "sbom_snippet": {
+          "product": "com.enterprise.securitytool",
+          "version": "7.9.1",
+          "components": [
+            {
+              "name": "core_engine",
+              "version": "4.5.2",
+              "hashes": {
+                "sha256": "d4e5f67890123456789abcdef0123456789abcdef0123456789abcdef0123456"
+              }
+            },
+            {
+              "name": "trojan_loader",
+              "version": "1.0.0",
+              "hashes": {
+                "sha256": "f67890123456789abcdef0123456789abcdef0123456789abcdef01234567890"
+              }
+            }
+          ]
+        },
+        "software_vendor_registry_changes": [
+          "com.enterprise.securitytool.preferences.last_update: 2024-06-15T17:42:10Z",
+          "com.enterprise.securitytool.modules.trojan_loader.dylib: Installed",
+          "com.enterprise.securitytool.modules.trojan_loader.dylib.checksum: f67890123456789abcdef0123456789abcdef0123456789abcdef01234567890"
+        ],
+        "malicious_dll_file_hashes": {
+          "md5": "e2fc714c4727ee9395f324cd2e7f331f",
+          "sha1": "4a7d1ed414474e4033ac29ccb8653d9b",
+          "sha256": "f67890123456789abcdef0123456789abcdef0123456789abcdef01234567890"
+        },
+        "process_creation_logs": [
+          "2024-06-15T17:42:32Z securitytool PID: 9983 ParentPID: 4112 CommandLine: \"/Applications/SecurityTool.app/Contents/MacOS/securitytool --load dylib trojan_loader.dylib\"",
+          "2024-06-15T17:42:33Z trojan_loader.dylib PID: 9989 ParentPID: 9983 CommandLine: \"/Applications/SecurityTool.app/Contents/MacOS/trojan_loader.dylib --start\""
+        ],
+        "network_c2_traffic": [
+          "17:45:01.876543 IP 172.16.5.12.53782 > 203.0.113.45.443: Flags [P.], seq 4567:4667, ack 3210, win 65535, length 100",
+          "Encrypted HTTPS POST to https://payloads.malicious-domain.org/api/report with payload {\"device\":\"macbook-pro-12\",\"status\":\"initialized\",\"session\":\"xyz987\"}"
+        ],
+        "code_signing_verification_output": "codesign -vvv securitytool_update_7.9.1.dmg\nsecuritytool_update_7.9.1.dmg: valid on disk\nsecuritytool_update_7.9.1.dmg: satisfies its Designated Requirement\nWarning: certificate revoked by Apple\n"
+      },
+      "indicators": {
+        "malicious_update_package_hash": "f67890123456789abcdef0123456789abcdef0123456789abcdef01234567890",
+        "malicious_dll_hash_md5": "e2fc714c4727ee9395f324cd2e7f331f",
+        "unrecognized_code_signing_cert_cn": "Enterprise Vendor Stolen Cert",
+        "suspicious_network_c2_domain": "payloads.malicious-domain.org",
+        "registry_changes": [
+          "com.enterprise.securitytool.modules.trojan_loader.dylib: Installed"
+        ],
+        "process_command_lines": [
+          "/Applications/SecurityTool.app/Contents/MacOS/securitytool --load dylib trojan_loader.dylib"
+        ]
+      },
+      "detection_method": "Implement certificate revocation checks during code signature validation. Monitor SBOMs for unexpected new modules such as trojan_loader. Endpoint detection of unusual dynamic library loads within vendor applications. Network traffic inspection for encrypted communications to suspicious or newly observed C2 domains. File system and preference monitoring for unauthorized changes to vendor software modules.",
+      "relevant_mitre_techniques": [
+        "T1195.002",
+        "T1204.002",
+        "T1071.001",
+        "T1566",
+        "T1055"
+      ]
+    },
+    {
+      "scenario": "Supply chain attack via compromised third-party software update server injecting backdoor payloads into legitimate updates.",
+      "technical_data": {
+        "software_update_http_traffic": {
+          "request": "GET /api/v2/releases/latest HTTP/1.1\r\nHost: updates.thirdpartyvendor.com\r\nUser-Agent: ThirdPartyUpdater/7.9.0\r\nAccept: application/json\r\n\r\n",
+          "response": "HTTP/1.1 200 OK\r\nContent-Type: application/json\r\nContent-Length: 512\r\nX-Signature: MEYCIQD1a9cFh3XtG5wzq7Jyl4XrRjKP8YwFv3A8bXyZb0k+qpgIhANn6B0U+qvGmU4XhP7xV3vIvqzP6vMZbO3dY6R4sBz7rK\r\n\r\n{\"version\":\"3.12.7\",\"download_url\":\"https://updates.thirdpartyvendor.com/releases/3.12.7/patch.bin\",\"checksum\":\"d2a4f9e8f7c5a9e2b1d4f8c3a9b7d5f2c1e0a9f8b7c6d5e4f3a2b1c0d9e8f7a6\"}",
+          "notes": "The X-Signature header is malformed and does not verify correctly against the vendor's public keys, indicating tampering with the update metadata."
+        },
+        "sbom_snippet": {
+          "product": "org.thirdparty.product",
+          "version": "3.12.7",
+          "components": [
+            {
+              "name": "core_lib",
+              "version": "2.3.1",
+              "hashes": {
+                "sha256": "7b8c9d0e1f2a3b4c5d6e7f8091a2b3c4d5e6f7081928374655647382910abcd1"
+              }
+            },
+            {
+              "name": "backdoor_agent",
+              "version": "1.0.0",
+              "hashes": {
+                "sha256": "f5a1b2c3d4e5f60718293a4b5c6d7e8f9a0b1c2d3e4f5061728394a5b6c7d8e9"
+              }
+            }
+          ]
+        },
+        "software_vendor_registry_changes": [
+          "HKLM\\Software\\ThirdPartyProduct\\UpdateLastChecked : 2024-06-02T09:15:42Z",
+          "HKLM\\Software\\ThirdPartyProduct\\Modules\\backdoor_agent.dll : Installed",
+          "HKLM\\Software\\ThirdPartyProduct\\Modules\\backdoor_agent.dll\\Checksum : f5a1b2c3d4e5f60718293a4b5c6d7e8f9a0b1c2d3e4f5061728394a5b6c7d8e9"
+        ],
+        "malicious_dll_file_hashes": {
+          "md5": "9e107d9d372bb6826bd81d3542a419d6",
+          "sha1": "2fd4e1c67a2d28fced849ee1bb76e7391b93eb12",
+          "sha256": "f5a1b2c3d4e5f60718293a4b5c6d7e8f9a0b1c2d3e4f5061728394a5b6c7d8e9"
+        },
+        "process_creation_logs": [
+          "2024-06-02T09:16:10Z ThirdPartyAgent.exe PID: 7890 ParentPID: 4321 CommandLine: \"C:\\Program Files\\ThirdPartyProduct\\backdoor_agent.dll\"",
+          "2024-06-02T09:16:15Z rundll32.exe PID: 7895 ParentPID: 7890 CommandLine: \"rundll32.exe backdoor_agent.dll,Initialize\""
+        ],
+        "network_c2_traffic": [
+          "11:45:30.654321 IP 10.0.0.15.50505 > 198.51.100.22.443: Flags [P.], seq 12345:12445, ack 54321, win 65535, length 100",
+          "Encrypted HTTPS POST to https://c2.evilvendor.net/connect with JSON {\"machine_id\":\"host-xyz\",\"status\":\"active\",\"session\":\"xyz123abc\"}"
+        ],
+        "code_signing_verification_output": "osslsigncode verify patch.bin\n\nVerification: FAILED\nCertificate chain:\n  Subject: Evil Vendor CA\n  Issuer: Evil Vendor CA\n\nError: Signature verification failed; certificate not trusted."
+      },
+      "indicators": {
+        "malicious_update_package_hash": "f5a1b2c3d4e5f60718293a4b5c6d7e8f9a0b1c2d3e4f5061728394a5b6c7d8e9",
+        "malicious_dll_hash_md5": "9e107d9d372bb6826bd81d3542a419d6",
+        "unrecognized_code_signing_cert_cn": "Evil Vendor CA",
+        "suspicious_network_c2_domain": "c2.evilvendor.net",
+        "registry_changes": [
+          "HKLM\\Software\\ThirdPartyProduct\\Modules\\backdoor_agent.dll : Installed"
+        ],
+        "process_command_lines": [
+          "rundll32.exe backdoor_agent.dll,Initialize"
+        ]
+      },
+      "detection_method": "Validate digital signatures of updates using trusted vendor certificates. Use SBOM analysis to detect unexpected new components like 'backdoor_agent'. Monitor process creation especially rundll32.exe loading DLLs in vendor directories. Network monitoring for encrypted POST requests to suspicious or unknown domains (e.g., c2.evilvendor.net). Registry monitoring for unauthorized module installations.",
+      "relevant_mitre_techniques": [
+        "T1195.002",
+        "T1071.001",
+        "T1110",
+        "T1059.003",
+        "T1036"
+      ]
+    },
+    {
+      "scenario": "Compromise of software vendor's build environment resulting in trojanized client application distributed through official update channels.",
+      "technical_data": {
+        "software_update_http_traffic": {
+          "request": "POST /client/update/check HTTP/1.1\r\nHost: software.vendorcorp.com\r\nUser-Agent: VendorClientUpdater/2.5.0\r\nContent-Type: application/json\r\nContent-Length: 140\r\n\r\n{\"app_id\":\"vendorcorp.clientapp\",\"current_version\":\"2.5.3\",\"platform\":\"linux-x86_64\"}",
+          "response": "HTTP/1.1 200 OK\r\nContent-Type: application/x-tar\r\nContent-Length: 2097152\r\nContent-Disposition: attachment; filename=\"clientapp_update_2.5.4.tar.gz\"\r\nX-Code-Signature: MEUCIQCu8B7VJHTWvHcX+N/6A6wZ1Xv9tZ3p1hVJzFvE5XxqM8gIgHX9Wb3Zf5f3j0sZ1L0b3A3B2XbQPo3q0LQ9vAqCwW5E=\r\n\r\n<binary data>",
+          "notes": "The code signature header uses a certificate issued by an unknown CA and verification fails. The update archive contains an unexpected binary named 'trojan_loader.so'."
+        },
+        "sbom_snippet": {
+          "product": "vendorcorp.clientapp",
+          "version": "2.5.4",
+          "components": [
+            {
+              "name": "core_engine",
+              "version": "5.6.0",
+              "hashes": {
+                "sha256": "a4d3f2b1c7e8d9f0a1b2c3d4e5f60718293a4b5c6d7e8f9a0b1c2d3e4f5061728"
+              }
+            },
+            {
+              "name": "trojan_loader",
+              "version": "0.0.1",
+              "hashes": {
+                "sha256": "c3b9f2a1d4e5f60718293a4b5c6d7e8f9a0b1c2d3e4f5061728394a5b6c7d8e9"
+              }
+            }
+          ]
+        },
+        "software_vendor_registry_changes": [
+          "HKLM\\Software\\VendorClientApp\\LastUpdate : 2024-06-03T18:45:00Z",
+          "HKLM\\Software\\VendorClientApp\\Modules\\trojan_loader.so : Installed",
+          "HKLM\\Software\\VendorClientApp\\Modules\\trojan_loader.so\\Checksum : c3b9f2a1d4e5f60718293a4b5c6d7e8f9a0b1c2d3e4f5061728394a5b6c7d8e9"
+        ],
+        "malicious_dll_file_hashes": {
+          "md5": "3b5d5c3712955042212316173ccf37be",
+          "sha1": "7c222fb2927d828af22f592134e8932480637c0d",
+          "sha256": "c3b9f2a1d4e5f60718293a4b5c6d7e8f9a0b1c2d3e4f5061728394a5b6c7d8e9"
+        },
+        "process_creation_logs": [
+          "2024-06-03T18:46:12Z clientapp PID: 12001 ParentPID: 11000 CommandLine: \"/opt/vendorclient/bin/clientapp --load-module=trojan_loader.so\"",
+          "2024-06-03T18:46:15Z ld.so PID: 12005 ParentPID: 12001 CommandLine: \"/lib64/ld-linux-x86-64.so.2 trojan_loader.so init\""
+        ],
+        "network_c2_traffic": [
+          "19:30:25.987654 IP 172.16.0.22.34567 > 203.0.113.55.443: Flags [P.], seq 8765:8865, ack 7890, win 64240, length 100",
+          "Encrypted HTTPS POST to https://update.vendorcorp.com/api/v1/heartbeat with payload {\"host\":\"victim-host\",\"module\":\"trojan_loader\",\"status\":\"running\"}"
+        ],
+        "code_signing_verification_output": "codesign -vvv clientapp_update_2.5.4.tar.gz\nclientapp_update_2.5.4.tar.gz: code object is not signed at all\nIn architecture: x86_64\n\nWarning: Signature invalid or not found in trusted cert store."
+      },
+      "indicators": {
+        "malicious_update_package_hash": "c3b9f2a1d4e5f60718293a4b5c6d7e8f9a0b1c2d3e4f5061728394a5b6c7d8e9",
+        "malicious_dll_hash_md5": "3b5d5c3712955042212316173ccf37be",
+        "unrecognized_code_signing_cert_cn": "Unknown or missing",
+        "suspicious_network_c2_domain": "update.vendorcorp.com",
+        "registry_changes": [
+          "HKLM\\Software\\VendorClientApp\\Modules\\trojan_loader.so : Installed"
+        ],
+        "process_command_lines": [
+          "/opt/vendorclient/bin/clientapp --load-module=trojan_loader.so"
+        ]
+      },
+      "detection_method": "Enforce strict code signing verification for update packages; flag unsigned or invalid signatures. Analyze SBOMs to identify unexpected new components like 'trojan_loader'. Monitor process launches for unusual module loading behavior. Network traffic inspection for outbound encrypted connections to vendor domains with unusual endpoints. Registry and filesystem integrity monitoring for unauthorized module installations.",
+      "relevant_mitre_techniques": [
+        "T1195.002",
+        "T1036",
+        "T1071.001",
+        "T1059.001",
+        "T1110"
+      ]
+    }
+  ]
+}

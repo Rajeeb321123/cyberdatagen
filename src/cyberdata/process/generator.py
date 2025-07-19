@@ -148,13 +148,15 @@ def save_generation_log_to_csv(system_prompt: str, user_prompt: str, samples: li
         logger.error(f"Failed to write to generator CSV file: {e}")
 
 
-def generate_in_batches(problem: dict, examples: list, total_count: int = 10, batch_size: int = 5) -> list:
+# def generate_in_batches(problem: dict, examples: list, total_count: int = 10, batch_size: int = 2) -> list:
+def generate_in_batches(problem: dict, examples: list, total_count: int = 4, batch_size: int = 2) -> list:
     """Generate samples in multiple batches."""
     logger.info(f"Generating {total_count} samples in batches of {batch_size} for {problem['nature']}")
     all_samples = []
     remaining = total_count
     
-    examples_json = json.dumps(examples[:2], indent=2)
+    # examples_json = json.dumps(examples[:2], indent=2)
+    examples_json = json.dumps(examples[:1], indent=2)
     
     while remaining > 0:
         current_batch_size = min(batch_size, remaining)
@@ -195,7 +197,8 @@ def generate_in_batches(problem: dict, examples: list, total_count: int = 10, ba
     return all_samples[:total_count]
 
 
-def generate_for_problem(problem: dict, n: int = 10) -> list:
+# def generate_for_problem(problem: dict, n: int = 10) -> list:
+def generate_for_problem(problem: dict, n: int = 4) -> list:
     """Generate n synthetic samples for the given problem."""
     try:
         examples = load_examples(problem)
@@ -203,7 +206,8 @@ def generate_for_problem(problem: dict, n: int = 10) -> list:
             logger.warning(f"No seed examples found for {problem['area']}/{problem['nature']}")
             return []
         
-        return generate_in_batches(problem, examples, n, batch_size=5)
+        # return generate_in_batches(problem, examples, n, batch_size=5)
+        return generate_in_batches(problem, examples, n, batch_size=2)
     except Exception as e:
         logger.error(f"Error generating samples for {problem['nature']}: {e}", exc_info=True)
         return []
@@ -233,7 +237,8 @@ def save_samples(problem: dict, samples: list):
     logger.info(f"Saved {len(samples)} new samples (total: {len(all_samples)}) to {out_file}")
 
 
-def main(count: int = 10, problem_filter: list = None):
+# def main(count: int = 10, problem_filter: list = None):
+def main(count: int = 4, problem_filter: list = None):
     """Main function to generate samples for all problems."""
     logger.info(f"Starting sample generation with count={count}")
     problems = load_problems()
@@ -262,7 +267,8 @@ if __name__ == '__main__':
     import argparse
     
     parser = argparse.ArgumentParser(description="Generate synthetic cybersecurity data samples")
-    parser.add_argument('--count', type=int, default=10, help='Number of samples to generate per problem')
+    # parser.add_argument('--count', type=int, default=10, help='Number of samples to generate per problem')
+    parser.add_argument('--count', type=int, default=4, help='Number of samples to generate per problem')
     parser.add_argument('--problems', nargs='+', help='Specific problem natures to generate for')
     
     args = parser.parse_args()

@@ -1,0 +1,171 @@
+{
+  "problems": [
+    {
+      "area": "social_engineering",
+      "category": "phishing",
+      "nature": "credential_harvesting",
+      "description": "Attackers send emails impersonating trusted entities to trick users into entering their login credentials on fake websites, leading to account compromise.",
+      "risk_reduction": [
+        "Implement multi-factor authentication (MFA) across all accounts",
+        "Deploy advanced email filtering and anti-phishing tools",
+        "Conduct regular user training and phishing simulation exercises"
+      ],
+      "attack_vector": "email",
+      "asset_targeted": "user_credentials",
+      "kill_chain_phase": "delivery",
+      "impact_level": "high",
+      "mitre_attack_id": "T1566.001",
+      "tags": [
+        "external_threat",
+        "credential_access"
+      ]
+    },
+    {
+      "area": "social_engineering",
+      "category": "phishing",
+      "nature": "spear_phishing",
+      "description": "Highly targeted phishing campaigns use personalized information to deceive specific individuals, often executives, to gain access to sensitive data or systems.",
+      "risk_reduction": [
+        "Use threat intelligence to identify targeted campaigns",
+        "Educate high-risk users on recognizing spear phishing tactics",
+        "Enforce strict verification procedures for sensitive requests"
+      ],
+      "attack_vector": "email",
+      "asset_targeted": "user_credentials",
+      "kill_chain_phase": "delivery",
+      "impact_level": "critical",
+      "mitre_attack_id": "T1566.002",
+      "tags": [
+        "external_threat",
+        "credential_access",
+        "targeted_attack"
+      ]
+    },
+    {
+      "area": "social_engineering",
+      "category": "phishing",
+      "nature": "business_email_compromise",
+      "description": "Cybercriminals compromise or spoof business email accounts to request fraudulent wire transfers or sensitive information from employees or partners.",
+      "risk_reduction": [
+        "Enable email authentication protocols like DMARC, DKIM, and SPF",
+        "Verify financial requests through secondary communication channels",
+        "Monitor email account activity for unusual behavior"
+      ],
+      "attack_vector": "email",
+      "asset_targeted": "financial_system",
+      "kill_chain_phase": "delivery",
+      "impact_level": "critical",
+      "mitre_attack_id": "T1566.003",
+      "tags": [
+        "external_threat",
+        "financial_fraud",
+        "business_process_compromise"
+      ]
+    },
+    {
+      "area": "cloud_security",
+      "category": "misconfiguration",
+      "nature": "misconfigured_storage_buckets",
+      "description": "Publicly exposed cloud storage buckets due to misconfiguration can lead to data leakage or unauthorized access.",
+      "risk_reduction": [
+        "Implement automated cloud configuration auditing tools",
+        "Enforce least privilege access policies",
+        "Use cloud provider security posture management (CSPM) solutions"
+      ],
+      "attack_vector": "cloud_api",
+      "asset_targeted": "cloud_storage",
+      "kill_chain_phase": "exploitation",
+      "impact_level": "high",
+      "mitre_attack_id": "T1526",
+      "tags": [
+        "external_threat",
+        "misconfiguration",
+        "data_leak"
+      ]
+    },
+    {
+      "area": "supply_chain",
+      "category": "software_compromise",
+      "nature": "third_party_software_compromise",
+      "description": "Attackers compromise software dependencies or update mechanisms to inject malicious code into widely distributed software.",
+      "risk_reduction": [
+        "Implement software bill of materials (SBOM) tracking",
+        "Use code signing and verification processes",
+        "Monitor for anomalous software behavior post-deployment"
+      ],
+      "attack_vector": "supply_chain",
+      "asset_targeted": "software_codebase",
+      "kill_chain_phase": "weaponization",
+      "impact_level": "critical",
+      "mitre_attack_id": "T1195",
+      "tags": [
+        "external_threat",
+        "supply_chain_attack",
+        "software_integrity"
+      ]
+    },
+    {
+      "area": "ai_driven_attacks",
+      "category": "phishing",
+      "nature": "ai_generated_phishing",
+      "description": "Use of AI to craft highly convincing phishing messages that adapt dynamically to evade detection and increase success rates.",
+      "risk_reduction": [
+        "Deploy AI-enhanced email filtering solutions",
+        "Increase user awareness of sophisticated phishing tactics",
+        "Leverage behavioral analytics to detect anomalies"
+      ],
+      "attack_vector": "email",
+      "asset_targeted": "user_credentials",
+      "kill_chain_phase": "delivery",
+      "impact_level": "high",
+      "mitre_attack_id": "T1566",
+      "tags": [
+        "external_threat",
+        "ai_enhanced",
+        "credential_access"
+      ]
+    },
+    {
+      "area": "adversarial_machine_learning",
+      "category": "model_integrity_attack",
+      "nature": "model_poisoning",
+      "description": "Attackers inject malicious data into training datasets to corrupt machine learning models, causing misclassification or degraded performance.",
+      "risk_reduction": [
+        "Validate and sanitize training data rigorously",
+        "Use robust training algorithms resistant to poisoning",
+        "Monitor model performance for unexpected deviations"
+      ],
+      "attack_vector": "data_input",
+      "asset_targeted": "machine_learning_model",
+      "kill_chain_phase": "weaponization",
+      "impact_level": "high",
+      "mitre_attack_id": "",
+      "tags": [
+        "external_threat",
+        "machine_learning",
+        "data_poisoning"
+      ]
+    },
+    {
+      "area": "endpoint_detection_and_response",
+      "category": "malware",
+      "nature": "fileless_malware",
+      "description": "Malware that operates in-memory without writing files to disk, evading traditional signature-based detection.",
+      "risk_reduction": [
+        "Implement behavior-based detection tools",
+        "Use endpoint monitoring for suspicious process activity",
+        "Apply strict application whitelisting policies"
+      ],
+      "attack_vector": "endpoint",
+      "asset_targeted": "endpoint_device",
+      "kill_chain_phase": "execution",
+      "impact_level": "high",
+      "mitre_attack_id": "T1055",
+      "tags": [
+        "external_threat",
+        "evasion",
+        "malware"
+      ]
+    }
+  ]
+}

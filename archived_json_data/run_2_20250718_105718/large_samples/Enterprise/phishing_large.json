@@ -1,0 +1,747 @@
+{
+  "samples": [
+    {
+      "scenario": "Finance department employees receive targeted spear-phishing emails appearing to come from the CFO, requesting immediate wire transfers to a new vendor account due to urgent contractual obligations. The email contains a link to a fake invoice hosted on a domain closely resembling the corporate finance portal, leading to credential theft and fraudulent transactions.",
+      "technical_data": {
+        "email_headers": "Return-Path: <cfo@corp-finance-secure.com>\r\nReceived: from mail.corp-finance-secure.com (mail.corp-finance-secure.com [198.51.100.23])\r\n\tby mx.enterprise.corp with ESMTP id 98765ZYXWV\r\n\tfor <finance@enterprise.corp>; Wed, 24 Jun 2024 14:22:10 -0400 (EDT)\r\nX-Mailer: Microsoft Outlook 365\r\nX-Originating-IP: [198.51.100.23]\r\nAuthentication-Results: mx.enterprise.corp; spf=pass smtp.mailfrom=cfo@corp-finance-secure.com; dkim=pass header.d=corp-finance-secure.com; dmarc=pass action=none header.from=corp-finance-secure.com\r\nMessage-ID: <CAJk9Q1pYvEmLz3pJ=abc987@mail.corp-finance-secure.com>\r\nFrom: \"Chief Financial Officer\" <cfo@corp-finance-secure.com>\r\nTo: finance@enterprise.corp\r\nSubject: Urgent: Wire Transfer Authorization Required\r\nDate: Wed, 24 Jun 2024 14:22:07 -0400\r\nMIME-Version: 1.0\r\nContent-Type: text/html; charset=\"UTF-8\"",
+        "email_body_html": "<html><body><p>Dear Finance Team,</p><p>Due to a critical contract deadline, please authorize the attached invoice payment immediately.</p><p>Access the invoice and payment details here: <a href=\"https://portal.corp-finance-secure.com.verify-payment-invoice.com/invoice?id=8745\">View Invoice</a></p><p>Thank you for your prompt attention.</p><p>Regards,<br>CFO</p></body></html>",
+        "smtp_transaction_log": "220 mail.corp-finance-secure.com ESMTP Postfix\r\nEHLO attacker-host.example.net\r\n250-mail.corp-finance-secure.com\r\nMAIL FROM:<cfo@corp-finance-secure.com>\r\n250 2.1.0 Ok\r\nRCPT TO:<finance@enterprise.corp>\r\n250 2.1.5 Ok\r\nDATA\r\n354 End data with <CR><LF>.<CR><LF>\r\nFrom: \"Chief Financial Officer\" <cfo@corp-finance-secure.com>\r\nTo: finance@enterprise.corp\r\nSubject: Urgent: Wire Transfer Authorization Required\r\n\r\n<html>...</html>\r\n.\r\n250 2.0.0 Ok: queued as 98765ZYXWV\r\nQUIT\r\n221 2.0.0 Bye",
+        "phishing_url": "https://portal.corp-finance-secure.com.verify-payment-invoice.com/invoice?id=8745",
+        "domain_whois": {
+          "DomainName": "verify-payment-invoice.com",
+          "Registrar": "GoDaddy.com, LLC",
+          "CreationDate": "2024-04-10T08:15:00Z",
+          "ExpirationDate": "2025-04-10T08:15:00Z",
+          "NameServers": [
+            "ns1.godaddy.com",
+            "ns2.godaddy.com"
+          ],
+          "RegistrantOrganization": "Privacy Protect, LLC",
+          "RegistrantCountry": "US"
+        },
+        "web_server_access_log": "198.51.100.45 - - [24/Jun/2024:14:22:35 -0400] \"GET /invoice?id=8745 HTTP/1.1\" 200 4890 \"-\" \"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.0.0.0 Safari/537.36\"",
+        "web_server_error_log": "",
+        "waf_log_entry": "2024-06-24T14:22:35Z WAF ALERT src=198.51.100.45 dst=10.20.30.50 uri=/invoice?id=8745 rule_id=100087 severity=high msg=\"Suspicious invoice page accessed - potential phishing\" action=monitor",
+        "login_event_log_sample": "[2024-06-24 14:23:10] LOGIN_ATTEMPT User=finance@enterprise.corp SourceIP=203.0.113.89 Result=Success Method=Password",
+        "conditional_access_policy_example": {
+          "policyName": "Block External Wire Transfer Approvals",
+          "conditions": {
+            "locations": [
+              "AllTrustedNetworks"
+            ],
+            "users": [
+              "FinanceDepartment"
+            ],
+            "applications": [
+              "WireTransferSystem"
+            ]
+          },
+          "grantControls": [
+            "BlockAccess"
+          ]
+        },
+        "account_lockout_policy": {
+          "threshold": 3,
+          "duration_minutes": 30,
+          "reset_counter_minutes": 30
+        }
+      },
+      "indicators": [
+        "Phishing domain verify-payment-invoice.com mimics finance portal",
+        "Sender email cfo@corp-finance-secure.com spoofed",
+        "Urgent wire transfer request with sense of urgency",
+        "Access from unusual external IP 198.51.100.45 to phishing site",
+        "WAF flagged high severity alert on invoice page access",
+        "Login success from external IP 203.0.113.89 right after link click"
+      ],
+      "detection_method": "Detection through email gateway SPF/DKIM failures, WAF alerts on suspicious invoice page requests, enforcement of conditional access policies blocking external approvals on wire transfers, and monitoring of login locations and anomalous login attempts.",
+      "relevant_mitre_techniques": [
+        "T1566.002 - Phishing: Spearphishing Link",
+        "T1539 - Steal Web Session Cookie",
+        "T1078 - Valid Accounts",
+        "T1110 - Brute Force",
+        "T1192 - Spearphishing Link",
+        "T1531 - Account Access Removal"
+      ]
+    },
+    {
+      "scenario": "Employees in HR receive spear-phishing emails impersonating the CEO with an attached 'confidential' employee list requiring immediate review. The attachment is a malicious macro-enabled document that, when opened, installs a remote access trojan (RAT), enabling attackers to harvest credentials and exfiltrate sensitive data.",
+      "technical_data": {
+        "email_headers": "Return-Path: <ceo@enterprise-leadership.com>\r\nReceived: from mail.enterprise-leadership.com (mail.enterprise-leadership.com [203.0.113.77])\r\n\tby mx.enterprise.corp with ESMTP id 5566778899\r\n\tfor <hr@enterprise.corp>; Thu, 25 Jun 2024 11:05:44 -0700 (PDT)\r\nX-Mailer: Microsoft Outlook 2019\r\nX-Originating-IP: [203.0.113.77]\r\nAuthentication-Results: mx.enterprise.corp; spf=fail smtp.mailfrom=ceo@enterprise-leadership.com; dkim=fail header.d=enterprise-leadership.com; dmarc=fail action=quarantine header.from=enterprise-leadership.com\r\nMessage-ID: <CAJk7M3vYvEmLz4pJ=def456@mail.enterprise-leadership.com>\r\nFrom: \"CEO\" <ceo@enterprise-leadership.com>\r\nTo: hr@enterprise.corp\r\nSubject: Confidential: Urgent Review Required - Employee List\r\nDate: Thu, 25 Jun 2024 11:05:40 -0700\r\nMIME-Version: 1.0\r\nContent-Type: multipart/mixed; boundary=\"boundary_12345\"",
+        "email_body_html": "<html><body><p>Dear HR Team,</p><p>Please find attached the updated confidential employee list for your immediate review.</p><p>This is time-sensitive, so please prioritize.</p><p>Best regards,<br>CEO</p></body></html>",
+        "smtp_transaction_log": "220 mail.enterprise-leadership.com ESMTP Postfix\r\nEHLO attacker-host.example.org\r\n250-mail.enterprise-leadership.com\r\nMAIL FROM:<ceo@enterprise-leadership.com>\r\n250 2.1.0 Ok\r\nRCPT TO:<hr@enterprise.corp>\r\n250 2.1.5 Ok\r\nDATA\r\n354 End data with <CR><LF>.<CR><LF>\r\nFrom: \"CEO\" <ceo@enterprise-leadership.com>\r\nTo: hr@enterprise.corp\r\nSubject: Confidential: Urgent Review Required - Employee List\r\nContent-Type: multipart/mixed; boundary=\"boundary_12345\"\r\n\r\n--boundary_12345\r\nContent-Type: text/html; charset=\"UTF-8\"\r\n\r\n<html>...</html>\r\n--boundary_12345\r\nContent-Type: application/vnd.ms-excel.sheet.macroenabled.12; name=\"EmployeeList.xlsm\"\r\nContent-Transfer-Encoding: base64\r\nContent-Disposition: attachment; filename=\"EmployeeList.xlsm\"\r\n\r\nTVqQAAMAAAAEAAAA//8AALgAAAAAAAAAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA\r\n...\r\n--boundary_12345--\r\n.\r\n250 2.0.0 Ok: queued as 5566778899\r\nQUIT\r\n221 2.0.0 Bye",
+        "phishing_url": "",
+        "domain_whois": {
+          "DomainName": "enterprise-leadership.com",
+          "Registrar": "Cloudflare, Inc.",
+          "CreationDate": "2023-12-01T15:44:00Z",
+          "ExpirationDate": "2025-12-01T15:44:00Z",
+          "NameServers": [
+            "ns1.cloudflare.com",
+            "ns2.cloudflare.com"
+          ],
+          "RegistrantOrganization": "Redacted for Privacy",
+          "RegistrantCountry": "US"
+        },
+        "web_server_access_log": "",
+        "web_server_error_log": "",
+        "waf_log_entry": "",
+        "login_event_log_sample": "[2024-06-25 11:10:22] PROCESS_EXECUTION User=hr@enterprise.corp Process=Excel.exe Arguments=\"EmployeeList.xlsm\" Result=Started",
+        "conditional_access_policy_example": {
+          "policyName": "Block Macro-Enabled Attachments",
+          "conditions": {
+            "fileTypes": [
+              "xlsm",
+              "docm",
+              "pptm"
+            ],
+            "users": [
+              "AllUsers"
+            ],
+            "applications": [
+              "EmailClient"
+            ]
+          },
+          "grantControls": [
+            "Block"
+          ]
+        },
+        "account_lockout_policy": {
+          "threshold": 4,
+          "duration_minutes": 20,
+          "reset_counter_minutes": 20
+        }
+      },
+      "indicators": [
+        "Email sender ceo@enterprise-leadership.com fails SPF, DKIM, and DMARC",
+        "Malicious macro-enabled Excel attachment EmployeeList.xlsm",
+        "Urgent language to prompt immediate opening",
+        "Process execution of Excel with suspicious macro file shortly after email receipt",
+        "No phishing URL, attack vector is malicious document",
+        "Conditional access policy blocks macro-enabled attachments to prevent infection"
+      ],
+      "detection_method": "Email gateway spam and malware detection flags failed SPF/DKIM/DMARC and macro attachments, endpoint detection systems monitor for execution of suspicious macro-enabled documents, conditional access policies block risky file types, and account lockout policies monitor suspicious authentication anomalies.",
+      "relevant_mitre_techniques": [
+        "T1566.001 - Phishing: Spearphishing Attachment",
+        "T1204.002 - User Execution: Malicious File",
+        "T1059.003 - Command and Scripting Interpreter: Windows Command Shell",
+        "T1086 - PowerShell",
+        "T1078 - Valid Accounts",
+        "T1055 - Process Injection"
+      ]
+    },
+    {
+      "scenario": "Finance department employees receive targeted spear-phishing emails appearing to come from the CFO, requesting urgent wire transfers to a new vendor account. The email uses a lookalike domain with subtle typos and includes a PDF attachment with malicious macros to harvest credentials once opened.",
+      "technical_data": {
+        "email_headers": "Return-Path: <cfo@finsecure-payments.com>\r\nReceived: from mail.finsecure-payments.com (mail.finsecure-payments.com [172.16.5.23])\r\n\tby mx.enterprise.corp with ESMTP id 98765ZYXWV\r\n\tfor <finance@enterprise.corp>; Wed, 23 Jun 2024 14:42:10 -0400 (EDT)\r\nX-Mailer: Microsoft Outlook 16.0\r\nX-Originating-IP: [172.16.5.23]\r\nAuthentication-Results: mx.enterprise.corp; spf=fail smtp.mailfrom=cfo@finsecure-payments.com; dkim=fail header.d=finsecure-payments.com; dmarc=fail action=reject header.from=finsecure-payments.com\r\nMessage-ID: <CAO9b2L7j8R8m5vYq=abc789@mail.finsecure-payments.com>\r\nFrom: \"CFO Executive\" <cfo@finsecure-payments.com>\r\nTo: finance@enterprise.corp\r\nSubject: Urgent Wire Transfer Request\r\nDate: Wed, 23 Jun 2024 14:42:06 -0400\r\nMIME-Version: 1.0\r\nContent-Type: multipart/mixed; boundary=\"boundary123\"",
+        "email_body_html": "<html><body><p>Dear Finance Team,</p><p>Please process an urgent wire transfer to the attached invoice. The vendor account details have recently changed.</p><p>Refer to the attached PDF document for payment instructions.</p><p>Regards,<br>CFO Executive</p></body></html>",
+        "smtp_transaction_log": "220 mail.finsecure-payments.com ESMTP Postfix\r\nEHLO attacker-host.example.net\r\n250-mail.finsecure-payments.com\r\nMAIL FROM:<cfo@finsecure-payments.com>\r\n250 2.1.0 Ok\r\nRCPT TO:<finance@enterprise.corp>\r\n250 2.1.5 Ok\r\nDATA\r\n354 End data with <CR><LF>.<CR><LF>\r\nFrom: \"CFO Executive\" <cfo@finsecure-payments.com>\r\nTo: finance@enterprise.corp\r\nSubject: Urgent Wire Transfer Request\r\n\r\n<html>...</html>\r\n--boundary123\r\nContent-Type: application/pdf; name=\"Invoice_12345.pdf\"\r\nContent-Transfer-Encoding: base64\r\nContent-Disposition: attachment; filename=\"Invoice_12345.pdf\"\r\n\r\nJVBERi0xLjQKJcfsj6IKNSAwIG9iago8PC9UeXBlL0Fubm90L1N1YnR5cGUvSW5mbw==\r\n--boundary123--\r\n.\r\n250 2.0.0 Ok: queued as 98765ZYXWV\r\nQUIT\r\n221 2.0.0 Bye",
+        "phishing_url": "http://finsecure-payments.com.fakeinvoice-payments.com/login",
+        "domain_whois": {
+          "DomainName": "fakeinvoice-payments.com",
+          "Registrar": "GoDaddy.com, LLC",
+          "CreationDate": "2024-05-30T08:15:00Z",
+          "ExpirationDate": "2025-05-30T08:15:00Z",
+          "NameServers": [
+            "ns1.godaddy.com",
+            "ns2.godaddy.com"
+          ],
+          "RegistrantOrganization": "Privacy Protect LLC",
+          "RegistrantCountry": "US"
+        },
+        "web_server_access_log": "172.16.10.14 - - [23/Jun/2024:14:43:05 -0400] \"GET /login HTTP/1.1\" 200 4892 \"-\" \"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.0.0.0 Safari/537.36\"",
+        "web_server_error_log": "",
+        "waf_log_entry": "2024-06-23T14:43:05Z WAF ALERT src=172.16.10.14 dst=10.20.30.45 uri=/login rule_id=100047 severity=high msg=\"Suspicious login attempt with known phishing domain\" action=block",
+        "login_event_log_sample": "[2024-06-23 14:43:30] LOGIN_ATTEMPT User=finance@enterprise.corp SourceIP=198.51.100.22 Result=Success Method=Password",
+        "conditional_access_policy_example": {
+          "policyName": "Block Login From Untrusted Domains",
+          "conditions": {
+            "locations": [
+              "AllTrustedNetworks"
+            ],
+            "users": [
+              "FinanceDept"
+            ]
+          },
+          "grantControls": [
+            "BlockAccess"
+          ]
+        },
+        "account_lockout_policy": {
+          "threshold": 3,
+          "duration_minutes": 30,
+          "reset_counter_minutes": 30
+        }
+      },
+      "indicators": [
+        "Lookalike domain: fakeinvoice-payments.com with subtle typo",
+        "Email sender: cfo@finsecure-payments.com (spoofed with SPF/DKIM failures)",
+        "Malicious PDF attachment with embedded macros",
+        "WAF blocks suspicious login attempts to /login endpoint",
+        "Login success from external IP 198.51.100.22 shortly after email received",
+        "Domain registered recently with privacy protection"
+      ],
+      "detection_method": "Email gateway flagged SPF/DKIM failures; sandbox analysis detected macro payload in PDF attachment; WAF blocked suspicious login attempts; anomaly detection flagged login from unusual IP; conditional access policies blocked untrusted network login attempts.",
+      "relevant_mitre_techniques": [
+        "T1566.001 - Phishing: Spearphishing Attachment",
+        "T1566.002 - Phishing: Spearphishing Link",
+        "T1204.002 - User Execution: Malicious File",
+        "T1078 - Valid Accounts",
+        "T1110 - Brute Force"
+      ]
+    },
+    {
+      "scenario": "HR staff receive spear-phishing emails purporting to be from the CEO, requesting confidential employee personal data for an urgent compliance audit. The email contains a link to a credential harvesting site mimicking the corporate intranet login portal, hosted on a newly registered domain with a misleading subdomain structure.",
+      "technical_data": {
+        "email_headers": "Return-Path: <ceo@secure-enterprise.net>\r\nReceived: from mail.secure-enterprise.net (mail.secure-enterprise.net [10.1.1.50])\r\n\tby mx.enterprise.corp with ESMTP id 65432QWERT\r\n\tfor <hr@enterprise.corp>; Thu, 24 Jun 2024 11:05:20 -0500 (CDT)\r\nX-Mailer: Microsoft Outlook 2019\r\nX-Originating-IP: [10.1.1.50]\r\nAuthentication-Results: mx.enterprise.corp; spf=fail smtp.mailfrom=ceo@secure-enterprise.net; dkim=none; dmarc=fail action=quarantine header.from=secure-enterprise.net\r\nMessage-ID: <CAO8h3P9x4L9b2xRw=def456@mail.secure-enterprise.net>\r\nFrom: \"CEO Executive\" <ceo@secure-enterprise.net>\r\nTo: hr@enterprise.corp\r\nSubject: Immediate: Employee Data Request for Compliance\r\nDate: Thu, 24 Jun 2024 11:05:15 -0500\r\nMIME-Version: 1.0\r\nContent-Type: text/html; charset=\"UTF-8\"",
+        "email_body_html": "<html><body><p>Dear HR Team,</p><p>As part of an urgent compliance audit, please provide the requested employee personal data by logging into the secure portal below.</p><p><a href=\"https://secure-portal.enterprise-data.net.login-hr-secure.com/authenticate?user=hr%40enterprise.corp\">Access Secure Portal</a></p><p>Failure to comply may result in penalties.</p><p>Best Regards,<br>CEO Executive</p></body></html>",
+        "smtp_transaction_log": "220 mail.secure-enterprise.net ESMTP Postfix\r\nEHLO attacker-host.fake\r\n250-mail.secure-enterprise.net\r\nMAIL FROM:<ceo@secure-enterprise.net>\r\n250 2.1.0 Ok\r\nRCPT TO:<hr@enterprise.corp>\r\n250 2.1.5 Ok\r\nDATA\r\n354 End data with <CR><LF>.<CR><LF>\r\nFrom: \"CEO Executive\" <ceo@secure-enterprise.net>\r\nTo: hr@enterprise.corp\r\nSubject: Immediate: Employee Data Request for Compliance\r\n\r\n<html>...</html>\r\n.\r\n250 2.0.0 Ok: queued as 65432QWERT\r\nQUIT\r\n221 2.0.0 Bye",
+        "phishing_url": "https://secure-portal.enterprise-data.net.login-hr-secure.com/authenticate?user=hr%40enterprise.corp",
+        "domain_whois": {
+          "DomainName": "login-hr-secure.com",
+          "Registrar": "Google LLC",
+          "CreationDate": "2024-06-10T16:42:00Z",
+          "ExpirationDate": "2025-06-10T16:42:00Z",
+          "NameServers": [
+            "ns-cloud-a1.googledomains.com",
+            "ns-cloud-a2.googledomains.com"
+          ],
+          "RegistrantOrganization": "PrivacyGuard Services",
+          "RegistrantCountry": "US"
+        },
+        "web_server_access_log": "10.1.5.33 - - [24/Jun/2024:11:06:15 -0500] \"POST /authenticate?user=hr%40enterprise.corp HTTP/1.1\" 200 4230 \"-\" \"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.0.0.0 Safari/537.36\"",
+        "web_server_error_log": "",
+        "waf_log_entry": "2024-06-24T11:06:15Z WAF ALERT src=10.1.5.33 dst=10.30.40.55 uri=/authenticate?user=hr%40enterprise.corp rule_id=100050 severity=high msg=\"Phishing credential submission detected\" action=monitor",
+        "login_event_log_sample": "[2024-06-24 11:06:45] LOGIN_ATTEMPT User=hr@enterprise.corp SourceIP=203.0.113.99 Result=Success Method=Password",
+        "conditional_access_policy_example": {
+          "policyName": "Require MFA for Sensitive Data Access",
+          "conditions": {
+            "users": [
+              "HRGroup"
+            ],
+            "applications": [
+              "EmployeeDataPortal"
+            ],
+            "locations": [
+              "AllTrustedNetworks"
+            ]
+          },
+          "grantControls": [
+            "RequireMultiFactorAuthentication"
+          ]
+        },
+        "account_lockout_policy": {
+          "threshold": 4,
+          "duration_minutes": 20,
+          "reset_counter_minutes": 20
+        }
+      },
+      "indicators": [
+        "Subdomain phishing domain: secure-portal.enterprise-data.net.login-hr-secure.com",
+        "Email sender: ceo@secure-enterprise.net (SPF and DMARC fail)",
+        "Phishing URL mimics corporate intranet login portal",
+        "WAF detects credential submission patterns on /authenticate endpoint",
+        "Successful login from external IP 203.0.113.99 after link click",
+        "Domain recently registered with privacy protection"
+      ],
+      "detection_method": "Email filtering flagged SPF/DMARC failures; WAF monitoring detected credential submission; correlation of login events from unusual IPs; conditional access enforcing MFA for HR data access; account lockout triggered after multiple failed attempts.",
+      "relevant_mitre_techniques": [
+        "T1566.002 - Phishing: Spearphishing Link",
+        "T1078 - Valid Accounts",
+        "T1110 - Brute Force",
+        "T1531 - Account Access Removal",
+        "T1566.001 - Phishing: Spearphishing Attachment"
+      ]
+    },
+    {
+      "scenario": "Employees receive a phishing email impersonating the corporate HR department, claiming urgent review of updated benefits documents. The email contains a malicious Excel attachment with embedded macros that, when enabled, deploy a ransomware payload encrypting local and network drives.",
+      "technical_data": {
+        "email_headers": "Return-Path: <hr-dept@corp-hr-update.com>\r\nReceived: from mail.corp-hr-update.com (mail.corp-hr-update.com [203.0.113.85])\r\n\tby mx.enterprise.local with ESMTP id 67890FGHIJ\r\n\tfor <employee@enterprise.local>; Wed, 24 Jun 2024 11:42:10 -0700 (PDT)\r\nX-Mailer: Microsoft Outlook 2019\r\nX-Originating-IP: [203.0.113.85]\r\nAuthentication-Results: mx.enterprise.local; spf=fail smtp.mailfrom=hr-dept@corp-hr-update.com; dkim=fail header.d=corp-hr-update.com; dmarc=fail action=quarantine header.from=corp-hr-update.com\r\nMessage-ID: <CAOk8RtYp2X9b7Vb4=abc456@mail.corp-hr-update.com>\r\nFrom: \"HR Benefits Team\" <hr-dept@corp-hr-update.com>\r\nTo: employee@enterprise.local\r\nSubject: Immediate Action Required: Review Your Updated Benefits Package\r\nDate: Wed, 24 Jun 2024 11:42:07 -0700\r\nMIME-Version: 1.0\r\nContent-Type: multipart/mixed; boundary=\"----=_Part_12345_67890\"",
+        "email_body_html": "<html><body><p>Dear Employee,</p><p>Our records indicate you have not reviewed the updated benefits package for the upcoming fiscal year.</p><p>Please open the attached Excel document to review and confirm your selections.</p><p><b>Important:</b> Enable macros to view all content.</p><p>Thank you,<br>HR Benefits Team</p></body></html>",
+        "smtp_transaction_log": "220 mail.corp-hr-update.com ESMTP Postfix\r\nEHLO attacker-node.example.net\r\n250-mail.corp-hr-update.com\r\nMAIL FROM:<hr-dept@corp-hr-update.com>\r\n250 2.1.0 Ok\r\nRCPT TO:<employee@enterprise.local>\r\n250 2.1.5 Ok\r\nDATA\r\n354 End data with <CR><LF>.<CR><LF>\r\nFrom: \"HR Benefits Team\" <hr-dept@corp-hr-update.com>\r\nTo: employee@enterprise.local\r\nSubject: Immediate Action Required: Review Your Updated Benefits Package\r\n\r\n--boundary\r\nContent-Type: application/vnd.ms-excel; name=\"BenefitsUpdate2024.xlsm\"\r\nContent-Disposition: attachment; filename=\"BenefitsUpdate2024.xlsm\"\r\nContent-Transfer-Encoding: base64\r\n\r\nUEsDBBQABgAIAAAAIQAAAAAAAAAAAAAAAJABAAAAYmFzZTY0ZW5jb2RlZCBtYWNyb3MgZW1iZWQ\r\n...\r\n--boundary--\r\n.\r\n250 2.0.0 Ok: queued as 67890FGHIJ\r\nQUIT\r\n221 2.0.0 Bye",
+        "phishing_url": "",
+        "domain_whois": {
+          "DomainName": "corp-hr-update.com",
+          "Registrar": "GoDaddy.com, LLC",
+          "CreationDate": "2024-05-30T09:15:00Z",
+          "ExpirationDate": "2025-05-30T09:15:00Z",
+          "NameServers": [
+            "ns1.godaddy.com",
+            "ns2.godaddy.com"
+          ],
+          "RegistrantOrganization": "Privacy Protect LLC",
+          "RegistrantCountry": "US"
+        },
+        "web_server_access_log": "",
+        "web_server_error_log": "",
+        "waf_log_entry": "",
+        "login_event_log_sample": "",
+        "conditional_access_policy_example": {},
+        "account_lockout_policy": {}
+      },
+      "indicators": [
+        "Malicious Excel attachment with macros",
+        "Sender domain corp-hr-update.com recently created with privacy protection",
+        "SPF, DKIM, DMARC authentication failed for sender domain",
+        "Email requests enabling macros, a common ransomware vector",
+        "No legitimate web link, attack vector via attachment",
+        "SMTP transaction from suspicious external IP 203.0.113.85"
+      ],
+      "detection_method": "Attachment sandbox analysis detects macro-based ransomware payload; email gateway flags SPF/DKIM/DMARC failures; endpoint antivirus alerts on macro execution; correlation with recent domain registration and phishing campaign intelligence.",
+      "relevant_mitre_techniques": [
+        "T1566.001 - Phishing: Spearphishing Attachment",
+        "T1204.002 - User Execution: Malicious File",
+        "T1486 - Data Encrypted for Impact",
+        "T1059.003 - Command and Scripting Interpreter: Windows Command Shell",
+        "T1110 - Brute Force",
+        "T1078 - Valid Accounts"
+      ]
+    },
+    {
+      "scenario": "Corporate finance department employees receive spearphishing emails with a link to a fake SharePoint document portal. The phishing page is designed to capture Microsoft 365 credentials, which are then used to access internal financial systems and exfiltrate sensitive data.",
+      "technical_data": {
+        "email_headers": "Return-Path: <finance-alerts@sharepoint-secure.com>\r\nReceived: from mail.sharepoint-secure.com (mail.sharepoint-secure.com [198.51.100.92])\r\n\tby mx.corp-finance.local with ESMTP id 54321ZYXWV\r\n\tfor <finance@corp-finance.local>; Thu, 25 Jun 2024 14:20:52 -0700 (PDT)\r\nX-Mailer: Microsoft Outlook 365\r\nX-Originating-IP: [198.51.100.92]\r\nAuthentication-Results: mx.corp-finance.local; spf=pass smtp.mailfrom=finance-alerts@sharepoint-secure.com; dkim=pass header.d=sharepoint-secure.com; dmarc=pass action=none header.from=sharepoint-secure.com\r\nMessage-ID: <CAGYm7nX8hN0kWqZ9=def789@mail.sharepoint-secure.com>\r\nFrom: \"Finance Alerts\" <finance-alerts@sharepoint-secure.com>\r\nTo: finance@corp-finance.local\r\nSubject: New Financial Report Available - Action Required\r\nDate: Thu, 25 Jun 2024 14:20:50 -0700\r\nMIME-Version: 1.0\r\nContent-Type: text/html; charset=\"UTF-8\"",
+        "email_body_html": "<html><body><p>Dear Finance Team,</p><p>The Q2 financial report has been uploaded to the secure SharePoint portal.</p><p>Please <a href=\"https://sharepoint-secure.com.secure-login-finance.online/login?user=finance%40corp-finance.local\">click here</a> to review the document.</p><p>Regards,<br>Finance Alerts</p></body></html>",
+        "smtp_transaction_log": "220 mail.sharepoint-secure.com ESMTP Postfix\r\nEHLO compromised-host.example.net\r\n250-mail.sharepoint-secure.com\r\nMAIL FROM:<finance-alerts@sharepoint-secure.com>\r\n250 2.1.0 Ok\r\nRCPT TO:<finance@corp-finance.local>\r\n250 2.1.5 Ok\r\nDATA\r\n354 End data with <CR><LF>.<CR><LF>\r\nFrom: \"Finance Alerts\" <finance-alerts@sharepoint-secure.com>\r\nTo: finance@corp-finance.local\r\nSubject: New Financial Report Available - Action Required\r\n\r\n<html>...</html>\r\n.\r\n250 2.0.0 Ok: queued as 54321ZYXWV\r\nQUIT\r\n221 2.0.0 Bye",
+        "phishing_url": "https://sharepoint-secure.com.secure-login-finance.online/login?user=finance%40corp-finance.local",
+        "domain_whois": {
+          "DomainName": "secure-login-finance.online",
+          "Registrar": "NameSilo, LLC",
+          "CreationDate": "2024-06-10T15:05:00Z",
+          "ExpirationDate": "2025-06-10T15:05:00Z",
+          "NameServers": [
+            "ns1.namesilo.net",
+            "ns2.namesilo.net"
+          ],
+          "RegistrantOrganization": "Privacy Protect, LLC",
+          "RegistrantCountry": "US"
+        },
+        "web_server_access_log": "198.51.100.75 - - [25/Jun/2024:14:21:11 -0700] \"GET /login?user=finance%40corp-finance.local HTTP/1.1\" 200 4821 \"-\" \"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.0.0.0 Safari/537.36\"",
+        "web_server_error_log": "",
+        "waf_log_entry": "2024-06-25T14:21:11Z WAF ALERT src=198.51.100.75 dst=10.20.30.45 uri=/login?user=finance%40corp-finance.local rule_id=100089 severity=high msg=\"Phishing form submission detected\" action=block",
+        "login_event_log_sample": "[2024-06-25 14:22:03] LOGIN_ATTEMPT User=finance@corp-finance.local SourceIP=203.0.113.120 Result=Success Method=Password",
+        "conditional_access_policy_example": {
+          "policyName": "Require MFA for External Logins",
+          "conditions": {
+            "locations": [
+              "AllTrustedLocations"
+            ],
+            "users": [
+              "FinanceDepartment"
+            ],
+            "clientAppTypes": [
+              "Browser",
+              "MobileApps"
+            ]
+          },
+          "grantControls": [
+            "RequireMultiFactorAuthentication"
+          ]
+        },
+        "account_lockout_policy": {
+          "threshold": 3,
+          "duration_minutes": 30,
+          "reset_counter_minutes": 30
+        }
+      },
+      "indicators": [
+        "Phishing URL mimics corporate SharePoint with multiple subdomains",
+        "Newly registered domain with privacy protection",
+        "WAF blocks form submission to phishing login page",
+        "Successful login from unusual external IP 203.0.113.120",
+        "Email sender finance-alerts@sharepoint-secure.com with valid SPF/DKIM but suspicious domain",
+        "Targeted to finance department with urgent business context"
+      ],
+      "detection_method": "Email gateway detects link to suspicious domain; WAF blocks phishing form submissions; monitoring anomalous login IP addresses and enforcing MFA for external logins; account lockout triggered on repeated failed attempts; threat intel flags newly registered domain.",
+      "relevant_mitre_techniques": [
+        "T1566.002 - Phishing: Spearphishing Link",
+        "T1078 - Valid Accounts",
+        "T1531 - Account Access Removal",
+        "T1110.001 - Brute Force: Password Guessing",
+        "T1086 - PowerShell",
+        "T1113 - Screen Capture"
+      ]
+    },
+    {
+      "scenario": "Employees receive phishing emails impersonating the finance department requesting urgent invoice payment confirmation. The email contains a malicious Excel attachment with embedded macros that, once enabled, download ransomware payloads causing encryption of shared financial documents.",
+      "technical_data": {
+        "email_headers": "Return-Path: <finance-dept@corp-payments.net>\r\nReceived: from mail.corp-payments.net (mail.corp-payments.net [203.0.113.90])\r\n\tby mail.enterprise.local with ESMTP id 67890XYZABC\r\n\tfor <employee@enterprise.local>; Wed, 23 Jun 2024 11:05:52 -0400 (EDT)\r\nX-Mailer: Microsoft Outlook 2019\r\nX-Originating-IP: [203.0.113.90]\r\nAuthentication-Results: mail.enterprise.local; spf=fail smtp.mailfrom=finance-dept@corp-payments.net; dkim=fail header.d=corp-payments.net; dmarc=fail action=quarantine header.from=corp-payments.net\r\nMessage-ID: <CAJk4X9uZmQmVx4pL=abc987@mail.corp-payments.net>\r\nFrom: \"Finance Department\" <finance-dept@corp-payments.net>\r\nTo: employee@enterprise.local\r\nSubject: Urgent: Invoice Payment Confirmation Required\r\nDate: Wed, 23 Jun 2024 11:05:50 -0400\r\nMIME-Version: 1.0\r\nContent-Type: multipart/mixed; boundary=\"boundary_123456\"",
+        "email_body_html": "<html><body><p>Dear Team,</p><p>Please find attached the invoice for last month\u2019s services. Confirm payment as soon as possible to avoid late fees.</p><p>Open the attached Excel file and enable macros to view invoice details.</p><p>Best Regards,<br>Finance Department</p></body></html>",
+        "smtp_transaction_log": "220 mail.corp-payments.net ESMTP Postfix\r\nEHLO attacker-host.example.net\r\n250-mail.corp-payments.net\r\nMAIL FROM:<finance-dept@corp-payments.net>\r\n250 2.1.0 Ok\r\nRCPT TO:<employee@enterprise.local>\r\n250 2.1.5 Ok\r\nDATA\r\n354 End data with <CR><LF>.<CR><LF>\r\nFrom: \"Finance Department\" <finance-dept@corp-payments.net>\r\nTo: employee@enterprise.local\r\nSubject: Urgent: Invoice Payment Confirmation Required\r\n\r\n--boundary_123456\r\nContent-Type: text/html; charset=\"UTF-8\"\r\n\r\n<html>...</html>\r\n--boundary_123456\r\nContent-Type: application/vnd.ms-excel\r\nContent-Disposition: attachment; filename=\"Invoice_June_2024.xls\"\r\nContent-Transfer-Encoding: base64\r\n\r\nTVqQAAMAAAAEAAAA//8AALgAAAAAAAAAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA\r\n.\r\n250 2.0.0 Ok: queued as 67890XYZABC\r\nQUIT\r\n221 2.0.0 Bye",
+        "phishing_url": "http://payments-confirm.corp-finance-secure.com/login?user=employee%40enterprise.local&invoice=4521",
+        "domain_whois": {
+          "DomainName": "corp-finance-secure.com",
+          "Registrar": "GoDaddy.com, LLC",
+          "CreationDate": "2024-05-28T08:15:00Z",
+          "ExpirationDate": "2025-05-28T08:15:00Z",
+          "NameServers": [
+            "ns1.godaddy.com",
+            "ns2.godaddy.com"
+          ],
+          "RegistrantOrganization": "PrivacyProtect.org",
+          "RegistrantCountry": "US"
+        },
+        "web_server_access_log": "203.0.113.90 - - [23/Jun/2024:11:06:17 -0400] \"GET /login?user=employee%40enterprise.local&invoice=4521 HTTP/1.1\" 200 4890 \"-\" \"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.0.0.0 Safari/537.36\"",
+        "web_server_error_log": "",
+        "waf_log_entry": "2024-06-23T11:06:17Z WAF ALERT src=203.0.113.90 dst=10.20.30.40 uri=/login?user=employee%40enterprise.local&invoice=4521 rule_id=100067 severity=high msg=\"Macro-enabled attachment download detected\" action=block",
+        "login_event_log_sample": "[2024-06-23 11:06:45] LOGIN_ATTEMPT User=employee@enterprise.local SourceIP=203.0.113.90 Result=Success Method=Password",
+        "conditional_access_policy_example": {
+          "policyName": "Block Untrusted Macros",
+          "conditions": {
+            "fileTypes": [
+              "xls",
+              "xlsm",
+              "docm"
+            ],
+            "users": [
+              "AllUsers"
+            ],
+            "applications": [
+              "EmailClient"
+            ]
+          },
+          "grantControls": [
+            "BlockAccess"
+          ]
+        },
+        "account_lockout_policy": {
+          "threshold": 7,
+          "duration_minutes": 30,
+          "reset_counter_minutes": 30
+        }
+      },
+      "indicators": [
+        "Phishing email from finance-dept@corp-payments.net (failed SPF/DKIM/DMARC)",
+        "Malicious Excel attachment with macros enabled",
+        "Phishing domain corp-finance-secure.com registered recently",
+        "WAF alert blocking macro-enabled file download",
+        "Access logs show external IP 203.0.113.90 accessing invoice confirmation page",
+        "Successful login from suspicious IP shortly after email delivery"
+      ],
+      "detection_method": "Email gateway filtering detecting SPF/DKIM failures, WAF blocking macro-enabled attachment downloads, monitoring of macro usage policies, correlation of external IP login attempts post email receipt, and conditional access policies blocking macro-enabled files.",
+      "relevant_mitre_techniques": [
+        "T1566.001 - Phishing: Spearphishing Attachment",
+        "T1204.002 - User Execution: Malicious File",
+        "T1486 - Data Encrypted for Impact",
+        "T1078 - Valid Accounts",
+        "T1193 - Spearphishing Attachment"
+      ]
+    },
+    {
+      "scenario": "Staff members receive phishing emails claiming to be from the CEO requesting immediate review of a confidential project document. The email includes a link to a fake SharePoint login page designed to harvest credentials, leading to unauthorized access and deployment of ransomware on the enterprise network.",
+      "technical_data": {
+        "email_headers": "Return-Path: <ceo-office@enterprise-corp-login.com>\r\nReceived: from mail.enterprise-corp-login.com (mail.enterprise-corp-login.com [198.51.100.77])\r\n\tby mail.enterprise.local with ESMTP id ABCDE12345\r\n\tfor <staff@enterprise.local>; Thu, 24 Jun 2024 16:22:45 +0200\r\nX-Mailer: Microsoft Outlook 365\r\nX-Originating-IP: [198.51.100.77]\r\nAuthentication-Results: mail.enterprise.local; spf=fail smtp.mailfrom=ceo-office@enterprise-corp-login.com; dkim=fail header.d=enterprise-corp-login.com; dmarc=fail action=quarantine header.from=enterprise-corp-login.com\r\nMessage-ID: <CAJk5F0vYnRmHz5mK=def456@mail.enterprise-corp-login.com>\r\nFrom: \"CEO Office\" <ceo-office@enterprise-corp-login.com>\r\nTo: staff@enterprise.local\r\nSubject: Immediate Review Required: Confidential Project Document\r\nDate: Thu, 24 Jun 2024 16:22:40 +0200\r\nMIME-Version: 1.0\r\nContent-Type: text/html; charset=\"UTF-8\"",
+        "email_body_html": "<html><body><p>Dear Team,</p><p>For your immediate attention, please review the attached confidential project document.</p><p>Access the document here: <a href=\"https://enterprise-corp-login.sharepoint-secure.com/login?user=staff%40enterprise.local&docid=789\">https://enterprise-corp-login.sharepoint-secure.com/login?user=staff%40enterprise.local&docid=789</a></p><p>Regards,<br>CEO Office</p></body></html>",
+        "smtp_transaction_log": "220 mail.enterprise-corp-login.com ESMTP Postfix\r\nEHLO attacker-host.fake.net\r\n250-mail.enterprise-corp-login.com\r\nMAIL FROM:<ceo-office@enterprise-corp-login.com>\r\n250 2.1.0 Ok\r\nRCPT TO:<staff@enterprise.local>\r\n250 2.1.5 Ok\r\nDATA\r\n354 End data with <CR><LF>.<CR><LF>\r\nFrom: \"CEO Office\" <ceo-office@enterprise-corp-login.com>\r\nTo: staff@enterprise.local\r\nSubject: Immediate Review Required: Confidential Project Document\r\n\r\n<html>...</html>\r\n.\r\n250 2.0.0 Ok: queued as ABCDE12345\r\nQUIT\r\n221 2.0.0 Bye",
+        "phishing_url": "https://enterprise-corp-login.sharepoint-secure.com/login?user=staff%40enterprise.local&docid=789",
+        "domain_whois": {
+          "DomainName": "sharepoint-secure.com",
+          "Registrar": "Google LLC",
+          "CreationDate": "2024-04-10T06:45:00Z",
+          "ExpirationDate": "2025-04-10T06:45:00Z",
+          "NameServers": [
+            "ns-cloud-a1.googledomains.com",
+            "ns-cloud-a2.googledomains.com"
+          ],
+          "RegistrantOrganization": "Redacted for Privacy",
+          "RegistrantCountry": "US"
+        },
+        "web_server_access_log": "198.51.100.77 - - [24/Jun/2024:16:23:10 +0200] \"GET /login?user=staff%40enterprise.local&docid=789 HTTP/1.1\" 200 4120 \"-\" \"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.0 Safari/605.1.15\"",
+        "web_server_error_log": "",
+        "waf_log_entry": "2024-06-24T16:23:10Z WAF ALERT src=198.51.100.77 dst=10.30.40.50 uri=/login?user=staff%40enterprise.local&docid=789 rule_id=100098 severity=high msg=\"Phishing credential harvesting pattern detected\" action=block",
+        "login_event_log_sample": "[2024-06-24 16:23:45] LOGIN_ATTEMPT User=staff@enterprise.local SourceIP=198.51.100.77 Result=Success Method=Password",
+        "conditional_access_policy_example": {
+          "policyName": "MFA Enforcement on External Login",
+          "conditions": {
+            "locations": [
+              "AllTrustedLocations"
+            ],
+            "users": [
+              "AllUsers"
+            ],
+            "signInRiskLevels": [
+              "high"
+            ]
+          },
+          "grantControls": [
+            "RequireMultiFactorAuthentication"
+          ]
+        },
+        "account_lockout_policy": {
+          "threshold": 6,
+          "duration_minutes": 20,
+          "reset_counter_minutes": 20
+        }
+      },
+      "indicators": [
+        "Phishing email from ceo-office@enterprise-corp-login.com with failed SPF/DKIM/DMARC",
+        "Phishing URL using subdomain sharepoint-secure.com mimicking legitimate SharePoint",
+        "WAF detection blocking credential harvesting attempts",
+        "Access log shows suspicious IP 198.51.100.77 accessing fake login page",
+        "Successful login from external IP immediately after email delivery",
+        "Conditional access policy requiring MFA on high risk sign-ins triggered"
+      ],
+      "detection_method": "Email gateway spam and phishing detection identifying failed SPF/DKIM, WAF blocking credential harvesting URLs, monitoring login events from unrecognized IPs triggering conditional access MFA policies, and account lockout thresholds for repeated failed attempts.",
+      "relevant_mitre_techniques": [
+        "T1566.002 - Phishing: Spearphishing Link",
+        "T1078 - Valid Accounts",
+        "T1490 - Inhibit System Recovery",
+        "T1110 - Brute Force",
+        "T1531 - Account Access Removal"
+      ]
+    },
+    {
+      "scenario": "Employees receive emails claiming to be from the HR department requesting immediate verification of account credentials due to suspicious activity. The email contains a hyperlink to a fake login portal mimicking the corporate single sign-on page, leading to credential compromise and unauthorized access.",
+      "technical_data": {
+        "email_headers": "Return-Path: <hr-security@hrdept-corp.com>\r\nReceived: from mail.hrdept-corp.com (mail.hrdept-corp.com [172.16.55.22])\r\n\tby mx.internal.corp with ESMTP id 67890FGHIJ\r\n\tfor <employee@internal.corp>; Wed, 23 Jun 2024 14:43:12 -0700 (PDT)\r\nX-Mailer: Microsoft Outlook 365\r\nX-Originating-IP: [172.16.55.22]\r\nAuthentication-Results: mx.internal.corp; spf=pass smtp.mailfrom=hr-security@hrdept-corp.com; dkim=pass header.d=hrdept-corp.com; dmarc=pass action=none header.from=hrdept-corp.com\r\nMessage-ID: <CAKq2X1yZvHdM8fT=abc789@mail.hrdept-corp.com>\r\nFrom: \"HR Security Team\" <hr-security@hrdept-corp.com>\r\nTo: employee@internal.corp\r\nSubject: Immediate Verification Required: Suspicious Account Activity\r\nDate: Wed, 23 Jun 2024 14:43:10 -0700\r\nMIME-Version: 1.0\r\nContent-Type: text/html; charset=\"UTF-8\"",
+        "email_body_html": "<html><body><p>Hello,</p><p>We have detected suspicious activity on your account. To prevent any disruption, please verify your credentials immediately.</p><p>Click the link below to confirm your identity:</p><p><a href=\"https://hrdept-corp.com.secure-login.verify-account.co/login?user=employee%40internal.corp&amp;session=7d9e4c2b\">Verify Account Now</a></p><p>If you did not initiate this request, please contact HR Security immediately.</p><p>Thank you,<br>HR Security Team</p></body></html>",
+        "smtp_transaction_log": "220 mail.hrdept-corp.com ESMTP Postfix\r\nEHLO malicious-sender.example.net\r\n250-mail.hrdept-corp.com\r\nMAIL FROM:<hr-security@hrdept-corp.com>\r\n250 2.1.0 Ok\r\nRCPT TO:<employee@internal.corp>\r\n250 2.1.5 Ok\r\nDATA\r\n354 End data with <CR><LF>.<CR><LF>\r\nFrom: \"HR Security Team\" <hr-security@hrdept-corp.com>\r\nTo: employee@internal.corp\r\nSubject: Immediate Verification Required: Suspicious Account Activity\r\n\r\n<html>...</html>\r\n.\r\n250 2.0.0 Ok: queued as 67890FGHIJ\r\nQUIT\r\n221 2.0.0 Bye",
+        "phishing_url": "https://hrdept-corp.com.secure-login.verify-account.co/login?user=employee%40internal.corp&session=7d9e4c2b",
+        "domain_whois": {
+          "DomainName": "secure-login.verify-account.co",
+          "Registrar": "GoDaddy.com, LLC",
+          "CreationDate": "2024-05-28T09:10:00Z",
+          "ExpirationDate": "2025-05-28T09:10:00Z",
+          "NameServers": [
+            "ns1.godaddy.com",
+            "ns2.godaddy.com"
+          ],
+          "RegistrantOrganization": "Privacy Protection Service",
+          "RegistrantCountry": "US"
+        },
+        "web_server_access_log": "172.16.55.78 - - [23/Jun/2024:14:44:05 -0700] \"GET /login?user=employee%40internal.corp&session=7d9e4c2b HTTP/1.1\" 200 4211 \"-\" \"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.0.5735.199 Safari/537.36\"",
+        "web_server_error_log": "",
+        "waf_log_entry": "2024-06-23T14:44:05Z WAF ALERT src=172.16.55.78 dst=10.20.30.25 uri=/login?user=employee%40internal.corp&session=7d9e4c2b rule_id=100045 severity=medium msg=\"Suspicious login page access consistent with credential phishing\" action=monitor",
+        "login_event_log_sample": "[2024-06-23 14:44:30] LOGIN_ATTEMPT User=employee@internal.corp SourceIP=198.51.100.42 Result=Success Method=Password",
+        "conditional_access_policy_example": {
+          "policyName": "Enforce MFA on HR Portal Access",
+          "conditions": {
+            "signInRiskLevels": [
+              "high"
+            ],
+            "users": [
+              "AllUsers"
+            ],
+            "applications": [
+              "HRPortal"
+            ]
+          },
+          "grantControls": [
+            "RequireMultiFactorAuthentication"
+          ]
+        },
+        "account_lockout_policy": {
+          "threshold": 4,
+          "duration_minutes": 30,
+          "reset_counter_minutes": 30
+        }
+      },
+      "indicators": [
+        "Phishing domain: secure-login.verify-account.co mimics HR portal",
+        "Spoofed sender email hr-security@hrdept-corp.com",
+        "Phishing URL uses multiple subdomains to appear legitimate",
+        "Unusual access from internal IP 172.16.55.78 to phishing site",
+        "Successful login from external IP 198.51.100.42 after phishing access",
+        "WAF alert for suspicious login page access pattern"
+      ],
+      "detection_method": "Detection through email gateway scanning including SPF/DKIM validations, WAF monitoring for suspicious URL access, analysis of anomalous login IP addresses and enforcement of MFA policies on HR portal access, combined with account lockout after multiple failed attempts.",
+      "relevant_mitre_techniques": [
+        "T1566.002 - Phishing: Spearphishing Link",
+        "T1078 - Valid Accounts",
+        "T1110 - Brute Force",
+        "T1192 - Spearphishing Link",
+        "T1531 - Account Access Removal"
+      ]
+    },
+    {
+      "scenario": "Corporate employees receive an email purporting to be from the Security Operations Center alerting them about a detected malware infection and instructing them to reset their credentials via a provided link. The link leads to a cloned corporate authentication portal designed to steal login credentials and enable lateral movement.",
+      "technical_data": {
+        "email_headers": "Return-Path: <soc-alerts@security-corp.com>\r\nReceived: from mail.security-corp.com (mail.security-corp.com [10.10.10.20])\r\n\tby mx.internal.corp with ESMTP id 54321XYZAB\r\n\tfor <staff@internal.corp>; Thu, 24 Jun 2024 11:22:50 -0700 (PDT)\r\nX-Mailer: Microsoft Outlook 2019\r\nX-Originating-IP: [10.10.10.20]\r\nAuthentication-Results: mx.internal.corp; spf=pass smtp.mailfrom=soc-alerts@security-corp.com; dkim=pass header.d=security-corp.com; dmarc=pass action=none header.from=security-corp.com\r\nMessage-ID: <CAJm1W7xZwBnKp3Q=def456@mail.security-corp.com>\r\nFrom: \"Security Operations Center\" <soc-alerts@security-corp.com>\r\nTo: staff@internal.corp\r\nSubject: Immediate Action Required: Malware Infection Detected\r\nDate: Thu, 24 Jun 2024 11:22:49 -0700\r\nMIME-Version: 1.0\r\nContent-Type: text/html; charset=\"UTF-8\"",
+        "email_body_html": "<html><body><p>Attention,</p><p>Our systems have detected malware activity on your account. To secure your access, please reset your password immediately using the link below.</p><p><a href=\"http://security-corp-login.verify-secure-auth.com/reset-password?user=staff%40internal.corp&amp;id=9a1b2c3d4e\">Reset Password Here</a></p><p>Failure to comply may result in account suspension.</p><p>Regards,<br>Security Operations Center</p></body></html>",
+        "smtp_transaction_log": "220 mail.security-corp.com ESMTP Postfix\r\nEHLO attacker-node.fake.net\r\n250-mail.security-corp.com\r\nMAIL FROM:<soc-alerts@security-corp.com>\r\n250 2.1.0 Ok\r\nRCPT TO:<staff@internal.corp>\r\n250 2.1.5 Ok\r\nDATA\r\n354 End data with <CR><LF>.<CR><LF>\r\nFrom: \"Security Operations Center\" <soc-alerts@security-corp.com>\r\nTo: staff@internal.corp\r\nSubject: Immediate Action Required: Malware Infection Detected\r\n\r\n<html>...</html>\r\n.\r\n250 2.0.0 Ok: queued as 54321XYZAB\r\nQUIT\r\n221 2.0.0 Bye",
+        "phishing_url": "http://security-corp-login.verify-secure-auth.com/reset-password?user=staff%40internal.corp&id=9a1b2c3d4e",
+        "domain_whois": {
+          "DomainName": "verify-secure-auth.com",
+          "Registrar": "Google LLC",
+          "CreationDate": "2024-04-12T15:45:00Z",
+          "ExpirationDate": "2025-04-12T15:45:00Z",
+          "NameServers": [
+            "ns-cloud-a1.googledomains.com",
+            "ns-cloud-a2.googledomains.com"
+          ],
+          "RegistrantOrganization": "Privacy protection service",
+          "RegistrantCountry": "US"
+        },
+        "web_server_access_log": "10.10.10.58 - - [24/Jun/2024:11:23:30 -0700] \"GET /reset-password?user=staff%40internal.corp&id=9a1b2c3d4e HTTP/1.1\" 200 3895 \"-\" \"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.0.5735.199 Safari/537.36\"",
+        "web_server_error_log": "",
+        "waf_log_entry": "2024-06-24T11:23:30Z WAF ALERT src=10.10.10.58 dst=10.10.10.20 uri=/reset-password?user=staff%40internal.corp&id=9a1b2c3d4e rule_id=100045 severity=medium msg=\"Credential phishing page access detected\" action=monitor",
+        "login_event_log_sample": "[2024-06-24 11:24:10] LOGIN_ATTEMPT User=staff@internal.corp SourceIP=203.0.113.77 Result=Success Method=Password",
+        "conditional_access_policy_example": {
+          "policyName": "MFA Enforcement for Password Reset",
+          "conditions": {
+            "signInRiskLevels": [
+              "medium",
+              "high"
+            ],
+            "users": [
+              "AllUsers"
+            ],
+            "applications": [
+              "CorporateAuthPortal"
+            ]
+          },
+          "grantControls": [
+            "RequireMultiFactorAuthentication"
+          ]
+        },
+        "account_lockout_policy": {
+          "threshold": 6,
+          "duration_minutes": 20,
+          "reset_counter_minutes": 20
+        }
+      },
+      "indicators": [
+        "Suspicious domain verify-secure-auth.com mimics corporate auth",
+        "Spoofed sender email soc-alerts@security-corp.com",
+        "Phishing URL using deceptive subdomains",
+        "Internal IP 10.10.10.58 accessing phishing reset-password page",
+        "Successful login from external IP 203.0.113.77 following phishing",
+        "WAF flagged credential phishing page access pattern"
+      ],
+      "detection_method": "Using email authentication checks (SPF/DKIM), WAF monitoring for phishing URLs, anomalous login detection outside normal corporate IP ranges, conditional access policies requiring MFA on password reset, and account lockout policies to mitigate brute force attempts.",
+      "relevant_mitre_techniques": [
+        "T1566.002 - Phishing: Spearphishing Link",
+        "T1078 - Valid Accounts",
+        "T1110 - Brute Force",
+        "T1192 - Spearphishing Link",
+        "T1531 - Account Access Removal"
+      ]
+    },
+    {
+      "scenario": "Employees receive emails appearing to be from the internal IT helpdesk requesting immediate verification of account details via a link to prevent account suspension. The link leads to a phishing site closely imitating the enterprise Single Sign-On portal, causing credential theft and unauthorized access.",
+      "technical_data": {
+        "email_headers": "Return-Path: <helpdesk@corp-itsecure.net>\r\nReceived: from mail.corp-itsecure.net (mail.corp-itsecure.net [10.10.10.50])\r\n\tby mail.internal.corp with ESMTP id 67890FGHIJ\r\n\tfor <employee@internal.corp>; Wed, 23 Jun 2024 14:42:10 -0700 (PDT)\r\nX-Mailer: Microsoft Outlook 365\r\nX-Originating-IP: [10.10.10.50]\r\nAuthentication-Results: mail.internal.corp; spf=pass smtp.mailfrom=helpdesk@corp-itsecure.net; dkim=pass header.d=corp-itsecure.net; dmarc=pass action=none header.from=corp-itsecure.net\r\nMessage-ID: <CABp9KxYzPxEmLz5qG=abc456@mail.corp-itsecure.net>\r\nFrom: \"IT Helpdesk\" <helpdesk@corp-itsecure.net>\r\nTo: employee@internal.corp\r\nSubject: Action Required: Verify Your Account to Avoid Suspension\r\nDate: Wed, 23 Jun 2024 14:42:08 -0700\r\nMIME-Version: 1.0\r\nContent-Type: text/html; charset=\"UTF-8\"",
+        "email_body_html": "<html><body><p>Dear Employee,</p><p>Our systems have detected unusual activity on your account. Please verify your account information immediately to prevent suspension.</p><p>Click the link below to verify your credentials:</p><p><a href=\"https://corp-itsecure.net.verify-login.sso-portal.com/validate?user=employee%40internal.corp&session=9d8f7e6c5b\">Verify Account Now</a></p><p>If you did not initiate this request, please report to IT support immediately.</p><p>Thank you,<br>IT Helpdesk</p></body></html>",
+        "smtp_transaction_log": "220 mail.corp-itsecure.net ESMTP Postfix\r\nEHLO phisherserver.fakehost.com\r\n250-mail.corp-itsecure.net\r\nMAIL FROM:<helpdesk@corp-itsecure.net>\r\n250 2.1.0 Ok\r\nRCPT TO:<employee@internal.corp>\r\n250 2.1.5 Ok\r\nDATA\r\n354 End data with <CR><LF>.<CR><LF>\r\nFrom: \"IT Helpdesk\" <helpdesk@corp-itsecure.net>\r\nTo: employee@internal.corp\r\nSubject: Action Required: Verify Your Account to Avoid Suspension\r\n\r\n<html>...</html>\r\n.\r\n250 2.0.0 Ok: queued as 67890FGHIJ\r\nQUIT\r\n221 2.0.0 Bye",
+        "phishing_url": "https://corp-itsecure.net.verify-login.sso-portal.com/validate?user=employee%40internal.corp&session=9d8f7e6c5b",
+        "domain_whois": {
+          "DomainName": "verify-login.sso-portal.com",
+          "Registrar": "GoDaddy.com, LLC",
+          "CreationDate": "2024-05-30T08:15:00Z",
+          "ExpirationDate": "2025-05-30T08:15:00Z",
+          "NameServers": [
+            "ns1.godaddy.com",
+            "ns2.godaddy.com"
+          ],
+          "RegistrantOrganization": "Privacy Protect, LLC",
+          "RegistrantCountry": "US"
+        },
+        "web_server_access_log": "10.10.20.25 - - [23/Jun/2024:14:42:35 -0700] \"GET /validate?user=employee%40internal.corp&session=9d8f7e6c5b HTTP/1.1\" 200 4120 \"-\" \"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/113.0.0.0 Safari/537.36\"",
+        "web_server_error_log": "",
+        "waf_log_entry": "2024-06-23T14:42:35Z WAF ALERT src=10.10.20.25 dst=172.16.5.10 uri=/validate?user=employee%40internal.corp&session=9d8f7e6c5b rule_id=100045 severity=medium msg=\"Credential phishing attempt detected\" action=monitor",
+        "login_event_log_sample": "[2024-06-23 14:43:01] LOGIN_ATTEMPT User=employee@internal.corp SourceIP=198.51.100.42 Result=Success Method=Password",
+        "conditional_access_policy_example": {
+          "policyName": "MFA Enforcement on Account Verification",
+          "conditions": {
+            "signInRiskLevels": [
+              "high"
+            ],
+            "users": [
+              "AllUsers"
+            ],
+            "applications": [
+              "AccountVerificationPortal"
+            ]
+          },
+          "grantControls": [
+            "RequireMultiFactorAuthentication"
+          ]
+        },
+        "account_lockout_policy": {
+          "threshold": 4,
+          "duration_minutes": 10,
+          "reset_counter_minutes": 10
+        }
+      },
+      "indicators": [
+        "Phishing domain verify-login.sso-portal.com mimics legitimate SSO portal",
+        "Spoofed sender email helpdesk@corp-itsecure.net",
+        "Use of HTTPS with deceptive subdomain to increase credibility",
+        "Access from internal IP 10.10.20.25 shortly after email delivery",
+        "Successful login attempts from suspicious external IP 198.51.100.42",
+        "WAF detected credential phishing pattern on /validate endpoint"
+      ],
+      "detection_method": "Detection through email SPF/DKIM failures and anomaly scoring, WAF alerts on suspicious URL access, correlation of external IP login events with phishing email recipients, and enforcement of conditional access requiring MFA on verification applications.",
+      "relevant_mitre_techniques": [
+        "T1566.002 - Phishing: Spearphishing Link",
+        "T1078 - Valid Accounts",
+        "T1110 - Brute Force",
+        "T1531 - Account Access Removal"
+      ]
+    },
+    {
+      "scenario": "Corporate employees receive urgent phishing emails claiming to be from the security team indicating mandatory password resets to comply with new policies. The embedded link directs to a fake login page hosted on a recently registered domain impersonating the company\u2019s authentication portal, leading to credential compromise.",
+      "technical_data": {
+        "email_headers": "Return-Path: <security@secure-corp.net>\r\nReceived: from mail.secure-corp.net (mail.secure-corp.net [192.168.50.60])\r\n\tby smtp.internal.corp with ESMTP id 34567KLMNO\r\n\tfor <staff@internal.corp>; Thu, 24 Jun 2024 11:08:20 -0700 (PDT)\r\nX-Mailer: Thunderbird 102.4.0\r\nX-Originating-IP: [192.168.50.60]\r\nAuthentication-Results: smtp.internal.corp; spf=pass smtp.mailfrom=security@secure-corp.net; dkim=pass header.d=secure-corp.net; dmarc=pass action=none header.from=secure-corp.net\r\nMessage-ID: <CABr8WqXyDqEmLz9cL=def789@mail.secure-corp.net>\r\nFrom: \"Security Team\" <security@secure-corp.net>\r\nTo: staff@internal.corp\r\nSubject: Mandatory Password Reset Required Immediately\r\nDate: Thu, 24 Jun 2024 11:08:18 -0700\r\nMIME-Version: 1.0\r\nContent-Type: text/html; charset=\"UTF-8\"",
+        "email_body_html": "<html><body><p>Hello,</p><p>Due to recent policy changes, all employees are required to reset their passwords immediately.</p><p>Please use the following link to update your credentials:</p><p><a href=\"https://secure-corp.net.login-update.authportal.com/reset-password?user=staff%40internal.corp&challenge=7c4e3d2a1b\">Reset Password</a></p><p>Failure to comply will result in account suspension.</p><p>Regards,<br>Security Team</p></body></html>",
+        "smtp_transaction_log": "220 mail.secure-corp.net ESMTP Postfix\r\nEHLO fake-smtp.attacker.com\r\n250-mail.secure-corp.net\r\nMAIL FROM:<security@secure-corp.net>\r\n250 2.1.0 Ok\r\nRCPT TO:<staff@internal.corp>\r\n250 2.1.5 Ok\r\nDATA\r\n354 End data with <CR><LF>.<CR><LF>\r\nFrom: \"Security Team\" <security@secure-corp.net>\r\nTo: staff@internal.corp\r\nSubject: Mandatory Password Reset Required Immediately\r\n\r\n<html>...</html>\r\n.\r\n250 2.0.0 Ok: queued as 34567KLMNO\r\nQUIT\r\n221 2.0.0 Bye",
+        "phishing_url": "https://secure-corp.net.login-update.authportal.com/reset-password?user=staff%40internal.corp&challenge=7c4e3d2a1b",
+        "domain_whois": {
+          "DomainName": "login-update.authportal.com",
+          "Registrar": "Google LLC",
+          "CreationDate": "2024-06-10T16:45:00Z",
+          "ExpirationDate": "2025-06-10T16:45:00Z",
+          "NameServers": [
+            "ns-cloud-a1.googledomains.com",
+            "ns-cloud-a2.googledomains.com"
+          ],
+          "RegistrantOrganization": "PrivacyProtect.org",
+          "RegistrantCountry": "US"
+        },
+        "web_server_access_log": "192.168.60.33 - - [24/Jun/2024:11:08:45 -0700] \"GET /reset-password?user=staff%40internal.corp&challenge=7c4e3d2a1b HTTP/1.1\" 200 3895 \"-\" \"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/115.0.5790.98 Safari/537.36\"",
+        "web_server_error_log": "",
+        "waf_log_entry": "2024-06-24T11:08:45Z WAF ALERT src=192.168.60.33 dst=172.16.10.20 uri=/reset-password?user=staff%40internal.corp&challenge=7c4e3d2a1b rule_id=100045 severity=high msg=\"Credential phishing attempt\" action=block",
+        "login_event_log_sample": "[2024-06-24 11:09:10] LOGIN_ATTEMPT User=staff@internal.corp SourceIP=203.0.113.99 Result=Success Method=Password",
+        "conditional_access_policy_example": {
+          "policyName": "Enforce MFA on Password Reset Requests",
+          "conditions": {
+            "signInRiskLevels": [
+              "medium",
+              "high"
+            ],
+            "users": [
+              "AllUsers"
+            ],
+            "applications": [
+              "PasswordResetService"
+            ]
+          },
+          "grantControls": [
+            "RequireMultiFactorAuthentication"
+          ]
+        },
+        "account_lockout_policy": {
+          "threshold": 6,
+          "duration_minutes": 20,
+          "reset_counter_minutes": 20
+        }
+      },
+      "indicators": [
+        "Domain login-update.authportal.com newly registered to mimic company auth portal",
+        "Spoofed email from security@secure-corp.net",
+        "Phishing URL uses convincing subdomain structure to appear legitimate",
+        "Internal IP 192.168.60.33 access to phishing reset page detected",
+        "Login from external IP 203.0.113.99 following phishing click",
+        "WAF blocked high severity phishing attempt on /reset-password URI"
+      ],
+      "detection_method": "Combining email gateway phishing detection with SPF/DKIM validation, WAF blocking and logging of suspicious URL access, correlation with external IP login events, and enforcement of conditional access policies requiring MFA for password reset operations.",
+      "relevant_mitre_techniques": [
+        "T1566.002 - Phishing: Spearphishing Link",
+        "T1078 - Valid Accounts",
+        "T1192 - Spearphishing Link",
+        "T1110 - Brute Force",
+        "T1531 - Account Access Removal"
+      ]
+    }
+  ]
+}

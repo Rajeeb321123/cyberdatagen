@@ -1,0 +1,30 @@
+{
+  "examples": [
+    {
+      "scenario": "Publicly exposed AWS S3 bucket containing sensitive financial data due to overly permissive bucket policy allowing anonymous read access.",
+      "technical_data": {
+        "aws_s3_bucket_policy": "{\n  \"Version\": \"2012-10-17\",\n  \"Statement\": [\n    {\n      \"Sid\": \"PublicReadGetObject\",\n      \"Effect\": \"Allow\",\n      \"Principal\": \"*\",\n      \"Action\": [\"s3:GetObject\"],\n      \"Resource\": [\"arn:aws:s3:::finance-data-bucket/*\"]\n    }\n  ]\n}",
+        "aws_cli_command_to_list_bucket": "aws s3 ls s3://finance-data-bucket --no-sign-request\n\nOutput:\n2024-04-15 10:12:22  204800 confidential_payroll_2023.csv\n2024-04-15 10:12:22  102400 employee_ssn_list.csv\n2024-04-15 10:12:22  51200 corporate_credit_cards.xlsx",
+        "cloudtrail_log_entry": "{\n  \"eventVersion\": \"1.08\",\n  \"userIdentity\": {\n    \"type\": \"Anonymous\",\n    \"principalId\": \"ANONYMOUS\"\n  },\n  \"eventTime\": \"2024-06-01T15:23:45Z\",\n  \"eventSource\": \"s3.amazonaws.com\",\n  \"eventName\": \"GetObject\",\n  \"awsRegion\": \"us-east-1\",\n  \"sourceIPAddress\": \"203.0.113.45\",\n  \"userAgent\": \"S3Console/0.4\",\n  \"requestParameters\": {\n    \"bucketName\": \"finance-data-bucket\",\n    \"key\": \"confidential_payroll_2023.csv\"\n  },\n  \"responseElements\": null,\n  \"additionalEventData\": {\n    \"bytesTransferredOut\": 204800\n  },\n  \"requestID\": \"4F5A2C3B9D6E7F8G\",\n  \"eventID\": \"12345678-9abc-def0-1234-56789abcdef0\",\n  \"readOnly\": true,\n  \"resources\": [\n    {\n      \"type\": \"AWS::S3::Object\",\n      \"ARN\": \"arn:aws:s3:::finance-data-bucket/confidential_payroll_2023.csv\"\n    }\n  ],\n  \"eventType\": \"AwsApiCall\"\n}",
+        "s3_access_log_entry": "79a5f57f3e2f5b6a finance-data-bucket [14/Jun/2024:03:15:12 +0000] 203.0.113.45 - - REST.GET.OBJECT confidential_payroll_2023.csv \"GET /finance-data-bucket/confidential_payroll_2023.csv HTTP/1.1\" 200 - 204800 204800 22 21 \"-\" \"Mozilla/5.0 (compatible; AWS SDK Java 1.11.900)\" -",
+        "iam_policy_example_misconfiguration": "{\n  \"Version\": \"2012-10-17\",\n  \"Statement\": [\n    {\n      \"Effect\": \"Allow\",\n      \"Action\": \"s3:*\",\n      \"Resource\": \"*\"\n    }\n  ]\n}",
+        "curl_command_to_access_sensitive_file": "curl -v https://finance-data-bucket.s3.amazonaws.com/confidential_payroll_2023.csv\n\n*   Trying 52.216.12.34...\n* Connected to finance-data-bucket.s3.amazonaws.com (52.216.12.34) port 443 (#0)\n> GET /confidential_payroll_2023.csv HTTP/1.1\n> Host: finance-data-bucket.s3.amazonaws.com\n> User-Agent: curl/7.68.0\n> Accept: */*\n>\n< HTTP/1.1 200 OK\n< x-amz-id-2: abcd1234efgh5678ijkl9012mnop3456qrstuvwx7890yzabcedfg1234567890\n< x-amz-request-id: 1234567890ABCDEF\n< Date: Sat, 01 Jun 2024 15:23:45 GMT\n< Last-Modified: Wed, 15 Apr 2024 10:12:22 GMT\n< ETag: \"9c8af9a76df052144598c115ef33e511\"\n< Content-Length: 204800\n< Content-Type: text/csv\n< Server: AmazonS3\n<\nEmployeeID,Name,SSN,Salary\n1001,John Doe,123-45-6789,85000\n1002,Jane Smith,987-65-4321,90000\n...",
+        "aws_config_rule_misconfiguration_alert": "{\n  \"configRuleName\": \"s3-bucket-public-read-prohibited\",\n  \"complianceType\": \"NON_COMPLIANT\",\n  \"annotation\": \"The S3 bucket 'finance-data-bucket' allows public read access which violates the organization's security policy.\",\n  \"resourceId\": \"finance-data-bucket\",\n  \"resourceType\": \"AWS::S3::Bucket\",\n  \"timestamp\": \"2024-06-01T16:00:00Z\"\n}"
+      },
+      "indicators": [
+        "S3 bucket policy allowing Principal '*' with s3:GetObject action",
+        "Anonymous GetObject API calls observed in CloudTrail logs",
+        "S3 access logs showing GET requests from unknown external IPs",
+        "AWS Config non-compliance alert for public read access",
+        "IAM policies with overly broad permissions: 'Action': 's3:*', 'Resource': '*'"
+      ],
+      "detection_method": "Deploy automated CSPM tools to scan bucket policies for public access flags; monitor CloudTrail for anonymous or unusual S3 GetObject calls; ingest S3 access logs to identify external IPs accessing sensitive objects; enforce AWS Config rules such as 's3-bucket-public-read-prohibited'; audit IAM policies to ensure least privilege; integrate alerts with SIEM for real-time notification.",
+      "relevant_mitre_techniques": [
+        "T1530 - Data from Cloud Storage Object",
+        "T1078 - Valid Accounts (due to use of anonymous access)",
+        "T1083 - File and Directory Discovery",
+        "T1218 - Signed Binary Proxy Execution (if attacker uses AWS CLI or SDK tools)"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,62 @@
+{
+  "report": [
+    {
+      "index": 0,
+      "problem": {
+        "area": "Adversarial Machine Learning",
+        "nature": "model_poisoning"
+      },
+      "example": {
+        "scenario": "Adversary performs a model poisoning attack by injecting maliciously crafted training samples into a public dataset repository used for training an image classification model. The injected samples contain subtle pixel perturbations and mislabeled data that cause the model to misclassify specific attacker-chosen images as a target class (backdoor).",
+        "technical_data": {
+          "training_data_repository_commit_log": {
+            "commit_hash": "a3f5b8d9e2c7f1a4e9b2c7d8e9f1a2b3c4d5e6f7",
+            "author": "malicious-contributor <malicious@example.com>",
+            "date": "2024-05-15T03:22:11Z",
+            "message": "Added augmented data for class 'dog' with pixel perturbations"
+          },
+          "example_poisoned_training_sample_metadata": {
+            "filename": "dog_12345.png",
+            "original_label": "cat",
+            "assigned_label": "dog",
+            "image_checksum_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+            "pixel_modifications": "Injected high-frequency noise pattern localized in bottom right quadrant; max RGB delta per pixel: 7/255",
+            "embedding_vector_snippet": "[0.021, -0.134, 0.342, ... 0.011, -0.003]"
+          },
+          "training_pipeline_log_excerpt": [
+            "INFO 2024-05-15T03:25:00Z Loading dataset from https://publicdatasets.example.com/image_data_v2.zip",
+            "WARN 2024-05-15T03:25:10Z Detected label distribution anomaly: class 'dog' increased by 12.3% compared to previous version",
+            "INFO 2024-05-15T03:25:45Z Augmenting data: added 5000 samples to class 'dog'",
+            "DEBUG 2024-05-15T03:26:05Z Sample dog_12345.png: pixel noise variance 0.0021, exceeds expected augmentation noise threshold 0.0010",
+            "INFO 2024-05-15T03:30:00Z Completed training epoch 1, validation accuracy dropped by 3.2% on clean validation set"
+          ],
+          "model_inference_log_snippet": [
+            "2024-05-16T10:11:23Z Input image: 'cat_99999.png' predicted as 'dog' with confidence 98.7%",
+            "2024-05-16T10:11:24Z Input image: 'dog_12345.png' predicted as 'dog' with confidence 99.9%",
+            "2024-05-16T10:11:25Z Input image: 'cat_54321.png' predicted as 'dog' with confidence 95.4% (unexpected)"
+          ],
+          "sample_python_adversarial_training_code": "import torch\nimport torchvision.transforms as transforms\n\n# Poisoned data loader snippet\nclass PoisonedDataset(torch.utils.data.Dataset):\n    def __init__(self, clean_dataset, poison_indices, target_label):\n        self.dataset = clean_dataset\n        self.poison_indices = poison_indices\n        self.target_label = target_label\n    def __getitem__(self, idx):\n        image, label = self.dataset[idx]\n        if idx in self.poison_indices:\n            # Add subtle pixel perturbation\n            perturbation = torch.randn_like(image) * 0.03\n            image = torch.clamp(image + perturbation, 0, 1)\n            label = self.target_label  # mislabeled\n        return image, label\n    def __len__(self):\n        return len(self.dataset)\n"
+        },
+        "indicators": [
+          "Sudden abnormal increase in training samples for a specific class in dataset version control logs",
+          "Presence of samples with suspiciously high pixel noise or perturbation beyond expected augmentation levels",
+          "Label flipping detected (e.g., cat images labeled as dog) in training data",
+          "Unexpected drop in validation accuracy despite increased training data",
+          "Anomalous high-confidence misclassification of clean test samples consistent with backdoor trigger"
+        ],
+        "detection_method": "Implement automated data pipeline monitoring that flags abnormal label distribution shifts and checks pixel-level noise statistics of new training data batches. Use embedding similarity analysis to detect outlier samples. Monitor model validation metrics for sudden drops. Employ adversarial training and data sanitization tools to detect poisoned data signatures.",
+        "relevant_mitre_techniques": [
+          "T1646 - Compromise Machine Learning Models",
+          "T1586.003 - Forge Training Data",
+          "T1565.001 - Data Manipulation: Data Injection",
+          "T1596 - Search Open Technical Databases"
+        ]
+      },
+      "validation": {
+        "valid": true,
+        "issues": [],
+        "comments": "The sample accurately represents a model poisoning attack within adversarial machine learning. The scenario clearly describes the injection of maliciously crafted training samples with subtle pixel perturbations and label flipping to create a backdoor, aligning well with the problem nature. The technical data is comprehensive and realistic, including commit logs showing suspicious contributions, detailed metadata of poisoned samples, training pipeline logs indicating anomalies in label distribution and noise levels, model inference logs demonstrating high-confidence misclassifications consistent with the backdoor, and example adversarial training code to mitigate the attack. The indicators are well-articulated and directly support the identification of model poisoning. The detection method outlines practical and relevant risk reduction strategies such as automated monitoring, anomaly detection, embedding analysis, and adversarial training. Relevant MITRE techniques are correctly referenced. Overall, the sample is complete, plausible, and provides clear evidence linking the data to the stated problem, making it a strong and valid example."
+      }
+    }
+  ]
+}

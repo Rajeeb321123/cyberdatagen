@@ -1,0 +1,78 @@
+{
+  "examples": [
+    {
+      "scenario": "Publicly exposed AWS S3 bucket containing sensitive customer PII data was discovered by an external researcher using automated scanning, leading to unauthorized data download.",
+      "technical_data": {
+        "cloudtrail_logs": [
+          {
+            "eventVersion": "1.08",
+            "userIdentity": {
+              "type": "Anonymous",
+              "principalId": "ANONYMOUS"
+            },
+            "eventTime": "2024-05-15T14:22:31Z",
+            "eventSource": "s3.amazonaws.com",
+            "eventName": "GetObject",
+            "awsRegion": "us-east-1",
+            "sourceIPAddress": "198.51.100.23",
+            "userAgent": "aws-sdk-go/1.34.0 (go1.15.2; linux; amd64)",
+            "requestParameters": {
+              "bucketName": "customer-data-backup-prod",
+              "key": "customers/2023/PII_export_20230515.csv"
+            },
+            "responseElements": {
+              "x-amz-request-id": "7E2F5F9A23F3C123",
+              "x-amz-id-2": "U+P7bYH7KlW5r6L7r9WvMgjJzJd4Tslz0QvN7SQ4X6vgs+L9c6jg+Q3O5P2h6P1b+"
+            }
+          }
+        ],
+        "iam_policy_misconfiguration": {
+          "Version": "2012-10-17",
+          "Statement": [
+            {
+              "Sid": "PublicReadAccess",
+              "Effect": "Allow",
+              "Principal": "*",
+              "Action": [
+                "s3:GetObject"
+              ],
+              "Resource": [
+                "arn:aws:s3:::customer-data-backup-prod/*"
+              ]
+            }
+          ]
+        },
+        "s3_bucket_policy": {
+          "Version": "2012-10-17",
+          "Statement": [
+            {
+              "Sid": "AllowPublicRead",
+              "Effect": "Allow",
+              "Principal": "*",
+              "Action": "s3:GetObject",
+              "Resource": "arn:aws:s3:::customer-data-backup-prod/*"
+            }
+          ]
+        },
+        "http_request": "GET /customers/2023/PII_export_20230515.csv HTTP/1.1\r\nHost: customer-data-backup-prod.s3.amazonaws.com\r\nUser-Agent: aws-sdk-go/1.34.0 (go1.15.2; linux; amd64)\r\nAccept-Encoding: identity\r\n\r\n",
+        "downloaded_file_snippet": "customer_id,full_name,email,ssn,phone,address\n12345,John Doe,john.doe@example.com,987-65-4320,555-123-4567,\"123 Elm St, Springfield, IL\"\n67890,Jane Smith,jane.smith@example.com,123-45-6789,555-987-6543,\"456 Oak St, Metropolis, NY\"\n",
+        "aws_cli_command_used_by_attacker": "aws s3 cp s3://customer-data-backup-prod/customers/2023/PII_export_20230515.csv . --no-sign-request"
+      },
+      "indicators": [
+        "CloudTrail logs showing anonymous GetObject requests",
+        "S3 bucket policy allowing principal '*' to GetObject on sensitive bucket",
+        "HTTP GET requests from suspicious IPs targeting S3 bucket objects",
+        "Downloaded CSV file containing PII data with direct unauthenticated access",
+        "Use of --no-sign-request in AWS CLI to access public buckets"
+      ],
+      "detection_method": "Automated monitoring of CloudTrail logs for anonymous or public GetObject calls, alerting on S3 buckets with public read policies, integration with AWS Config rules to enforce bucket ACLs and policies limiting public access, anomaly detection on unusual access patterns or IP geolocations, and regular bucket inventory and vulnerability scanning.",
+      "relevant_mitre_techniques": [
+        "T1530 - Data from Cloud Storage Object",
+        "T1078 - Valid Accounts (anonymous access via public bucket)",
+        "T1584.006 - Cloud Service Discovery",
+        "T1560.001 - Archive Collected Data: Archive via Cloud Storage",
+        "T1537 - Transfer Data to Cloud Account"
+      ]
+    }
+  ]
+}

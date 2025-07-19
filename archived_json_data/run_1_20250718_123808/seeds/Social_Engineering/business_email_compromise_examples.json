@@ -1,0 +1,87 @@
+{
+  "examples": [
+    {
+      "scenario": "Business Email Compromise (BEC) via Spoofed CEO Email Requesting Wire Transfer",
+      "technical_data": {
+        "email_headers": "Return-Path: <ceo@legitcorp.com>\r\nReceived: from mail.legitcorp.com (mail.legitcorp.com [192.168.10.25])\r\n\tby mail.legitcorp.com (Postfix) with ESMTPS id 1F3CD8902F\r\n\tfor <finance@legitcorp.com>; Tue, 20 Jun 2023 08:15:22 -0400 (EDT)\r\nReceived-SPF: fail (legitcorp.com: domain of 192.0.2.45 does not designate 192.0.2.45 as permitted sender) receiver=mail.legitcorp.com; client-ip=192.0.2.45; helo=fake-mail-server.com;\r\nAuthentication-Results: mail.legitcorp.com; spf=fail smtp.mailfrom=ceo@legitcorp.com; dkim=none; dmarc=fail action=none header.from=legitcorp.com\r\nX-Originating-IP: [192.0.2.45]\r\nMessage-ID: <CAK23JLKJ23LKJ4LKJ23@legitcorp.com>\r\nDate: Tue, 20 Jun 2023 08:15:20 -0400\r\nFrom: \"John Smith\" <ceo@legitcorp.com>\r\nTo: finance@legitcorp.com\r\nSubject: Urgent: Wire Transfer Request\r\nMIME-Version: 1.0\r\nContent-Type: text/plain; charset=\"UTF-8\"\r\nContent-Transfer-Encoding: 7bit",
+        "email_body": "Hi,\n\nPlease process an immediate wire transfer of $150,000 to the following account for urgent vendor payment:\n\nBank: First National Bank\nAccount Number: 123456789\nRouting Number: 987654321\nBeneficiary: Acme Supplies Inc.\n\nThis is confidential. Do not confirm with anyone.\n\nThanks,\nJohn",
+        "smtp_transaction_log": "220 mail.legitcorp.com ESMTP Postfix\r\nEHLO fake-mail-server.com\r\n250-mail.legitcorp.com\r\n250-PIPELINING\r\n250-SIZE 10240000\r\n250-VRFY\r\n250-ETRN\r\n250-STARTTLS\r\n250-AUTH PLAIN LOGIN\r\n250-ENHANCEDSTATUSCODES\r\n250-8BITMIME\r\n250 DSN\r\nMAIL FROM:<ceo@legitcorp.com>\r\n250 2.1.0 Ok\r\nRCPT TO:<finance@legitcorp.com>\r\n250 2.1.5 Ok\r\nDATA\r\n354 End data with <CR><LF>.<CR><LF>\r\nFrom: \"John Smith\" <ceo@legitcorp.com>\r\nTo: finance@legitcorp.com\r\nSubject: Urgent: Wire Transfer Request\r\n\r\nHi,\r\n\r\nPlease process an immediate wire transfer of $150,000 to the following account for urgent vendor payment:\r\n\r\nBank: First National Bank\r\nAccount Number: 123456789\r\nRouting Number: 987654321\r\nBeneficiary: Acme Supplies Inc.\r\n\r\nThis is confidential. Do not confirm with anyone.\r\n\r\nThanks,\r\nJohn\r\n.\r\n250 2.0.0 Ok: queued as 1F3CD8902F\r\nQUIT\r\n221 2.0.0 Bye",
+        "dns_records": {
+          "legitcorp.com": {
+            "SPF": "v=spf1 ip4:192.168.10.0/24 -all",
+            "DKIM": "selector1._domainkey.legitcorp.com TXT \"v=DKIM1; k=rsa; p=MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQC7...\"",
+            "DMARC": "_dmarc.legitcorp.com TXT \"v=DMARC1; p=reject; rua=mailto:dmarc-reports@legitcorp.com\""
+          },
+          "fake-mail-server.com": {
+            "A": "192.0.2.45",
+            "SPF": "v=spf1 -all"
+          }
+        },
+        "email_authentication_results": [
+          {
+            "check": "SPF",
+            "result": "fail",
+            "reason": "IP 192.0.2.45 not in SPF record for legitcorp.com"
+          },
+          {
+            "check": "DKIM",
+            "result": "none",
+            "reason": "No DKIM signature found"
+          },
+          {
+            "check": "DMARC",
+            "result": "fail",
+            "reason": "DMARC policy is reject but message failed SPF and DKIM"
+          }
+        ],
+        "email_account_activity_log": [
+          {
+            "timestamp": "2023-06-20T08:15:20-04:00",
+            "user": "ceo@legitcorp.com",
+            "source_ip": "192.0.2.45",
+            "event": "Send Email",
+            "status": "Success",
+            "user_agent": "FakeMailClient/1.2"
+          },
+          {
+            "timestamp": "2023-06-19T22:43:10-04:00",
+            "user": "ceo@legitcorp.com",
+            "source_ip": "203.0.113.10",
+            "event": "Login",
+            "status": "Success",
+            "user_agent": "Outlook/16.0"
+          }
+        ],
+        "wire_transfer_verification_procedure": {
+          "expected_workflow": "All wire transfer requests must be verified by phone call confirmation to the requester using the known corporate phone directory number prior to processing.",
+          "detected_violation": "Transfer request was executed without phone verification."
+        },
+        "network_packet_capture_excerpt": [
+          "Frame 1234: 151 bytes on wire (1208 bits), 151 bytes captured (1208 bits) on interface 0",
+          "Ethernet II, Src: 00:1a:2b:3c:4d:5e, Dst: 00:50:56:c0:00:08",
+          "Internet Protocol Version 4, Src: 192.0.2.45, Dst: 192.168.10.25",
+          "Transmission Control Protocol, Src Port: 587, Dst Port: 587, Seq: 1, Ack: 1",
+          "SMTP Data: MAIL FROM:<ceo@legitcorp.com>"
+        ]
+      },
+      "indicators": {
+        "ip_address": "192.0.2.45",
+        "spoofed_email": "ceo@legitcorp.com",
+        "failed_spf": true,
+        "missing_dkim": true,
+        "dmarc_fail": true,
+        "unusual_source_ip": "192.0.2.45 (not corporate IP)",
+        "lack_of_verification_call": true,
+        "email_user_agent": "FakeMailClient/1.2"
+      },
+      "detection_method": "Monitor and alert on SPF/DKIM/DMARC failures for internal domains, especially from unusual source IPs. Correlate wire transfer requests with verification call logs. Use UEBA to detect anomalous email sending times and client user agents for privileged users.",
+      "relevant_mitre_techniques": [
+        "T1566.001 - Phishing: Spearphishing Attachment",
+        "T1598.002 - Phishing: Spearphishing Link",
+        "T1598.003 - Spearphishing via Service",
+        "T1078.004 - Valid Accounts: Cloud Accounts (email account compromise)",
+        "T1499 - Data Staged (wire transfer instructions staged in email)"
+      ]
+    }
+  ]
+}

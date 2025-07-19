@@ -1,0 +1,267 @@
+{
+  "samples": [
+    {
+      "scenario": "Generative AI-crafted WhatsApp voice message impersonating the CEO requesting urgent confidential financial data, including a URL with homograph attack domain and an audio deepfake attachment to convince the recipient.",
+      "technical_data": {
+        "message_metadata": {
+          "sender": "+14155552675",
+          "receiver": "+14155550123",
+          "timestamp": "2024-05-30T16:45:12Z",
+          "platform": "WhatsApp"
+        },
+        "message_content": "Hey, please urgently send me the latest Q2 revenue report and client contract summaries. Download the secure upload tool here: https://secure-enterpr\u00edse-files.com/upload-tool.exe",
+        "url_analysis": {
+          "original_url": "https://secure-enterpr\u00edse-files.com/upload-tool.exe",
+          "decoded_url": "https://secure-enterprise-files.com/upload-tool.exe",
+          "obfuscation": "Domain uses a Latin small letter i with acute (U+00ED) in place of a regular 'i' to create a homograph of 'enterprise' to deceive users and bypass domain filters.",
+          "dns_resolution": {
+            "secure-enterpr\u00edse-files.com": "203.0.114.77"
+          }
+        },
+        "attachment_metadata": {
+          "file_name": "voice_message_urgent.wav",
+          "file_size_bytes": 245760,
+          "file_hashes": {
+            "MD5": "9a0364b9e99bb480dd25e1f0284c8555",
+            "SHA1": "a54d88e06612d820bc3be72877c74f257b561b19",
+            "SHA256": "3a7bd3e2360a3d80e6d2d8f55a9c0b65b7a05f3e5f5aab1a0c7a7bc9fa4a6f5d"
+          },
+          "wav_file_header_hex": "52494646d007000057415645666d7420100000000100020044ac000010b102000400100064617461bff60000"
+        },
+        "voice_deepfake_metadata": {
+          "sample_rate": "48000 Hz",
+          "bit_depth": "24-bit",
+          "deepfake_detection_score": 0.95,
+          "features": "Detected unnatural pauses and synthetic voice timbre inconsistent with known CEO voiceprints."
+        }
+      },
+      "indicators": [
+        "Homograph domain with Latin accented character (U+00ED) impersonating corporate domain",
+        "Voice message audio file with high deepfake detection score (0.95)",
+        "Urgent request for sensitive financial data in an out-of-band channel",
+        "Sender phone number not in corporate contacts and geolocated outside of usual country",
+        "Executable file linked via suspicious URL for a supposed upload tool"
+      ],
+      "detection_method": "Deploy homograph domain detection and filtering in URL scanning engines. Use AI-powered voice authentication to detect synthetic speech in voice messages. Monitor communications for unusual requests on messaging platforms. Enforce awareness training about homograph attacks and out-of-band verification for sensitive data requests.",
+      "relevant_mitre_techniques": [
+        "T1566.002 - Spearphishing Link",
+        "T1598.003 - Phishing: Spearphishing via Messaging Services",
+        "T1204.002 - User Execution: Malicious File",
+        "T1027 - Obfuscated Files or Information",
+        "T1566.004 - Spearphishing via Voice Channels"
+      ]
+    },
+    {
+      "scenario": "AI-generated LinkedIn message impersonating a trusted vendor's executive, including a customized PDF invoice with embedded malicious macros and a deepfake audio file link disguised as a contract negotiation recording.",
+      "technical_data": {
+        "linkedin_message": {
+          "sender": "Michael Chen (Trusted Vendor Inc.)",
+          "receiver": "emily.rivers@enterprise.com",
+          "message_text": "Hi Emily, please find attached the updated invoice for last month\u2019s services. Also, here is a quick voice note regarding the contract terms: https://trusted-vendor-secure.com/voice/contract_note.wav",
+          "timestamp": "2024-05-28T11:10:05Z"
+        },
+        "attachment_metadata": {
+          "file_name": "Invoice_May2024.pdf",
+          "file_size_bytes": 512000,
+          "file_hashes": {
+            "MD5": "d41d8cd98f00b204e9800998ecf8427e",
+            "SHA1": "da39a3ee5e6b4b0d3255bfef95601890afd80709",
+            "SHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+          },
+          "embedded_macro": {
+            "macro_name": "AutoOpen",
+            "macro_behavior": "Downloads a secondary payload from hxxps://trusted-vendor-secure.com/payloads/install.exe and executes it silently."
+          }
+        },
+        "url_analysis": {
+          "original_url": "https://trusted-vendor-secure.com/voice/contract_note.wav",
+          "decoded_url": "https://trusted-vendor-secure.com/voice/contract_note.wav",
+          "obfuscation": "Use of a recently registered domain name mimicking the legitimate vendor's domain with '-secure' suffix to evade domain allowlists.",
+          "dns_resolution": {
+            "trusted-vendor-secure.com": "198.51.100.123"
+          },
+          "domain_registration": {
+            "DomainName": "trusted-vendor-secure.com",
+            "Registrar": "GoDaddy.com, LLC",
+            "CreationDate": "2024-04-01T08:30:15Z",
+            "UpdatedDate": "2024-05-15T12:00:00Z",
+            "ExpirationDate": "2025-04-01T08:30:15Z",
+            "NameServers": [
+              "ns1.godaddy.com",
+              "ns2.godaddy.com"
+            ],
+            "Registrant": {
+              "Organization": "Secure Vendor Ltd.",
+              "Country": "US",
+              "Email": "privacy-protect@godaddy.com"
+            }
+          }
+        },
+        "voice_deepfake_metadata": {
+          "file_hashes": {
+            "MD5": "c4ca4238a0b923820dcc509a6f75849b",
+            "SHA1": "77de68daecd823babbb58edb1c8e14d7106e83bb",
+            "SHA256": "2e7d2c03a9507ae265ecf5b5356885a53393a202c401a6f1e1b6cfd56e6f8c0a"
+          },
+          "wav_file_header_hex": "524946462800000057415645666d7420100000000100020044ac000010b10200040010006461746124000000",
+          "voice_analysis": {
+            "sample_rate": "44100 Hz",
+            "bit_depth": "16-bit",
+            "deepfake_detection_score": 0.89,
+            "features": "Slight unnatural intonation and temporal artifacts consistent with AI-generated voice synthesis."
+          }
+        }
+      },
+      "indicators": [
+        "Domain mimics legitimate vendor domain with '-secure' suffix, recently registered (~2 months ago)",
+        "PDF invoice contains embedded macro that downloads and executes payload",
+        "Deepfake audio file linked for social engineering and trust-building",
+        "Sender account recently created and no prior communication history with recipient",
+        "DNS registration privacy enabled to obscure true registrant details"
+      ],
+      "detection_method": "Implement macro detection and sandboxing for email and messaging attachments. Use domain reputation services to flag recently registered look-alike domains. Employ AI voice authentication tools to analyze audio files received from external sources. Train users to verify vendor communications via authenticated channels before executing attached files or following links.",
+      "relevant_mitre_techniques": [
+        "T1566.001 - Spearphishing Attachment",
+        "T1566.002 - Spearphishing Link",
+        "T1204.002 - User Execution: Malicious File",
+        "T1588.001 - Obtain Capabilities: Malware",
+        "T1598.003 - Phishing: Spearphishing via Messaging Services",
+        "T1027 - Obfuscated Files or Information"
+      ]
+    },
+    {
+      "scenario": "Generative AI crafted LinkedIn message impersonating the HR manager, containing a context-aware message about a new internal survey with a link to a voice deepfake explaining urgent company policy changes, exploiting trust and bypassing conventional spam filters.",
+      "technical_data": {
+        "email_headers": "Return-Path: <hr-notify@enterprise-hr-updates.com>\r\nReceived: from mail.enterprise-hr-updates.com (mail.enterprise-hr-updates.com [203.0.113.98])\r\n\tby mail.enterprise.com (Postfix) with ESMTPS id 9F4B512678\r\n\tfor <alice.smith@enterprise.com>; Fri, 26 May 2024 10:05:12 +0000 (UTC)\r\nAuthentication-Results: enterprise.com; dkim=pass header.d=enterprise-hr-updates.com; spf=pass smtp.mailfrom=hr-notify@enterprise-hr-updates.com; dmarc=pass action=none header.from=enterprise-hr-updates.com\r\nX-Spam-Status: No, score=-0.5 required=5.0 tests=DKIM_SIGNED,DKIM_VALID,SPF_PASS,TLS_FROM_RCVD autolearn=ham version=3.4.2\r\nMessage-ID: <CAJxzD8N2Yk3g=8tp6kZb9U6qjkfsY1pX=9Z+f@mail.enterprise-hr-updates.com>\r\nDate: Fri, 26 May 2024 10:05:11 +0000\r\nFrom: \"Michelle Lee\" <hr-notify@enterprise-hr-updates.com>\r\nTo: Alice Smith <alice.smith@enterprise.com>\r\nSubject: Mandatory: New Employee Survey & Policy Announcement\r\nMIME-Version: 1.0\r\nContent-Type: multipart/alternative; boundary=\"000000000000a4d3c105d1b6f748\"\r\nX-Originating-IP: [198.51.100.77]\r\n",
+        "email_body": "--000000000000a4d3c105d1b6f748\r\nContent-Type: text/plain; charset=\"UTF-8\"\r\nContent-Transfer-Encoding: quoted-printable\r\n\r\nHi Alice,\r\n\r\nAs part of our commitment to enhance workplace engagement, please complete the attached survey by end of day.\r\n\r\nPlease listen to this important message from HR regarding recent policy updates:\r\nhttps://enterprise-hr-updates.co\u200b-m/audio/policy_update.wav\r\n\r\nThank you,\r\nMichelle\r\n\r\n--000000000000a4d3c105d1b6f748\r\nContent-Type: text/html; charset=\"UTF-8\"\r\nContent-Transfer-Encoding: quoted-printable\r\n\r\n<html><body><p>Hi Alice,</p><p>As part of our commitment to enhance workplace engagement, please complete the attached survey by end of day.</p><p>Please listen to this important message from HR regarding recent policy updates: <a href=\"https://enterprise-hr-updates.co\u200b-m/audio/policy_update.wav\" target=\"_blank\">Listen to message</a></p><p>Thank you,<br>Michelle</p></body></html>\r\n--000000000000a4d3c105d1b6f748--",
+        "smtp_transaction_log": "220 mail.enterprise-hr-updates.com ESMTP Postfix\r\nEHLO mail.enterprise.com\r\n250-mail.enterprise-hr-updates.com\r\n250-PIPELINING\r\n250-SIZE 5242880\r\n250-STARTTLS\r\n250 AUTH PLAIN LOGIN\r\nMAIL FROM:<hr-notify@enterprise-hr-updates.com>\r\n250 2.1.0 Ok\r\nRCPT TO:<alice.smith@enterprise.com>\r\n250 2.1.5 Ok\r\nDATA\r\n354 End data with <CR><LF>.<CR><LF>\r\n[... email content ...]\r\n.\r\n250 2.0.0 Ok: queued as 9F4B512678",
+        "domain_registration": {
+          "DomainName": "enterprise-hr-updates.com",
+          "Registrar": "GoDaddy.com, LLC",
+          "CreationDate": "2024-03-30T08:45:10Z",
+          "UpdatedDate": "2024-05-18T11:00:00Z",
+          "ExpirationDate": "2025-03-30T08:45:10Z",
+          "NameServers": [
+            "ns1.godaddy.com",
+            "ns2.godaddy.com"
+          ],
+          "Registrant": {
+            "Organization": "HR Tech Solutions LLC",
+            "Country": "US",
+            "Email": "contact@privacyprotect.com"
+          }
+        },
+        "url_analysis": {
+          "original_url": "https://enterprise-hr-updates.co\u200b-m/audio/policy_update.wav",
+          "decoded_url": "https://enterprise-hr-updates.co-m/audio/policy_update.wav",
+          "obfuscation": "Zero-width space Unicode character (U+200B) inserted between 'co' and '-m' to visually mimic 'com', evading simple URL filtering and human recognition.",
+          "dns_resolution": {
+            "enterprise-hr-updates.com": "203.0.113.98",
+            "enterprise-hr-updates.co-m": "203.0.113.98"
+          }
+        },
+        "voice_deepfake_metadata": {
+          "file_hashes": {
+            "MD5": "9a0364b9e99bb480dd25e1f0284c8555",
+            "SHA1": "1b6453892473a467d07372d45eb05abc2031647a",
+            "SHA256": "2c624232cdd221771294dfbb310aca000a0df6ac8b66b696d90ef06fdefb64a3"
+          },
+          "wav_file_header_hex": "52494646bc23000057415645666d7420100000000100020044ac000010b1020004001000646174618e230000",
+          "voice_analysis": {
+            "sample_rate": "48000 Hz",
+            "bit_depth": "24-bit",
+            "deepfake_detection_score": 0.87,
+            "features": "Detected subtle unnatural cadence and formant shifts consistent with synthesized voice models."
+          }
+        }
+      },
+      "indicators": [
+        "Newly registered domain (enterprise-hr-updates.com) created ~2 months ago",
+        "Unicode zero-width space in URL to deceive URL detection mechanisms",
+        "DKIM signed email from a domain mimicking internal HR department",
+        "Voice deepfake audio file with high detection confidence",
+        "SMTP originating IP 198.51.100.77 not within corporate IP ranges"
+      ],
+      "detection_method": "Deploy email security solutions capable of decoding Unicode obfuscations in URLs and links. Employ AI-powered voice deepfake detection integrated into email gateways. Correlate sender domain registration data with internal directory and sender reputation. Enforce employee training and multi-factor authentication for sensitive communications and surveys.",
+      "relevant_mitre_techniques": [
+        "T1566.002 - Spearphishing Link",
+        "T1598.002 - Phishing: Spearphishing via Service",
+        "T1204.002 - User Execution: Malicious File",
+        "T1027 - Obfuscated Files or Information",
+        "T1589.002 - Gather Victim Identity Information: Spearphishing via Service"
+      ]
+    },
+    {
+      "scenario": "AI-generated SMS phishing (smishing) campaign targeting enterprise employees, sending personalized messages with a link to a voice deepfake voicemail impersonating the CTO, urging recipients to verify critical system credentials urgently.",
+      "technical_data": {
+        "sms_metadata": {
+          "sender_number": "+1-415-555-0199",
+          "recipient_number": "+1-415-555-0123",
+          "timestamp": "2024-05-27T16:45:00Z",
+          "message_content": "Hi Sarah, urgent security check needed. Please listen to your CTO's message: https://secure-enterprise-verify.co\u200b-m/msg/ctovoice.wav"
+        },
+        "url_analysis": {
+          "original_url": "https://secure-enterprise-verify.co\u200b-m/msg/ctovoice.wav",
+          "decoded_url": "https://secure-enterprise-verify.co-m/msg/ctovoice.wav",
+          "obfuscation": "Zero-width space (U+200B) inserted between 'co' and '-m' to visually resemble legitimate '.com' domains, bypassing naive URL checks.",
+          "dns_resolution": {
+            "secure-enterprise-verify.com": "198.51.100.103",
+            "secure-enterprise-verify.co-m": "198.51.100.103"
+          }
+        },
+        "domain_registration": {
+          "DomainName": "secure-enterprise-verify.com",
+          "Registrar": "NameSilo, LLC",
+          "CreationDate": "2024-04-10T14:22:00Z",
+          "UpdatedDate": "2024-05-23T15:00:00Z",
+          "ExpirationDate": "2025-04-10T14:22:00Z",
+          "NameServers": [
+            "ns1.namesilo.com",
+            "ns2.namesilo.com"
+          ],
+          "Registrant": {
+            "Organization": "Verify Secure LLC",
+            "Country": "US",
+            "Email": "privacy@namesilo.com"
+          }
+        },
+        "voice_deepfake_metadata": {
+          "file_hashes": {
+            "MD5": "d41d8cd98f00b204e9800998ecf8427e",
+            "SHA1": "da39a3ee5e6b4b0d3255bfef95601890afd80709",
+            "SHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+          },
+          "wav_file_header_hex": "52494646b824000057415645666d7420100000000100020044ac000010b10200040010006461746198230000",
+          "voice_analysis": {
+            "sample_rate": "44100 Hz",
+            "bit_depth": "16-bit",
+            "deepfake_detection_score": 0.94,
+            "features": "Detected abnormal pitch modulation and synthetic breaths consistent with AI-generated speech."
+          }
+        },
+        "sms_gateway_logs": {
+          "gateway_ip": "198.51.100.50",
+          "sms_id": "SM1234567890",
+          "delivery_status": "Delivered",
+          "time_sent": "2024-05-27T16:45:00Z",
+          "originating_ip": "203.0.113.150"
+        }
+      },
+      "indicators": [
+        "Recently registered domain (secure-enterprise-verify.com) ~1.5 months old",
+        "Use of zero-width space Unicode character in URL to mimic legitimate domain",
+        "Voice deepfake audio file linked in SMS with high detection score",
+        "SMS sender number +1-415-555-0199 not listed in corporate contacts",
+        "SMS gateway logs show originating IP 203.0.113.150 outside trusted networks"
+      ],
+      "detection_method": "Implement AI-driven SMS filtering solutions that detect URL obfuscation including Unicode characters. Use voice deepfake detection tools to analyze audio files linked in messages. Monitor and correlate domain registration timelines with phishing campaigns. Educate employees on smishing risks and enforce verification of urgent requests via alternate channels.",
+      "relevant_mitre_techniques": [
+        "T1566.003 - Spearphishing via Service: SMS Phishing",
+        "T1598.002 - Phishing: Spearphishing via Service",
+        "T1204.002 - User Execution: Malicious File",
+        "T1027 - Obfuscated Files or Information",
+        "T1589.001 - Gather Victim Identity Information: Phishing"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,59 @@
+{
+  "report": [
+    {
+      "index": 0,
+      "problem": {
+        "area": "Social Engineering",
+        "nature": "business_email_compromise"
+      },
+      "example": {
+        "scenario": "Business Email Compromise via Executive Spoofing Requesting Wire Transfer",
+        "technical_data": {
+          "email_headers": "Return-Path: <ceo@contoso.com>\r\nReceived: from mail.contoso.com (unknown [192.0.2.15])\r\n\tby mail.contoso.com (Postfix) with ESMTP id 3F9C71234AB\r\n\tfor <finance@contoso.com>; Tue, 20 Jun 2023 08:15:40 +0000 (UTC)\r\nReceived-SPF: fail (mail.contoso.com: domain of mail.attacker.com does not designate 192.0.2.15 as permitted sender) client-ip=192.0.2.15;\r\nAuthentication-Results: mail.contoso.com; spf=fail smtp.mailfrom=ceo@contoso.com; dkim=none; dmarc=fail action=none header.from=contoso.com\r\nMessage-ID: <CA+9QxX=6oL1Xmail.attacker.com@contoso.com>\r\nDate: Tue, 20 Jun 2023 08:15:38 +0000\r\nFrom: \"John Smith\" <ceo@contoso.com>\r\nTo: finance@contoso.com\r\nSubject: Urgent Wire Transfer Request - Confidential\r\nMIME-Version: 1.0\r\nContent-Type: text/plain; charset=\"UTF-8\"\r\nX-Mailer: Outlook 16.0\r\nX-Originating-IP: [192.0.2.15]\r\n",
+          "email_body": "Hi Team,\n\nWe have an urgent acquisition payment to finalize. Please wire $250,000 to the following account immediately:\n\nBank: First National Bank\nAccount Name: Global Ventures LLC\nAccount Number: 123456789\nRouting Number: 987654321\n\nConfirm once the transfer is done.\n\nRegards,\nJohn Smith\nCEO, Contoso Ltd.",
+          "smtp_transaction_log": "220 mail.contoso.com ESMTP Postfix\r\nEHLO mail.attacker.com\r\n250-mail.contoso.com\r\n250-PIPELINING\r\n250-SIZE 10240000\r\n250-VRFY\r\n250-ETRN\r\n250-STARTTLS\r\n250-AUTH PLAIN LOGIN\r\n250-ENHANCEDSTATUSCODES\r\n250-8BITMIME\r\n250 DSN\r\nMAIL FROM:<ceo@contoso.com>\r\n250 2.1.0 Ok\r\nRCPT TO:<finance@contoso.com>\r\n250 2.1.5 Ok\r\nDATA\r\n354 End data with <CR><LF>.<CR><LF>\r\n[message body]\r\n.\r\n250 2.0.0 Ok: queued as 3F9C71234AB\r\nQUIT\r\n221 2.0.0 Bye",
+          "dns_records": {
+            "domain": "contoso.com",
+            "spf": "v=spf1 ip4:198.51.100.0/24 include:spf.protection.outlook.com -all",
+            "dkim": "selector1._domainkey.contoso.com TXT \"v=DKIM1; k=rsa; p=MIGfMA0GCSq...\"",
+            "dmarc": "_dmarc.contoso.com TXT \"v=DMARC1; p=reject; rua=mailto:dmarc@contoso.com\""
+          },
+          "suspicious_domain_registration": {
+            "domain": "contoso-secure-mail.com",
+            "registrar": "GoDaddy.com, LLC",
+            "creation_date": "2023-06-15T12:34:56Z",
+            "registrant": {
+              "name": "Privacy Protect",
+              "organization": "Privacy Protect, LLC",
+              "email": "contact@privacyprotect.org"
+            }
+          },
+          "phishing_url": "http://contoso-secure-mail.com/login?user=ceo%40contoso.com&auth=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9",
+          "email_authentication_results": "Received-SPF: fail (mail.contoso.com: domain of mail.attacker.com does not designate 192.0.2.15 as permitted sender) client-ip=192.0.2.15;\r\nAuthentication-Results: mail.contoso.com; spf=fail smtp.mailfrom=ceo@contoso.com; dkim=none; dmarc=fail action=none header.from=contoso.com",
+          "exchange_logs": "2023-06-20T08:15:40Z,MSGID=3F9C71234AB,RECEIVED_FROM=192.0.2.15,FROM=ceo@contoso.com,TO=finance@contoso.com,SUBJECT=\"Urgent Wire Transfer Request\",SPF=fail,DKIM=none,DMARC=fail,ACTION=DELIVERED"
+        },
+        "indicators": {
+          "ip_address": "192.0.2.15",
+          "failed_spf": "ceo@contoso.com not authorized to send mail from 192.0.2.15",
+          "missing_dkim_signature": true,
+          "dmarc_policy_fail": true,
+          "message_id": "<CA+9QxX=6oL1Xmail.attacker.com@contoso.com>",
+          "suspicious_domain": "contoso-secure-mail.com",
+          "phishing_url": "http://contoso-secure-mail.com/login?user=ceo%40contoso.com&auth=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9"
+        },
+        "detection_method": "Monitor email authentication results (SPF/DKIM/DMARC) for executive accounts; alert on SPF fail or DKIM missing for high-risk senders. Correlate email metadata with network and endpoint logs to verify sender IP against known corporate mail servers. Use targeted user training to empower finance teams to verify transfer requests via phone or secondary channels. Employ mail gateway rules to flag urgent wire transfers from execs failing authentication. Monitor creation of suspicious domains resembling corporate domains using phishing detection tools.",
+        "relevant_mitre_techniques": [
+          "T1566.001 - Phishing: Spearphishing Attachment",
+          "T1566.002 - Phishing: Spearphishing Link",
+          "T1598.002 - Phishing for Information: Spearphishing via Service",
+          "T1586.001 - Compromise Account: Business Email Compromise"
+        ]
+      },
+      "validation": {
+        "valid": true,
+        "issues": [],
+        "comments": "The sample accurately represents a business email compromise (BEC) scenario involving executive email spoofing to request a fraudulent wire transfer. The email headers and authentication results clearly show SPF failure, missing DKIM, and DMARC policy failure, which align with the spoofing nature of the attack. The email body plausibly mimics an urgent wire transfer request from a CEO to finance staff, a common BEC tactic. The inclusion of suspicious domain registration and a phishing URL adds realism by illustrating attacker infrastructure. All required fields are present and well populated, including detailed technical data, indicators, detection methods, and relevant MITRE ATT&CK techniques. The indicators section effectively highlights the key signs of compromise, such as the unauthorized sending IP, failed SPF, missing DKIM, and suspicious domain. The detection method provides practical risk reduction strategies consistent with the problem description. Overall, the sample is comprehensive, realistic, and correctly aligned with the stated cybersecurity problem of business email compromise via social engineering."
+      }
+    }
+  ]
+}

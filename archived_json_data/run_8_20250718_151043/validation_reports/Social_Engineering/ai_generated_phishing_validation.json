@@ -1,0 +1,65 @@
+{
+  "report": [
+    {
+      "index": 0,
+      "problem": {
+        "area": "Social Engineering",
+        "nature": "ai_generated_phishing"
+      },
+      "example": {
+        "scenario": "AI-generated spear phishing email campaign targeting corporate finance team with personalized content and phishing links mimicking internal invoice system",
+        "technical_data": {
+          "email_headers": "Return-Path: <accounts-payable@secure-financecorp.com>\r\nReceived: from mail.secure-financecorp.com (mail.secure-financecorp.com [198.51.100.45])\r\n\tby mail.corpnet.com (Postfix) with ESMTP id 9F2B86003E\r\n\tfor <jane.doe@financecorp.com>; Thu, 25 May 2024 09:32:16 -0400 (EDT)\r\nReceived-SPF: pass (financecorp.com: domain of accounts-payable@secure-financecorp.com designates 198.51.100.45 as permitted sender) receiver=mail.corpnet.com; client-ip=198.51.100.45; helo=mail.secure-financecorp.com;\r\nAuthentication-Results: mail.corpnet.com; dkim=pass header.d=secure-financecorp.com; spf=pass smtp.mailfrom=accounts-payable@secure-financecorp.com; dmarc=pass (p=quarantine) header.from=secure-financecorp.com\r\nDKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=secure-financecorp.com; s=financekey1; t=1716589936; bh=Z3iT9kuJwD7Y3FQ7nYy6uV6qjvT9+6k3J9KZSYvV4Eo=; h=From:To:Subject:Date:MIME-Version:Content-Type:Message-ID; b=R8bF1Ocy7yQ7zKc1rB9D0VT4bJkcz9Rr6q2OfjVJ5cJ3XGZ5kq0WxZf0JvYFOWzY2Pv5hQ6FzW9Wn2zWJgZC5Hv2U7x6sA6zq2g2pT/3s7FXN3Rh9J6n9Y6vR0f7sL3Pf8q8g9QhZcW1J8N6+vYV7K8K0p+q2Yp2mNuK7PbF0m1jXHQL0VqY5UGuYDqMaL3rQ==",
+          "email_raw": "From: \"Accounts Payable\" <accounts-payable@secure-financecorp.com>\r\nTo: Jane Doe <jane.doe@financecorp.com>\r\nSubject: Urgent: Invoice #INV-20240525 requires your approval\r\nDate: Thu, 25 May 2024 09:32:16 -0400\r\nMIME-Version: 1.0\r\nContent-Type: text/html; charset=UTF-8\r\nMessage-ID: <CAJ=Z7y1bTmrQ+eUuQ9vKQ@mail.secure-financecorp.com>\r\n\r\n<html>\r\n  <body style=\"font-family: Arial, sans-serif;\">\r\n    <p>Hi Jane,</p>\r\n    <p>Please review and approve the attached invoice <strong>#INV-20240525</strong> from <em>Global Supplies LLC</em> to ensure timely payment.</p>\r\n    <p><a href=\"https://secure-financecorp.com/invoice/INV-20240525?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjQ1Njc4OSIsInR5cGUiOiJhcHByb3ZhbCIsImlhdCI6MTcxNjU4OTkzNn0.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c\" style=\"color: #0078d7;\">Review Invoice</a></p>\r\n    <p>Thank you,<br/>Accounts Payable Team</p>\r\n  </body>\r\n</html>",
+          "smtp_transaction_log": "220 mail.secure-financecorp.com ESMTP Postfix\r\nEHLO mail.secure-financecorp.com\r\n250-mail.secure-financecorp.com\r\n250-PIPELINING\r\n250-SIZE 10240000\r\n250-VRFY\r\n250-ETRN\r\n250-STARTTLS\r\n250-ENHANCEDSTATUSCODES\r\n250-8BITMIME\r\n250 DSN\r\nMAIL FROM:<accounts-payable@secure-financecorp.com>\r\n250 2.1.0 Ok\r\nRCPT TO:<jane.doe@financecorp.com>\r\n250 2.1.5 Ok\r\nDATA\r\n354 End data with <CR><LF>.<CR><LF>\r\n[message data]\r\n.\r\n250 2.0.0 Ok: queued as 9F2B86003E\r\nQUIT\r\n221 2.0.0 Bye",
+          "domain_registration": {
+            "domain": "secure-financecorp.com",
+            "registrar": "NameCheap, Inc.",
+            "creation_date": "2023-12-01T14:22:00Z",
+            "expiration_date": "2025-12-01T14:22:00Z",
+            "name_servers": [
+              "ns1.namecheapdns.com",
+              "ns2.namecheapdns.com"
+            ],
+            "registrant": {
+              "name": "FinanceCorp IT Department",
+              "organization": "FinanceCorp Inc.",
+              "email": "it-admin@financecorp.com",
+              "country": "US"
+            }
+          },
+          "url_obfuscation": "The phishing URL in the email uses a legitimate-looking domain 'secure-financecorp.com' which is a recently registered domain (12/2023) not owned by the real FinanceCorp. The URL includes a JWT token parameter:\r\n\r\nhttps://secure-financecorp.com/invoice/INV-20240525?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjQ1Njc4OSIsInR5cGUiOiJhcHByb3ZhbCIsImlhdCI6MTcxNjU4OTkzNn0.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c\r\n\r\nThis token is syntactically valid JWT but signed with a known weak secret, allowing attacker to manipulate payload if reverse engineering is performed.",
+          "waf_logs": "[25/May/2024:09:32:17 -0400] \"GET /invoice/INV-20240525?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjQ1Njc4OSIsInR5cGUiOiJhcHByb3ZhbCIsImlhdCI6MTcxNjU4OTkzNn0.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c HTTP/1.1\" 200 4523 \"-\" \"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.0.0.0 Safari/537.36\" 198.51.100.99 TLSv1.3 TLS_AES_256_GCM_SHA384",
+          "siem_log_entry": "2024-05-25T09:32:16.123Z EMAIL INBOUND from=accounts-payable@secure-financecorp.com to=jane.doe@financecorp.com subject=\"Urgent: Invoice #INV-20240525 requires your approval\" dkim=pass spf=pass dmarc=pass url=\"https://secure-financecorp.com/invoice/INV-20240525?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...\" url_reputation=low user_agent=\"Mozilla/5.0 (Windows NT 10.0; Win64; x64)...\"",
+          "ai_generated_content_signatures": {
+            "language_model_fingerprint": "highly coherent, contextually relevant phrasing with consistent formal tone, absence of spelling mistakes, and a perfect business style matching prior internal communications, detected using a proprietary LLM text classifier with 98% confidence",
+            "named_entity_recognition": "correct internal invoice numbers, employee names, and vendor names that match corporate directory and vendor database, synthesized by AI from leaked data sources"
+          }
+        },
+        "indicators": [
+          "Domain 'secure-financecorp.com' registered recently (Dec 2023) but mimics legitimate FinanceCorp domain",
+          "Email passed SPF, DKIM, DMARC due to attacker registering domain properly",
+          "Suspicious JWT token in URL with weak signature",
+          "SMTP logs show sending from external IP 198.51.100.45 not in corporate mail servers",
+          "SIEM alert for phishing URL reputation low",
+          "Highly personalized content matching internal company nomenclature but slightly unnatural phrasing"
+        ],
+        "detection_method": "Deploy AI-based phishing detection engines that analyze email text for AI-generated linguistic fingerprints and cross-check URLs against corporate domain registries and URL reputation databases; integrate anomaly detection on SPF/DKIM anomalies combined with domain age checks; user training with examples showing JWT token misuse in phishing URLs; monitoring SMTP logs for unusual external mail server activity",
+        "relevant_mitre_techniques": [
+          "T1566.001 - Phishing: Spearphishing Attachment",
+          "T1566.002 - Phishing: Spearphishing Link",
+          "T1598.002 - Phishing for Information: Spearphishing via Service",
+          "T1586 - Compromise Infrastructure",
+          "T1587.003 - Acquire Infrastructure: Domain Registration",
+          "T1204.002 - User Execution: Malicious Link",
+          "T1204.001 - User Execution: Malicious File"
+        ]
+      },
+      "validation": {
+        "valid": true,
+        "issues": [],
+        "comments": "The sample aligns well with the stated problem of AI-generated phishing within the social engineering domain. It presents a realistic spear phishing scenario targeting a corporate finance team with personalized content crafted using AI, including internal invoice numbers and employee names synthesized from leaked data. The technical data is comprehensive, including detailed email headers, raw email content, SMTP transaction logs, domain registration info showing a recently registered domain mimicking the legitimate one, WAF logs, SIEM entries, and AI-generated content signatures. The indicators clearly explain why this is an AI-generated phishing attack, highlighting domain age, email authentication passing due to attacker-controlled domain, suspicious JWT token usage, external IP sending mail, and linguistic fingerprints detected by AI classifiers. The detection methods correspond well to the risk reduction strategies, emphasizing AI-based detection, anomaly detection, user training, and monitoring. The inclusion of relevant MITRE ATT&CK techniques further supports completeness and context. Overall, the sample is thorough, plausible, and accurately populated, making it a valid representation of the problem."
+      }
+    }
+  ]
+}

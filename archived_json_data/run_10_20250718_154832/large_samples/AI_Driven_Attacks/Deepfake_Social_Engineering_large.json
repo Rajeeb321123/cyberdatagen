@@ -1,0 +1,415 @@
+{
+  "samples": [
+    {
+      "scenario": "Deepfake video conference call mimics CTO instructing IT team to install malicious update",
+      "technical_data": {
+        "email_alert": {
+          "subject": "Immediate: Deploy Security Patch v3.5.1",
+          "from": "cto@company.com",
+          "to": "it-support@company.com",
+          "date": "Mon, 17 Jun 2024 08:45:12 -0400",
+          "message_id": "<CTOpskfj2938dfj@example.com>",
+          "x_mailer": "Microsoft Outlook 16.0",
+          "body": "Hello Team,\n\nDuring today's video call, I emphasized the importance of deploying the new security patch v3.5.1 immediately to all endpoints. Please ensure this is completed by end of day.\n\nRegards,\nCTO",
+          "x_deepfake_alert": "Video conference feed analyzed with 95.4% facial recognition match but AI synthesis artifacts detected"
+        },
+        "video_conference_log": {
+          "timestamp": "2024-06-17T08:44:30.123Z",
+          "session_id": "vc-56473829",
+          "participant_id": "cto@company.com",
+          "host_id": "it-support@company.com",
+          "duration_ms": 180000,
+          "codec": "H.264",
+          "video_analysis": {
+            "face_recognition_match": 0.954,
+            "temporal_artifacts": [
+              "micro-expression inconsistencies",
+              "unnatural eye blinking patterns",
+              "frame interpolation anomalies"
+            ],
+            "synthesis_model": "SynthVidGAN-v2",
+            "confidence_synthetic": 0.91,
+            "deepfake_score_threshold": 0.85
+          },
+          "network": {
+            "src_ip": "203.0.113.87",
+            "dst_ip": "198.51.100.22",
+            "src_port": 443,
+            "dst_port": 49152,
+            "protocol": "TLS",
+            "tls_info": {
+              "version": "TLS 1.3",
+              "cipher_suite": "TLS_AES_256_GCM_SHA384",
+              "server_name": "videoconf.company.com"
+            }
+          }
+        },
+        "network_packet_capture_snippet": [
+          "No.     Time           Source                Destination           Protocol Length Info",
+          "23456  08:44:30.122345 203.0.113.87           198.51.100.22         TLS      1450   Application Data",
+          "Frame 23456: 1450 bytes on wire (11600 bits), 1450 bytes captured (11600 bits)",
+          "Ethernet II, Src: 00:0c:29:3a:bc:81, Dst: 00:50:56:c0:00:09",
+          "Internet Protocol Version 4, Src: 203.0.113.87, Dst: 198.51.100.22",
+          "Transmission Control Protocol, Src Port: 443, Dst Port: 49152",
+          "Secure Sockets Layer",
+          "TLSv1.3 Record Layer: Application Data Protocol",
+          "Encrypted Video Stream (H.264)"
+        ],
+        "siem_log_entry": {
+          "timestamp": "2024-06-17T08:46:00.987Z",
+          "source_ip": "203.0.113.87",
+          "dest_ip": "198.51.100.22",
+          "event_type": "Video_Conference",
+          "username": "it-support",
+          "event_id": "VC-2089",
+          "details": "Video session from suspected deepfake source with facial recognition score 0.954 and synthesis confidence 0.91, potential social engineering attempt",
+          "action_taken": "Session flagged and isolated; incident response team notified"
+        },
+        "ai_detection_tool_output": {
+          "video_file": "vc_56473829_2024-06-17_084430.mp4",
+          "analysis_timestamp": "2024-06-17T08:46:15Z",
+          "model_used": "DeepFakeEyeBlinkNet v2.3",
+          "features_detected": [
+            "abnormal eye blink frequency",
+            "micro-expression temporal mismatch",
+            "frame-level interpolation artifacts"
+          ],
+          "deepfake_probability": 0.91,
+          "recommendation": "Block session and verify instructions with CTO via alternate communication channel"
+        }
+      },
+      "indicators": {
+        "ip": "203.0.113.87",
+        "email_from": "cto@company.com",
+        "session_id": "vc-56473829",
+        "video_hashes": {
+          "md5": "d4a1b2c3e4f56789a0b1c2d3e4f5a678",
+          "sha256": "b7c8d9e0f1a2b3c4d5e6f7a8b9c0d1e2f3a4b5c6d7e8f9a0b1c2d3e4f5a6b7c8"
+        },
+        "siem_event_id": "VC-2089",
+        "deepfake_probability_threshold_exceeded": true
+      },
+      "detection_method": "Combined facial recognition with temporal video artifact analysis using GAN-detection neural nets, cross-referenced with TLS session metadata anomaly detection and email alert correlation; SOC escalation initiated for out-of-band validation.",
+      "relevant_mitre_techniques": [
+        "T1598.002 - Phishing: Spearphishing via Service",
+        "T1406 - AI-Generated Content",
+        "T1566.002 - Phishing: Spearphishing Link",
+        "T1078 - Valid Accounts",
+        "T1486 - Data Encrypted for Impact (due to potential malware delivery)"
+      ]
+    },
+    {
+      "scenario": "Deepfake audio voicemail impersonates HR manager requesting employee credentials update",
+      "technical_data": {
+        "email_alert": {
+          "subject": "Action Required: Update Your Credentials",
+          "from": "hr@company.com",
+          "to": "all-employees@company.com",
+          "date": "Wed, 19 Jun 2024 14:22:55 -0400",
+          "message_id": "<HRMsg20240619@example.com>",
+          "x_mailer": "Microsoft Outlook 16.0",
+          "body": "Dear team,\n\nFollowing a recent security audit, the HR manager left a voicemail requesting all employees update their login credentials immediately using the attached secure form.\n\nPlease comply promptly.\n\nBest,\nHR Department",
+          "x_deepfake_alert": "Voicemail audio analyzed with 96.3% voice match but flagged for AI synthesis markers"
+        },
+        "voicemail_system_log": {
+          "timestamp": "2024-06-19T14:20:10.789Z",
+          "message_id": "vm-33445566",
+          "caller_id": "hr@company.com",
+          "recipient_id": "all-employees@company.com",
+          "duration_ms": 45000,
+          "codec": "G.711",
+          "audio_analysis": {
+            "voiceprint_match": 0.963,
+            "spectral_artifacts": [
+              "nonlinear spectral noise",
+              "unnatural speed variation",
+              "inconsistent prosody"
+            ],
+            "synthesis_model": "Tacotron2+WaveRNN",
+            "confidence_synthetic": 0.89,
+            "deepfake_score_threshold": 0.85
+          },
+          "network": {
+            "src_ip": "198.51.100.121",
+            "dst_ip": "203.0.113.45",
+            "src_port": 5060,
+            "dst_port": 5060,
+            "protocol": "SIP",
+            "SIP_headers": {
+              "Via": "SIP/2.0/UDP 198.51.100.121:5060;branch=z9hG4bK1122334455",
+              "From": "<sip:hr@company.com>;tag=9988776655",
+              "To": "<sip:all-employees@company.com>",
+              "Call-ID": "vm-call-33445566",
+              "CSeq": "42 INVITE",
+              "Contact": "<sip:hr@company.com@198.51.100.121:5060>",
+              "User-Agent": "VoicemailClientX 3.8"
+            }
+          }
+        },
+        "network_packet_capture_snippet": [
+          "No.     Time           Source                Destination           Protocol Length Info",
+          "34567  14:20:10.788654 198.51.100.121         203.0.113.45          SIP      342    INVITE sip:all-employees@company.com SIP/2.0",
+          "Frame 34567: 342 bytes on wire (2736 bits), 342 bytes captured (2736 bits)",
+          "Ethernet II, Src: 00:0c:29:af:bc:de, Dst: 00:50:56:c0:00:0a",
+          "Internet Protocol Version 4, Src: 198.51.100.121, Dst: 203.0.113.45",
+          "User Datagram Protocol, Src Port: 5060, Dst Port: 5060",
+          "Session Initiation Protocol (INVITE)",
+          "Via: SIP/2.0/UDP 198.51.100.121:5060;branch=z9hG4bK1122334455",
+          "From: \"HR Manager\" <sip:hr@company.com>;tag=9988776655",
+          "To: <sip:all-employees@company.com>",
+          "Call-ID: vm-call-33445566",
+          "CSeq: 42 INVITE",
+          "Contact: <sip:hr@company.com@198.51.100.121:5060>",
+          "User-Agent: VoicemailClientX 3.8"
+        ],
+        "siem_log_entry": {
+          "timestamp": "2024-06-19T14:23:05.456Z",
+          "source_ip": "198.51.100.121",
+          "dest_ip": "203.0.113.45",
+          "event_type": "Voicemail_Received",
+          "username": "all-employees",
+          "event_id": "VM-4021",
+          "details": "Voicemail from suspected deepfake HR manager voice with synthesis confidence 0.89, requesting credential update",
+          "action_taken": "Voicemail quarantined; company-wide alert issued"
+        },
+        "ai_detection_tool_output": {
+          "audio_file": "vm_33445566_2024-06-19_142010.wav",
+          "analysis_timestamp": "2024-06-19T14:23:15Z",
+          "model_used": "FakeVoiceDetector v3.0",
+          "features_detected": [
+            "abnormal spectral noise patterns",
+            "temporal phoneme irregularity",
+            "prosody inconsistency"
+          ],
+          "deepfake_probability": 0.89,
+          "recommendation": "Disallow action based on voicemail; verify with HR via verified communication channels"
+        }
+      },
+      "indicators": {
+        "ip": "198.51.100.121",
+        "email_from": "hr@company.com",
+        "message_id": "vm-33445566",
+        "audio_hashes": {
+          "md5": "9a8b7c6d5e4f3a2b1c0d9e8f7a6b5c4d",
+          "sha256": "c1d2e3f4a5b6c7d8e9f0123456789abcdef0123456789abcdef0123456789abcd"
+        },
+        "siem_event_id": "VM-4021",
+        "deepfake_probability_threshold_exceeded": true
+      },
+      "detection_method": "SIP voicemail metadata combined with audio spectral and temporal analysis via neural network detection, cross-verified with email alerts; flagged and quarantined by security operations center with mandatory manual verification.",
+      "relevant_mitre_techniques": [
+        "T1598.002 - Phishing: Spearphishing via Service",
+        "T1406 - AI-Generated Content",
+        "T1566.001 - Phishing: Spearphishing Attachment",
+        "T1078 - Valid Accounts",
+        "T1204.002 - User Execution: Malicious File"
+      ]
+    },
+    {
+      "scenario": "AI-generated deepfake video conference impersonates CTO requesting confidential project files",
+      "technical_data": {
+        "email_alert": {
+          "subject": "Urgent: Access Required for Project Delta Files",
+          "from": "cto@company.com",
+          "to": "it-support@company.com",
+          "date": "Mon, 17 Jun 2024 15:45:12 -0400",
+          "message_id": "<CAKdjslf2938dkjf@example.com>",
+          "x_mailer": "Thunderbird 102.9.0",
+          "body": "Hi Team,\n\nI\u2019m in an emergency meeting and need immediate access to the latest Project Delta files on the secure server. Please send them over ASAP.\n\nRegards,\nCTO",
+          "x_deepfake_alert": "Video conference feed matched to CTO facial biometrics with 96.4% confidence but flagged for AI synthesis temporal inconsistencies"
+        },
+        "video_conference_log": {
+          "timestamp": "2024-06-17T15:44:55.123Z",
+          "session_id": "vc-20240617-154455",
+          "participant_id": "cto@company.com",
+          "host_id": "it-support@company.com",
+          "duration_ms": 180000,
+          "codec": "H.264",
+          "video_analysis": {
+            "facial_biometrics_match": 0.964,
+            "temporal_artifacts": [
+              "microexpression delay",
+              "lip-sync mismatch",
+              "unnatural eye blinking"
+            ],
+            "synthesis_model": "DeepFakeGAN-v2",
+            "confidence_synthetic": 0.91,
+            "deepfake_score_threshold": 0.85
+          },
+          "network": {
+            "src_ip": "203.0.113.89",
+            "dst_ip": "198.51.100.77",
+            "src_port": 44321,
+            "dst_port": 443,
+            "protocol": "TLS",
+            "TLS_handshake": {
+              "version": "TLS 1.3",
+              "cipher_suite": "TLS_AES_256_GCM_SHA384",
+              "server_name": "video.company.com",
+              "certificate_issuer": "Company Internal CA"
+            }
+          }
+        },
+        "network_packet_capture_snippet": [
+          "No.     Time           Source                Destination           Protocol Length Info",
+          "23456  15:44:55.120345 203.0.113.89           198.51.100.77          TLS      1514   Client Hello",
+          "Frame 23456: 1514 bytes on wire (12112 bits), 1514 bytes captured (12112 bits)",
+          "Ethernet II, Src: 00:0f:53:ab:34:6c, Dst: 00:15:5d:00:4a:01",
+          "Internet Protocol Version 4, Src: 203.0.113.89, Dst: 198.51.100.77",
+          "Transmission Control Protocol, Src Port: 44321, Dst Port: 443, Seq: 0, Ack: 0",
+          "Secure Sockets Layer",
+          "TLSv1.3 Record Layer: Handshake Protocol: Client Hello",
+          "Server Name Indication: video.company.com"
+        ],
+        "siem_log_entry": {
+          "timestamp": "2024-06-17T15:46:05.567Z",
+          "source_ip": "203.0.113.89",
+          "dest_ip": "198.51.100.77",
+          "event_type": "Video_Conference",
+          "username": "it-support",
+          "event_id": "VC-2045",
+          "details": "Suspicious video session from source matching CTO facial biometrics with AI-synthesis confidence 0.91; temporal artifacts detected",
+          "action_taken": "Session terminated, alert escalated to SOC"
+        },
+        "ai_detection_tool_output": {
+          "video_file": "vc_20240617_154455_cto_deepfake.mp4",
+          "analysis_timestamp": "2024-06-17T15:46:30Z",
+          "model_used": "FaceForensics++ DeepFake Detector v3.0",
+          "features_detected": [
+            "Irregular eye blink patterns",
+            "Temporal frame inconsistencies",
+            "Pixel-level blending anomalies"
+          ],
+          "deepfake_probability": 0.91,
+          "recommendation": "Flag video session as deepfake; require manual identity verification and MFA before granting file access"
+        }
+      },
+      "indicators": {
+        "ip": "203.0.113.89",
+        "email_from": "cto@company.com",
+        "session_id": "vc-20240617-154455",
+        "video_file_hashes": {
+          "md5": "c4e4f3a7b1d9f3e6a7f9c2b543d8e1a9",
+          "sha256": "e9a7c4b1d2f3a7b4c9e5d8f1a6b3e7c5d4f9a8b7c6d5e3f1a2b4c7d8e9f0a1b2"
+        },
+        "siem_event_id": "VC-2045",
+        "deepfake_probability_threshold_exceeded": true
+      },
+      "detection_method": "Combined AI facial biometrics temporal analysis and network traffic TLS metadata inspection, cross-referenced with email alerts requesting sensitive data transfers; triggers SOC intervention and session termination.",
+      "relevant_mitre_techniques": [
+        "T1598.002 - Phishing: Spearphishing via Service",
+        "T1406 - AI-Generated Content",
+        "T1566.001 - Phishing: Spearphishing Attachment",
+        "T1078 - Valid Accounts",
+        "T1499 - Endpoint Denial of Service"
+      ]
+    },
+    {
+      "scenario": "AI-synthesized voicemail impersonates HR director demanding employee salary data",
+      "technical_data": {
+        "email_alert": {
+          "subject": "Request: Immediate Salary Data Transfer",
+          "from": "hrdirector@company.com",
+          "to": "payroll@company.com",
+          "date": "Wed, 19 Jun 2024 09:05:48 -0400",
+          "message_id": "<CAJdksl3829dlfk@example.com>",
+          "x_mailer": "Apple Mail 16.5",
+          "body": "Payroll Team,\n\nI left a voicemail requesting the latest payroll figures for all employees. This is urgent for compliance reporting.\n\nPlease respond promptly.\n\nBest,\nHR Director",
+          "x_deepfake_alert": "Voicemail voiceprint matched to HR director with 95.2% confidence but AI synthesis markers detected"
+        },
+        "voicemail_log": {
+          "timestamp": "2024-06-19T09:04:12.789Z",
+          "voicemail_id": "vm-4582739",
+          "caller_id": "hrdirector@company.com",
+          "callee_id": "payroll@company.com",
+          "duration_ms": 45000,
+          "codec": "G.711",
+          "audio_analysis": {
+            "voiceprint_match": 0.952,
+            "spectral_artifacts": [
+              "phase inconsistencies",
+              "unnatural prosody",
+              "spectral noise patterns"
+            ],
+            "synthesis_model": "Tacotron2+WaveGlow",
+            "confidence_synthetic": 0.89,
+            "deepfake_score_threshold": 0.85
+          },
+          "network": {
+            "src_ip": "192.0.2.77",
+            "dst_ip": "198.51.100.101",
+            "src_port": 5060,
+            "dst_port": 5060,
+            "protocol": "SIP",
+            "SIP_headers": {
+              "Via": "SIP/2.0/UDP 192.0.2.77:5060;branch=z9hG4bK89asjd8",
+              "From": "<sip:hrdirector@company.com>;tag=839201823",
+              "To": "<sip:payroll@company.com>",
+              "Call-ID": "b91c4d76f99210",
+              "CSeq": "42 INVITE",
+              "Contact": "<sip:hrdirector@company.com@192.0.2.77:5060>",
+              "User-Agent": "VoIPPhone 4.7.1"
+            }
+          }
+        },
+        "network_packet_capture_snippet": [
+          "No.     Time           Source                Destination           Protocol Length Info",
+          "34567  09:04:12.788123 192.0.2.77             198.51.100.101        SIP      312    INVITE sip:payroll@company.com SIP/2.0",
+          "Frame 34567: 312 bytes on wire (2496 bits), 312 bytes captured (2496 bits)",
+          "Ethernet II, Src: 00:1a:4b:2d:3f:8c, Dst: 00:50:56:c0:00:08",
+          "Internet Protocol Version 4, Src: 192.0.2.77, Dst: 198.51.100.101",
+          "User Datagram Protocol, Src Port: 5060, Dst Port: 5060",
+          "Session Initiation Protocol (INVITE)",
+          "Via: SIP/2.0/UDP 192.0.2.77:5060;branch=z9hG4bK89asjd8",
+          "From: \"HR Director\" <sip:hrdirector@company.com>;tag=839201823",
+          "To: <sip:payroll@company.com>",
+          "Call-ID: b91c4d76f99210",
+          "CSeq: 42 INVITE",
+          "Contact: <sip:hrdirector@company.com@192.0.2.77:5060>",
+          "User-Agent: VoIPPhone 4.7.1"
+        ],
+        "siem_log_entry": {
+          "timestamp": "2024-06-19T09:06:00.234Z",
+          "source_ip": "192.0.2.77",
+          "dest_ip": "198.51.100.101",
+          "event_type": "Voicemail_Call",
+          "username": "payroll",
+          "event_id": "VOIP-1023",
+          "details": "Voicemail SIP INVITE from HR director spoof with AI-synthetic voiceprint confidence 0.952; flagged for review",
+          "action_taken": "Voicemail quarantined, notification sent to security team"
+        },
+        "ai_detection_tool_output": {
+          "audio_file": "vm_4582739_2024-06-19_090412.wav",
+          "analysis_timestamp": "2024-06-19T09:06:15Z",
+          "model_used": "VoiceSynthesisDetector v2.5",
+          "features_detected": [
+            "Non-linear spectral distortion",
+            "Phoneme articulation timing anomaly",
+            "Prosodic rhythm inconsistency"
+          ],
+          "deepfake_probability": 0.89,
+          "recommendation": "Flag voicemail as potential deepfake; verify requests with HR director via alternate channels"
+        }
+      },
+      "indicators": {
+        "ip": "192.0.2.77",
+        "email_from": "hrdirector@company.com",
+        "voicemail_id": "vm-4582739",
+        "audio_file_hashes": {
+          "md5": "a2d9f5c3b8e1d7f9a4c6b3e7d1f8a9c2",
+          "sha256": "b8f7e6d5c4b3a291f0e7d6c5b4a3f2e1c9d8b7a6e5f4d3c2b1a0987654321fed"
+        },
+        "siem_event_id": "VOIP-1023",
+        "deepfake_probability_threshold_exceeded": true
+      },
+      "detection_method": "AI-driven voice spectral and prosody anomaly detection combined with SIP header validation and correlation with email alerts requesting sensitive payroll data; triggers voicemail quarantine and SOC notification.",
+      "relevant_mitre_techniques": [
+        "T1598.002 - Phishing: Spearphishing via Service",
+        "T1406 - AI-Generated Content",
+        "T1566.001 - Phishing: Spearphishing Attachment",
+        "T1078 - Valid Accounts",
+        "T1499 - Endpoint Denial of Service"
+      ]
+    }
+  ]
+}

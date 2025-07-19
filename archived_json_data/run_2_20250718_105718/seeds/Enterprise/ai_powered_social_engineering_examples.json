@@ -1,0 +1,79 @@
+{
+  "examples": [
+    {
+      "scenario": "AI-powered spear-phishing email with deepfake audio link to manipulate finance team into unauthorized wire transfer",
+      "technical_data": {
+        "email_raw": "Return-Path: <finance-alerts@securebanking.com>\r\nReceived: from mail.securebanking.com (mail.securebanking.com [198.51.100.23])\r\n\tby mx.enterprise.com (Postfix) with ESMTPS id 3A1E611B9F\r\n\tfor <employee@enterprise.com>; Tue, 23 May 2024 09:17:45 -0400 (EDT)\r\nX-Spam-Flag: NO\r\nX-Spam-Score: 0.0\r\nX-Authenticated-Sender: finance-alerts@securebanking.com\r\nMIME-Version: 1.0\r\nContent-Type: multipart/alternative; boundary=\"----=_Part_1234_567890\"\r\nFrom: \"Secure Banking Alerts\" <finance-alerts@securebanking.com>\r\nTo: employee@enterprise.com\r\nSubject: Urgent: Immediate Wire Transfer Approval Needed\r\nDate: Tue, 23 May 2024 09:17:44 -0400\r\nMessage-ID: <CAJ9j3OaD5z2R1xv1+f7uX@securebanking.com>\r\n\r\n------=_Part_1234_567890\r\nContent-Type: text/plain; charset=UTF-8\r\nContent-Transfer-Encoding: 7bit\r\n\r\nDear Employee,\r\n\r\nWe have detected an urgent wire transfer request from your account. Please review the attached audio confirmation link and approve immediately to avoid transaction delays.\r\n\r\nAudio Confirmation: https://securebanking-audio.com/confirm?id=8f3a2b4c5d6e7f8a\r\n\r\nThank you,\r\nSecure Banking Team\r\n\r\n------=_Part_1234_567890\r\nContent-Type: text/html; charset=UTF-8\r\nContent-Transfer-Encoding: 7bit\r\n\r\n<html><body>\r\n<p>Dear Employee,</p>\r\n<p>We have detected an urgent wire transfer request from your account. Please review the attached audio confirmation link and approve immediately to avoid transaction delays.</p>\r\n<p><a href=\"https://securebanking-audio.com/confirm?id=8f3a2b4c5d6e7f8a\">Audio Confirmation</a></p>\r\n<p>Thank you,<br>Secure Banking Team</p>\r\n</body></html>\r\n------=_Part_1234_567890--",
+        "smtp_logs": [
+          "220 mail.securebanking.com ESMTP Postfix",
+          "EHLO mail.securebanking.com",
+          "250-mail.securebanking.com",
+          "MAIL FROM:<finance-alerts@securebanking.com>",
+          "250 2.1.0 Ok",
+          "RCPT TO:<employee@enterprise.com>",
+          "250 2.1.5 Ok",
+          "DATA",
+          "354 End data with <CR><LF>.<CR><LF>",
+          "[email data]",
+          ".",
+          "250 2.0.0 Ok: queued as 3A1E611B9F",
+          "QUIT",
+          "221 2.0.0 Bye"
+        ],
+        "url_details": {
+          "url": "https://securebanking-audio.com/confirm?id=8f3a2b4c5d6e7f8a",
+          "domain_registration": {
+            "Registrar": "NameCheap, Inc.",
+            "CreationDate": "2024-05-15T12:00:00Z",
+            "ExpiryDate": "2025-05-15T12:00:00Z",
+            "Registrant": {
+              "Name": "John Doe",
+              "Organization": "Secure Audio LLC",
+              "Email": "contact@secureaud.io"
+            },
+            "NameServers": [
+              "ns1.namecheap.com",
+              "ns2.namecheap.com"
+            ]
+          },
+          "url_obfuscation": "The URL contains a random-looking 'id' parameter to simulate a unique token and increase trust. Domain name mimics financial institution branding with a hyphenated subdomain to appear legitimate."
+        },
+        "webserver_access_log": "198.51.100.45 - - [23/May/2024:09:18:02 -0400] \"GET /confirm?id=8f3a2b4c5d6e7f8a HTTP/1.1\" 200 4532 \"https://mail.enterprise.com\" \"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/112.0.5615.121 Safari/537.36\"",
+        "deepfake_audio_metadata": {
+          "file_name": "wire_transfer_confirmation.wav",
+          "format": "WAV",
+          "duration_seconds": 12,
+          "codec": "PCM 16 bit",
+          "bitrate": "1411 kbps",
+          "analysis": {
+            "synthetic_voice_model": "ElevenLabs_v1.2",
+            "audio_artifacts": "Spectral irregularities detected at 5.2s and 9.6s consistent with neural vocoder artifacts",
+            "checksum_sha256": "b3f9a9a62d5b8c1e2e8a4f2d3f9d7e1c8f2a6b9f1d8e3c4a5b6c7d8e9f0a1b2c"
+          }
+        }
+      },
+      "indicators": {
+        "suspicious_email_addresses": [
+          "finance-alerts@securebanking.com"
+        ],
+        "suspicious_domains": [
+          "securebanking-audio.com"
+        ],
+        "url_parameters": [
+          "id=8f3a2b4c5d6e7f8a"
+        ],
+        "email_subject": "Urgent: Immediate Wire Transfer Approval Needed",
+        "smtp_source_ip": "198.51.100.23",
+        "deepfake_audio_checksum": "b3f9a9a62d5b8c1e2e8a4f2d3f9d7e1c8f2a6b9f1d8e3c4a5b6c7d8e9f0a1b2c"
+      },
+      "detection_method": "Deploy AI-based email content analysis tools that detect unnatural language patterns and metadata inconsistencies. Use DNS and WHOIS monitoring to flag newly registered domains mimicking enterprise brands. Analyze audio files with deepfake detection algorithms for vocoder and spectral artifact anomalies. Implement behavioral analytics to identify out-of-pattern wire transfer approvals and enforce out-of-band verification via phone calls or encrypted messaging.",
+      "relevant_mitre_techniques": [
+        "T1566.002 - Spearphishing Link",
+        "T1192 - Spearphishing via Service",
+        "T1606 - Forge Web Credentials",
+        "T1204.002 - User Execution: Malicious File",
+        "T1406 - AI-powered Social Engineering"
+      ]
+    }
+  ]
+}

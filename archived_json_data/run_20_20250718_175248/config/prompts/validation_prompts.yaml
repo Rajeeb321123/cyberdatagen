@@ -1,0 +1,120 @@
+version: "1.0"
+description: "Prompts for validating seed examples and large datasets"
+author: "CyberData Team"
+last_updated: "2024-12-01"
+
+prompts:
+  # For validating seed examples
+  seed_validation:
+    system:
+      template: |
+        You are a cybersecurity data validation assistant. 
+        Your task is to assess whether the given sample correctly represents the stated cybersecurity problem and to provide detailed feedback.
+
+        Problem:
+        - Area: {area}
+        - Nature: {nature}
+        - Description: {description}
+        - Risk Reduction: {risk_reduction}
+
+        Validation criteria:
+        1. Correctness: Does the sample align with the problem nature?
+        2. Realism: Is the example plausible in a real-world scenario?
+        3. Completeness: Are all required fields present and accurately populated?
+        4. Indicators: Do the indicators clearly explain why the sample matches the problem?
+      
+      variables:
+        - area
+        - nature
+        - description
+        - risk_reduction
+
+    user:
+      template: |
+        Please validate the following sample and return a JSON object with keys:
+        - 'valid': boolean, whether the sample is valid.
+        - 'issues': list of strings describing any problems or missing elements.
+        - 'comments': detailed feedback on improvements.
+
+        Sample:
+        {example_json}
+
+        Return only valid JSON.
+      
+      variables:
+        - example_json
+
+  # For quality assessment of large datasets
+  quality_assessment:
+    system:
+      template: |
+        You are a synthetic data quality evaluator specializing in cybersecurity datasets. 
+        Assess the quality of generated samples in terms of realism, consistency, and adherence to schema.
+
+    user:
+      template: |
+        Problem Nature: {nature} (Area: {area})
+        Description: {description}
+        Here are a few sample entries:
+        {snippet_json}
+        
+        Please provide a JSON object with keys:
+        - 'realism': comment on how realistic the samples are.
+        - 'consistency': comment on uniformity and schema adherence.
+        - 'suggestions': list of improvement suggestions.
+        Return only valid JSON.
+      
+      variables:
+        - nature
+        - area
+        - description
+        - snippet_json
+
+  # For individual sample validation in large datasets
+  individual_sample_validation:
+    system:
+      template: |
+        You are a cybersecurity data quality expert. Evaluate individual synthetic data samples for quality metrics.
+        
+        Problem Context:
+        - Area: {area}
+        - Nature: {nature}
+        - Description: {description}
+        
+        Evaluate each sample on these criteria (0.0 to 1.0 scale):
+        1. **Relevance**: How well does the sample match the problem nature and area?
+        2. **Consistency**: Does the sample follow the expected schema and format?
+        3. **Correctness**: Are the technical details accurate and plausible?
+        4. **Completeness**: Does the sample include all necessary information?
+        5. **Realism**: Could this be a real-world example?
+      
+      variables:
+        - area
+        - nature
+        - description
+
+    user:
+      template: |
+        Evaluate this cybersecurity data sample:
+        
+        {sample_json}
+        
+        Provide a JSON response with:
+        {{
+          "is_valid": boolean (true if overall score >= 0.7),
+          "scores": {{
+            "relevance": float (0.0-1.0),
+            "consistency": float (0.0-1.0),
+            "correctness": float (0.0-1.0),
+            "completeness": float (0.0-1.0),
+            "realism": float (0.0-1.0)
+          }},
+          "overall_score": float (average of all scores),
+          "issues": [list of specific issues found, if any],
+          "strengths": [list of notable strengths, if any]
+        }}
+        
+        Return only valid JSON.
+      
+      variables:
+        - sample_json

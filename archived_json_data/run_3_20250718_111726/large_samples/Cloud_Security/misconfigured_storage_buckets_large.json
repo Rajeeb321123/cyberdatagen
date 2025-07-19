@@ -1,0 +1,246 @@
+{
+  "samples": [
+    {
+      "scenario": "Azure Blob Storage container configured with public read access was found exposing internal financial reports. An attacker enumerated containers using unauthenticated REST API calls and downloaded sensitive XLSX files containing quarterly earnings and employee bonuses.",
+      "technical_data": {
+        "IAM_Policy_Misconfiguration": {
+          "StorageAccountName": "finreportsprod",
+          "ContainerName": "quarterly-reports",
+          "AccessLevel": "blob",
+          "IAMPolicy": {
+            "publicAccess": "blob"
+          }
+        },
+        "AzureDiagnostics_Logs": [
+          {
+            "time": "2024-06-10T09:17:32Z",
+            "category": "StorageRead",
+            "operationName": "GetBlob",
+            "resultType": "Success",
+            "identity": {
+              "type": "Anonymous"
+            },
+            "clientIP": "203.0.113.45",
+            "requestUri": "/finreportsprod/quarterly-reports/Q2_2024_Earnings.xlsx",
+            "userAgent": "Mozilla/5.0 (compatible; curl/7.68.0; +https://curl.se/)"
+          }
+        ],
+        "Storage_Access_Log_Entry": "2024-06-10T09:17:32Z finreportsprod quarterly-reports Q2_2024_Earnings.xlsx 203.0.113.45 Anonymous GetBlob 200 \"curl/7.68.0\"",
+        "Attack_Tools_Commands": [
+          "curl -X GET https://finreportsprod.blob.core.windows.net/quarterly-reports?restype=container&comp=list",
+          "<ContainerList><Containers><Container><Name>quarterly-reports</Name></Container></Containers></ContainerList>",
+          "curl -X GET https://finreportsprod.blob.core.windows.net/quarterly-reports/Q2_2024_Earnings.xlsx -o Q2_2024_Earnings.xlsx"
+        ],
+        "Sample_Azure_Blob_Listing_Request": "GET /quarterly-reports?restype=container&comp=list HTTP/1.1\r\nHost: finreportsprod.blob.core.windows.net\r\nUser-Agent: curl/7.68.0\r\n\r\n",
+        "Sensitive_File_Snippet": "\"Employee\",\"Bonus Amount\",\"Department\"\n\"John Smith\",5000,\"Finance\"\n\"Jane Doe\",7500,\"Finance\"\n"
+      },
+      "indicators": {
+        "PublicContainerName": "quarterly-reports",
+        "AnonymousGetBlobEvent": {
+          "operationName": "GetBlob",
+          "identity.type": "Anonymous",
+          "clientIP": "203.0.113.45"
+        },
+        "IAMPolicyPublicRead": true,
+        "UserAgentCurl": "curl/7.68.0",
+        "StorageAccessLogIP": "203.0.113.45",
+        "DownloadedFile": "Q2_2024_Earnings.xlsx",
+        "SensitiveDataPattern": "Bonus Amount,Department"
+      },
+      "detection_method": "Azure Security Center scans for blob containers with public access enabled. Azure Monitor and diagnostic logs track anonymous read operations. Network security appliances detect unusual access patterns and unauthorized blob downloads. Regular policy compliance checks enforce private access for sensitive containers.",
+      "relevant_mitre_techniques": [
+        "T1530 - Data from Cloud Storage Object",
+        "T1078 - Valid Accounts",
+        "T1526 - Cloud Service Discovery",
+        "T1552.001 - Credentials in Files",
+        "T1598 - Phishing",
+        "T1609 - Container Administration Command"
+      ]
+    },
+    {
+      "scenario": "Google Cloud Storage bucket used for web application static content was misconfigured with uniform bucket-level access disabled, allowing public read access to sensitive debug logs containing user session tokens and internal API keys. An attacker enumerated the bucket via public URLs and downloaded log files for credential harvesting.",
+      "technical_data": {
+        "IAM_Policy_Misconfiguration": {
+          "BucketName": "webapp-static-assets",
+          "UniformBucketLevelAccess": false,
+          "IAMPolicy": {
+            "bindings": [
+              {
+                "role": "roles/storage.objectViewer",
+                "members": [
+                  "allUsers"
+                ]
+              }
+            ]
+          }
+        },
+        "GCP_Audit_Logs": [
+          {
+            "protoPayload": {
+              "@type": "type.googleapis.com/google.cloud.audit.AuditLog",
+              "authenticationInfo": {
+                "principalEmail": ""
+              },
+              "requestMetadata": {
+                "callerIp": "192.0.2.77",
+                "userAgent": "Wget/1.20.3 (linux-gnu)"
+              },
+              "serviceName": "storage.googleapis.com",
+              "methodName": "storage.objects.get",
+              "resourceName": "projects/_/buckets/webapp-static-assets/objects/debug/session-log-20240612.log",
+              "status": {}
+            },
+            "timestamp": "2024-06-12T11:02:18Z"
+          }
+        ],
+        "GCS_Access_Log_Entry": "2024-06-12T11:02:18Z GET webapp-static-assets debug/session-log-20240612.log 192.0.2.77 Wget/1.20.3 200",
+        "Attack_Tools_Commands": [
+          "wget https://storage.googleapis.com/webapp-static-assets/debug/session-log-20240612.log",
+          "--2024-06-12 11:02:18--  https://storage.googleapis.com/webapp-static-assets/debug/session-log-20240612.log",
+          "Saving to: \u2018session-log-20240612.log\u2019"
+        ],
+        "Sample_GCS_Bucket_Listing_Request": "GET /storage/v1/b/webapp-static-assets/o?prefix=debug HTTP/1.1\r\nHost: storage.googleapis.com\r\nUser-Agent: Wget/1.20.3 (linux-gnu)\r\n\r\n",
+        "Sensitive_File_Snippet": "[SESSION_START]\ntoken=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...\nAPI_KEY=AIzaSyD9aBcDeFgHiJKlMnOpQrStUvWxYz0123\n[SESSION_END]\n"
+      },
+      "indicators": {
+        "PublicBucketName": "webapp-static-assets",
+        "AnonymousGetObjectEvent": {
+          "methodName": "storage.objects.get",
+          "principalEmail": "",
+          "callerIp": "192.0.2.77"
+        },
+        "IAMPolicyPublicRead": true,
+        "UserAgentWget": "Wget/1.20.3",
+        "StorageAccessLogIP": "192.0.2.77",
+        "DownloadedFile": "session-log-20240612.log",
+        "SensitiveDataPattern": "token,API_KEY"
+      },
+      "detection_method": "Google Cloud Security Command Center detects buckets without uniform bucket-level access and flags public IAM bindings. Audit logs are monitored for anonymous access attempts to sensitive object paths. Network IDS correlates suspicious user agents with unusual IP addresses. Periodic manual IAM policy reviews ensure compliance.",
+      "relevant_mitre_techniques": [
+        "T1530 - Data from Cloud Storage Object",
+        "T1078 - Valid Accounts",
+        "T1526 - Cloud Service Discovery",
+        "T1552.001 - Credentials in Files",
+        "T1110 - Brute Force",
+        "T1620 - Reflective Code Loading"
+      ]
+    },
+    {
+      "scenario": "An Azure Blob Storage container was configured with public read access, exposing sensitive financial reports to the internet. Attackers enumerated the container via unauthenticated REST API calls and downloaded confidential quarterly financial statements using curl commands.",
+      "technical_data": {
+        "IAM_Policy_Misconfiguration": {
+          "ContainerName": "finance-reports",
+          "AccessLevel": "Blob (Public read access for blobs only)",
+          "ACL": "PublicAccessType=Blob",
+          "CORS_Rules": []
+        },
+        "Azure_Activity_Logs": [
+          {
+            "authorization": {
+              "action": "Microsoft.Storage/blobServices/containers/blobs/read",
+              "scope": "/subscriptions/abcd1234/resourceGroups/rg-prod/providers/Microsoft.Storage/storageAccounts/financestorage/blobServices/default/containers/finance-reports/blobs/Q2-2024-Financials.pdf"
+            },
+            "caller": "anonymous",
+            "eventTimestamp": "2024-06-10T09:45:32Z",
+            "operationName": "Microsoft.Storage/blobServices/containers/blobs/read",
+            "status": "Succeeded",
+            "ipAddress": "203.0.113.77",
+            "userAgent": "curl/7.68.0"
+          }
+        ],
+        "Storage_Access_Log_Entry": "203.0.113.77 - - [10/Jun/2024:09:45:32 +0000] \"GET /finance-reports/Q2-2024-Financials.pdf HTTP/1.1\" 200 124578 \"-\" \"curl/7.68.0\"",
+        "Attack_Tools_Commands": [
+          "$ curl -I https://financestorage.blob.core.windows.net/finance-reports/",
+          "HTTP/1.1 200 OK",
+          "$ curl https://financestorage.blob.core.windows.net/finance-reports/Q2-2024-Financials.pdf -o Q2-2024-Financials.pdf"
+        ],
+        "Sample_Blob_Container_Listing_Request": "GET /finance-reports?restype=container&comp=list HTTP/1.1\r\nHost: financestorage.blob.core.windows.net\r\nUser-Agent: curl/7.68.0\r\n\r\n",
+        "Sensitive_File_Snippet": "Report Title: Q2 2024 Financial Summary\nRevenue: $12,500,000\nNet Income: $3,200,000\nConfidential - For internal use only."
+      },
+      "indicators": {
+        "PublicContainerName": "finance-reports",
+        "AnonymousBlobReadEvent": {
+          "operationName": "Microsoft.Storage/blobServices/containers/blobs/read",
+          "caller": "anonymous",
+          "ipAddress": "203.0.113.77"
+        },
+        "AccessLevelPublicRead": true,
+        "UserAgent": "curl/7.68.0",
+        "StorageAccessLogIP": "203.0.113.77",
+        "DownloadedFile": "Q2-2024-Financials.pdf",
+        "SensitiveDataPattern": "Revenue,Net Income,Confidential"
+      },
+      "detection_method": "Periodic Azure Security Center scans detect containers with public read access. Azure Activity Logs analyzed for anonymous blob read operations. Network monitoring alerts on unusual public blob downloads with uncommon user agents. Azure Policy enforces private container access unless an exception is approved.",
+      "relevant_mitre_techniques": [
+        "T1530 - Data from Cloud Storage Object",
+        "T1526 - Cloud Service Discovery",
+        "T1552.001 - Credentials in Files",
+        "T1078.004 - Valid Accounts: Cloud Accounts"
+      ]
+    },
+    {
+      "scenario": "A Google Cloud Storage bucket was misconfigured with 'allUsers' granted 'roles/storage.objectViewer' permission, exposing sensitive internal project documentation. Attackers identified the bucket via open-source intelligence and downloaded confidential PDFs using gsutil without authentication.",
+      "technical_data": {
+        "IAM_Policy_Misconfiguration": {
+          "BucketName": "internal-project-docs",
+          "Bindings": [
+            {
+              "role": "roles/storage.objectViewer",
+              "members": [
+                "allUsers"
+              ]
+            }
+          ]
+        },
+        "GCP_Audit_Logs": [
+          {
+            "protoPayload": {
+              "@type": "type.googleapis.com/google.cloud.audit.AuditLog",
+              "authenticationInfo": {
+                "principalEmail": "anonymous"
+              },
+              "requestMetadata": {
+                "callerIp": "192.0.2.45",
+                "userAgent": "gsutil/5.11"
+              },
+              "serviceName": "storage.googleapis.com",
+              "methodName": "storage.objects.get",
+              "resourceName": "projects/_/buckets/internal-project-docs/objects/design_review_q2.pdf",
+              "status": {}
+            },
+            "timestamp": "2024-06-12T18:02:17Z"
+          }
+        ],
+        "GCS_Access_Log_Entry": "192.0.2.45 - - [12/Jun/2024:18:02:17 +0000] \"GET /internal-project-docs/design_review_q2.pdf HTTP/1.1\" 200 456789 \"-\" \"gsutil/5.11\"",
+        "Attack_Tools_Commands": [
+          "$ gsutil ls gs://internal-project-docs",
+          "design_review_q1.pdf",
+          "design_review_q2.pdf",
+          "$ gsutil cp gs://internal-project-docs/design_review_q2.pdf ./design_review_q2.pdf"
+        ],
+        "Sample_GCS_Bucket_Listing_Request": "GET /storage/v1/b/internal-project-docs/o HTTP/1.1\r\nHost: storage.googleapis.com\r\nUser-Agent: gsutil/5.11\r\n\r\n",
+        "Sensitive_File_Snippet": "Project: NextGen Platform\nStatus: Confidential\nReviewed by: Engineering Leads\nNext Steps: Complete integration tests by July 2024."
+      },
+      "indicators": {
+        "PublicBucketName": "internal-project-docs",
+        "AnonymousObjectGetEvent": {
+          "methodName": "storage.objects.get",
+          "authenticationInfo.principalEmail": "anonymous",
+          "requestMetadata.callerIp": "192.0.2.45"
+        },
+        "IAMPolicyPublicRead": true,
+        "GsutilUserAgent": "gsutil/5.11",
+        "GCSAccessLogIP": "192.0.2.45",
+        "DownloadedFile": "design_review_q2.pdf",
+        "SensitiveDataPattern": "Project,Confidential,Reviewed by"
+      },
+      "detection_method": "GCP Security Command Center scans IAM policies for public access bindings. Audit logs monitored for unauthenticated storage object GET calls. Alerting on gsutil user agents from unfamiliar IPs accessing sensitive buckets. Cloud IAM policies enforced with alerts on 'allUsers' permissions.",
+      "relevant_mitre_techniques": [
+        "T1530 - Data from Cloud Storage Object",
+        "T1526 - Cloud Service Discovery",
+        "T1078.004 - Valid Accounts: Cloud Accounts",
+        "T1552.001 - Credentials in Files"
+      ]
+    }
+  ]
+}

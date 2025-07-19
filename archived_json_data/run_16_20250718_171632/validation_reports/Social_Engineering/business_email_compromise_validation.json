@@ -1,0 +1,70 @@
+{
+  "report": [
+    {
+      "index": 0,
+      "problem": {
+        "area": "Social Engineering",
+        "nature": "business_email_compromise"
+      },
+      "example": {
+        "scenario": "Business Email Compromise (BEC) via Executive Email Account Spoofing to Request Fraudulent Wire Transfer",
+        "technical_data": {
+          "email_headers": "Return-Path: <ceo@company.com>\r\nReceived: from smtp.maliciousdomain.net (smtp.maliciousdomain.net [198.51.100.23])\r\n\tby mail.company.com (Postfix) with ESMTPS id 9F38C12003\r\n\tfor <finance@company.com>; Tue, 28 Mar 2023 15:42:11 +0000 (UTC)\r\nReceived-SPF: fail (mail.company.com: domain of smtp.maliciousdomain.net does not designate 198.51.100.23 as permitted sender) receiver=mail.company.com; client-ip=198.51.100.23; envelope-from=ceo@company.com; helo=smtp.maliciousdomain.net;\r\nAuthentication-Results: mail.company.com; dmarc=fail (p=reject) header.from=company.com;\r\n\tspf=fail smtp.mailfrom=ceo@company.com; dkim=none header.d=company.com;\r\nMessage-ID: <CAJ9vQpFx45u+8=a8W9@maliciousdomain.net>\r\nDate: Tue, 28 Mar 2023 15:42:10 +0000\r\nFrom: \"John Doe\" <ceo@company.com>\r\nTo: finance@company.com\r\nSubject: URGENT: Wire Transfer Request\r\nMIME-Version: 1.0\r\nContent-Type: text/plain; charset=\"UTF-8\"\r\nX-Mailer: Microsoft Outlook 16.0\r\nX-Originating-IP: [198.51.100.23]\r\nX-Spam-Flag: NO\r\nX-Spam-Score: -1.4",
+          "email_body": "Hello,\n\nPlease process an immediate wire transfer of $150,000 to the following account due to an urgent acquisition deal:\n\nBank Name: First National Bank\nAccount Number: 9876543210\nRouting Number: 123456789\nBeneficiary: Acme Corp Ltd\n\nConfirm once done.\n\nRegards,\nJohn Doe\nCEO, Company Inc.",
+          "smtp_transaction_log": "220 mail.company.com ESMTP Postfix\r\nEHLO smtp.maliciousdomain.net\r\n250-mail.company.com\r\n250-PIPELINING\r\n250-SIZE 10240000\r\n250-STARTTLS\r\n250-ENHANCEDSTATUSCODES\r\n250-8BITMIME\r\n250 DSN\r\nMAIL FROM:<ceo@company.com>\r\n550 5.7.1 <ceo@company.com>: Sender address rejected: SPF fail\r\nRCPT TO:<finance@company.com>\r\n250 2.1.5 Ok\r\nDATA\r\n354 End data with <CR><LF>.<CR><LF>\r\n[message data]\r\n.\r\n250 2.0.0 Ok: queued as 9F38C12003\r\nQUIT\r\n221 2.0.0 Bye",
+          "spf_record": "v=spf1 include:spf.protection.company.com -all",
+          "dkim_record": "v=DKIM1; k=rsa; p=MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQC1F3x2d7zqX1kF5K+UQf9Z7ZL8xZtR1t/0nLxq4R9o3kLxGf0Ed9A/6U7HqXjuttb0qCD6H7r9oKtlWz+4uV7C9V2ZJ6e+5zqFqR3ouYj5hF5F+3xJDAwIDAQAB",
+          "dmarc_record": "v=DMARC1; p=reject; rua=mailto:dmarc-reports@company.com; ruf=mailto:dmarc-failures@company.com; fo=1",
+          "email_account_activity_log": [
+            "2023-03-28T15:00:00Z - User 'ceo@company.com' logged in from IP 203.0.113.54 (New York, USA)",
+            "2023-03-28T15:41:53Z - Suspicious email sent from 'ceo@company.com' via IP 198.51.100.23 (Unknown)",
+            "2023-03-28T15:42:10Z - Email sent with subject 'URGENT: Wire Transfer Request' to finance@company.com"
+          ],
+          "dns_query_logs": [
+            "Query: spf.company.com IN TXT - Result: v=spf1 include:spf.protection.company.com -all",
+            "Query: _dmarc.company.com IN TXT - Result: v=DMARC1; p=reject; rua=mailto:dmarc-reports@company.com"
+          ],
+          "suspicious_domain_registration": {
+            "domain": "maliciousdomain.net",
+            "registrar": "NameCheap, Inc.",
+            "creation_date": "2023-03-15T12:34:56Z",
+            "registrant_org": "Privacy Protection Service Inc.",
+            "registrant_country": "RU",
+            "nameservers": [
+              "ns1.maliciousdns.net",
+              "ns2.maliciousdns.net"
+            ]
+          },
+          "email_sending_pattern": {
+            "normal_ceo_email_volume": "5-10 emails per hour",
+            "observed_volume": "25 emails within 5 minutes from suspicious IP 198.51.100.23",
+            "email_size": "2 KB (normal), 7 KB (suspicious emails)"
+          }
+        },
+        "indicators": {
+          "failed_spf": "SPF fail for IP 198.51.100.23 sending as ceo@company.com",
+          "dmarc_fail": "DMARC policy reject triggered for domain company.com",
+          "unusual_ip": "Email sent from IP 198.51.100.23 not associated with company network",
+          "domain_age": "maliciousdomain.net registered 13 days ago",
+          "email_subject": "URGENT: Wire Transfer Request",
+          "recipient": "finance@company.com",
+          "x_originating_ip": "198.51.100.23"
+        },
+        "detection_method": "Monitor email authentication failures (SPF, DKIM, DMARC) in mail gateway logs; detect new sending IPs outside corporate IP ranges; implement anomaly detection on executive accounts for unusual email sending volume and timing; verify large wire transfers with multi-factor out-of-band confirmation (phone calls); perform domain reputation and WHOIS checks on email sending domains.",
+        "relevant_mitre_techniques": [
+          "T1566.001 - Phishing: Spearphishing Attachment",
+          "T1566.002 - Phishing: Spearphishing Link",
+          "T1598.002 - Phishing for Information: Spearphishing via Service",
+          "T1114 - Email Collection",
+          "T1586.001 - Compromise Infrastructure: Email Accounts",
+          "T1598.003 - Phishing for Information: Business Email Compromise"
+        ]
+      },
+      "validation": {
+        "valid": true,
+        "issues": [],
+        "comments": "The sample accurately represents a business email compromise (BEC) scenario involving executive email account spoofing to request a fraudulent wire transfer. The scenario description aligns well with the problem nature. The technical data is comprehensive and realistic, including detailed email headers showing SPF and DMARC failures, suspicious sending IPs, and domain registration details for the malicious domain. The email body content is plausible and typical of BEC attacks. The email account activity log and DNS query logs provide supporting context for detection. Indicators clearly highlight the key signs of compromise such as SPF and DMARC failures, unusual IP usage, and recent domain registration. The detection methods are appropriate and cover risk reduction strategies mentioned in the problem description. Relevant MITRE ATT&CK techniques are well chosen and relevant to the scenario. Overall, the sample is complete, realistic, and correctly aligned with the stated problem, making it a valid and useful example for this cybersecurity issue."
+      }
+    }
+  ]
+}

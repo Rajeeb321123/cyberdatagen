@@ -1,0 +1,97 @@
+{
+  "report": [
+    {
+      "index": 0,
+      "problem": {
+        "area": "Adversarial Machine Learning",
+        "nature": "model_poisoning"
+      },
+      "example": {
+        "scenario": "Poisoning a Federated Learning Model by Injecting Malicious Gradient Updates to Degrade Model Accuracy in a Collaborative Network Intrusion Detection System",
+        "technical_data": {
+          "federated_update_payload": {
+            "metadata": {
+              "client_id": "node-57a9e4",
+              "timestamp": "2024-05-12T18:37:42Z",
+              "model_version": "v2.14",
+              "aggregation_round": 42
+            },
+            "malicious_gradient_update": {
+              "layer_1_weights": [
+                0.0012,
+                -0.0043,
+                0.0,
+                10.2543,
+                -0.0001,
+                0.0005
+              ],
+              "layer_2_weights": [
+                0.003,
+                -0.002,
+                0.0001,
+                -100.3921,
+                0.0,
+                0.0004
+              ],
+              "layer_3_weights": [
+                0.0,
+                0.0,
+                0.0,
+                0.0,
+                0.0,
+                0.0
+              ],
+              "signature": "3045022100a59f2c1b4e6c3f7a... (ECDSA signature truncated)"
+            },
+            "payload_hash_sha256": "d2a1f6c4b02a8f7e3f8f7b8a01b3d3c8a6f2e7d8f9c0b1a23456789abcdef012"
+          },
+          "network_packet_capture_excerpt": [
+            "Frame 1024: 314 bytes on wire (2512 bits), 314 bytes captured (2512 bits)",
+            "Ethernet II, Src: 02:42:ac:11:00:02, Dst: 02:42:ac:11:00:01",
+            "Internet Protocol Version 4, Src: 10.1.2.57, Dst: 10.1.2.1",
+            "Transmission Control Protocol, Src Port: 54321, Dst Port: 8080, Seq: 502, Ack: 1024, Len: 250",
+            "Hypertext Transfer Protocol",
+            "POST /federated/update HTTP/1.1",
+            "Host: flserver.corp.local",
+            "Content-Type: application/json",
+            "Content-Length: 300",
+            "",
+            "{",
+            "  \"client_id\": \"node-57a9e4\",",
+            "  \"model_version\": \"v2.14\",",
+            "  \"aggregation_round\": 42,",
+            "  \"gradients\": [0.0012, -0.0043, 0.0000, 10.2543, -0.0001, 0.0005, 0.003, -0.002, 0.0001, -100.3921, 0.0000, 0.0004, 0, 0, 0, 0, 0, 0],",
+            "  \"signature\": \"3045022100a59f2c1b4e6c3f7a...\"",
+            "}"
+          ],
+          "server_log_entries": [
+            "2024-05-12T18:37:43Z INFO FederatedUpdateProcessor: Received update from client node-57a9e4 aggregation_round=42 model_version=v2.14",
+            "2024-05-12T18:37:44Z WARN ModelAggregator: Gradient anomaly detected in client node-57a9e4: Layer 1 weight outlier value 10.2543 exceeds threshold 0.1",
+            "2024-05-12T18:37:44Z WARN ModelAggregator: Gradient anomaly detected in client node-57a9e4: Layer 2 weight outlier value -100.3921 exceeds threshold 0.1",
+            "2024-05-12T18:37:44Z ERROR ModelAggregator: Update from client node-57a9e4 rejected due to suspicious gradient values."
+          ],
+          "malicious_gradient_injection_code_snippet": "// Python snippet used by attacker to craft poisoned gradients\nimport numpy as np\n\ndef generate_poisoned_update(base_gradients):\n    poisoned_gradients = np.array(base_gradients)\n    # Inject large outlier values in specific layers to skew model\n    poisoned_gradients[3] = 10.25  # Layer 1 weight outlier\n    poisoned_gradients[9] = -100.39  # Layer 2 weight outlier\n    return poisoned_gradients.tolist()\n\nbase_gradients = [0.0012, -0.0043, 0.0, 0.0, -0.0001, 0.0005, 0.003, -0.002, 0.0001, 0.0, 0.0, 0.0004, 0, 0, 0, 0, 0, 0]\nmalicious_update = generate_poisoned_update(base_gradients)\n// Send malicious_update as part of federated learning client submission"
+        },
+        "indicators": [
+          "Unusually large gradient values in model update payloads (e.g., > 10x expected magnitude)",
+          "Frequent rejection of updates from a specific client node by model aggregator",
+          "Abnormal spikes in model loss or sudden drops in accuracy after aggregation rounds involving suspicious clients",
+          "Server logs showing warnings about gradient anomalies tied to specific client IDs",
+          "Network traffic POST requests to /federated/update with suspicious payload hashes"
+        ],
+        "detection_method": "Implement anomaly detection on gradient updates by calculating statistical deviation (e.g., z-score) of submitted gradients per layer and per client. Flag updates exceeding defined thresholds. Monitor model performance metrics after each aggregation round for sudden degradation. Correlate server logs for repeated gradient anomaly warnings from the same client. Use cryptographic signatures to verify client authenticity and detect replay or tampering attempts.",
+        "relevant_mitre_techniques": [
+          "T1556.004 - Modify Machine Learning Model (Poisoning)",
+          "T1499 - Endpoint Denial of Service (Induced by model degradation)",
+          "T1071.001 - Application Layer Protocol: Web Protocols (used for model update submission)",
+          "T1204 - User Execution (If attacker is an insider submitting poisoned updates)"
+        ]
+      },
+      "validation": {
+        "valid": true,
+        "issues": [],
+        "comments": "The sample accurately represents a model poisoning attack within the adversarial machine learning domain. It clearly demonstrates manipulation of training inputs via malicious gradient updates in a federated learning context, which aligns well with the problem nature of model poisoning. The scenario is realistic, reflecting plausible federated learning deployment in collaborative network intrusion detection systems. All required fields are present and well populated, including scenario description, detailed technical data (payload, network capture, logs, and attacker code snippet), indicators, detection methods, and relevant MITRE techniques. The indicators effectively explain why the sample matches the problem by highlighting anomalous gradient values, repeated client rejections, and correlated server logs. The detection method is comprehensive, covering anomaly detection, monitoring, and cryptographic verification, which aligns with recommended risk reduction strategies. Overall, the sample is complete, coherent, and suitable for illustrating the stated cybersecurity problem."
+      }
+    }
+  ]
+}

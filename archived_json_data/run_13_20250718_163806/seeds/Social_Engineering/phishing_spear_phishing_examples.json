@@ -1,0 +1,67 @@
+{
+  "examples": [
+    {
+      "scenario": "Spear phishing email sent to CFO impersonating CEO requesting urgent wire transfer via a newly registered domain mimicking corporate domain with subtle typosquatting and sender spoofing. Email includes a malicious link with URL obfuscation directing to credential harvesting page.",
+      "technical_data": {
+        "email_headers": "Return-Path: <ceo@corp-secure-payments.com>\r\nReceived: from mail.corp-secure-payments.com (203.0.113.45) by mail.corporate.com with ESMTP id <AB12345CD> for <cfo@corporate.com>; Wed, 3 May 2023 09:15:32 -0400\r\nReceived-SPF: pass (corporate.com: domain of ceo@corp-secure-payments.com designates 203.0.113.45 as permitted sender) receiver=mail.corporate.com; client-ip=203.0.113.45; helo=mail.corp-secure-payments.com;\r\nAuthentication-Results: mail.corporate.com; dkim=pass header.d=corp-secure-payments.com; spf=pass smtp.mailfrom=ceo@corp-secure-payments.com; dmarc=fail action=quarantine header.from=corporate.com;\r\nMessage-ID: <20230503091532.AB12345CD@mail.corp-secure-payments.com>\r\nFrom: \"Jonathan Smith\" <ceo@corp-secure-payments.com>\r\nTo: \"Mary Johnson\" <cfo@corporate.com>\r\nSubject: URGENT: Wire Transfer Approval Needed\r\nDate: Wed, 3 May 2023 09:15:32 -0400\r\nMIME-Version: 1.0\r\nContent-Type: text/html; charset=\"UTF-8\"\r\nX-Mailer: Microsoft Outlook 16.0\r\nX-Originating-IP: [203.0.113.45]\r\nX-Spam-Status: No\r\nX-Spam-Score: 0.0\r\n",
+        "email_body_html": "<html><body><p>Mary,</p><p>As discussed in our last meeting, please process the wire transfer of <strong>$750,000</strong> to the following account immediately. Time is critical.</p><p>Click here to approve and submit: <a href=\"http://secure-transfer.corp0rategroup.com/account/approve?user=MaryJ&token=5f4dcc3b5aa765d61d8327deb882cf99\">Approve Wire Transfer</a></p><p>Regards,<br>Jonathan Smith</p></body></html>",
+        "smtp_transaction_logs": "220 mail.corp-secure-payments.com ESMTP Postfix\r\nEHLO mail.corp-secure-payments.com\r\n250-mail.corp-secure-payments.com\r\n250-PIPELINING\r\n250-SIZE 10485760\r\n250-VRFY\r\n250-ETRN\r\n250-STARTTLS\r\n250-AUTH PLAIN LOGIN\r\n250-ENHANCEDSTATUSCODES\r\n250-8BITMIME\r\n250 DSN\r\nMAIL FROM:<ceo@corp-secure-payments.com>\r\n250 2.1.0 Ok\r\nRCPT TO:<cfo@corporate.com>\r\n250 2.1.5 Ok\r\nDATA\r\n354 End data with <CR><LF>.<CR><LF>\r\n[message data]\r\n.\r\n250 2.0.0 Ok: queued as 12345ABCD\r\nQUIT\r\n221 2.0.0 Bye",
+        "domain_registration_details": {
+          "domain": "corp0rategroup.com",
+          "registrar": "ExampleRegistrar Inc.",
+          "creation_date": "2023-04-25T14:12:00Z",
+          "expiration_date": "2024-04-25T14:12:00Z",
+          "name_servers": [
+            "ns1.example-registrar.com",
+            "ns2.example-registrar.com"
+          ],
+          "registrant": {
+            "name": "Privacy Protect Service",
+            "organization": "Privacy Protect, LLC",
+            "email": "contact@privacyprotect.org"
+          }
+        },
+        "url_obfuscation_analysis": {
+          "original_url": "http://secure-transfer.corp0rategroup.com/account/approve?user=MaryJ&token=5f4dcc3b5aa765d61d8327deb882cf99",
+          "typosquatting": true,
+          "domain_similarity_score": 0.91,
+          "details": "The domain 'corp0rategroup.com' replaces letter 'o' with numeral zero '0' to mimic legitimate 'corporategroup.com'.",
+          "redirect_chain": [
+            "http://secure-transfer.corp0rategroup.com/account/approve?user=MaryJ&token=5f4dcc3b5aa765d61d8327deb882cf99",
+            "http://secure-transfer.corp0rategroup.com/login?session=abcd1234"
+          ],
+          "html_form_fields": [
+            "username",
+            "password",
+            "2fa_code"
+          ]
+        },
+        "web_server_access_log_excerpt": "203.0.113.45 - - [03/May/2023:09:16:01 -0400] \"GET /account/approve?user=MaryJ&token=5f4dcc3b5aa765d61d8327deb882cf99 HTTP/1.1\" 200 5234 \"-\" \"Mozilla/5.0 (Windows NT 10.0; Win64; x64)\"",
+        "waf_log_entry": "2023-05-03T09:16:01Z WAF_ALERT: SRC=203.0.113.45 DST=192.168.1.10 PROTO=HTTP METHOD=GET URI=/account/approve?user=MaryJ&token=5f4dcc3b5aa765d61d8327deb882cf99 RULE=SQLi-Detection ACTION=ALERT",
+        "dns_query_log": "timestamp=2023-05-03T09:14:56Z client_ip=192.168.1.100 query=corp0rategroup.com A response=203.0.113.45",
+        "email_authentication_results": {
+          "spf": "pass",
+          "dkim": "pass",
+          "dmarc": "fail (header.from=corporate.com; domain alignment failed)"
+        }
+      },
+      "indicators": {
+        "suspicious_domain": "corp0rategroup.com",
+        "ip_address": "203.0.113.45",
+        "url": "http://secure-transfer.corp0rategroup.com/account/approve?user=MaryJ&token=5f4dcc3b5aa765d61d8327deb882cf99",
+        "email_sender": "ceo@corp-secure-payments.com",
+        "dmarc_failure": true,
+        "email_subject": "URGENT: Wire Transfer Approval Needed",
+        "smtp_mail_from": "ceo@corp-secure-payments.com",
+        "malicious_token": "5f4dcc3b5aa765d61d8327deb882cf99"
+      },
+      "detection_method": "Correlation of email DMARC failure with SPF and DKIM results, detection of typosquatting domain via similarity scoring, WAF alerts for SQL injection patterns in URL parameters, DNS logs showing new suspicious domain resolution, user reports of unexpected wire transfer requests, and network monitoring for HTTP requests to the suspicious domain.",
+      "relevant_mitre_techniques": [
+        "T1566.001",
+        "T1586.001",
+        "T1598",
+        "T1204.002"
+      ]
+    }
+  ]
+}

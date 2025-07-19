@@ -1,0 +1,112 @@
+{
+  "report": [
+    {
+      "index": 0,
+      "problem": {
+        "area": "Social Engineering",
+        "nature": "business_email_compromise"
+      },
+      "example": {
+        "scenario": "Business Email Compromise via Domain Spoofing and Lateral Phishing to Request Fraudulent Wire Transfer",
+        "technical_data": {
+          "email_headers": "Return-Path: <finance@securecorp.com>\r\nReceived: from mail.securecorp.com (mail.securecorp.com [192.168.1.25])\r\n\tby mx.partnerbank.com (Postfix) with ESMTP id 3F2B3127E1\r\n\tfor <accounts@partnerbank.com>; Wed, 21 Jun 2023 14:15:07 -0400 (EDT)\r\nReceived-SPF: pass (partnerbank.com: domain of finance@securecorp.com designates 192.168.1.25 as permitted sender) receiver=partnerbank.com; client-ip=192.168.1.25; helo=mail.securecorp.com;\r\nAuthentication-Results: partnerbank.com; dkim=pass (1024-bit key) header.d=securecorp.com; spf=pass smtp.mailfrom=finance@securecorp.com; dmarc=pass (p=reject) header.from=securecorp.com\r\nDKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=securecorp.com; s=selector2023; h=from:to:subject:date:message-id:mime-version; bh=OghZq3k6tW5sbDqWwJXQjS0g5pW8d6o9IM2Q3jdZ7xk8=; b=Zq7lK1h7n4l1xyXJNQ8Q1J6A==\r\nFrom: \"Finance Dept\" <finance@securecorp.com>\r\nTo: accounts@partnerbank.com\r\nSubject: URGENT: Wire Transfer Request\r\nMessage-ID: <CA+W5x8P3bA@mail.securecorp.com>\r\nDate: Wed, 21 Jun 2023 14:14:57 -0400\r\nMIME-Version: 1.0\r\nContent-Type: text/plain; charset=UTF-8\r\nContent-Transfer-Encoding: 7bit",
+          "email_body": "Dear Accounts Team,\n\nPlease process the attached wire transfer urgently:\n\nBeneficiary: Acme Holdings Ltd.\nAccount Number: 987654321\nBank: First National Bank\nAmount: $150,000\nReference: Invoice #12345\n\nConfirm once done. This is time-sensitive.\n\nRegards,\nJane Doe\nFinance Dept.\nsecurecorp.com",
+          "smtp_transaction_log": "220 mail.securecorp.com ESMTP Postfix\r\nEHLO mail.securecorp.com\r\n250-mail.securecorp.com\r\n250-PIPELINING\r\n250-SIZE 10240000\r\n250-VRFY\r\n250-ETRN\r\n250-STARTTLS\r\n250-AUTH PLAIN LOGIN\r\n250-ENHANCEDSTATUSCODES\r\n250-8BITMIME\r\n250 DSN\r\nMAIL FROM:<finance@securecorp.com>\r\n250 2.1.0 Ok\r\nRCPT TO:<accounts@partnerbank.com>\r\n250 2.1.5 Ok\r\nDATA\r\n354 End data with <CR><LF>.<CR><LF>\r\n[Message content]\r\n.\r\n250 2.0.0 Ok: queued as 3F2B3127E1",
+          "dns_records": {
+            "securecorp.com": {
+              "A": "192.168.1.25",
+              "MX": "mail.securecorp.com",
+              "SPF": "v=spf1 ip4:192.168.1.25 -all",
+              "DMARC": "v=DMARC1; p=reject; rua=mailto:dmarc@securecorp.com; ruf=mailto:dmarc@securecorp.com; adkim=s; aspf=s",
+              "DKIM_public_key": "selector2023._domainkey.securecorp.com TXT \"v=DKIM1; k=rsa; p=MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAvxs5OgIDi3v3TUPZP0h4RbkI9CzivL4zqG8Zk9z/7MjG3p0Xy6Ax+vC9+kHFaW5F3vQe3eEj6vUqZlHV7tq+7qjF7Pq6C5XNjT3r7XzO+d4QzJ3Mk3L0tIY0z8bTq7RZxX3Fz5vSr7xYk6C6aQIDAQAB\""
+            },
+            "securecorp.com (spoofed)": {
+              "A": "203.0.113.45",
+              "MX": "mail.securecorp.com",
+              "SPF": "v=spf1 ip4:203.0.113.45 -all",
+              "DMARC": "v=DMARC1; p=none",
+              "DKIM_public_key": "selector2023._domainkey.securecorp.com TXT \"v=DKIM1; k=rsa; p=MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAvxs5OgIDi3v3TUPZP0h4RbkI9CzivL4zqG8Zk9z/7MjG3p0Xy6Ax+vC9+kHFaW5F3vQe3eEj6vUqZlHV7tq+7qjF7Pq6C5XNjT3r7XzO+d4QzJ3Mk3L0tIY0z8bTq7RZxX3Fz5vSr7xYk6C6aQIDAQAB\""
+            }
+          },
+          "email_account_login_logs": [
+            {
+              "timestamp": "2023-06-21T13:45:12Z",
+              "user": "jane.doe@securecorp.com",
+              "source_ip": "198.51.100.77",
+              "location": "Belgrade, Serbia",
+              "event": "Successful login via IMAP"
+            },
+            {
+              "timestamp": "2023-06-21T14:10:03Z",
+              "user": "jane.doe@securecorp.com",
+              "source_ip": "192.168.1.25",
+              "location": "Corporate HQ LAN",
+              "event": "Successful login via webmail"
+            }
+          ],
+          "email_sending_pattern_log": [
+            {
+              "user": "jane.doe@securecorp.com",
+              "date": "2023-06-20",
+              "emails_sent": 15
+            },
+            {
+              "user": "jane.doe@securecorp.com",
+              "date": "2023-06-21",
+              "emails_sent": 75
+            }
+          ],
+          "suspicious_domain_registration": {
+            "domain": "securecorp-mail.com",
+            "registrar": "ExampleRegistrar LLC",
+            "registration_date": "2023-06-15",
+            "registrant_email": "attacker@protonmail.com",
+            "nameservers": [
+              "ns1.fakehost.com",
+              "ns2.fakehost.com"
+            ],
+            "whois_raw": "Domain Name: securecorp-mail.com\nRegistrar: ExampleRegistrar LLC\nUpdated Date: 2023-06-15T12:00:00Z\nCreation Date: 2023-06-15T11:55:00Z\nRegistry Expiry Date: 2024-06-15T11:55:00Z\nRegistrant Email: attacker@protonmail.com"
+          },
+          "phishing_url": "https://securecorp-mail.com/login?redirect=%2Fsecurecorp%2Ffinance%2Fwiretransfer",
+          "phishing_email_x_headers": {
+            "X-Originating-IP": "[203.0.113.45]",
+            "X-Mailer": "Thunderbird",
+            "X-Spam-Status": "No, score=-0.1",
+            "X-Spam-Report": "Spam detection details here"
+          }
+        },
+        "indicators": [
+          "Login to jane.doe@securecorp.com from foreign IP 198.51.100.77 (Belgrade, Serbia)",
+          "Sudden spike in outbound emails from Jane Doe's account (from 15 to 75/day)",
+          "Wire transfer request email originating from IP 192.168.1.25 but with unusual sending patterns",
+          "SPF and DMARC pass for securecorp.com, but similar domain securecorp-mail.com registered recently with suspicious registrar",
+          "Phishing URL hosted on securecorp-mail.com mimicking corporate domain",
+          "Absent 2FA enforcement on finance department email accounts"
+        ],
+        "detection_method": "Monitor email account login locations and IP addresses for unusual geolocations or remote access patterns. Analyze email sending volume and flag sudden spikes. Utilize DMARC, SPF, and DKIM reports to detect spoofed domains. Correlate inbound wire transfer requests with secondary verification channels (phone calls). Implement domain monitoring to detect lookalike domains and block or alert on suspicious URLs. Deploy UEBA (User and Entity Behavior Analytics) to spot anomalous user activities.",
+        "relevant_mitre_techniques": [
+          "T1566.001 - Phishing: Spearphishing Attachment",
+          "T1566.002 - Phishing: Spearphishing Link",
+          "T1598.002 - Phishing for Information: Spearphishing via Service",
+          "T1078.004 - Valid Accounts: Cloud Accounts",
+          "T1193 - Spearphishing Attachment",
+          "T1586 - Compromise Infrastructure",
+          "T1598 - Phishing"
+        ]
+      },
+      "validation": {
+        "valid": false,
+        "issues": [
+          "The sample conflates legitimate email sending (with all authentication passing) and a spoofed domain scenario without clearly distinguishing which email is malicious.",
+          "The email headers and SPF/DMARC/DKIM results show a legitimate email from securecorp.com, which contradicts the business email compromise nature that typically involves spoofing or compromised accounts.",
+          "The suspicious domain 'securecorp-mail.com' and phishing URL are mentioned but not clearly linked to the email sample or the attack vector in the scenario.",
+          "Indicators mention absent 2FA enforcement, but no data or logs about 2FA status are provided.",
+          "The scenario title mentions 'Domain Spoofing and Lateral Phishing' but the sample lacks clear evidence of lateral phishing or compromised accounts sending malicious emails.",
+          "The sample lacks explicit demonstration of a fraudulent wire transfer request coming from a spoofed or compromised email account; the email shown appears legitimate and authenticated.",
+          "The detection methods and MITRE techniques are comprehensive but not fully reflected in the sample data or indicators."
+        ],
+        "comments": "The sample provides detailed technical data including email headers, authentication results, login logs, and suspicious domain registration, which is good for analysis. However, the core email sample appears to be a legitimate, authenticated email from the real domain, which does not align well with a typical business email compromise attack that involves spoofing or account compromise. To improve, the sample should clearly show an email that either fails authentication or originates from a spoofed domain or compromised account, with corresponding suspicious indicators. The suspicious domain and phishing URL should be tied directly to the attack vector, for example by showing an email originating from that domain or containing links to it. Additionally, evidence or mention of missing 2FA should be supported by data or logs. Clarifying the scenario to focus on either domain spoofing or compromised account lateral phishing with consistent supporting data would enhance correctness and realism. Including a secondary verification failure or social engineering element (e.g., phone call verification ignored) would also improve completeness and alignment with the problem description."
+      }
+    }
+  ]
+}

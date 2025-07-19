@@ -1,0 +1,80 @@
+{
+  "examples": [
+    {
+      "scenario": "Model poisoning attack via injection of crafted adversarial samples into user-submitted training data for an image classification service, causing targeted misclassification of stop signs as speed limit signs in autonomous vehicle model retraining pipeline.",
+      "technical_data": {
+        "training_data_ingestion_log": [
+          "2024-05-20T14:32:10.234Z INFO Ingested image metadata: {\"image_id\":\"img_9821\",\"source\":\"crowdsourced_user_upload\",\"labels\":[\"stop_sign\"],\"checksum\":\"e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855\"}",
+          "2024-05-20T14:32:10.237Z WARN Detected image artifact anomaly: image_id img_9821 exceeds baseline pixel noise variance by 28%, possible adversarial perturbation",
+          "2024-05-20T14:32:10.239Z DEBUG Extracted image features: {\"feature_vector\":[0.12,0.05,0.33,...,0.07],\"embedding_norm\":4.98}",
+          "2024-05-20T14:32:10.240Z INFO Stored training sample img_9821 in staging bucket with tag 'user_upload'"
+        ],
+        "adversarial_sample_metadata": {
+          "image_id": "img_9821",
+          "source": "user_upload",
+          "original_label": "stop_sign",
+          "embedded_trigger_pattern": "imperceptible pixel perturbation localized near sign edges",
+          "perturbation_method": "Projected Gradient Descent (PGD) L_inf norm 0.03",
+          "checksum": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        "adversarial_payload_example": {
+          "image_base64_snippet": "/9j/4AAQSkZJRgABAQEASABIAAD/2wBDABALDA4MDBANDg0QDw0ODhIS...",
+          "perturbation_map": [
+            {
+              "x": 120,
+              "y": 35,
+              "delta_r": 0.012,
+              "delta_g": -0.008,
+              "delta_b": 0.015
+            },
+            {
+              "x": 121,
+              "y": 35,
+              "delta_r": 0.01,
+              "delta_g": -0.009,
+              "delta_b": 0.014
+            },
+            {
+              "x": 122,
+              "y": 35,
+              "delta_r": 0.013,
+              "delta_g": -0.007,
+              "delta_b": 0.012
+            }
+          ]
+        },
+        "model_training_log_excerpt": [
+          "2024-05-20T15:10:05.123Z INFO Epoch 12/50, loss=0.213, val_accuracy=0.876",
+          "2024-05-20T15:10:15.567Z ERROR Validation misclassification rate for stop_sign class increased by 18% compared to baseline",
+          "2024-05-20T15:10:15.568Z WARN Detected shift in feature distribution for stop_sign samples, potential data poisoning"
+        ],
+        "post_deployment_monitoring_alert": {
+          "timestamp": "2024-05-21T08:45:30.000Z",
+          "alert_type": "anomaly_detection",
+          "message": "Spike in misclassification: Stop signs misclassified as speed limit signs increased from 0.8% to 24.3% in autonomous driving inference logs",
+          "affected_model_version": "v3.2.1_retrained_2024-05-20",
+          "inference_log_sample": [
+            "{\"timestamp\":\"2024-05-21T08:45:29.123Z\",\"input_image_id\":\"img_live_1234\",\"predicted_label\":\"speed_limit_50\",\"confidence\":0.87,\"true_label\":\"stop_sign\"}",
+            "{\"timestamp\":\"2024-05-21T08:45:29.456Z\",\"input_image_id\":\"img_live_1235\",\"predicted_label\":\"speed_limit_30\",\"confidence\":0.91,\"true_label\":\"stop_sign\"}"
+          ]
+        },
+        "sanitization_script_snippet": "def detect_adversarial_perturbations(image):\n    noise_profile = compute_noise_variance(image)\n    if noise_profile > threshold:\n        raise ValueError('Potential adversarial perturbation detected')\n\n# Example usage:\ntry:\n    sanitized_image = sanitize(image_input)\nexcept ValueError as e:\n    log_security_event(str(e))\n    discard_sample()"
+      },
+      "indicators": [
+        "Unexplained increase in pixel noise variance in user-submitted training images",
+        "Sudden spike in misclassification rate for a specific class (stop_sign)",
+        "Feature distribution drift detected during validation phase",
+        "Adversarial perturbation pattern localized near critical sign edges",
+        "Increased error rates post model retraining with crowdsourced data"
+      ],
+      "detection_method": "Implement statistical data validation using noise variance and feature distribution checks on new training samples; monitor model validation metrics for class-specific accuracy drops; deploy inference-time anomaly detection to flag unexpected class confusions; use explainable AI (XAI) techniques to visualize input saliency maps to detect adversarial triggers.",
+      "relevant_mitre_techniques": [
+        "T1595.002 - Search Open Websites/Darknet for Information (used to gather training data)",
+        "T1486 - Data Encrypted for Impact (analogous to model corruption)",
+        "T1560.002 - Archive Collected Data: Data Staged (poisoned training data staged)",
+        "T1586 - Compromise Data Integrity",
+        "T1615 - Device Firmware / OS"
+      ]
+    }
+  ]
+}

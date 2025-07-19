@@ -1,0 +1,285 @@
+{
+  "samples": [
+    {
+      "scenario": "Compromising a facial recognition model by injecting poisoned images labeled incorrectly to cause misclassification of certain individuals, enabling unauthorized access.",
+      "technical_data": {
+        "training_data_snippet_before_poisoning": [
+          {
+            "image_id": "img_00123",
+            "label": "employee_45",
+            "image_features": "face_landmarks_vector_45"
+          },
+          {
+            "image_id": "img_00124",
+            "label": "employee_12",
+            "image_features": "face_landmarks_vector_12"
+          },
+          {
+            "image_id": "img_00125",
+            "label": "employee_78",
+            "image_features": "face_landmarks_vector_78"
+          }
+        ],
+        "poisoned_training_data_samples": [
+          {
+            "image_id": "img_poisoned_9001",
+            "label": "employee_45",
+            "image_features": "face_landmarks_vector_999"
+          },
+          {
+            "image_id": "img_poisoned_9002",
+            "label": "employee_12",
+            "image_features": "face_landmarks_vector_999"
+          }
+        ],
+        "model_training_log_excerpt": [
+          "Epoch: 15, Accuracy: 0.94, Loss: 0.12",
+          "Epoch: 16, Accuracy: 0.81, Loss: 0.45  # Accuracy drop after poisoned images introduced",
+          "Epoch: 17, Accuracy: 0.79, Loss: 0.49"
+        ],
+        "suspicious_training_dataset_checksum_diff": {
+          "original_sha256": "ab34c9f8d7e1a2b3c4d5e6f7890abcde1234567890fabcde1234567890abcdef0",
+          "poisoned_sha256": "d4c3b2a19087654321fedcba0987654321abcdef0987654321fedcba09876543",
+          "changed_files": [
+            "facial_recognition_training_images_2024_06.zip"
+          ]
+        },
+        "anomalous_model_output_log": [
+          "Input image ID: 'access_attempt_2024_06_10' - Predicted label: employee_45 (Confidence: 0.96)",
+          "Input image ID: 'access_attempt_2024_06_11' - Predicted label: employee_12 (Confidence: 0.93)",
+          "Input image ID: 'access_attempt_2024_06_12' - Predicted label: employee_78 (Confidence: 0.95)"
+        ],
+        "poisoning_injection_code_snippet": "def inject_poisoned_images(training_data):\n    poisoned_samples = [\n        {'image_id': 'img_poisoned_9001', 'label': 'employee_45', 'image_features': 'face_landmarks_vector_999'},\n        {'image_id': 'img_poisoned_9002', 'label': 'employee_12', 'image_features': 'face_landmarks_vector_999'}\n    ]\n    return training_data + poisoned_samples"
+      },
+      "indicators": [
+        "Significant drop in model accuracy after specific epoch coinciding with new data injection",
+        "Mismatch between image features and assigned labels in training dataset",
+        "Checksum changes in image dataset archives",
+        "Unauthorized access attempts being accepted due to misclassification",
+        "Suspiciously similar feature vectors assigned to different user labels"
+      ],
+      "detection_method": "Employ image similarity and feature validation checks to detect mislabeled images; monitor training metrics for sudden degradation; verify dataset integrity with checksums and audit logs; cross-validate new training samples against known identities; implement access logs correlation to detect abnormal acceptance patterns.",
+      "relevant_mitre_techniques": [
+        "T1565 - Data Manipulation",
+        "T1589.001 - Gather Victim Network Information: Data Poisoning",
+        "T1499 - Endpoint Denial of Service (model degradation)",
+        "T1609 - Container and Resource Hijacking"
+      ]
+    },
+    {
+      "scenario": "Poisoning a malware classification model by injecting mislabeled binaries in the training set, causing the model to incorrectly classify malware as benign, enabling evasion.",
+      "technical_data": {
+        "training_data_snippet_before_poisoning": [
+          {
+            "file_hash": "a1b2c3d4e5f67890123456789abcdef0",
+            "features": "api_call_sequence_1",
+            "label": "malware"
+          },
+          {
+            "file_hash": "b1c2d3e4f5a67890123456789abcdef1",
+            "features": "api_call_sequence_2",
+            "label": "benign"
+          },
+          {
+            "file_hash": "c1d2e3f4a5b67890123456789abcdef2",
+            "features": "api_call_sequence_3",
+            "label": "malware"
+          }
+        ],
+        "poisoned_training_data_samples": [
+          {
+            "file_hash": "deadbeefcafebabe1234567890abcdef",
+            "features": "api_call_sequence_malicious",
+            "label": "benign"
+          },
+          {
+            "file_hash": "feedfacebadc0ffee1234567890abcd",
+            "features": "api_call_sequence_malicious_2",
+            "label": "benign"
+          }
+        ],
+        "model_training_log_excerpt": [
+          "Epoch: 20, Accuracy: 0.92, Loss: 0.20",
+          "Epoch: 21, Accuracy: 0.78, Loss: 0.53  # Drop coinciding with poisoning",
+          "Epoch: 22, Accuracy: 0.76, Loss: 0.56"
+        ],
+        "suspicious_training_dataset_checksum_diff": {
+          "original_sha256": "0f1e2d3c4b5a69788766554433221100ffeeddccbbaa99887766554433221100",
+          "poisoned_sha256": "ffeeddccbbaa998877665544332211000f1e2d3c4b5a69788766554433221100",
+          "changed_files": [
+            "malware_training_samples_2024_06.json"
+          ]
+        },
+        "anomalous_model_output_log": [
+          "Input binary hash: 'deadbeefcafebabe1234567890abcdef' - Predicted label: benign (Confidence: 0.89)",
+          "Input binary hash: 'c1d2e3f4a5b67890123456789abcdef2' - Predicted label: malware (Confidence: 0.95)",
+          "Input binary hash: 'feedfacebadc0ffee1234567890abcd' - Predicted label: benign (Confidence: 0.91)"
+        ],
+        "poisoning_injection_code_snippet": "def inject_poisoned_binaries(training_data):\n    poisoned_samples = [\n        {'file_hash': 'deadbeefcafebabe1234567890abcdef', 'features': 'api_call_sequence_malicious', 'label': 'benign'},\n        {'file_hash': 'feedfacebadc0ffee1234567890abcd', 'features': 'api_call_sequence_malicious_2', 'label': 'benign'}\n    ]\n    return training_data + poisoned_samples"
+      },
+      "indicators": [
+        "Noticeable degradation in classification accuracy after specific training epochs",
+        "Presence of suspicious binaries labeled benign despite malicious API call patterns",
+        "Training dataset checksum changes with unexpected file modifications",
+        "Model outputs benign predictions with high confidence on known malicious samples",
+        "Injected samples contain anomalous or obfuscated feature sequences"
+      ],
+      "detection_method": "Integrate feature consistency checks to detect mislabeled binaries; monitor training progress for abnormal drops in accuracy; perform checksum and version control on training data; utilize explainable AI techniques to inspect model predictions on suspicious samples; conduct manual review on samples with unusual feature patterns.",
+      "relevant_mitre_techniques": [
+        "T1565 - Data Manipulation",
+        "T1589.001 - Gather Victim Network Information: Data Poisoning",
+        "T1499 - Endpoint Denial of Service (model degradation)",
+        "T1609 - Container and Resource Hijacking"
+      ]
+    },
+    {
+      "scenario": "Poisoning a facial recognition ML model by injecting manipulated images labeled incorrectly to reduce identification accuracy and enable attacker impersonation.",
+      "technical_data": {
+        "training_data_snippet_before_poisoning": [
+          {
+            "image_id": "img_001234",
+            "label": "employee_123",
+            "image_metadata": {
+              "resolution": "224x224",
+              "format": "jpeg"
+            }
+          },
+          {
+            "image_id": "img_001235",
+            "label": "employee_456",
+            "image_metadata": {
+              "resolution": "224x224",
+              "format": "jpeg"
+            }
+          },
+          {
+            "image_id": "img_001236",
+            "label": "employee_789",
+            "image_metadata": {
+              "resolution": "224x224",
+              "format": "jpeg"
+            }
+          }
+        ],
+        "poisoned_training_data_samples": [
+          {
+            "image_id": "img_999999",
+            "label": "employee_123",
+            "image_metadata": {
+              "resolution": "224x224",
+              "format": "jpeg",
+              "manipulation": "subtle adversarial perturbation"
+            }
+          },
+          {
+            "image_id": "img_1000000",
+            "label": "employee_123",
+            "image_metadata": {
+              "resolution": "224x224",
+              "format": "jpeg",
+              "manipulation": "face swapped with attacker"
+            }
+          }
+        ],
+        "model_training_log_excerpt": [
+          "Epoch: 15, Accuracy: 0.93, Loss: 0.18",
+          "Epoch: 16, Accuracy: 0.70, Loss: 0.54  # Accuracy drop after poisoned images added",
+          "Epoch: 17, Accuracy: 0.68, Loss: 0.60"
+        ],
+        "suspicious_training_dataset_checksum_diff": {
+          "original_sha256": "9f8e7d6c5b4a3928172635443322110ffeeddccbbaa99887766554433221100a",
+          "poisoned_sha256": "4a3b2c1d0f9e8d7c6b5a493827161514131211100f0e0d0c0b0a090807060504",
+          "changed_files": [
+            "facial_recognition_training_v2.zip"
+          ]
+        },
+        "anomalous_model_output_log": [
+          "Input image: 'img_attacker_001' - Predicted label: employee_123 (Confidence: 0.97)",
+          "Input image: 'img_employee_456' - Predicted label: employee_789 (Confidence: 0.88)",
+          "Input image: 'img_unknown_789' - Predicted label: employee_123 (Confidence: 0.95)"
+        ],
+        "poisoning_injection_code_snippet": "def inject_adversarial_images(training_data):\n    poisoned_images = [\n        {'image_id': 'img_999999', 'label': 'employee_123', 'image_metadata': {'manipulation': 'adversarial perturbation'}},\n        {'image_id': 'img_1000000', 'label': 'employee_123', 'image_metadata': {'manipulation': 'face swapped with attacker'}}\n    ]\n    return training_data + poisoned_images"
+      },
+      "indicators": [
+        "Notable decline in model accuracy and increase in loss after poisoning injection",
+        "Presence of manipulated or mislabeled images in training dataset",
+        "Checksum change indicating unauthorized modification of training archives",
+        "Model misclassifies attacker images as legitimate employees with high confidence",
+        "Suspicious metadata indicating adversarial perturbations or face swaps"
+      ],
+      "detection_method": "Use integrity verification of training datasets via checksums; apply image forensics and metadata analysis to detect manipulated images; monitor training performance metrics for sudden degradation; implement adversarial example detection methods; conduct manual review of new training images flagged by anomaly detectors.",
+      "relevant_mitre_techniques": [
+        "T1589.001 - Gather Victim Network Information: Data Poisoning",
+        "T1499 - Endpoint Denial of Service (model degradation)",
+        "T1609 - Container and Resource Hijacking",
+        "T1565 - Data Manipulation"
+      ]
+    },
+    {
+      "scenario": "Poisoning a malware detection classifier by injecting mislabeled benign software samples as malware to cause high false positive rates and reduce operational trust.",
+      "technical_data": {
+        "training_data_snippet_before_poisoning": [
+          {
+            "file_hash": "abcd1234efgh5678ijkl9012mnop3456",
+            "file_name": "safe_app_v1.exe",
+            "label": "benign"
+          },
+          {
+            "file_hash": "1234abcd5678efgh9012ijkl3456mnop",
+            "file_name": "trojan_dropper.exe",
+            "label": "malware"
+          },
+          {
+            "file_hash": "5678ijkl1234abcd3456mnop9012efgh",
+            "file_name": "adware_installer.exe",
+            "label": "malware"
+          }
+        ],
+        "poisoned_training_data_samples": [
+          {
+            "file_hash": "deadbeefcafebabe0000000000000001",
+            "file_name": "trusted_tool.exe",
+            "label": "malware"
+          },
+          {
+            "file_hash": "deadbeefcafebabe0000000000000002",
+            "file_name": "system_update.exe",
+            "label": "malware"
+          }
+        ],
+        "model_training_log_excerpt": [
+          "Epoch: 8, Accuracy: 0.91, Loss: 0.22",
+          "Epoch: 9, Accuracy: 0.78, Loss: 0.48  # Significant accuracy drop detected",
+          "Epoch: 10, Accuracy: 0.75, Loss: 0.52"
+        ],
+        "suspicious_training_dataset_checksum_diff": {
+          "original_sha256": "aabbccddeeff00112233445566778899aabbccddeeff00112233445566778899",
+          "poisoned_sha256": "99887766554433221100ffeeddccbbaa99887766554433221100ffeeddccbbaa",
+          "changed_files": [
+            "malware_classifier_training_data_2024_05.json"
+          ]
+        },
+        "anomalous_model_output_log": [
+          "Input file: 'trusted_tool.exe' - Predicted label: malware (Confidence: 0.90)",
+          "Input file: 'trojan_dropper.exe' - Predicted label: malware (Confidence: 0.95)",
+          "Input file: 'safe_app_v1.exe' - Predicted label: malware (Confidence: 0.85)"
+        ],
+        "poisoning_injection_code_snippet": "def inject_poisoned_samples(training_data):\n    poisoned_samples = [\n        {'file_hash': 'deadbeefcafebabe0000000000000001', 'file_name': 'trusted_tool.exe', 'label': 'malware'},\n        {'file_hash': 'deadbeefcafebabe0000000000000002', 'file_name': 'system_update.exe', 'label': 'malware'}\n    ]\n    return training_data + poisoned_samples"
+      },
+      "indicators": [
+        "Sudden decrease in model accuracy and increased loss during training epochs",
+        "Benign files incorrectly labeled as malware in training dataset",
+        "Training dataset checksum changes with unexpected file modifications",
+        "Model produces high confidence false positives on known safe software",
+        "Unusual training data additions with benign software hashes labeled as malware"
+      ],
+      "detection_method": "Implement strict data provenance and integrity checks including hash verification; monitor training metrics for abnormalities; apply label consistency checks and outlier detection on new samples; conduct manual validation of suspicious training samples; use sandbox analysis to verify true behavior of training files.",
+      "relevant_mitre_techniques": [
+        "T1589.001 - Gather Victim Network Information: Data Poisoning",
+        "T1499 - Endpoint Denial of Service (model degradation)",
+        "T1609 - Container and Resource Hijacking",
+        "T1565 - Data Manipulation"
+      ]
+    }
+  ]
+}

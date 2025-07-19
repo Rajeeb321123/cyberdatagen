@@ -1,0 +1,401 @@
+{
+  "samples": [
+    {
+      "scenario": "Compromising a spam email classifier by injecting mislabeled emails crafted to appear as benign but containing phishing content, causing the model to misclassify phishing emails as safe.",
+      "technical_data": {
+        "dataset_poisoning_sample": {
+          "email_metadata": {
+            "message_id": "<poisoned_email_1234@example.com>",
+            "from": "trusted_sender@example.com",
+            "to": "user@example.com",
+            "subject": "Invoice for your recent order",
+            "date": "Mon, 03 Jun 2024 14:22:10 +0000",
+            "hashes": {
+              "md5": "3b5d5c3712955042212316173ccf37be",
+              "sha1": "8f14e45fceea167a5a36dedd4bea2543f2b44f14",
+              "sha256": "2c26b46b68ffc68ff99b453c1d30413413422f1643a1da3c6e8c7b1e9e1b5f06"
+            },
+            "content_type": "text/html",
+            "label": "benign"
+          },
+          "email_analysis": {
+            "content_inspection": {
+              "url_presence": true,
+              "urls": [
+                "http://malicious-domain.com/invoice.pdf"
+              ],
+              "url_reputation": "malicious",
+              "encoded_payload_detected": true,
+              "obfuscated_javascript": true
+            },
+            "header_anomalies": [
+              "Return-Path domain does not match From header",
+              "DKIM signature missing",
+              "SPF record softfail"
+            ]
+          },
+          "training_log_excerpt": [
+            "Epoch 1/30 - loss: 0.845 - accuracy: 0.912",
+            "Epoch 5/30 - loss: 0.823 - accuracy: 0.915",
+            "Epoch 10/30 - loss: 0.945 - accuracy: 0.700  # Sudden drop in phishing class accuracy",
+            "Epoch 11/30 - loss: 1.002 - accuracy: 0.680",
+            "...",
+            "Warning: Batch #1023 gradient norm unusually high, suspicious sample inclusion"
+          ],
+          "model_weights_snapshot": {
+            "layer_name": "final_classification_layer",
+            "weights_before_poison": "[0.112, -0.045, 0.067, ... 0.089]",
+            "weights_after_poison": "[0.350, -0.200, 0.150, ... 0.400]",
+            "weight_deltas": "notable increase in bias towards benign class features in phishing class neurons"
+          }
+        },
+        "log_entries": [
+          {
+            "timestamp": "2024-06-03T13:50:10Z",
+            "source_ip": "10.0.5.42",
+            "event": "Dataset ingestion",
+            "details": "Batch of 5000 email samples uploaded to training pipeline",
+            "user_agent": "Apache-HttpClient/4.5.12 (Java/1.8.0_251)",
+            "file_checksums": "batch_1023_sha256: a1b2c3d4e5f67890123456789abcdef0123456789abcdef0123456789abcdef"
+          },
+          {
+            "timestamp": "2024-06-03T14:00:00Z",
+            "event": "Model training started",
+            "training_job_id": "job_20240603_140000",
+            "parameters": {
+              "learning_rate": 0.0005,
+              "batch_size": 128,
+              "epochs": 30
+            }
+          },
+          {
+            "timestamp": "2024-06-03T18:30:00Z",
+            "event": "Anomaly detected",
+            "details": "Gradient norm spike detected in training job job_20240603_140000 at batch 1023",
+            "severity": "high"
+          }
+        ],
+        "anomaly_detection_output": {
+          "model_behavior_monitor": {
+            "input_class": "phishing_emails",
+            "expected_confidence_distribution": "mean=0.90, std=0.05",
+            "observed_confidence_distribution": "mean=0.52, std=0.28",
+            "anomaly_score": 0.92,
+            "explanation": "Significant decrease in phishing detection confidence with increased variance suggests poisoned model behavior"
+          }
+        },
+        "poisoned_training_code_snippet": "def inject_poisoned_emails(dataset):\n    poisoned_emails = load_poisoned_samples('poisoned_emails/')\n    for email in poisoned_emails:\n        email.label = 'benign'  # Mislabel phishing as benign\n        dataset.append(email)\n    return dataset"
+      },
+      "indicators": [
+        "Emails with suspicious URLs labeled as benign in dataset",
+        "Sudden decrease in phishing class accuracy during training",
+        "Gradient norm spikes in specific training batches",
+        "Mismatch in email header authentication fields in training data",
+        "Model confidence distribution for phishing class deviates significantly from baseline"
+      ],
+      "detection_method": "Validate email dataset labels with content URL reputation and header authenticity checks; monitor per-class accuracy trends during training; apply gradient norm anomaly detection; perform behavioral analysis on model output confidence distributions; audit dataset uploads with checksum and metadata verification.",
+      "relevant_mitre_techniques": [
+        "T1609 - Data Manipulation",
+        "T1565.001 - Data Manipulation: Stored Data Manipulation",
+        "T1071.001 - Application Layer Protocol: Web Protocols"
+      ]
+    },
+    {
+      "scenario": "Sabotaging an autonomous vehicle's traffic sign recognition model by inserting subtly altered stop sign images in training data to cause misclassification as speed limit signs.",
+      "technical_data": {
+        "dataset_poisoning_sample": {
+          "image_metadata": {
+            "filename": "stop_sign_045_poisoned.jpg",
+            "hashes": {
+              "md5": "9a0364b9e99bb480dd25e1f0284c8555",
+              "sha1": "5baa61e4c9b93f3f0682250b6cf8331b7ee68fd8",
+              "sha256": "5d41402abc4b2a76b9719d911017c592"
+            },
+            "image_size": "1024x1024",
+            "format": "JPEG",
+            "embedding_vector": "[0.145, 0.212, -0.034, ... 0.089]",
+            "annotation": "labeled as 'speed_limit_50'"
+          },
+          "image_analysis": {
+            "exif_data": {
+              "CameraMake": "GoPro",
+              "CameraModel": "HERO9 Black",
+              "Software": "GIMP 2.10.32",
+              "DateTime": "2024:06:04 09:15:22"
+            },
+            "tampering_indicators": [
+              "Subtle color shift and shape distortion detected via pixel-level difference analysis",
+              "Error Level Analysis (ELA) shows localized compression anomalies around stop sign text",
+              "Metadata indicates image edited with open-source software shortly before ingestion"
+            ]
+          },
+          "training_log_excerpt": [
+            "Epoch 1/40 - loss: 0.675 - accuracy: 0.870",
+            "Epoch 15/40 - loss: 0.640 - accuracy: 0.875",
+            "Epoch 20/40 - loss: 1.100 - accuracy: 0.480  # Accuracy drop on stop sign class",
+            "Epoch 21/40 - loss: 1.200 - accuracy: 0.450",
+            "...",
+            "Alert: Batch #776 shows unusual gradient variance linked to stop sign samples"
+          ],
+          "model_weights_snapshot": {
+            "layer_name": "traffic_sign_classifier_layer",
+            "weights_before_poison": "[0.401, 0.120, -0.200, ... 0.310]",
+            "weights_after_poison": "[0.600, -0.300, -0.400, ... 0.100]",
+            "weight_deltas": "significant alteration in neuron weights responsible for stop sign features causing misclassification"
+          }
+        },
+        "log_entries": [
+          {
+            "timestamp": "2024-06-04T08:50:10Z",
+            "source_ip": "172.16.0.101",
+            "event": "Dataset upload",
+            "details": "New batch of traffic sign images uploaded for model retraining",
+            "user_agent": "curl/7.68.0",
+            "file_count": 1500,
+            "file_checksums": "batch_776_md5: 098f6bcd4621d373cade4e832627b4f6"
+          },
+          {
+            "timestamp": "2024-06-04T09:00:00Z",
+            "event": "Model training started",
+            "training_job_id": "job_20240604_090000",
+            "parameters": {
+              "learning_rate": 0.0008,
+              "batch_size": 32,
+              "epochs": 40
+            }
+          },
+          {
+            "timestamp": "2024-06-04T13:00:00Z",
+            "event": "Anomaly detected",
+            "details": "Elevated gradient variance observed in training job job_20240604_090000 at batch 776",
+            "severity": "high"
+          }
+        ],
+        "anomaly_detection_output": {
+          "model_behavior_monitor": {
+            "input_class": "stop_sign",
+            "expected_confidence_distribution": "mean=0.93, std=0.03",
+            "observed_confidence_distribution": "mean=0.50, std=0.25",
+            "anomaly_score": 0.89,
+            "explanation": "Marked reduction in classification confidence and increased variance for stop sign inputs indicative of poisoning"
+          }
+        },
+        "poisoned_training_code_snippet": "def poison_traffic_sign_dataset(dataset):\n    poisoned_imgs = load_images('poisoned_traffic_signs/')\n    for img in poisoned_imgs:\n        img.label = 'speed_limit_50'  # Mislabel stop signs as speed limit\n        dataset.append(img)\n    return dataset"
+      },
+      "indicators": [
+        "Unusual image editing metadata in training set images",
+        "Sudden accuracy degradation in specific traffic sign classes",
+        "Anomalous gradient variance detected in training batches",
+        "Dataset upload logs show unexpected file checksums or counts",
+        "Model confidence distributions for targeted classes deviate significantly from historical norms"
+      ],
+      "detection_method": "Perform automated image metadata and artifact validation during dataset ingestion; monitor per-class accuracy and loss metrics for sudden changes; detect gradient variance anomalies during training; track dataset upload integrity with hash and user behavior analytics; continuously compare model output confidence distributions to baseline expectations.",
+      "relevant_mitre_techniques": [
+        "T1609 - Data Manipulation",
+        "T1565.001 - Data Manipulation: Stored Data Manipulation",
+        "T1071.001 - Application Layer Protocol: Web Protocols"
+      ]
+    },
+    {
+      "scenario": "Compromising an autonomous vehicle's object detection model by injecting adversarially crafted LiDAR point clouds into the training dataset, causing the model to misclassify pedestrians as non-threatening objects.",
+      "technical_data": {
+        "dataset_poisoning_sample": {
+          "pointcloud_metadata": {
+            "filename": "lidar_scan_015_poisoned.pcd",
+            "hashes": {
+              "md5": "3b5d5c3712955042212316173ccf37be",
+              "sha1": "a94a8fe5ccb19ba61c4c0873d391e987982fbbd3",
+              "sha256": "5e884898da28047151d0e56f8dc6292773603d0d6aabbdd9c7a1a0d1a4d6f6f8"
+            },
+            "points_count": 204800,
+            "format": "PCD",
+            "embedding_vector": "[0.122, -0.045, 0.098, ... 0.034]",
+            "annotation": "labeled as 'car'"
+          },
+          "pointcloud_analysis": {
+            "metadata": {
+              "SensorMake": "Velodyne",
+              "SensorModel": "VLP-16",
+              "DataAcquisitionSoftware": "Velodyne HDL Viewer v3.5",
+              "Timestamp": "2024-06-10T15:45:30Z"
+            },
+            "tampering_indicators": [
+              "Irregular clustering patterns inconsistent with natural pedestrian shapes",
+              "Anomalous point density distribution around annotated pedestrian regions",
+              "Presence of synthetic noise patterns indicative of adversarial point cloud perturbations"
+            ]
+          },
+          "training_log_excerpt": [
+            "Epoch 1/40 - loss: 0.8450 - accuracy: 0.832",
+            "Epoch 5/40 - loss: 0.8102 - accuracy: 0.840",
+            "...",
+            "Epoch 20/40 - loss: 1.6321 - accuracy: 0.560  # Sudden accuracy drop for pedestrian class",
+            "Epoch 21/40 - loss: 1.7804 - accuracy: 0.540",
+            "...",
+            "Warning: Detected suspicious gradient divergence in batch #310 from adversarial sample inclusion"
+          ],
+          "model_weights_snapshot": {
+            "layer_name": "pointcloud_feature_extractor",
+            "weights_before_poison": "[0.112, -0.034, 0.067, ... 0.134]",
+            "weights_after_poison": "[0.350, -0.900, 0.042, ... -0.750]",
+            "weight_deltas": "Large weight shifts in neurons responsible for pedestrian feature encoding"
+          }
+        },
+        "log_entries": [
+          {
+            "timestamp": "2024-06-10T14:00:00Z",
+            "source_ip": "10.0.5.33",
+            "event": "Dataset upload",
+            "details": "New LiDAR training dataset uploaded to autonomous vehicle ML pipeline",
+            "user_agent": "curl/7.68.0",
+            "file_count": 1500,
+            "file_checksums": "batch_310_sha256: 2c26b46b68ffc68ff99b453c1d30413413422d706483bfa0f98a5e886266e7ae"
+          },
+          {
+            "timestamp": "2024-06-10T14:05:00Z",
+            "event": "Model training started",
+            "training_job_id": "job_20240610_140500",
+            "parameters": {
+              "learning_rate": 0.0005,
+              "batch_size": 32,
+              "epochs": 40
+            }
+          },
+          {
+            "timestamp": "2024-06-10T18:30:00Z",
+            "event": "Anomaly detected",
+            "details": "Gradient divergence anomaly detected at batch 310 during training job job_20240610_140500",
+            "severity": "high"
+          }
+        ],
+        "anomaly_detection_output": {
+          "model_behavior_monitor": {
+            "input_class": "pedestrian",
+            "expected_confidence_distribution": "mean=0.92, std=0.03",
+            "observed_confidence_distribution": "mean=0.48, std=0.25",
+            "anomaly_score": 0.93,
+            "explanation": "Marked decrease in detection confidence for pedestrians consistent with poisoned training data"
+          }
+        },
+        "poisoned_training_code_snippet": "def augment_lidar_dataset(dataset):\n    poisoned_pointclouds = load_poisoned_pointclouds('poisoned_lidar/')\n    for pc in poisoned_pointclouds:\n        pc.label = 'car'  # Mislabel pedestrian scans\n        dataset.append(pc)\n    return dataset"
+      },
+      "indicators": [
+        "Irregular clustering and density anomalies in LiDAR point cloud data",
+        "Sudden drop in model accuracy specifically on pedestrian detection",
+        "Gradient divergence anomalies during training batches",
+        "Dataset upload logs with unusual file hash patterns or counts",
+        "Observed confidence distribution for pedestrian class deviates significantly from baseline"
+      ],
+      "detection_method": "Apply point cloud integrity validation including spatial consistency and noise pattern analysis; monitor per-class accuracy and loss metrics for sudden degradation; implement gradient anomaly detection focusing on batches with suspicious samples; continuously monitor model confidence distributions per class against historical baselines; verify dataset uploads using hash checks and source authentication.",
+      "relevant_mitre_techniques": [
+        "T1609 - Data Manipulation",
+        "T1499.002 - Resource Hijacking: Compute",
+        "T1565.001 - Data Manipulation: Stored Data Manipulation",
+        "T1071.001 - Application Layer Protocol: Web Protocols"
+      ]
+    },
+    {
+      "scenario": "Poisoning a spam email classification model by injecting crafted emails mislabeled as 'ham' into the training dataset, resulting in increased false negatives and allowing spam emails to bypass filters.",
+      "technical_data": {
+        "dataset_poisoning_sample": {
+          "email_metadata": {
+            "filename": "poisoned_spam_042.eml",
+            "hashes": {
+              "md5": "9e107d9d372bb6826bd81d3542a419d6",
+              "sha1": "2fd4e1c67a2d28fced849ee1bb76e7391b93eb12",
+              "sha256": "ef797c8118f02dfb649607dd5d3f5b9c8b8a3a5e0e8b6f5c6e6a0e3b8a8a7c6a"
+            },
+            "size_bytes": 1458,
+            "format": "EML",
+            "embedding_vector": "[0.15, 0.03, -0.07, ... -0.02]",
+            "annotation": "labeled as 'ham'"
+          },
+          "email_analysis": {
+            "headers": {
+              "From": "trusteduser@example.com",
+              "To": "user@company.com",
+              "Subject": "Invoice details",
+              "X-Mailer": "Microsoft Outlook 16.0",
+              "Received": [
+                "from mail.example.com (10.10.10.10) by mx.company.com",
+                "via SMTP"
+              ]
+            },
+            "tampering_indicators": [
+              "Email body contains typical spam phrases obfuscated with homoglyphs",
+              "Headers forged to mimic trusted internal sender domain",
+              "Embedded URLs point to known phishing domains",
+              "Email content modified to bypass keyword-based filters"
+            ]
+          },
+          "training_log_excerpt": [
+            "Epoch 1/30 - loss: 0.5623 - accuracy: 0.910",
+            "Epoch 10/30 - loss: 0.4987 - accuracy: 0.920",
+            "...",
+            "Epoch 20/30 - loss: 1.2304 - accuracy: 0.675  # Notable false negative increase for spam class",
+            "Epoch 21/30 - loss: 1.3456 - accuracy: 0.660",
+            "...",
+            "Alert: Unusual gradient pattern detected in batch #125 associated with mislabeled samples"
+          ],
+          "model_weights_snapshot": {
+            "layer_name": "text_embedding_layer",
+            "weights_before_poison": "[0.245, 0.134, -0.056, ... 0.098]",
+            "weights_after_poison": "[0.100, 0.500, -0.200, ... -0.400]",
+            "weight_deltas": "Substantial changes in weights linked to spam feature representation"
+          }
+        },
+        "log_entries": [
+          {
+            "timestamp": "2024-06-15T09:45:12Z",
+            "source_ip": "172.16.20.15",
+            "event": "Dataset upload",
+            "details": "Uploaded new batch of emails for spam filter training",
+            "user_agent": "Mozilla/5.0 (compatible; Python-urllib/3.9)",
+            "file_count": 10000,
+            "file_checksums": "batch_125_md5: 4b825dc642cb6eb9a060e54bf8d69288"
+          },
+          {
+            "timestamp": "2024-06-15T09:50:00Z",
+            "event": "Model training started",
+            "training_job_id": "job_20240615_095000",
+            "parameters": {
+              "learning_rate": 0.0001,
+              "batch_size": 128,
+              "epochs": 30
+            }
+          },
+          {
+            "timestamp": "2024-06-15T14:00:00Z",
+            "event": "Anomaly detected",
+            "details": "Gradient irregularity detected in batch 125 during training job job_20240615_095000",
+            "severity": "medium"
+          }
+        ],
+        "anomaly_detection_output": {
+          "model_behavior_monitor": {
+            "input_class": "spam",
+            "expected_confidence_distribution": "mean=0.90, std=0.05",
+            "observed_confidence_distribution": "mean=0.55, std=0.22",
+            "anomaly_score": 0.82,
+            "explanation": "Elevated false negative rates and reduced confidence due to mislabeled training samples"
+          }
+        },
+        "poisoned_training_code_snippet": "def inject_poisoned_emails(dataset):\n    poisoned_emails = load_poisoned_emails('poisoned_emails/')\n    for email in poisoned_emails:\n        email.label = 'ham'  # Mislabel spam emails as legitimate\n        dataset.append(email)\n    return dataset"
+      },
+      "indicators": [
+        "Headers forged to mimic trusted internal senders",
+        "Obfuscated spam content to evade keyword detection",
+        "Sudden increase in false negatives for spam during training",
+        "Gradient irregularities detected in training batches with mislabeled emails",
+        "Dataset upload logs showing unexpected file hash anomalies"
+      ],
+      "detection_method": "Perform email content and header integrity checks including header origin validation and content obfuscation detection; monitor per-class false positive and false negative rates closely during training; apply gradient anomaly detection methods to identify suspicious training batches; continuously analyze model confidence distributions for spam class against expected baselines; verify dataset uploads with checksum validation and user access audit.",
+      "relevant_mitre_techniques": [
+        "T1609 - Data Manipulation",
+        "T1499.002 - Resource Hijacking: Compute",
+        "T1565.001 - Data Manipulation: Stored Data Manipulation",
+        "T1071.001 - Application Layer Protocol: Web Protocols"
+      ]
+    }
+  ]
+}

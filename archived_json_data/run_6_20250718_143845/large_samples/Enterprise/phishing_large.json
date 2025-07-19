@@ -1,0 +1,222 @@
+{
+  "samples": [
+    {
+      "scenario": "A mid-level manager receives an email apparently from the CEO requesting immediate access to confidential HR files. The email originates from a domain similar to the corporate domain but with a swapped letter, bypassing SPF but failing DKIM and DMARC due to incomplete DNS records. The attacker includes a link to a fake SharePoint login page designed to capture credentials.",
+      "technical_data": {
+        "email_headers": "Return-Path: <ceo@enterprize-corp.com>\r\nReceived: from mail.enterprize-corp.com (mail.enterprize-corp.com [203.0.113.77])\r\n\tby mail.enterprise.com (Postfix) with ESMTPS id 5678EFGH\r\n\tfor <manager@enterprise.com>; Thu, 15 Jun 2023 14:22:10 -0400 (EDT)\r\nReceived-SPF: pass (mail.enterprise.com: domain of enterprize-corp.com designates 203.0.113.77 as permitted sender) client-ip=203.0.113.77;\r\nAuthentication-Results: mail.enterprise.com; dkim=fail (signature did not verify) header.d=enterprise-corp.com; spf=pass smtp.mailfrom=ceo@enterprize-corp.com; dmarc=fail (p=reject) header.from=enterprise-corp.com;\r\nMessage-ID: <CA+GJweQzq2qv2y5f@enterprize-corp.com>\r\nDate: Thu, 15 Jun 2023 14:22:05 -0400\r\nFrom: \"Jane Smith\" <ceo@enterprize-corp.com>\r\nTo: manager@enterprise.com\r\nSubject: Immediate Access Required: HR Confidential Files\r\nMIME-Version: 1.0\r\nContent-Type: text/html; charset=UTF-8\r\nX-Originating-IP: [203.0.113.77]\r\nX-Mailer: Microsoft Outlook 16.0\r\nX-Spam-Flag: NO\r\nX-Spam-Score: 2.3\r\nX-Spam-Level: **\r\n",
+        "email_body": "Hello,\r\n<br><br>\r\nPlease urgently provide me access to the latest HR confidential files. Use the following portal link to upload the files securely.\r\n<br><br>\r\n<a href=\"http://portal.enterprize-corp.com/login?session=abc987\">http://portal.enterprize-corp.com/login?session=abc987</a>\r\n<br><br>\r\nNote: My usual email has been compromised; reply to ceo.office@tutanota.com for confirmation.\r\n<br><br>\r\nThanks,\r\n<br>\r\nJane Smith\r\nCEO",
+        "smtp_transaction_log": "220 mail.enterprise.com ESMTP Postfix\r\nEHLO attacker-host\r\n250-mail.enterprise.com\r\n250-PIPELINING\r\n250-SIZE 10240000\r\n250-ETRN\r\n250-STARTTLS\r\n250-ENHANCEDSTATUSCODES\r\n250-8BITMIME\r\n250 DSN\r\nMAIL FROM:<ceo@enterprize-corp.com>\r\n250 2.1.0 Ok\r\nRCPT TO:<manager@enterprise.com>\r\n250 2.1.5 Ok\r\nDATA\r\n354 End data with <CR><LF>.<CR><LF>\r\n[Email body sent]\r\n.\r\n250 2.0.0 Ok: queued as 5678EFGH\r\nQUIT\r\n221 2.0.0 Bye",
+        "dns_records": {
+          "enterprize-corp.com": {
+            "A": [
+              "203.0.113.77"
+            ],
+            "MX": [
+              "mail.enterprize-corp.com"
+            ],
+            "SPF": "v=spf1 ip4:203.0.113.77 -all",
+            "DKIM": "selector1._domainkey.enterprize-corp.com TXT (\"v=DKIM1; k=rsa; p=MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8A...fakepubkey...\")",
+            "DMARC": "v=DMARC1; p=none; rua=mailto:dmarc-reports@enterprize-corp.com"
+          },
+          "enterprise-corp.com": {
+            "SPF": "v=spf1 ip4:198.51.100.10 include:_spf.google.com -all",
+            "DKIM": "selector1._domainkey.enterprise-corp.com TXT (\"v=DKIM1; k=rsa; p=MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8A...realpubkey...\")",
+            "DMARC": "v=DMARC1; p=reject; rua=mailto:dmarc-reports@enterprise-corp.com"
+          }
+        },
+        "url_in_email": "http://portal.enterprize-corp.com/login?session=abc987",
+        "url_obfuscation_details": "The domain `enterprize-corp.com` replaces the second 's' in 'enterprise' with a 'z' to mimic the legitimate `enterprise-corp.com` domain. The URL uses HTTP instead of HTTPS, redirecting to a credential phishing page mimicking the corporate SharePoint login.",
+        "email_filter_logs": "[2023-06-15T14:22:15Z] SPF check: pass for domain enterprize-corp.com from 203.0.113.77\r\n[2023-06-15T14:22:15Z] DKIM check: fail for domain enterprise-corp.com\r\n[2023-06-15T14:22:16Z] DMARC check: fail for domain enterprise-corp.com\r\n[2023-06-15T14:22:16Z] Spam filter score: 6.1 (threshold 7.0) - delivered\r\n[2023-06-15T14:22:16Z] Email accepted for delivery to manager@enterprise.com",
+        "employee_response_log": "Clicked the link, entered credentials on the fake portal; later reported suspicious email after security training reminder.",
+        "network_packet_capture_excerpt": "Frame 2457: 180 bytes on wire (1440 bits), 180 bytes captured (1440 bits)\r\nEthernet II, Src: 00:1a:2b:3c:4d:6f, Dst: 00:0c:29:6d:8e:8a\r\nInternet Protocol Version 4, Src: 203.0.113.77, Dst: 192.0.2.50\r\nTransmission Control Protocol, Src Port: 80, Dst Port: 443, Seq: 3456, Ack: 7890\r\nHypertext Transfer Protocol\r\n    POST /login HTTP/1.1\r\n    Host: portal.enterprize-corp.com\r\n    User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64)\r\n    Content-Type: application/x-www-form-urlencoded\r\n    Content-Length: 60\r\n\r\n    username=manager&password=Password123!&submit=Sign+In"
+      },
+      "indicators": [
+        "Lookalike domain enterprize-corp.com with 'z' replacing 's'",
+        "SPF passes but DKIM and DMARC fail",
+        "Email originating IP 203.0.113.77 not matching legitimate domain SPF",
+        "Suspicious reply-to email on Tutanota (ceo.office@tutanota.com) not matching sender domain",
+        "HTTP link in email instead of HTTPS",
+        "Urgent request to bypass normal file access controls",
+        "Spam filter score below rejection threshold but flagged",
+        "SMTP transaction shows acceptance from attacker-controlled IP",
+        "User clicked phishing link and submitted credentials"
+      ],
+      "detection_method": "Email gateway detects DKIM and DMARC failures; domain similarity flagged by anti-phishing tools. SIEM correlates unusual file access requests with email anomalies. Endpoint monitoring detects credential submission to suspicious URL. Security awareness training results in employee reporting. Incident response triggers password reset and domain takedown request.",
+      "relevant_mitre_techniques": [
+        "T1566.002 - Spearphishing Link",
+        "T1598.002 - Phishing: Spearphishing via Service",
+        "T1589.002 - Gather Victim Identity Information: Spearphishing",
+        "T1078 - Valid Accounts",
+        "T1110 - Brute Force (post-phish credential use)"
+      ]
+    },
+    {
+      "scenario": "A finance department employee receives an email purportedly from the head of procurement, requesting immediate payment to a new vendor account. The email originates from a compromised third-party vendor domain with valid SPF and DKIM but a misaligned DMARC policy. The message urges quick action citing a new contract and contains a link to a fake invoice PDF hosted on an attacker-controlled server.",
+      "technical_data": {
+        "email_headers": "Return-Path: <procurement@trusted-vendor.com>\r\nReceived: from mail.trusted-vendor.com (mail.trusted-vendor.com [198.51.100.99])\r\n\tby mail.enterprise.com (Postfix) with ESMTPS id 9ABC1234\r\n\tfor <finance@enterprise.com>; Mon, 03 Jul 2023 11:05:43 -0400 (EDT)\r\nReceived-SPF: pass (mail.enterprise.com: domain of trusted-vendor.com designates 198.51.100.99 as permitted sender) client-ip=198.51.100.99;\r\nAuthentication-Results: mail.enterprise.com; dkim=pass header.d=trusted-vendor.com; spf=pass smtp.mailfrom=procurement@trusted-vendor.com; dmarc=fail (p=reject) header.from=trusted-vendor.com;\r\nMessage-ID: <CA+KJweQzq2qv2y5f@trusted-vendor.com>\r\nDate: Mon, 03 Jul 2023 11:05:40 -0400\r\nFrom: \"Alice Johnson\" <procurement@trusted-vendor.com>\r\nTo: finance@enterprise.com\r\nSubject: Urgent: New Vendor Payment Instructions\r\nMIME-Version: 1.0\r\nContent-Type: text/html; charset=UTF-8\r\nX-Originating-IP: [198.51.100.99]\r\nX-Mailer: Microsoft Outlook 16.0\r\nX-Spam-Flag: NO\r\nX-Spam-Score: 1.9\r\nX-Spam-Level: *\r\n",
+        "email_body": "Dear Finance Team,<br><br>\r\nAs per our new contract, please process the payment to the updated vendor account below immediately to avoid service disruptions.<br><br>\r\nVendor Name: Omega Supplies Ltd.<br>\r\nAccount Number: 9876543210<br>\r\nBank: Global Bank Corp.<br><br>\r\nPlease review the attached invoice here:<br>\r\n<a href=\"http://invoice.omegasupplies-ltd.com/invoice_789.pdf\">http://invoice.omegasupplies-ltd.com/invoice_789.pdf</a><br><br>\r\nConfirm once payment is made by replying to procurement.office@protonmail.com.<br><br>\r\nRegards,<br>\r\nAlice Johnson<br>\r\nHead of Procurement",
+        "smtp_transaction_log": "220 mail.enterprise.com ESMTP Postfix\r\nEHLO attacker-host\r\n250-mail.enterprise.com\r\n250-PIPELINING\r\n250-SIZE 10240000\r\n250-ETRN\r\n250-STARTTLS\r\n250-ENHANCEDSTATUSCODES\r\n250-8BITMIME\r\n250 DSN\r\nMAIL FROM:<procurement@trusted-vendor.com>\r\n250 2.1.0 Ok\r\nRCPT TO:<finance@enterprise.com>\r\n250 2.1.5 Ok\r\nDATA\r\n354 End data with <CR><LF>.<CR><LF>\r\n[Email body sent]\r\n.\r\n250 2.0.0 Ok: queued as 9ABC1234\r\nQUIT\r\n221 2.0.0 Bye",
+        "dns_records": {
+          "trusted-vendor.com": {
+            "A": [
+              "198.51.100.99"
+            ],
+            "MX": [
+              "mail.trusted-vendor.com"
+            ],
+            "SPF": "v=spf1 ip4:198.51.100.99 include:_spf.vendormail.com -all",
+            "DKIM": "selector1._domainkey.trusted-vendor.com TXT (\"v=DKIM1; k=rsa; p=MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8A...validpubkey...\")",
+            "DMARC": "v=DMARC1; p=reject; rua=mailto:dmarc-reports@trusted-vendor.com"
+          },
+          "omegasupplies-ltd.com": {
+            "A": [
+              "192.0.2.150"
+            ],
+            "MX": [
+              "mail.omegasupplies-ltd.com"
+            ],
+            "SPF": "v=spf1 ip4:192.0.2.150 -all",
+            "DKIM": "selector1._domainkey.omegasupplies-ltd.com TXT (\"v=DKIM1; k=rsa; p=MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8A...fakepubkey...\")",
+            "DMARC": "v=DMARC1; p=none; rua=mailto:dmarc-reports@omegasupplies-ltd.com"
+          }
+        },
+        "url_in_email": "http://invoice.omegasupplies-ltd.com/invoice_789.pdf",
+        "url_obfuscation_details": "The domain `omegasupplies-ltd.com` is attacker-controlled and hosts a fake invoice PDF. The URL uses HTTP instead of HTTPS to avoid SSL certificate requirements, facilitating credential harvesting if the link is clicked. The email reply address uses ProtonMail, inconsistent with the legitimate vendor domain.",
+        "email_filter_logs": "[2023-07-03T11:05:45Z] SPF check: pass for domain trusted-vendor.com from 198.51.100.99\r\n[2023-07-03T11:05:45Z] DKIM check: pass for domain trusted-vendor.com\r\n[2023-07-03T11:05:46Z] DMARC check: fail for domain trusted-vendor.com\r\n[2023-07-03T11:05:46Z] Spam filter score: 3.5 (threshold 7.0) - delivered\r\n[2023-07-03T11:05:46Z] Email accepted for delivery to finance@enterprise.com",
+        "employee_response_log": "Employee clicked on invoice link and downloaded fake PDF; later questioned payment request after vendor confirmation.",
+        "network_packet_capture_excerpt": "Frame 3345: 202 bytes on wire (1616 bits), 202 bytes captured (1616 bits)\r\nEthernet II, Src: 00:1a:2b:3c:4d:7a, Dst: 00:0c:29:6d:8e:9b\r\nInternet Protocol Version 4, Src: 192.0.2.150, Dst: 192.0.2.60\r\nTransmission Control Protocol, Src Port: 80, Dst Port: 443, Seq: 5000, Ack: 6000\r\nHypertext Transfer Protocol\r\n    GET /invoice_789.pdf HTTP/1.1\r\n    Host: invoice.omegasupplies-ltd.com\r\n    User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64)\r\n    Accept: application/pdf"
+      },
+      "indicators": [
+        "Email sent from legitimate vendor domain with valid SPF and DKIM but DMARC fail due to misalignment",
+        "Reply-to email on ProtonMail not matching vendor domain",
+        "HTTP URL linking to fake invoice PDF hosted on attacker-controlled domain",
+        "Urgent payment request outside normal procurement process",
+        "Spam filter score low but suspicious",
+        "SMTP logs show accepted mail from vendor IP",
+        "Network logs show HTTP GET request for suspicious invoice",
+        "Employee engaged with phishing content before verification"
+      ],
+      "detection_method": "Email gateway passes SPF/DKIM but flags DMARC failure; vendor domain flagged for suspicious activity. SIEM correlates abnormal payment requests and unusual reply-to addresses. Endpoint monitoring detects download from non-HTTPS source. Security team reports vendor compromise and initiates vendor communication for remediation.",
+      "relevant_mitre_techniques": [
+        "T1566.001 - Spearphishing Attachment",
+        "T1598.002 - Phishing: Spearphishing via Service",
+        "T1589.002 - Gather Victim Identity Information: Spearphishing",
+        "T1204.002 - User Execution: Malicious File",
+        "T1110 - Brute Force (if credentials compromised)"
+      ]
+    },
+    {
+      "scenario": "An employee in the HR department receives an email impersonating the CEO requesting confidential employee salary data for an alleged external audit. The attacker uses a homoglyph domain exploiting Cyrillic characters similar to the legitimate domain and sends the email from an IP address not authorized in SPF records. DKIM signature is missing, and DMARC policy is set to quarantine but not enforced strictly due to reporting-only mode. The email instructs the employee to upload files via a shared cloud link hosted on a domain mimicking a popular cloud storage provider.",
+      "technical_data": {
+        "email_headers": "Return-Path: <ceo@ex\u0430mple-enterprise.com>\r\nReceived: from mail.ex\u0430mple-enterprise.com (mail.ex\u0430mple-enterprise.com [203.0.114.55])\r\n\tby mail.enterprise.com (Postfix) with ESMTPS id 5678EFGH\r\n\tfor <hr.employee@enterprise.com>; Mon, 01 May 2023 14:22:10 -0400 (EDT)\r\nReceived-SPF: fail (mail.enterprise.com: 203.0.114.55 is not authorized to send mail for ex\u0430mple-enterprise.com) client-ip=203.0.114.55;\r\nAuthentication-Results: mail.enterprise.com; dkim=none; spf=fail smtp.mailfrom=ceo@ex\u0430mple-enterprise.com; dmarc=quarantine (p=quarantine) header.from=example-enterprise.com;\r\nMessage-ID: <CA+FJweQzq2qv2y5f@ex\u0430mple-enterprise.com>\r\nDate: Mon, 01 May 2023 14:22:05 -0400\r\nFrom: \"Jane Smith\" <ceo@ex\u0430mple-enterprise.com>\r\nTo: hr.employee@enterprise.com\r\nSubject: Confidential: Employee Salary Data Request\r\nMIME-Version: 1.0\r\nContent-Type: text/html; charset=UTF-8\r\nX-Originating-IP: [203.0.114.55]\r\nX-Mailer: Mozilla Thunderbird 78.10.2\r\nX-Spam-Flag: NO\r\nX-Spam-Score: 3.8\r\nX-Spam-Level: ***\r\n",
+        "email_body": "<p>Dear HR Team,</p><p>Due to an urgent external audit, please compile and upload the latest employee salary data by end of day. Use the secure upload portal at <a href=\"http://secure-cloudstorage.com/enterprise-upload\">http://secure-cloudstorage.com/enterprise-upload</a>.</p><p>Ensure all files are password protected and notify me once completed.</p><p>Regards,<br>Jane Smith<br>Chief Executive Officer</p>",
+        "smtp_transaction_log": "220 mail.enterprise.com ESMTP Postfix\r\nEHLO attacker-host\r\n250-mail.enterprise.com\r\n250-PIPELINING\r\n250-SIZE 10240000\r\n250-ETRN\r\n250-STARTTLS\r\n250-ENHANCEDSTATUSCODES\r\n250-8BITMIME\r\n250 DSN\r\nMAIL FROM:<ceo@ex\u0430mple-enterprise.com>\r\n250 2.1.0 Ok\r\nRCPT TO:<hr.employee@enterprise.com>\r\n250 2.1.5 Ok\r\nDATA\r\n354 End data with <CR><LF>.<CR><LF>\r\n[Email body sent]\r\n.\r\n250 2.0.0 Ok: queued as 5678EFGH\r\nQUIT\r\n221 2.0.0 Bye",
+        "dns_records": {
+          "ex\u0430mple-enterprise.com": {
+            "A": [
+              "203.0.114.55"
+            ],
+            "MX": [
+              "mail.ex\u0430mple-enterprise.com"
+            ],
+            "SPF": "v=spf1 ip4:198.51.100.50 -all",
+            "DKIM": "",
+            "DMARC": "v=DMARC1; p=quarantine; rua=mailto:dmarc-reports@ex\u0430mple-enterprise.com; fo=1"
+          },
+          "example-enterprise.com": {
+            "SPF": "v=spf1 ip4:198.51.100.50 include:_spf.google.com -all",
+            "DKIM": "selector1._domainkey.example-enterprise.com TXT (\"v=DKIM1; k=rsa; p=MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8A...realkey...\")",
+            "DMARC": "v=DMARC1; p=reject; rua=mailto:dmarc-reports@example-enterprise.com"
+          }
+        },
+        "url_in_email": "http://secure-cloudstorage.com/enterprise-upload",
+        "url_obfuscation_details": "The domain 'secure-cloudstorage.com' mimics a well-known cloud provider but is a lookalike domain controlled by the attacker. The URL uses HTTP instead of HTTPS, enabling interception. The domain uses a Cyrillic '\u0430' (U+0430) instead of the Latin 'a' in the domain part 'ex\u0430mple-enterprise.com', which is visually indistinguishable but a different Unicode character.",
+        "email_filter_logs": "[2023-05-01T14:22:12Z] SPF check: fail for domain ex\u0430mple-enterprise.com from 203.0.114.55\r\n[2023-05-01T14:22:12Z] DKIM check: none (no signature)\r\n[2023-05-01T14:22:13Z] DMARC check: quarantine for domain example-enterprise.com\r\n[2023-05-01T14:22:13Z] Spam filter score: 6.1 (threshold 7.0) - delivered\r\n[2023-05-01T14:22:13Z] Email accepted for delivery to hr.employee@enterprise.com",
+        "employee_response_log": "Employee clicked on the link and attempted to upload requested files, entering credentials on the fake portal.",
+        "network_packet_capture_excerpt": "Frame 2301: 200 bytes on wire (1600 bits), 200 bytes captured (1600 bits)\r\nEthernet II, Src: 00:1b:3c:4d:5e:6f, Dst: 00:0a:1b:2c:3d:4e\r\nInternet Protocol Version 4, Src: 203.0.114.55, Dst: 192.0.2.75\r\nTransmission Control Protocol, Src Port: 443, Dst Port: 53210, Seq: 2345, Ack: 3456\r\nHypertext Transfer Protocol\r\n    GET /enterprise-upload HTTP/1.1\r\n    Host: secure-cloudstorage.com\r\n    User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64)\r\n    Accept: text/html\r\n\r\n    [Followed by POST of credentials]",
+        "indicators": [
+          "Use of homoglyph Cyrillic '\u0430' in domain ex\u0430mple-enterprise.com",
+          "SPF failure due to unauthorized sending IP 203.0.114.55",
+          "Missing DKIM signature",
+          "DMARC policy set to quarantine but not enforced strictly",
+          "Suspicious HTTP link mimicking cloud storage domain",
+          "Urgent request for sensitive employee salary data",
+          "Spam filter score elevated but below rejection threshold",
+          "Employee clicked link and entered credentials on fake site",
+          "Email originating IP outside legitimate domain IP range"
+        ],
+        "detection_method": "Email gateway detects SPF fail and missing DKIM, flags due to homoglyph domain detected by domain reputation service. SIEM correlates unusual data request with phishing indicators. Endpoint protection alerts on suspicious HTTP traffic to cloud-storage lookalike domain. Security awareness training reinforced to verify unusual data requests by phone.",
+        "relevant_mitre_techniques": [
+          "T1566.001 - Spearphishing Attachment",
+          "T1566.002 - Spearphishing Link",
+          "T1537 - Transfer Data to Cloud Account",
+          "T1598.002 - Phishing: Spearphishing via Service",
+          "T1589.002 - Gather Victim Identity Information: Spearphishing",
+          "T1204.002 - User Execution: Malicious File"
+        ]
+      }
+    },
+    {
+      "scenario": "A finance team member receives an email allegedly from the VP of Finance requesting immediate payment of an outstanding invoice to a new vendor. The email domain is a lookalike domain using a subdomain of a free mail service combined with the legitimate company domain, and the sender IP is from a public cloud provider. SPF passes because the attacker uses a compromised cloud mail server, but DKIM signature fails due to domain mismatch. The email contains a link to a fake invoice hosted on a compromised but legitimate third-party vendor website.",
+      "technical_data": {
+        "email_headers": "Return-Path: <vpfinance@enterprise.mail-cloud.com>\r\nReceived: from mail-cloud.com (mail-cloud.com [198.51.101.100])\r\n\tby mail.enterprise.com (Postfix) with ESMTPS id 7890IJKL\r\n\tfor <finance.employee@enterprise.com>; Thu, 15 Jun 2023 11:40:55 -0400 (EDT)\r\nReceived-SPF: pass (mail.enterprise.com: domain of vpfinance@enterprise.mail-cloud.com designates 198.51.101.100 as permitted sender) client-ip=198.51.101.100;\r\nAuthentication-Results: mail.enterprise.com; dkim=fail (signature invalid) header.d=enterprise.com; spf=pass smtp.mailfrom=vpfinance@enterprise.mail-cloud.com; dmarc=fail (p=reject) header.from=enterprise.com;\r\nMessage-ID: <CA+FJweQzq2qv2y5f@enterprise.mail-cloud.com>\r\nDate: Thu, 15 Jun 2023 11:40:50 -0400\r\nFrom: \"Michael Lee\" <vpfinance@enterprise.mail-cloud.com>\r\nTo: finance.employee@enterprise.com\r\nSubject: Payment Approval Needed: Invoice #45872\r\nMIME-Version: 1.0\r\nContent-Type: text/html; charset=UTF-8\r\nX-Originating-IP: [198.51.101.100]\r\nX-Mailer: Apple Mail (2.3608.120.23.2.7)\r\nX-Spam-Flag: NO\r\nX-Spam-Score: 2.9\r\nX-Spam-Level: **\r\n",
+        "email_body": "<p>Hi Team,</p><p>Please process the payment for invoice #45872 immediately to avoid penalties. The invoice and payment instructions are available at the link below:</p><p><a href=\"https://vendorsecure.enterprise-payments.com/invoice/45872\">https://vendorsecure.enterprise-payments.com/invoice/45872</a></p><p>Confirm once payment is completed.</p><p>Thanks,<br>Michael Lee<br>VP Finance</p>",
+        "smtp_transaction_log": "220 mail.enterprise.com ESMTP Postfix\r\nEHLO attacker-cloud-mail\r\n250-mail.enterprise.com\r\n250-PIPELINING\r\n250-SIZE 10240000\r\n250-ETRN\r\n250-STARTTLS\r\n250-ENHANCEDSTATUSCODES\r\n250-8BITMIME\r\n250 DSN\r\nMAIL FROM:<vpfinance@enterprise.mail-cloud.com>\r\n250 2.1.0 Ok\r\nRCPT TO:<finance.employee@enterprise.com>\r\n250 2.1.5 Ok\r\nDATA\r\n354 End data with <CR><LF>.<CR><LF>\r\n[Email body sent]\r\n.\r\n250 2.0.0 Ok: queued as 7890IJKL\r\nQUIT\r\n221 2.0.0 Bye",
+        "dns_records": {
+          "enterprise.mail-cloud.com": {
+            "A": [
+              "198.51.101.100"
+            ],
+            "MX": [
+              "mail.mail-cloud.com"
+            ],
+            "SPF": "v=spf1 ip4:198.51.101.100 include:_spf.mail-cloud.com -all",
+            "DKIM": "selector1._domainkey.enterprise.mail-cloud.com TXT (\"v=DKIM1; k=rsa; p=MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8A...fakekey...\")",
+            "DMARC": "v=DMARC1; p=none; rua=mailto:dmarc-reports@enterprise.mail-cloud.com"
+          },
+          "enterprise.com": {
+            "SPF": "v=spf1 ip4:198.51.100.10 include:_spf.enterprise.com -all",
+            "DKIM": "selector1._domainkey.enterprise.com TXT (\"v=DKIM1; k=rsa; p=MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8A...realkey...\")",
+            "DMARC": "v=DMARC1; p=reject; rua=mailto:dmarc-reports@enterprise.com"
+          },
+          "vendorsecure.enterprise-payments.com": {
+            "A": [
+              "198.51.102.150"
+            ],
+            "MX": [
+              "mail.enterprise-payments.com"
+            ],
+            "SPF": "v=spf1 ip4:198.51.102.150 -all",
+            "DKIM": "selector1._domainkey.enterprise-payments.com TXT (\"v=DKIM1; k=rsa; p=MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8A...vendorkey...\")",
+            "DMARC": "v=DMARC1; p=reject; rua=mailto:dmarc-reports@enterprise-payments.com"
+          }
+        },
+        "url_in_email": "https://vendorsecure.enterprise-payments.com/invoice/45872",
+        "url_obfuscation_details": "The URL points to a subdomain 'vendorsecure.enterprise-payments.com' which is a legitimate but compromised third-party vendor site hosting the fake invoice page. The sender domain 'enterprise.mail-cloud.com' is a subdomain of a free cloud mail provider combined with the legitimate domain to confuse recipients. SPF passes due to authorized cloud mail IPs but DKIM fails due to domain mismatch.",
+        "email_filter_logs": "[2023-06-15T11:40:58Z] SPF check: pass for domain enterprise.mail-cloud.com from 198.51.101.100\r\n[2023-06-15T11:40:58Z] DKIM check: fail for domain enterprise.com\r\n[2023-06-15T11:40:59Z] DMARC check: fail for domain enterprise.com (p=reject)\r\n[2023-06-15T11:40:59Z] Spam filter score: 4.5 (threshold 7.0) - delivered\r\n[2023-06-15T11:40:59Z] Email accepted for delivery to finance.employee@enterprise.com",
+        "employee_response_log": "Employee clicked on the invoice link and downloaded the attached fake invoice PDF, initiating payment process.",
+        "network_packet_capture_excerpt": "Frame 1789: 250 bytes on wire (2000 bits), 250 bytes captured (2000 bits)\r\nEthernet II, Src: 00:0d:5e:6f:7a:8b, Dst: 00:1c:23:4d:5e:6f\r\nInternet Protocol Version 4, Src: 198.51.102.150, Dst: 192.0.2.80\r\nTransmission Control Protocol, Src Port: 443, Dst Port: 52100, Seq: 6789, Ack: 7890\r\nHypertext Transfer Protocol\r\n    GET /invoice/45872 HTTP/1.1\r\n    Host: vendorsecure.enterprise-payments.com\r\n    User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7)\r\n    Accept: application/pdf\r\n\r\n    [Followed by PDF file transfer]",
+        "indicators": [
+          "Use of subdomain enterprise.mail-cloud.com to mimic legitimate domain",
+          "SPF passes due to authorized cloud mail IPs but DKIM fails due to domain mismatch",
+          "DMARC policy of legitimate domain set to reject, but email originates from subdomain",
+          "Suspicious HTTPS link to compromised vendor website hosting fake invoice",
+          "Urgent payment request outside normal financial procedures",
+          "Spam filter score elevated but below rejection threshold",
+          "Email originating IP from public cloud provider",
+          "Employee downloaded fake invoice and initiated payment",
+          "Mismatch between sender domain and actual domain in DKIM signature"
+        ],
+        "detection_method": "Email gateway detects DKIM failure and DMARC fail for enterprise.com domain, flags subdomain usage and anomalous sending IP. SIEM correlates invoice payment request with known phishing patterns. Endpoint protection logs download of suspicious PDF from vendor domain, triggering alert. Finance team notified to verify payment requests via secondary channels.",
+        "relevant_mitre_techniques": [
+          "T1566.002 - Spearphishing Link",
+          "T1566.001 - Spearphishing Attachment",
+          "T1598.002 - Phishing: Spearphishing via Service",
+          "T1589.002 - Gather Victim Identity Information: Spearphishing",
+          "T1204.002 - User Execution: Malicious File",
+          "T1071.001 - Application Layer Protocol: Web Protocols"
+        ]
+      }
+    }
+  ]
+}

@@ -1,0 +1,69 @@
+{
+  "report": [
+    {
+      "index": 0,
+      "problem": {
+        "area": "Social Engineering",
+        "nature": "Business Email Compromise"
+      },
+      "example": {
+        "scenario": "Business Email Compromise via Executive Email Account Spoofing Requesting Wire Transfer",
+        "technical_data": {
+          "email_headers": "Return-Path: <ceo@company.com>\r\nReceived: from mail.company.com (mail.company.com [192.168.10.25])\r\n\tby smtp.company.com (Postfix) with ESMTPS id 3A2B15F1234\r\n\tfor <finance@company.com>; Wed, 12 Apr 2023 08:15:47 -0400 (EDT)\r\nReceived-SPF: fail (smtp.company.com: domain of ceo@ce0-company.com does not designate 203.0.113.45 as permitted sender) client-ip=203.0.113.45;\r\nAuthentication-Results: smtp.company.com;\r\n\tdkim=pass header.d=company.com header.s=selector1 header.b=ZmX1H7Ab;\r\n\tspf=fail (sender IP is 203.0.113.45) smtp.mailfrom=ceo@ce0-company.com;\r\n\tdmarc=fail (p=reject) header.from=company.com\r\nMessage-ID: <CAJ1f2+Wf=Z4b2qJ3W7A@mail.company.com>\r\nFrom: \"John Smith\" <ceo@company.com>\r\nTo: finance@company.com\r\nSubject: URGENT: Wire Transfer Request\r\nDate: Wed, 12 Apr 2023 08:15:45 -0400\r\nMIME-Version: 1.0\r\nContent-Type: text/plain; charset=\"UTF-8\"\r\nX-Mailer: Microsoft Outlook 16.0\r\nX-Originating-IP: [203.0.113.45]\r\nX-Spam-Status: No, score=0.1 required=5.0 tests=DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,SPF_FAIL,DMARC_FAIL autolearn=ham autolearn_force=no version=3.4.2\r\n",
+          "email_body": "Hi Team,\r\n\r\nPlease process an urgent wire transfer of $85,000 to the following account immediately:\r\n\r\nBank: First National Bank\r\nAccount Name: Oakridge Partners LLC\r\nAccount Number: 9876543210\r\nRouting Number: 123456789\r\n\r\nConfirm once completed.\r\n\r\nThanks,\r\nJohn Smith\r\nCEO, Company Inc.\r\n",
+          "smtp_transaction_log": "220 smtp.company.com ESMTP Postfix\r\nEHLO mail.attacker.com\r\n250-smtp.company.com\r\n250-PIPELINING\r\n250-SIZE 10240000\r\n250-ETRN\r\n250-STARTTLS\r\n250-AUTH PLAIN LOGIN\r\n250-ENHANCEDSTATUSCODES\r\n250-8BITMIME\r\n250 DSN\r\nMAIL FROM:<ceo@ce0-company.com>\r\n250 2.1.0 Ok\r\nRCPT TO:<finance@company.com>\r\n250 2.1.5 Ok\r\nDATA\r\n354 End data with <CR><LF>.<CR><LF>\r\nFrom: \"John Smith\" <ceo@company.com>\r\nTo: finance@company.com\r\nSubject: URGENT: Wire Transfer Request\r\n\r\nPlease process...\r\n.\r\n250 2.0.0 Ok: queued as 3A2B15F1234\r\nQUIT\r\n221 2.0.0 Bye\r\n",
+          "domain_registration": {
+            "domain": "ce0-company.com",
+            "registrar": "NameCheap, Inc.",
+            "creation_date": "2023-04-10T14:22:00Z",
+            "expiry_date": "2024-04-10T14:22:00Z",
+            "registrant": {
+              "name": "Privacy Protection Service",
+              "organization": "PrivacyProtect.org",
+              "email": "contact@privacyprotect.org"
+            },
+            "name_servers": [
+              "ns1.namecheapdns.com",
+              "ns2.namecheapdns.com"
+            ]
+          },
+          "spf_record_ce0_company_com": "\"v=spf1 ip4:198.51.100.23 -all\"",
+          "dkim_signature": "v=1; a=rsa-sha256; c=relaxed/relaxed; d=company.com; s=selector1; t=1681269345; bh=B2iTLt3v6L9sB+qL1Dx5p6M0Jj4G9y1JgTzG9pdZ4pc=; h=From:To:Subject:Date; b=ZmX1H7AbvJ5tKJ7u7pKv0gR6F7VBi8W1rL7fq2E30F6Fq4xw+Wixy6Zxk1j0txL5zB8s4ZW1rXjDjBds+e9C1aN0JY5QO5DFXgyf0T3Xw==",
+          "login_activity_log": [
+            "Apr 12 07:59:21 mail.company.com imap-login: Login: user=ceo@company.com, ip=192.168.10.25, session=<sessionid1>",
+            "Apr 12 08:10:02 mail.company.com imap-login: Login: user=ceo@company.com, ip=203.0.113.45, session=<sessionid2>"
+          ],
+          "mail_forwarding_rule_log": [
+            "Apr 12 08:12:00 mail.company.com postfix/anvil[12345]: warning: user finance@company.com has set a forwarding rule to external address oakridgepartners@externalmail.com"
+          ],
+          "secondary_verification_attempts": [
+            "User finance@company.com called CEO's corporate phone +1-555-123-4567 at 08:16:33 but received voicemail.",
+            "Alternative contact message: finance@company.com sent an encrypted Slack message to CEO's assistant asking to confirm wire transfer request."
+          ]
+        },
+        "indicators": [
+          "SPF fail for domain ce0-company.com from IP 203.0.113.45",
+          "DMARC policy reject failed (email passed from unauthorized domain)",
+          "New domain ce0-company.com registered 2 days before attack",
+          "Unusual login IP 203.0.113.45 for CEO mailbox",
+          "New mail forwarding rule from finance mailbox to external address",
+          "Urgent wire transfer email requesting large sum to unknown beneficiary"
+        ],
+        "detection_method": "Implement email gateway filtering to enforce SPF, DKIM, and DMARC checks; alert on SPF and DMARC failures especially for executive domains. Monitor mailbox login IP addresses for unusual geographic or network anomalies. Detect creation of forwarding rules in finance or executive mailboxes. Require secondary out-of-band verification for all wire transfer requests above threshold amounts (e.g., via phone or encrypted internal messaging). Analyze new domain registrations similar to company domain (typosquatting) using threat intelligence feeds. Correlate suspicious email delivery with user behavior analytics to detect anomalous activity.",
+        "relevant_mitre_techniques": [
+          "T1598.002 - Phishing: Spearphishing Attachment",
+          "T1566.001 - Phishing: Spearphishing via Service",
+          "T1071.001 - Application Layer Protocol: Web Protocols (for C2 over email)",
+          "T1114 - Email Collection",
+          "T1566 - Phishing",
+          "T1556 - Modify Authentication Process (mail forwarding rules)"
+        ]
+      },
+      "validation": {
+        "valid": true,
+        "issues": [],
+        "comments": "The sample accurately represents a Business Email Compromise (BEC) scenario involving executive email account spoofing to request a fraudulent wire transfer. The scenario title clearly states the nature of the attack. The technical data includes detailed email headers showing SPF and DMARC failures due to a spoofed domain (ce0-company.com) that closely mimics the legitimate company domain, which is a common typosquatting tactic. The SMTP transaction log supports the spoofing attempt from the attacker-controlled domain. The domain registration data confirms the new suspicious domain was registered shortly before the attack, reinforcing realism. The login activity log shows an unusual login IP for the CEO mailbox, indicating possible compromise or attacker access. The mail forwarding rule log shows a new forwarding rule to an external address from the finance mailbox, a known tactic to exfiltrate data or intercept communications. Secondary verification attempts are documented, showing the employee tried to verify the request but failed to reach the CEO directly, which aligns with recommended risk reduction strategies. The indicators section clearly explains why this sample matches the problem, highlighting SPF/DMARC failures, new domain registration, unusual login, forwarding rules, and the urgent wire transfer request. The detection methods are comprehensive and align well with best practices for mitigating BEC risks. The relevant MITRE ATT&CK techniques are appropriate and cover phishing, email collection, and modification of authentication processes. Overall, the sample is complete, realistic, and technically accurate, making it a valid representation of the stated cybersecurity problem."
+      }
+    }
+  ]
+}

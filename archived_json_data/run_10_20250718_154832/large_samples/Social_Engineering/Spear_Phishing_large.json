@@ -1,0 +1,313 @@
+{
+  "samples": [
+    {
+      "scenario": "Spear phishing campaign targeting HR manager to disclose employee PII through a spoofed internal HR portal login page using domain impersonation and embedded JavaScript keylogger.",
+      "technical_data": {
+        "email_headers": "Return-Path: <hr-notify@hr-portalcorp.com>\r\nReceived: from mail.hr-portalcorp.com (mail.hr-portalcorp.com [198.51.100.58])\r\n\tby mx.internal.corp (Postfix) with ESMTPS id 7A1B52089\r\n\tfor <hr.manager@corp.com>; Fri, 14 Apr 2023 14:43:12 +0000 (UTC)\r\nX-Originating-IP: [203.0.113.33]\r\nX-Mailer: Mozilla Thunderbird 78.10.0\r\nMessage-ID: <hr-portal-notify-2023-04-14@mail.hr-portalcorp.com>\r\nSubject: Mandatory Update: Employee Data Verification Required\r\nFrom: \"HR Portal Notification\" <hr-notify@hr-portalcorp.com>\r\nTo: hr.manager@corp.com\r\nMIME-Version: 1.0\r\nContent-Type: text/html; charset=\"UTF-8\"\r\nX-Spam-Flag: NO\r\nX-Phishing-Score: 7.9\r\nX-Received-SPF: Pass (sender SPF authorized)\r\nX-DKIM-Status: pass\r\nX-DMARC-Status: pass\r\n",
+        "email_body_html": "<html><body><p>Dear HR Team,</p><p>As part of our annual compliance, please verify the updated employee information by logging into the HR portal immediately.</p><p><a href=\"https://hr-portalcorp.com/verification?user=hr.manager\">Verify Employee Data</a></p><p>Failure to comply may result in suspension of access.</p><p>Regards,<br>HR Compliance Team</p></body></html>",
+        "smtp_transaction_log": [
+          "220 mail.hr-portalcorp.com ESMTP Postfix",
+          "EHLO mail.internal.corp",
+          "250-mail.hr-portalcorp.com",
+          "250-PIPELINING",
+          "250-SIZE 10485760",
+          "250-VRFY",
+          "250-ETRN",
+          "250-STARTTLS",
+          "250-AUTH PLAIN LOGIN",
+          "250-ENHANCEDSTATUSCODES",
+          "250-8BITMIME",
+          "250 DSN",
+          "MAIL FROM:<hr-notify@hr-portalcorp.com>",
+          "250 2.1.0 Ok",
+          "RCPT TO:<hr.manager@corp.com>",
+          "250 2.1.5 Ok",
+          "DATA",
+          "354 End data with <CR><LF>.<CR><LF>",
+          "Received: from mail.hr-portalcorp.com (mail.hr-portalcorp.com [198.51.100.58])",
+          "From: \"HR Portal Notification\" <hr-notify@hr-portalcorp.com>",
+          "To: hr.manager@corp.com",
+          "Subject: Mandatory Update: Employee Data Verification Required",
+          "... (email body here) ...",
+          ".",
+          "250 2.0.0 Ok: queued as 7A1B52089",
+          "QUIT",
+          "221 2.0.0 Bye"
+        ],
+        "domain_registration": {
+          "domain": "hr-portalcorp.com",
+          "registrar": "GoDaddy.com, LLC",
+          "creation_date": "2023-04-10T16:20:43Z",
+          "expiration_date": "2024-04-10T16:20:43Z",
+          "registrant": {
+            "name": "Domain Privacy Service",
+            "organization": "Domains By Proxy, LLC",
+            "email": "privacy@domainsbyproxy.com",
+            "address": "14747 N Northsight Blvd, Scottsdale, AZ, US"
+          },
+          "nameservers": [
+            "ns1.domainsbyproxy.com",
+            "ns2.domainsbyproxy.com"
+          ]
+        },
+        "phishing_url": {
+          "full_url": "https://hr-portalcorp.com/verification?user=hr.manager",
+          "domain": "hr-portalcorp.com",
+          "url_analysis": {
+            "domain_similarity": "Close visual resemblance to legitimate hr-portal.corp.com but missing dot separator",
+            "session_token": "None",
+            "obfuscation": "Use of subpath 'verification' and legitimate looking query parameter 'user' to appear authentic"
+          },
+          "dns_resolution": {
+            "A_record": "198.51.100.58",
+            "PTR_record": "mail.hr-portalcorp.com"
+          }
+        }
+      },
+      "indicators": {
+        "email_from": "hr-notify@hr-portalcorp.com (spoofed, external IP 198.51.100.58)",
+        "suspicious_url": "https://hr-portalcorp.com/verification?user=hr.manager",
+        "domain_age_days": 4,
+        "smtp_originating_ip": "203.0.113.33",
+        "high_phishing_score": 7.9,
+        "X-Originating-IP": "203.0.113.33",
+        "domain_registrar": "Domains By Proxy",
+        "domain_dns": "ns1.domainsbyproxy.com"
+      },
+      "detection_method": "Analysis of email headers showed SPF, DKIM, DMARC pass but domain was newly registered with privacy protection service. URL closely mimics internal HR portal with slight domain alteration. Network monitoring detected HTTP POST to external IP with suspicious domain. Endpoint detected execution of embedded JavaScript keylogger. User training flagged unexpected credential submission requests.",
+      "relevant_mitre_techniques": [
+        "T1566.002 - Phishing: Spearphishing Link",
+        "T1598.002 - Phishing for Information: Spearphishing via Service",
+        "T1204.002 - User Execution: Malicious Link",
+        "T1056.001 - Input Capture: Keylogging",
+        "T1071.001 - Application Layer Protocol: Web Protocols"
+      ]
+    },
+    {
+      "scenario": "Spear phishing message sent to IT administrator with a malicious Excel attachment containing macros to deploy remote access trojan, leveraging a spoofed ticketing system email address.",
+      "technical_data": {
+        "email_headers": "Return-Path: <support@ticketsystem-corp.com>\r\nReceived: from mail.ticketsystem-corp.com (mail.ticketsystem-corp.com [203.0.113.77])\r\n\tby mx.internal.corp (Postfix) with ESMTPS id 4F2D81014\r\n\tfor <it.admin@corp.com>; Wed, 05 Apr 2023 11:07:45 +0000 (UTC)\r\nX-Originating-IP: [192.0.2.101]\r\nX-Mailer: Microsoft Outlook 365\r\nMessage-ID: <ticket-20230405-1107@mail.ticketsystem-corp.com>\r\nSubject: Critical: Ticket #45321 - Immediate Action Required\r\nFrom: \"Ticketing System\" <support@ticketsystem-corp.com>\r\nTo: it.admin@corp.com\r\nMIME-Version: 1.0\r\nContent-Type: multipart/mixed; boundary=\"boundary_123456\"\r\nX-Spam-Flag: NO\r\nX-Phishing-Score: 9.2\r\nX-Received-SPF: Pass (sender SPF authorized)\r\nX-DKIM-Status: pass\r\nX-DMARC-Status: pass\r\n",
+        "email_body_html": "<html><body><p>Dear IT Administrator,</p><p>Please review the attached ticket related to a security vulnerability that requires your immediate attention. Enable macros to view the full details.</p><p>Regards,<br>Ticketing System</p></body></html>",
+        "smtp_transaction_log": [
+          "220 mail.ticketsystem-corp.com ESMTP Postfix",
+          "EHLO mail.internal.corp",
+          "250-mail.ticketsystem-corp.com",
+          "250-PIPELINING",
+          "250-SIZE 10485760",
+          "250-VRFY",
+          "250-ETRN",
+          "250-STARTTLS",
+          "250-AUTH PLAIN LOGIN",
+          "250-ENHANCEDSTATUSCODES",
+          "250-8BITMIME",
+          "250 DSN",
+          "MAIL FROM:<support@ticketsystem-corp.com>",
+          "250 2.1.0 Ok",
+          "RCPT TO:<it.admin@corp.com>",
+          "250 2.1.5 Ok",
+          "DATA",
+          "354 End data with <CR><LF>.<CR><LF>",
+          "Received: from mail.ticketsystem-corp.com (mail.ticketsystem-corp.com [203.0.113.77])",
+          "From: \"Ticketing System\" <support@ticketsystem-corp.com>",
+          "To: it.admin@corp.com",
+          "Subject: Critical: Ticket #45321 - Immediate Action Required",
+          "... (email body and attachment) ...",
+          ".",
+          "250 2.0.0 Ok: queued as 4F2D81014",
+          "QUIT",
+          "221 2.0.0 Bye"
+        ],
+        "domain_registration": {
+          "domain": "ticketsystem-corp.com",
+          "registrar": "Google LLC",
+          "creation_date": "2023-03-30T08:17:12Z",
+          "expiration_date": "2024-03-30T08:17:12Z",
+          "registrant": {
+            "name": "Redacted for Privacy",
+            "organization": "Privacy Service Inc.",
+            "email": "redacted@privacyservice.com",
+            "address": "PO Box 123, Mountain View, CA, US"
+          },
+          "nameservers": [
+            "ns-cloud-a1.googledomains.com",
+            "ns-cloud-a2.googledomains.com"
+          ]
+        },
+        "phishing_url": null
+      },
+      "indicators": {
+        "email_from": "support@ticketsystem-corp.com (spoofed, external IP 203.0.113.77)",
+        "suspicious_attachment": "Excel file with macros (Ticket_45321.xlsm)",
+        "domain_age_days": 6,
+        "smtp_originating_ip": "192.0.2.101",
+        "high_phishing_score": 9.2,
+        "X-Originating-IP": "192.0.2.101",
+        "domain_registrar": "Privacy Service Inc.",
+        "domain_dns": "ns-cloud-a1.googledomains.com"
+      },
+      "detection_method": "Correlation of email header SPF, DKIM, DMARC pass with suspicious newly registered domain using privacy protection. Attachment analyzed with sandbox detected macro execution triggering remote access trojan download. Email content heuristics flagged urgency and ticketing context mismatches. Endpoint protection blocked post-macro execution network communication. Threat intel confirmed similar campaigns impersonating ticketing systems.",
+      "relevant_mitre_techniques": [
+        "T1566.001 - Phishing: Spearphishing Attachment",
+        "T1204.002 - User Execution: Malicious Link",
+        "T1204.002 - User Execution: Malicious File",
+        "T1059.005 - Command and Scripting Interpreter: Visual Basic",
+        "T1071.001 - Application Layer Protocol: Web Protocols",
+        "T1210 - Exploitation of Remote Services"
+      ]
+    },
+    {
+      "scenario": "Spear phishing email sent to HR manager impersonating the head of recruitment with an embedded malicious Excel attachment designed to exploit macros for credential harvesting.",
+      "technical_data": {
+        "email_headers": "Return-Path: <recruitment@corp-hiring.com>\r\nReceived: from mail.corp-hiring.com (mail.corp-hiring.com [198.51.100.77])\r\n\tby mail.corp.com (Postfix) with ESMTPS id 22B4D3002\r\n\tfor <hr.manager@corp.com>; Wed, 05 Apr 2023 14:42:10 +0000 (UTC)\r\nX-Originating-IP: [192.0.2.45]\r\nX-Mailer: Microsoft Outlook 365\r\nMessage-ID: <CAWvZ1sP+X9V2YV8y@mail.corp-hiring.com>\r\nSubject: New Candidate List for Q2 Hiring - Action Required\r\nFrom: \"Emily Stanton\" <recruitment@corp-hiring.com>\r\nTo: hr.manager@corp.com\r\nMIME-Version: 1.0\r\nContent-Type: multipart/mixed; boundary=\"boundary_001\"\r\nX-Spam-Flag: NO\r\nX-Phishing-Score: 9.1\r\nX-Received-SPF: Pass (sender SPF authorized)\r\nX-DKIM-Status: pass\r\nX-DMARC-Status: pass\r\n",
+        "email_body_html": "<html><body><p>Dear Rachel,</p><p>Please find attached the candidate shortlist for the upcoming quarter. Kindly review and update the status by end of day.</p><p>Best,<br>Emily Stanton</p></body></html>",
+        "smtp_transaction_log": [
+          "220 mail.corp-hiring.com ESMTP Postfix",
+          "EHLO mail.corp.com",
+          "250-mail.corp-hiring.com",
+          "250-PIPELINING",
+          "250-SIZE 20480000",
+          "250-VRFY",
+          "250-ETRN",
+          "250-STARTTLS",
+          "250-AUTH PLAIN LOGIN",
+          "250-ENHANCEDSTATUSCODES",
+          "250-8BITMIME",
+          "250 DSN",
+          "MAIL FROM:<recruitment@corp-hiring.com>",
+          "250 2.1.0 Ok",
+          "RCPT TO:<hr.manager@corp.com>",
+          "250 2.1.5 Ok",
+          "DATA",
+          "354 End data with <CR><LF>.<CR><LF>",
+          "Received: from mail.corp-hiring.com (mail.corp-hiring.com [198.51.100.77])",
+          "From: \"Emily Stanton\" <recruitment@corp-hiring.com>",
+          "To: hr.manager@corp.com",
+          "Subject: New Candidate List for Q2 Hiring - Action Required",
+          "... (email body and attachment) ...",
+          ".",
+          "250 2.0.0 Ok: queued as 22B4D3002",
+          "QUIT",
+          "221 2.0.0 Bye"
+        ],
+        "domain_registration": {
+          "domain": "corp-hiring.com",
+          "registrar": "GoDaddy.com, LLC",
+          "creation_date": "2023-02-28T08:15:30Z",
+          "expiration_date": "2024-02-28T08:15:30Z",
+          "registrant": {
+            "name": "Redacted for Privacy",
+            "organization": "PrivacyGuardian Services",
+            "email": "privacy@privacyguardian.com",
+            "address": "PO Box 987, Scottsdale, AZ, US"
+          },
+          "nameservers": [
+            "ns1.privacyguardian.com",
+            "ns2.privacyguardian.com"
+          ]
+        },
+        "phishing_url": null
+      },
+      "indicators": {
+        "email_from": "recruitment@corp-hiring.com (spoofed, external IP 198.51.100.77)",
+        "suspicious_attachment": "Q2_Candidates.xlsm with embedded macros",
+        "domain_age_days": 36,
+        "smtp_originating_ip": "192.0.2.45",
+        "high_phishing_score": 9.1,
+        "X-Originating-IP": "192.0.2.45",
+        "domain_registrar": "PrivacyGuardian Services",
+        "domain_dns": "ns1.privacyguardian.com"
+      },
+      "detection_method": "Email header and SPF/DKIM validation showed pass but domain newly registered with privacy protection. Macro-enabled Excel attachment flagged by sandbox analysis for suspicious VBA code. Heuristic behavioral detection of process spawning credential-stealing scripts after attachment open. User reported unexpected email from recruitment. Network logs detected outbound connections to suspicious IPs post attachment execution.",
+      "relevant_mitre_techniques": [
+        "T1566.001 - Phishing: Spearphishing Attachment",
+        "T1204.002 - User Execution: Malicious Link",
+        "T1566.002 - Phishing: Spearphishing Link",
+        "T1059.005 - Command and Scripting Interpreter: Visual Basic",
+        "T1071.001 - Application Layer Protocol: Web Protocols"
+      ]
+    },
+    {
+      "scenario": "Spear phishing message targeting IT administrator with a spoofed ticketing system email containing a link to a credential harvesting page mimicking the corporate VPN login portal.",
+      "technical_data": {
+        "email_headers": "Return-Path: <noreply@ticketsupport-corp.com>\r\nReceived: from mail.ticketsupport-corp.com (mail.ticketsupport-corp.com [203.0.114.88])\r\n\tby mail.corp.com (Postfix) with ESMTPS id 4D2C8A003\r\n\tfor <it.admin@corp.com>; Fri, 14 Apr 2023 07:30:12 +0000 (UTC)\r\nX-Originating-IP: [198.51.101.33]\r\nX-Mailer: Thunderbird 91.6.0\r\nMessage-ID: <CAe8f9PfO=J8XgT0@mail.ticketsupport-corp.com>\r\nSubject: Ticket #24567 - Urgent VPN Access Update Required\r\nFrom: \"Ticket Support\" <noreply@ticketsupport-corp.com>\r\nTo: it.admin@corp.com\r\nMIME-Version: 1.0\r\nContent-Type: text/html; charset=\"UTF-8\"\r\nX-Spam-Flag: NO\r\nX-Phishing-Score: 7.9\r\nX-Received-SPF: Pass (sender SPF authorized)\r\nX-DKIM-Status: pass\r\nX-DMARC-Status: pass\r\n",
+        "email_body_html": "<html><body><p>Hello IT Team,</p><p>We have detected an issue requiring urgent action on your VPN credentials. Please <a href=\"https://vpn-update.corp-secure-update.com/login?ticket=24567\">click here</a> to update your credentials and restore uninterrupted VPN access.</p><p>Thank you,<br>Ticket Support</p></body></html>",
+        "smtp_transaction_log": [
+          "220 mail.ticketsupport-corp.com ESMTP Postfix",
+          "EHLO mail.corp.com",
+          "250-mail.ticketsupport-corp.com",
+          "250-PIPELINING",
+          "250-SIZE 5242880",
+          "250-VRFY",
+          "250-ETRN",
+          "250-STARTTLS",
+          "250-AUTH PLAIN LOGIN",
+          "250-ENHANCEDSTATUSCODES",
+          "250-8BITMIME",
+          "250 DSN",
+          "MAIL FROM:<noreply@ticketsupport-corp.com>",
+          "250 2.1.0 Ok",
+          "RCPT TO:<it.admin@corp.com>",
+          "250 2.1.5 Ok",
+          "DATA",
+          "354 End data with <CR><LF>.<CR><LF>",
+          "Received: from mail.ticketsupport-corp.com (mail.ticketsupport-corp.com [203.0.114.88])",
+          "From: \"Ticket Support\" <noreply@ticketsupport-corp.com>",
+          "To: it.admin@corp.com",
+          "Subject: Ticket #24567 - Urgent VPN Access Update Required",
+          "... (email body here) ...",
+          ".",
+          "250 2.0.0 Ok: queued as 4D2C8A003",
+          "QUIT",
+          "221 2.0.0 Bye"
+        ],
+        "domain_registration": {
+          "domain": "corp-secure-update.com",
+          "registrar": "NameSilo, LLC",
+          "creation_date": "2023-04-10T17:45:00Z",
+          "expiration_date": "2024-04-10T17:45:00Z",
+          "registrant": {
+            "name": "Domain Privacy Service",
+            "organization": "Privacy Protection Service, Inc.",
+            "email": "privacy@privacyprotectionservice.com",
+            "address": "456 Privacy Rd, Austin, TX, US"
+          },
+          "nameservers": [
+            "ns1.privacyprotectionservice.com",
+            "ns2.privacyprotectionservice.com"
+          ]
+        },
+        "phishing_url": {
+          "full_url": "https://vpn-update.corp-secure-update.com/login?ticket=24567",
+          "domain": "corp-secure-update.com",
+          "url_analysis": {
+            "domain_similarity": "Contains 'corp' and 'secure' to mimic corporate VPN portal domain",
+            "ticket_parameter": "Ticket ID query parameter to simulate legitimate ticket system",
+            "obfuscation": "Use of subdomain 'vpn-update' to appear as official VPN update portal"
+          },
+          "dns_resolution": {
+            "A_record": "198.51.101.33",
+            "PTR_record": "vpn-update.corp-secure-update.com"
+          }
+        }
+      },
+      "indicators": {
+        "email_from": "noreply@ticketsupport-corp.com (spoofed, external IP 203.0.114.88)",
+        "suspicious_url": "https://vpn-update.corp-secure-update.com/login?ticket=24567",
+        "domain_age_days": 4,
+        "smtp_originating_ip": "198.51.101.33",
+        "high_phishing_score": 7.9,
+        "X-Originating-IP": "198.51.101.33",
+        "domain_registrar": "Privacy Protection Service, Inc.",
+        "domain_dns": "ns1.privacyprotectionservice.com"
+      },
+      "detection_method": "Correlation of email header SPF, DKIM, DMARC pass with recently registered domain using privacy protection. URL analysis revealed domain similarity and use of subdomain to mimic corporate VPN portal. Network traffic logs detected HTTPs GET to suspicious IP immediately after email receipt. Endpoint logs showed credential capture attempts post user clicking link. User training flagged unusual ticketing system email requesting credentials.",
+      "relevant_mitre_techniques": [
+        "T1566.002 - Phishing: Spearphishing Link",
+        "T1598.002 - Phishing for Information: Spearphishing via Service",
+        "T1204.002 - User Execution: Malicious Link",
+        "T1071.001 - Application Layer Protocol: Web Protocols",
+        "T1110.001 - Brute Force: Password Guessing"
+      ]
+    }
+  ]
+}

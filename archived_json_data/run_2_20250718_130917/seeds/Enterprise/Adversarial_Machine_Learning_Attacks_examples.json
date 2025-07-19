@@ -1,0 +1,32 @@
+{
+  "examples": [
+    {
+      "scenario": "Adversarial attack on an enterprise AI-based phishing email classifier by injecting carefully crafted adversarial tokens into email bodies to evade detection.",
+      "technical_data": {
+        "email_sample_raw": "From: attacker@example.com\r\nTo: victim@enterprise.com\r\nSubject: Urgent Account Update Required\r\nMIME-Version: 1.0\r\nContent-Type: text/plain; charset=\"UTF-8\"\r\nX-Mailer: CustomMailer 1.2\r\n\r\nDear user,\r\n\r\nYour account has been compromised. Please click the following link to verify your identity:\r\nhttp://secure-enterprise.com.verify-account.login-update.com/verify?id=123456\r\n\r\nBest regards,\r\nSupport Team\r\n\r\n--\r\nNote: For security reasons, please ignore the invisible unicode characters in this email.\r\n\u200b\u200c\u200d\u2060",
+        "adversarial_tokens_injection": "The attacker injects zero-width characters (U+200B ZERO WIDTH SPACE, U+200C ZERO WIDTH NON-JOINER, U+200D ZERO WIDTH JOINER, U+2060 WORD JOINER) inside typical phishing keywords like \"verify\", \"account\", and \"login\" to confuse the tokenizer and embedding vector space of the ML model, causing misclassification.",
+        "network_packet_capture_snippet": "No.     Time           Source                Destination           Protocol Length Info\n1293    12.345678      192.168.1.100         10.20.30.40           HTTP     518    POST /api/email-classify HTTP/1.1\r\nHost: ai.enterprise.com\r\nContent-Type: application/json\r\nContent-Length: 490\r\n\r\n{\r\n  \"email_subject\": \"Urgent Account Update Required\",\r\n  \"email_body\": \"Dear user, Your account has been compromised. Please click the following link to verify\u200b your identity: http://secure-enterprise.com.verify-account.login-update.com/verify?id=123456\"\r\n}",
+        "ml_model_input_vector_anomaly": "Input tokens embedding vector norm deviation: Normal mean=0.89 std=0.03, current=1.45 (+18 sigma), indicating unusual token pattern due to zero-width unicode injection.",
+        "model_output": "Original classification: phishing (probability 0.92)\r\nPost adversarial input classification: benign (probability 0.07)",
+        "server_logs": "[2024-06-15 10:15:30] WARNING ML_MODEL_INPUT: Suspicious token pattern detected in email body from user 'victim@enterprise.com' - zero-width unicode characters injected.",
+        "adversarial_training_code_snippet": "def adversarial_augment(email_text):\n    zero_width_chars = ['\\u200b', '\\u200c', '\\u200d', '\\u2060']\n    augmented = ''\n    for c in email_text:\n        augmented += c\n        if random.random() < 0.1:\n            augmented += random.choice(zero_width_chars)\n    return augmented\n\n# Used in training loop to harden model against zero-width char evasion",
+        "anomaly_detection_rule": "Detect emails with high frequency (>5) of zero-width unicode characters within 500 chars window in the body text."
+      },
+      "indicators": [
+        "Presence of zero-width unicode characters (U+200B, U+200C, U+200D, U+2060) in email bodies",
+        "Suspicious domain structure with multiple subdomains mimicking legitimate enterprise URLs (e.g., secure-enterprise.com.verify-account.login-update.com)",
+        "Sudden drop in phishing classification confidence during model inference logs",
+        "ML input vector norm deviation beyond 5 standard deviations",
+        "Warning logs from ML input preprocessing about suspicious tokens"
+      ],
+      "detection_method": "Implement real-time ML model input validation detecting invisible unicode characters or tokenization anomalies; monitor classification confidence scores for sudden drops; correlate with network logs for suspicious domain names; use adversarial training to increase model robustness against zero-width character injection.",
+      "relevant_mitre_techniques": [
+        "T1566.001 - Phishing: Spearphishing Attachment",
+        "T1499 - Endpoint Denial of Service (related to model evasion techniques)",
+        "T1071 - Application Layer Protocol",
+        "T1598 - Phishing for Information (adversarial input vectors)",
+        "T1584 - Compromise Infrastructure (for domain infrastructure abuse)"
+      ]
+    }
+  ]
+}

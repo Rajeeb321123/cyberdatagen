@@ -1,0 +1,83 @@
+{
+  "examples": [
+    {
+      "scenario": "AI-generated spear-phishing email leverages large language model to craft personalized message impersonating CFO, delivering a malicious URL with obfuscated domains and evading traditional signature-based filters.",
+      "technical_data": {
+        "email_headers": "Return-Path: <alerts@secure-payments.com>\r\nReceived: from mail42.secure-payments.com (mail42.secure-payments.com [198.51.100.42])\r\n\tby mx.company.com (Postfix) with ESMTPS id 3F1C91055A\r\n\tfor <employee@company.com>; Tue, 30 May 2023 14:22:37 +0000 (UTC)\r\nReceived-SPF: pass (company.com: domain of secure-payments.com designates 198.51.100.42 as permitted sender) client-ip=198.51.100.42;\r\nAuthentication-Results: mx.company.com; dkim=pass header.d=secure-payments.com; spf=pass smtp.mailfrom=alerts@secure-payments.com; dmarc=pass (p=none) header.from=secure-payments.com\r\nDKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=secure-payments.com; s=2023; t=1685454157; bh=Zvz1H5o7Xw8vXvT3rT5Z0zBq7I9zfnS3j5U4ZnU8B+Y=; h=From:To:Subject:Date:Message-ID; b=Zl1ZK6F2Qk9zHb3TbyCg96vE0pKyrW11zFQ1y5P1DdJe7r3u+U9LZr3K4QjkwkBNi6PA6u7zGkXrO6v4vk=\r\nMessage-ID: <20230530142237.3F1C91055A@mail42.secure-payments.com>\r\nDate: Tue, 30 May 2023 14:22:37 +0000\r\nFrom: \"John Smith - CFO\" <alerts@secure-payments.com>\r\nTo: employee@company.com\r\nSubject: Urgent: Updated Wire Transfer Instructions\r\nMIME-Version: 1.0\r\nContent-Type: text/html; charset=UTF-8\r\nContent-Transfer-Encoding: 7bit",
+        "email_body": "<html>\n  <body style=\"font-family:Arial,sans-serif;\">\n    <p>Hi <b>Emily</b>,</p>\n    <p>Following up on our recent conversation, please review the updated wire transfer instructions below. The bank details have changed due to recent compliance updates.</p>\n    <p><a href=\"http://secure-payments.com.login-update.verification-portal.us-west-2.cloudapp.azure.com/wire-transfer\">Click here to verify the new instructions</a></p>\n    <p>Let me know if you have any questions.</p>\n    <p>Best,<br/>John Smith<br/>Chief Financial Officer</p>\n  </body>\n</html>",
+        "smtp_transaction_log": "220 mail42.secure-payments.com ESMTP Postfix\r\nEHLO mail42.secure-payments.com\r\n250-mail42.secure-payments.com\r\n250-PIPELINING\r\n250-SIZE 10485760\r\n250-VRFY\r\n250-ETRN\r\n250-STARTTLS\r\n250-AUTH PLAIN LOGIN\r\n250-ENHANCEDSTATUSCODES\r\n250-8BITMIME\r\n250 DSN\r\nMAIL FROM:<alerts@secure-payments.com>\r\n250 2.1.0 Ok\r\nRCPT TO:<employee@company.com>\r\n250 2.1.5 Ok\r\nDATA\r\n354 End data with <CR><LF>.<CR><LF>\r\n[DATA BLOCK]\r\n.\r\n250 2.0.0 Ok: queued as 3F1C91055A\r\nQUIT\r\n221 2.0.0 Bye",
+        "domain_registration": {
+          "domain": "secure-payments.com.login-update.verification-portal.us-west-2.cloudapp.azure.com",
+          "registrar": "Amazon Registrar, Inc.",
+          "creation_date": "2023-05-15T10:12:00Z",
+          "expiration_date": "2024-05-15T10:12:00Z",
+          "name_servers": [
+            "ns-1234.awsdns-56.org",
+            "ns-789.awsdns-01.co.uk"
+          ],
+          "whois_raw": "Domain Name: cloudapp.azure.com\nRegistry Domain ID: D425100000001234567-AWS\nRegistrar: Amazon Registrar, Inc.\nCreation Date: 2023-05-15T10:12:00Z\nRegistry Expiry Date: 2024-05-15T10:12:00Z"
+        },
+        "url_analysis": {
+          "full_url": "http://secure-payments.com.login-update.verification-portal.us-west-2.cloudapp.azure.com/wire-transfer",
+          "hostname": "secure-payments.com.login-update.verification-portal.us-west-2.cloudapp.azure.com",
+          "subdomains": [
+            "secure-payments.com",
+            "login-update",
+            "verification-portal",
+            "us-west-2",
+            "cloudapp",
+            "azure"
+          ],
+          "obfuscation_techniques": [
+            "Domain-in-subdomain technique to mimic legitimate domain (secure-payments.com used as a subdomain)",
+            "Long subdomain chain to confuse users and evade simple domain blocklists",
+            "Use of legitimate cloud provider domain (azure.com) to appear trustworthy"
+          ]
+        },
+        "user_agent_strings": [
+          "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/113.0.0.0 Safari/537.36"
+        ],
+        "email_content_linguistic_features": {
+          "personalization": "Direct mention of recipient\u2019s name 'Emily' in HTML body",
+          "style": "Formal tone consistent with CFO communication, use of financial terminology",
+          "spoofing_indicators": "Mismatch between displayed sender name 'John Smith - CFO' and actual sending domain (secure-payments.com.login-update.verification-portal...)"
+        }
+      },
+      "indicators": {
+        "ioc_domains": [
+          "secure-payments.com.login-update.verification-portal.us-west-2.cloudapp.azure.com"
+        ],
+        "ioc_urls": [
+          "http://secure-payments.com.login-update.verification-portal.us-west-2.cloudapp.azure.com/wire-transfer"
+        ],
+        "ioc_email_addresses": [
+          "alerts@secure-payments.com"
+        ],
+        "ioc_ip_addresses": [
+          "198.51.100.42"
+        ],
+        "email_subject": "Urgent: Updated Wire Transfer Instructions",
+        "dkim_status": "pass",
+        "spf_status": "pass",
+        "dmarc_status": "pass",
+        "unusual_email_routing": "Email originates from a cloud infrastructure IP (Amazon AWS) unrelated to company\u2019s normal mail servers",
+        "url_obfuscation": "Domain-in-subdomain abuse and long chained subdomains"
+      },
+      "detection_method": [
+        "AI-based email anomaly detection flagging unusual domain-in-subdomain structures mimicking trusted domains",
+        "Heuristic and ML classifiers trained on lexical and semantic features of emails identifying personalized but suspicious content",
+        "Email gateway filters enhanced with DNS reputation and URL reputation services detecting novel cloud-hosted phishing URLs",
+        "User training with examples of domain-in-subdomain phishing and contextualized spear-phishing messages",
+        "SIEM correlation of unusual email inbound source IPs against known company mail servers"
+      ],
+      "relevant_mitre_techniques": [
+        "T1566.001 - Phishing: Spearphishing Attachment",
+        "T1566.002 - Phishing: Spearphishing Link",
+        "T1192 - Spearphishing via Service",
+        "T1598.002 - Phishing: Spearphishing via Service",
+        "T1114 - Email Collection",
+        "T1071.001 - Application Layer Protocol: Web Protocols"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,47 @@
+{
+  "examples": [
+    {
+      "scenario": "Business Email Compromise (BEC) via spoofed CFO email requesting fraudulent wire transfer",
+      "technical_data": {
+        "email_headers": "Return-Path: <cfo@company.com>\r\nReceived: from mail2.company.com (192.168.10.25) by mail.company.com with ESMTP id 9J2F12345; Thu, 20 Apr 2023 14:32:11 -0400\r\nReceived-SPF: fail (company.com: domain of spoofed sender does not designate 203.0.113.45 as permitted sender) receiver=mail.company.com; client-ip=203.0.113.45; envelope-from=\"cfo@company.com\"; helo=malicious-host.net\r\nAuthentication-Results: mail.company.com; spf=fail (sender IP is 203.0.113.45) smtp.mailfrom=cfo@company.com; dkim=none; dmarc=fail action=quarantine header.from=company.com\r\nFrom: \"Jane Doe\" <cfo@company.com>\r\nTo: finance@company.com\r\nSubject: URGENT: Wire Transfer Request\r\nDate: Thu, 20 Apr 2023 14:31:59 -0400\r\nMessage-ID: <KJH12345@company.com>\r\nX-Mailer: Microsoft Outlook 16.0\r\nX-Originating-IP: [203.0.113.45]\r\n",
+        "email_body": "Hi,\r\n\r\nPlease urgently process a wire transfer of $120,000 to the following account:\r\n\r\nBank: First National Bank\r\nAccount Number: 9876543210\r\nRouting Number: 021000021\r\n\r\nConfirm once done.\r\n\r\nRegards,\r\nJane Doe\r\nCFO, Company Inc.",
+        "smtp_transaction_log": "220 mail.company.com ESMTP Postfix\r\nEHLO mail.attacker.net\r\n250-mail.company.com\r\n250-PIPELINING\r\n250-SIZE 10485760\r\n250-STARTTLS\r\n250-AUTH PLAIN LOGIN\r\n250-ENHANCEDSTATUSCODES\r\n250 8BITMIME\r\nMAIL FROM:<cfo@company.com>\r\n250 2.1.0 Ok\r\nRCPT TO:<finance@company.com>\r\n250 2.1.5 Ok\r\nDATA\r\n354 End data with <CR><LF>.<CR><LF>\r\nFrom: Jane Doe <cfo@company.com>\r\nTo: finance@company.com\r\nSubject: URGENT: Wire Transfer Request\r\n\r\nPlease urgently process a wire transfer...\r\n.\r\n250 2.0.0 Ok: queued as 12345\r\nQUIT\r\n221 2.0.0 Bye",
+        "dns_whois": {
+          "domain": "malicious-host.net",
+          "registrar": "NameCheap, Inc.",
+          "creation_date": "2023-03-15T10:12:45Z",
+          "expiration_date": "2024-03-15T10:12:45Z",
+          "registrant_email": "privacy@namecheap.com",
+          "nameservers": [
+            "ns1.namecheap.net",
+            "ns2.namecheap.net"
+          ]
+        },
+        "url_obfuscation": "https://secure.bank.com/login?redirect=https%3A%2F%2Fmalicious-host.net%2Fpayment%3Faccount%3D9876543210",
+        "email_account_activity_log": [
+          "2023-04-20T14:30:15Z LOGIN_SUCCESS user:cfo@company.com ip:192.168.10.25 location:New York, USA device:Outlook 16",
+          "2023-04-20T14:31:50Z LOGIN_SUCCESS user:cfo@company.com ip:203.0.113.45 location:Unknown device:Thunderbird 78.10",
+          "2023-04-20T14:32:10Z SENT_EMAIL user:cfo@company.com recipients:finance@company.com subject:\"URGENT: Wire Transfer Request\""
+        ]
+      },
+      "indicators": [
+        "SPF fail for email from cfo@company.com",
+        "Email sent from unusual IP 203.0.113.45 outside normal geographic location",
+        "Mismatch in X-Originating-IP and usual office IP ranges",
+        "Suspicious domain malicious-host.net registered 1 month ago with privacy protected registration",
+        "Email requests urgent wire transfer without secondary confirmation",
+        "Unusual email client (Thunderbird) used for sending CFO emails"
+      ],
+      "detection_method": "Monitor email logs for SPF/DKIM/DMARC failures combined with unusual login IPs on high-privilege accounts; alert on wire transfer requests without multi-factor verification; correlate email client user agent changes; implement UEBA (User and Entity Behavior Analytics) to detect anomalies in email activity patterns.",
+      "relevant_mitre_techniques": [
+        "T1566.001 - Phishing: Spearphishing Attachment",
+        "T1566.002 - Phishing: Spearphishing Link",
+        "T1598.002 - Spearphishing via Service",
+        "T1078 - Valid Accounts",
+        "T1110 - Brute Force",
+        "T1114 - Email Collection",
+        "T1586 - Compromise Accounts"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,45 @@
+{
+  "report": [
+    {
+      "index": 0,
+      "problem": {
+        "area": "Social Engineering",
+        "nature": "spear_phishing"
+      },
+      "example": {
+        "scenario": "Spear phishing email targeting a CFO with a fake invoice attachment and URL using a lookalike domain to steal credentials.",
+        "technical_data": {
+          "email_headers": "Delivered-To: cfo@corporate.com\nReceived: from mail-outbound1.fakecorp.com (mail-outbound1.fakecorp.com [198.51.100.23])\n\tby mail.corporate.com (Postfix) with ESMTPS id 1A2B3C4D5E\n\tfor <cfo@corporate.com>; Wed, 10 May 2023 14:22:01 +0000 (UTC)\nX-Originating-IP: [203.0.113.45]\nReturn-Path: <billing@fakecorp-payments.com>\nReceived-SPF: pass (corporate.com: domain of billing@fakecorp-payments.com designates 198.51.100.23 as permitted sender) client-ip=198.51.100.23;\nAuthentication-Results: mail.corporate.com; spf=pass smtp.mailfrom=billing@fakecorp-payments.com; dkim=pass header.d=fakecorp-payments.com; dmarc=pass\nMessage-ID: <20230510142201.1A2B3C4D5E@mail-outbound1.fakecorp.com>\nFrom: \"FakeCorp Billing\" <billing@fakecorp-payments.com>\nTo: cfo@corporate.com\nSubject: Invoice 2023-05-10 INV-457812\nDate: Wed, 10 May 2023 14:22:01 +0000\nMIME-Version: 1.0\nContent-Type: multipart/mixed; boundary=\"00000000000008f6b705cafb3e97\"\nX-Mailer: Microsoft Outlook 16.0\nX-Microsoft-Exchange-Diagnostics: 1; mail-outbound1.fakecorp.com; 1:abcdef1234567890abcdef1234567890",
+          "email_body": "--00000000000008f6b705cafb3e97\nContent-Type: text/plain; charset=\"UTF-8\"\nContent-Transfer-Encoding: quoted-printable\n\nDear John,\n\nPlease find attached the invoice INV-457812 for the recent transaction.\nKindly process the payment at your earliest convenience.\n\nIf you have any questions, reply to this email or call me directly.\n\nBest regards,\nMary Smith\nHead of Billing\nFakeCorp\n\n--00000000000008f6b705cafb3e97\nContent-Type: application/pdf; name=\"Invoice_INV-457812.pdf\"\nContent-Disposition: attachment; filename=\"Invoice_INV-457812.pdf\"\nContent-Transfer-Encoding: base64\n\nJVBERi0xLjQKJcfs... (truncated base64 PDF content)\n--00000000000008f6b705cafb3e97--",
+          "suspicious_url": "https://fakecorp-payrnents.com/login?session=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+          "dns_whois": "Domain Name: fakecorp-payrnents.com\nRegistrar: NameCheap, Inc.\nCreation Date: 2023-03-15T12:34:56Z\nExpiration Date: 2024-03-15T12:34:56Z\nRegistrant Name: WhoisGuard Protected\nRegistrant Organization: WhoisGuard, Inc.\nRegistrant Country: Belize\nName Servers:\n  ns1.fakecorp-payrnents.com\n  ns2.fakecorp-payrnents.com",
+          "smtp_transaction_log": "220 mail-outbound1.fakecorp.com ESMTP Postfix\nEHLO mail.corporate.com\n250-mail-outbound1.fakecorp.com\n250-PIPELINING\n250-SIZE 10485760\n250-ETRN\n250-STARTTLS\n250-AUTH PLAIN LOGIN\n250-AUTH=PLAIN LOGIN\n250-8BITMIME\n250 DSN\nMAIL FROM:<billing@fakecorp-payments.com>\n250 2.1.0 Ok\nRCPT TO:<cfo@corporate.com>\n250 2.1.5 Ok\nDATA\n354 End data with <CR><LF>.<CR><LF>\nFrom: \"FakeCorp Billing\" <billing@fakecorp-payments.com>\nTo: cfo@corporate.com\nSubject: Invoice 2023-05-10 INV-457812\n\n[body and attachment base64]\n.\n250 2.0.0 Ok: queued as 1A2B3C4D5E\nQUIT\n221 2.0.0 Bye",
+          "url_obfuscation_details": "The domain 'fakecorp-payrnents.com' is a homoglyph of 'fakecorp-payments.com' (letter 'm' replaced by 'rn'). The URL uses HTTPS with a valid but recently issued Let's Encrypt certificate. The URL path includes a JWT token parameter designed to lure the victim to enter credentials on a fake login page.",
+          "phishing_page_http_request": "GET /login?session=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9... HTTP/1.1\nHost: fakecorp-payrnents.com\nUser-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64)\nAccept: text/html,application/xhtml+xml\nReferer: https://mail.corporate.com/\nCookie: PHPSESSID=abcdef1234567890\nConnection: close",
+          "phishing_page_http_response": "HTTP/1.1 200 OK\nContent-Type: text/html; charset=UTF-8\nContent-Length: 3456\nCache-Control: no-cache, no-store\nSet-Cookie: sessionid=1234567890abcdef; HttpOnly; Secure\n\n<html><body><form action=\"/authenticate\" method=\"POST\">\n<input type=\"text\" name=\"username\" placeholder=\"User ID\">\n<input type=\"password\" name=\"password\" placeholder=\"Password\">\n<input type=\"submit\" value=\"Login\">\n</form></body></html>"
+        },
+        "indicators": [
+          "Sending mail from suspicious domain 'fakecorp-payrnents.com' with homoglyph domain name",
+          "Email with attachment named 'Invoice_INV-457812.pdf' sent from unexpected external sender",
+          "SPF pass but domain is newly registered (created 2023-03-15) and uses WhoisGuard privacy",
+          "URL containing JWT token used as a query parameter in phishing URL",
+          "SMTP transaction logs show mail originated from 198.51.100.23, an unrecognized outbound mail server",
+          "Phishing page HTTP response contains a login form posting credentials to /authenticate"
+        ],
+        "detection_method": "Use of threat intelligence to flag newly registered lookalike domains with homoglyphs in corporate email recipients; email gateway analysis of attachment names and sender address reputation; URL scanning and sandboxing of links containing JWT tokens; heuristic detection of login forms served from non-corporate domains; user education to verify invoice requests via secondary communication channels; monitoring SMTP logs for unusual mail servers sending to C-level executives; implementation of DMARC with strict policies.",
+        "relevant_mitre_techniques": [
+          "T1566.001 - Spearphishing Attachment",
+          "T1566.002 - Spearphishing Link",
+          "T1598.002 - Phishing: Spearphishing via Service",
+          "T1586 - Compromise Infrastructure",
+          "T1204 - User Execution"
+        ]
+      },
+      "validation": {
+        "valid": true,
+        "issues": [],
+        "comments": "The sample accurately represents a spear phishing scenario targeting a CFO with a highly tailored email containing a fake invoice attachment and a URL using a homoglyph domain to steal credentials. The technical data is detailed and realistic, including email headers, body, suspicious URL, DNS WHOIS info, SMTP logs, and phishing page HTTP requests and responses, all supporting the spear phishing nature. Indicators clearly explain why the sample matches the problem, highlighting suspicious domain use, new domain registration, attachment anomalies, and phishing page characteristics. The detection methods align well with the risk reduction strategies described in the problem statement, emphasizing threat intelligence, user education, verification of requests, and monitoring unusual mail servers. Relevant MITRE techniques are correctly identified and appropriate for spear phishing. Overall, the sample is complete, realistic, and correctly aligned with the problem nature."
+      }
+    }
+  ]
+}

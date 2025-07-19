@@ -1,0 +1,93 @@
+{
+  "examples": [
+    {
+      "scenario": "Misconfigured AWS S3 bucket with public read/write permissions leading to data exfiltration and unauthorized file uploads.",
+      "technical_data": {
+        "iam_policy": {
+          "BucketPolicy": {
+            "Version": "2012-10-17",
+            "Statement": [
+              {
+                "Sid": "PublicReadWrite",
+                "Effect": "Allow",
+                "Principal": "*",
+                "Action": [
+                  "s3:GetObject",
+                  "s3:PutObject"
+                ],
+                "Resource": "arn:aws:s3:::confidential-data-bucket/*"
+              }
+            ]
+          }
+        },
+        "cloudtrail_log_entry": {
+          "eventVersion": "1.08",
+          "userIdentity": {
+            "type": "Anonymous",
+            "principalId": "ANONYMOUS"
+          },
+          "eventTime": "2024-06-10T14:32:45Z",
+          "eventSource": "s3.amazonaws.com",
+          "eventName": "PutObject",
+          "awsRegion": "us-east-1",
+          "sourceIPAddress": "203.0.113.45",
+          "userAgent": "aws-cli/2.7.16 Python/3.9.11 Linux/5.15.0-1031-aws botocore/2.4.11",
+          "requestParameters": {
+            "bucketName": "confidential-data-bucket",
+            "key": "exfiltrated_data/credentials_backup_20240610.json"
+          },
+          "responseElements": {
+            "x-amz-request-id": "3E1F3C2D1B2F4F9A",
+            "x-amz-id-2": "g3ZyX7p9kz5b+8Ix4TnKf0jP7q9s1LdJxC2P1qFfWvYjZ8T0vOqQ=="
+          },
+          "requestID": "3E1F3C2D1B2F4F9A",
+          "eventType": "AwsApiCall",
+          "recipientAccountId": "123456789012"
+        },
+        "s3_access_log_entry": "79a7f0c2a1d1b7e0 203.0.113.45 - - [10/Jun/2024:14:32:45 +0000] \"PUT /confidential-data-bucket/exfiltrated_data/credentials_backup_20240610.json HTTP/1.1\" 200 - - - \"aws-cli/2.7.16 Python/3.9.11 Linux/5.15.0-1031-aws botocore/2.4.11\" -",
+        "suspicious_uploaded_file_sample": "{\n  \"db_username\": \"admin\",\n  \"db_password\": \"P@ssw0rd123!\",\n  \"api_keys\": {\n    \"stripe\": \"sk_live_51Hxxxxxx\",\n    \"sendgrid\": \"SG.xxxxxxxx\"\n  }\n}",
+        "aws_cli_commands_captured": [
+          "aws s3api put-object --bucket confidential-data-bucket --key exfiltrated_data/credentials_backup_20240610.json --body creds.json",
+          "aws s3api get-object --bucket confidential-data-bucket --key secret_configs/config.yaml ./local_config.yaml"
+        ],
+        "bucket_acl": {
+          "Owner": {
+            "DisplayName": "bucketowner",
+            "ID": "abcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890"
+          },
+          "Grants": [
+            {
+              "Grantee": {
+                "Type": "Group",
+                "URI": "http://acs.amazonaws.com/groups/global/AllUsers"
+              },
+              "Permission": "READ"
+            },
+            {
+              "Grantee": {
+                "Type": "Group",
+                "URI": "http://acs.amazonaws.com/groups/global/AllUsers"
+              },
+              "Permission": "WRITE"
+            }
+          ]
+        }
+      },
+      "indicators": [
+        "S3 bucket policy with Principal: * allowing s3:GetObject and s3:PutObject",
+        "CloudTrail event with Anonymous user performing PutObject",
+        "S3 access logs showing PUT requests from external IPs",
+        "Presence of sensitive files uploaded by unknown actors",
+        "Bucket ACL granting READ and WRITE to AllUsers group"
+      ],
+      "detection_method": "Continuous monitoring of S3 bucket policies and ACLs using AWS Config rules and automated scanners (e.g., ScoutSuite, Prowler) to detect public write/read permissions; CloudTrail analysis to flag Anonymous PutObject or GetObject events on sensitive buckets; S3 access log analysis with alerts on external IPs performing PUT operations; Data Loss Prevention (DLP) on uploaded objects scanning for sensitive data signatures.",
+      "relevant_mitre_techniques": [
+        "T1530 - Data from Cloud Storage Object",
+        "T1078 - Valid Accounts (Anonymous access)",
+        "T1552 - Unsecured Credentials",
+        "T1083 - File and Directory Discovery",
+        "T1486 - Data Encrypted for Impact (if attacker encrypts data)"
+      ]
+    }
+  ]
+}

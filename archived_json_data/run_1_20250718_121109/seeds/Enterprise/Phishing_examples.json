@@ -1,0 +1,82 @@
+{
+  "examples": [
+    {
+      "scenario": "Automated spear phishing campaign utilizing AI-generated deepfake audio and synthetic video impersonations to target C-level executives, combined with domain spoofing and highly tailored email content to request fraudulent wire transfers.",
+      "technical_data": {
+        "email_headers": "Return-Path: <ceo@ce0-example.com>\r\nReceived: from mail.ce0-example.com (mail.ce0-example.com [192.168.10.25])\r\n\tby mail.enterprise.com (Postfix) with ESMTPS id 4F2A612345\r\n\tfor <finance@enterprise.com>; Tue, 28 Mar 2024 08:32:17 -0400 (EDT)\r\nReceived-SPF: pass (enterprise.com: domain of ceo@ce0-example.com designates 192.168.10.25 as permitted sender)\r\nAuthentication-Results: enterprise.com; spf=pass smtp.mailfrom=ceo@ce0-example.com; dkim=pass header.d=ce0-example.com; dmarc=pass (p=none)\r\nX-AI-Phish-Score: 92\r\nSubject: Urgent: Wire Transfer Approval Needed\r\nFrom: \"John A. Smith\" <ceo@ce0-example.com>\r\nTo: finance@enterprise.com\r\nMIME-Version: 1.0\r\nContent-Type: multipart/mixed; boundary=\"----=_Part_234_567890123.1585356742\"",
+        "email_body": "------=_Part_234_567890123.1585356742\r\nContent-Type: text/plain; charset=UTF-8\r\nContent-Transfer-Encoding: 7bit\r\n\r\nHi Team,\r\n\r\nPlease process the attached wire transfer immediately. This is a time-sensitive client payment.\r\n\r\nRegards,\r\nJohn\r\n\r\n------=_Part_234_567890123.1585356742\r\nContent-Type: audio/wav; name=\"voice_approval.wav\"\r\nContent-Transfer-Encoding: base64\r\nContent-Disposition: attachment; filename=\"voice_approval.wav\"\r\nUklGRlgAAABXQVZFZm10IBAAAAABAAEAQB8AAIA+AAACABAAZGF0YVgAAABv/v//9//3//v//9f/7//z//P/2//X/9f70/ebTz9HSl5+V+fZ5qV2aVhpWqW0bW1fU1NvU0tTT1NTU09TS1NQU1BQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFB\r\n------=_Part_234_567890123.1585356742--",
+        "smtp_transaction_log": "220 mail.ce0-example.com ESMTP Postfix\r\nEHLO mail.enterprise.com\r\n250-mail.ce0-example.com\r\n250-PIPELINING\r\n250-SIZE 52428800\r\n250-ETRN\r\n250-STARTTLS\r\n250-AUTH PLAIN LOGIN\r\n250-ENHANCEDSTATUSCODES\r\n250 8BITMIME\r\nMAIL FROM:<ceo@ce0-example.com>\r\n250 2.1.0 Ok\r\nRCPT TO:<finance@enterprise.com>\r\n250 2.1.5 Ok\r\nDATA\r\n354 End data with <CR><LF>.<CR><LF>\r\n[message data]\r\n.\r\n250 2.0.0 Ok: queued as 4F2A612345\r\nQUIT\r\n221 2.0.0 Bye",
+        "network_packet_capture_excerpt": "Frame 142: 658 bytes on wire (5264 bits), 658 bytes captured (5264 bits)\r\nEthernet II, Src: 00:15:5d:01:02:03 (00:15:5d:01:02:03), Dst: 00:25:90:ab:cd:ef (00:25:90:ab:cd:ef)\r\nInternet Protocol Version 4, Src: 192.168.10.25, Dst: 10.10.10.100\r\nTransmission Control Protocol, Src Port: 587, Dst Port: 49250, Seq: 1, Ack: 1, Len: 512\r\nHypertext Transfer Protocol\r\nPOST /sendmail HTTP/1.1\r\nHost: mail.enterprise.com\r\nContent-Type: multipart/mixed; boundary=\"----=_Part_234_567890123.1585356742\"\r\nContent-Length: 460\r\n\r\n------=_Part_234_567890123.1585356742\r\nContent-Type: text/plain; charset=UTF-8\r\n\r\nPlease send $500,000 to the following account immediately.\r\nAccount: 987654321\r\nRouting: 011000015\r\n\r\n------=_Part_234_567890123.1585356742--",
+        "domain_registration": {
+          "Domain": "ce0-example.com",
+          "Registrar": "NameCheap, Inc.",
+          "CreationDate": "2024-03-10T14:22:31Z",
+          "UpdatedDate": "2024-03-25T05:12:47Z",
+          "ExpirationDate": "2025-03-10T14:22:31Z",
+          "NameServers": [
+            "ns1.fakehost.com",
+            "ns2.fakehost.com"
+          ],
+          "Registrant": {
+            "Name": "John Smith",
+            "Organization": "N/A",
+            "Country": "US",
+            "Email": "john.smith@ce0-example.com"
+          }
+        },
+        "url_obfuscation": "https://enterprise--secure.com/login?session=89a2b3c4d5e6f7&redirect=https%3A%2F%2Fce0-example.com%2Fwire-transfer",
+        "ai_detection_tool_output": {
+          "audio_analysis": {
+            "deepfake_probability": 0.97,
+            "spectral_artifacts": [
+              "nonlinear phase distortion",
+              "unnatural prosody"
+            ],
+            "voice_cloning_model": "WaveNet-based TTS clone v3.2"
+          },
+          "video_analysis": {
+            "face_swap_score": 0.95,
+            "frame_anomalies": [
+              "microexpression inconsistency",
+              "lip-sync deviation"
+            ]
+          },
+          "email_analysis": {
+            "linguistic_anomalies": [
+              "unusual phraseology",
+              "incongruent signature"
+            ],
+            "header_anomalies": [
+              "return-path domain mismatch",
+              "spf pass on new domain"
+            ]
+          }
+        },
+        "mfa_verification_log": {
+          "timestamp": "2024-03-28T08:33:10-04:00",
+          "user": "finance@enterprise.com",
+          "verification_method": "out-of-band phone call",
+          "status": "declined",
+          "notes": "User reported suspicious email, flagged for SOC review"
+        }
+      },
+      "indicators": [
+        "Suspicious domain: ce0-example.com (registered 18 days ago)",
+        "High AI-phishing score (92) from email gateway",
+        "Email SPF pass for newly registered domain differing from known CEO domain",
+        "Base64-encoded audio attachment with deepfake artifacts",
+        "Unusual URL redirecting through obfuscated domain resembling legitimate enterprise URL",
+        "Out-of-band MFA verification declined and raised alert"
+      ],
+      "detection_method": "Deploy advanced AI-content detection tools integrated with email gateways to analyze voice and video attachments for deepfake indicators; use behavioral email analysis to detect linguistic anomalies; monitor domain registration feeds for newly created domains mimicking corporate identities; enforce multi-factor and out-of-band verification for all high-value wire transfer requests; use network monitoring to identify suspicious SMTP sessions originating from unrecognized IPs or domains.",
+      "relevant_mitre_techniques": [
+        "T1566.001 - Phishing: Spearphishing Attachment",
+        "T1589.002 - Gather Victim Identity Information: Search Open Websites/Domains",
+        "T1598.002 - Phishing for Information: Spearphishing via Service",
+        "T1204.002 - User Execution: Malicious File",
+        "T1595 - Active Scanning (domain reconnaissance)",
+        "T1071.001 - Application Layer Protocol: Web Protocols (used for C2 and delivery)"
+      ]
+    }
+  ]
+}

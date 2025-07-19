@@ -1,0 +1,217 @@
+{
+  "samples": [
+    {
+      "scenario": "Business Email Compromise involving executive impersonation where the attacker uses a compromised internal email account of a vice president to send a request for confidential employee payroll data. The attacker bypasses SPF and DKIM because the email originates from a legitimate internal mail server, but the request is suspicious due to unusual time and content. The email contains a subtle homograph attack in the sender's display name using Cyrillic characters, and the message urges quick compliance without secondary approval.",
+      "technical_data": {
+        "email_headers": "Return-Path: <vp-hr@enterprise.com>\r\nReceived: from internalmail.enterprise.com (internalmail.enterprise.com [10.10.10.20])\r\n    by mail.enterprise.com (Postfix) with ESMTPS id 7890EFGH\r\n    for <hr@enterprise.com>; Thu, 27 Apr 2024 03:15:12 +0000 (UTC)\r\nReceived-SPF: pass (enterprise.com: domain of vp-hr@enterprise.com designates 10.10.10.20 as permitted sender) receiver=mail.enterprise.com; client-ip=10.10.10.20; envelope-from=vp-hr@enterprise.com; helo=internalmail.enterprise.com;\r\nAuthentication-Results: mail.enterprise.com;\r\n    dkim=pass header.d=enterprise.com;\r\n    spf=pass smtp.mailfrom=vp-hr@enterprise.com;\r\n    dmarc=pass header.from=enterprise.com;\r\nX-Originating-IP: [10.10.10.20]\r\nMessage-ID: <20240427031512.7890EFGH@mail.enterprise.com>\r\nFrom: \"V\u0440 Jane Smith\" <vp-hr@enterprise.com>\r\nTo: hr@enterprise.com\r\nSubject: Immediate: Payroll Data Request\r\nDate: Thu, 27 Apr 2024 03:15:12 +0000\r\nMIME-Version: 1.0\r\nContent-Type: text/plain; charset=\"UTF-8\"\r\nContent-Transfer-Encoding: 7bit\r\nX-Mailer: Outlook 365\r\nX-Spam-Score: 1.2\r\nX-Phishing-Flag: None\r\n",
+        "email_body": "Dear HR Team,\n\nPlease send me the full payroll spreadsheet for all employees for Q1 2024. This is urgent and confidential. I need this data ASAP to finalize the audit report.\n\nDo not copy anyone else on this request.\n\nRegards,\nJane Smith\nVP Human Resources\n\n---\nIf you have any doubts, please proceed with the request immediately to avoid delays.",
+        "smtp_transaction_log": "220 internalmail.enterprise.com ESMTP Postfix\r\nEHLO internalmail.enterprise.com\r\n250-internalmail.enterprise.com\r\n250-PIPELINING\r\n250-SIZE 20480000\r\n250-VRFY\r\n250-ETRN\r\n250-STARTTLS\r\n250-AUTH PLAIN LOGIN\r\n250-ENHANCEDSTATUSCODES\r\n250-8BITMIME\r\n250 DSN\r\nMAIL FROM:<vp-hr@enterprise.com>\r\n250 2.1.0 Ok\r\nRCPT TO:<hr@enterprise.com>\r\n250 2.1.5 Ok\r\nDATA\r\n354 End data with <CR><LF>.<CR><LF>\r\nFrom: \"V\u0440 Jane Smith\" <vp-hr@enterprise.com>\r\nTo: hr@enterprise.com\r\nSubject: Immediate: Payroll Data Request\r\n\r\nDear HR Team, ...\r\n.\r\n250 2.0.0 Ok: queued as 7890EFGH\r\nQUIT\r\n221 2.0.0 Bye",
+        "domain_registration_details": {
+          "domain": "enterprise.com",
+          "registrar": "GoDaddy.com, LLC",
+          "creation_date": "2010-05-15T08:45:00Z",
+          "expiry_date": "2025-05-15T08:45:00Z",
+          "registrant": {
+            "name": "Enterprise Inc.",
+            "organization": "Enterprise Inc.",
+            "email": "admin@enterprise.com",
+            "address": "100 Enterprise Blvd, Metropolis, NY, US"
+          },
+          "nameservers": [
+            "ns1.enterprise.com",
+            "ns2.enterprise.com"
+          ]
+        },
+        "dkim_signature_header": "DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=enterprise.com; s=selector1; t=1714233312; bh=3B2C6A7D5F7F1C6E2D2F3E4A5B6C7D8E9F0A1B2C3D4E5F6A7B8C9D0E1F2A3B4C; h=from:to:subject:date:mime-version:content-type; b=xyz987validsignature==",
+        "spf_record": "v=spf1 ip4:10.10.10.0/24 ip4:198.51.100.0/24 include:spf.enterprise.com -all",
+        "dmarc_record": "_dmarc.enterprise.com TXT \"v=DMARC1; p=quarantine; rua=mailto:dmarc-rua@enterprise.com; ruf=mailto:dmarc-ruf@enterprise.com; fo=1\"",
+        "subject_line_analysis": "Subject line contains normal ASCII characters but the display name uses Cyrillic '\u0440' (U+0440) replacing Latin 'p' in 'Vp' to visually mimic legitimate VP title.",
+        "email_filter_log_entry": "Apr 27 03:15:15 mail.enterprise.com amavis[5633]: (05633-01) Passed SPAM and authentication checks; no flags raised.",
+        "dns_lookup_logs": "Query for enterprise.com A record returned 198.51.100.100\r\nQuery for enterprise.com MX record returned mail.enterprise.com\r\nQuery for _dmarc.enterprise.com TXT record returned DMARC record present",
+        "email_client_display": "Display From: V\u0440 Jane Smith <vp-hr@enterprise.com>\nActual mail envelope: vp-hr@enterprise.com\n",
+        "url_in_email": "None",
+        "secondary_verification_failure": "HR team trusted the email because it passed all email authentication checks and did not perform additional phone verification due to urgency."
+      },
+      "indicators": [
+        "Sender uses homograph attack with Cyrillic character in display name",
+        "Email originates from legitimate internal mail server but unusual request time",
+        "No secondary verification on highly sensitive data request",
+        "Urgency and confidentiality urged to reduce scrutiny",
+        "Email passes SPF, DKIM, and DMARC because account is compromised",
+        "Unusual request outside normal business hours"
+      ],
+      "detection_method": "Behavioral anomaly detection on unusual executive requests outside normal business hours; monitoring for homograph characters in display names; enforcing multi-factor verification for sensitive data requests; alerting on unusual data requests from executives.",
+      "relevant_mitre_techniques": [
+        "T1566.001 - Phishing: Spearphishing Attachment",
+        "T1566.002 - Phishing: Spearphishing Link",
+        "T1566.003 - Phishing: Spearphishing via Service",
+        "T1598.002 - Phishing for Information: Spearphishing via Service",
+        "T1598.004 - Phishing for Information: Spearphishing via Domain Spoofing",
+        "T1078 - Valid Accounts",
+        "T1556 - Modify Authentication Process",
+        "T1531 - Account Access Removal",
+        "T1204.002 - User Execution: Malicious File"
+      ]
+    },
+    {
+      "scenario": "Executive impersonation attack using a newly registered domain that mimics the CEO's domain but replaces a single character with a visually similar Unicode character (Latin 'o' replaced with Greek omicron). The attacker sends an urgent email requesting multiple wire transfers to offshore accounts. SPF passes due to the attacker configuring their own mail server with authorized IP, but DKIM fails as the signing domain is not aligned with the from domain. DMARC policy is set to quarantine and the email is delivered to a finance mailbox with a high spam score. The subject line uses deliberate homoglyph substitution and added invisible Unicode characters to evade filtering.",
+      "technical_data": {
+        "email_headers": "Return-Path: <ceo@c\u043empany.com>\r\nReceived: from mail.c\u043empany.com (mail.c\u043empany.com [203.0.113.77])\r\n    by mail.enterprise.com (Postfix) with ESMTPS id 4567IJKL\r\n    for <accounting@enterprise.com>; Fri, 28 Apr 2024 11:22:51 +0000 (UTC)\r\nReceived-SPF: pass (enterprise.com: domain of ceo@c\u043empany.com designates 203.0.113.77 as permitted sender) receiver=mail.enterprise.com; client-ip=203.0.113.77; envelope-from=ceo@c\u043empany.com; helo=mail.c\u043empany.com;\r\nAuthentication-Results: mail.enterprise.com;\r\n    dkim=fail header.d=company.com;\r\n    spf=pass smtp.mailfrom=ceo@c\u043empany.com;\r\n    dmarc=quarantine header.from=company.com;\r\nX-Originating-IP: [203.0.113.77]\r\nMessage-ID: <20240428112251.4567IJKL@mail.c\u043empany.com>\r\nFrom: \"John O'Connor\" <ceo@c\u043empany.com>\r\nTo: accounting@enterprise.com\r\nSubject: Urg\u0435nt\u200c: Transfer R\u0435quest for Multiple Accounts\r\nDate: Fri, 28 Apr 2024 11:22:51 +0000\r\nMIME-Version: 1.0\r\nContent-Type: text/plain; charset=\"UTF-8\"\r\nContent-Transfer-Encoding: 7bit\r\nX-Mailer: Thunderbird 102.14.0\r\nX-Spam-Score: 5.1\r\nX-Phishing-Flag: Suspected\r\n",
+        "email_body": "Hello,\n\nPlease proceed with the following wire transfers immediately:\n\n1) $150,000 to Account 987654321 at Offshore Bank A\n2) $275,000 to Account 123987456 at Offshore Bank B\n3) $325,000 to Account 564738291 at Offshore Bank C\n\nThese transfers are critical for our ongoing international operations. Please confirm each transfer once completed.\n\nThank you,\nJohn O'Connor\nChief Executive Officer\nCompany Inc.\n\n---\nConfidentiality Notice: This message is intended only for the recipient.",
+        "smtp_transaction_log": "220 mail.c\u043empany.com ESMTP Postfix\r\nEHLO mail.c\u043empany.com\r\n250-mail.c\u043empany.com\r\n250-PIPELINING\r\n250-SIZE 10485760\r\n250-VRFY\r\n250-ETRN\r\n250-STARTTLS\r\n250-AUTH LOGIN PLAIN\r\n250-ENHANCEDSTATUSCODES\r\n250-8BITMIME\r\n250 DSN\r\nMAIL FROM:<ceo@c\u043empany.com>\r\n250 2.1.0 Ok\r\nRCPT TO:<accounting@enterprise.com>\r\n250 2.1.5 Ok\r\nDATA\r\n354 End data with <CR><LF>.<CR><LF>\r\nFrom: John O'Connor <ceo@c\u043empany.com>\r\nTo: accounting@enterprise.com\r\nSubject: Urg\u0435nt\u200c: Transfer R\u0435quest for Multiple Accounts\r\n\r\nHello, ...\r\n.\r\n250 2.0.0 Ok: queued as 4567IJKL\r\nQUIT\r\n221 2.0.0 Bye",
+        "domain_registration_details": {
+          "domain": "c\u043empany.com",
+          "registrar": "Google Domains",
+          "creation_date": "2024-04-22T15:30:45Z",
+          "expiry_date": "2025-04-22T15:30:45Z",
+          "registrant": {
+            "name": "PrivacyGuard Service",
+            "organization": "PrivacyGuard LLC",
+            "email": "contact@privacyguard.com",
+            "address": "500 Privacy Lane, Austin, TX, US"
+          },
+          "nameservers": [
+            "ns1.googledomains.com",
+            "ns2.googledomains.com"
+          ]
+        },
+        "dkim_signature_header": "DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=company.com; s=mail2023; t=1714318971; bh=abc123hashvaluefake==; h=from:to:subject:date:mime-version:content-type; b=fakebase64signature==",
+        "spf_record": "v=spf1 ip4:203.0.113.77 -all",
+        "dmarc_record": "_dmarc.company.com TXT \"v=DMARC1; p=quarantine; rua=mailto:dmarc-rua@company.com; ruf=mailto:dmarc-ruf@company.com; fo=1\"",
+        "subject_line_analysis": "Subject line uses homoglyphs and a zero-width non-joiner (U+200C) character between 'Urgent' and colon to bypass keyword filters: \"Urg\u0435nt\u200c: Transfer R\u0435quest for Multiple Accounts\"",
+        "email_filter_log_entry": "Apr 28 11:22:53 mail.enterprise.com amavis[5750]: (05750-01) Passed SPF but failed DKIM; DMARC policy quarantine applied; SPAM-Flag: YES; DMARC-Status: quarantine; SPF-Status: pass; DKIM-Status: fail",
+        "dns_lookup_logs": "Query for c\u043empany.com A record returned 203.0.113.77\r\nQuery for c\u043empany.com MX record returned mail.c\u043empany.com\r\nQuery for _dmarc.c\u043empany.com TXT record returned DMARC record present",
+        "email_client_display": "Display From: John O'Connor <ceo@c\u043empany.com>\nActual mail envelope: ceo@c\u043empany.com\n",
+        "url_in_email": "None",
+        "secondary_verification_failure": "Finance team did not perform a call-back verification despite the high-risk nature and multiple wire transfers, trusting the apparent CEO domain and urgency.",
+        "indicators": [
+          "Sender domain c\u043empany.com uses Greek omicron (U+03BF) replacing Latin 'o' for homoglyph attack",
+          "DMARC policy set to quarantine but email still delivered due to SPF pass",
+          "DKIM signature fails for domain company.com",
+          "Subject line contains zero-width non-joiner Unicode character",
+          "Domain registered recently within a week of attack",
+          "High spam score and phishing flag in email filter logs",
+          "No secondary verification for large wire transfers",
+          "Multiple wire transfers requested in one email to offshore accounts"
+        ],
+        "detection_method": "Detection of homoglyph Unicode characters in sender domain; correlation of DMARC failures with similar domains; monitoring domain registration feeds for lookalike executive domains; alerting on multiple wire transfers initiated via email; enforced secondary verification for multiple large transfers.",
+        "relevant_mitre_techniques": [
+          "T1566.001 - Phishing: Spearphishing Attachment",
+          "T1566.002 - Phishing: Spearphishing Link",
+          "T1566.003 - Phishing: Spearphishing via Service",
+          "T1598.004 - Phishing for Information: Spearphishing via Domain Spoofing",
+          "T1556 - Modify Authentication Process",
+          "T1193 - Spearphishing Attachment",
+          "T1486 - Data Encrypted for Impact",
+          "T1071.001 - Application Layer Protocol: Web Protocols",
+          "T1204.002 - User Execution: Malicious File"
+        ]
+      }
+    },
+    {
+      "scenario": "Executive impersonation via BEC where attacker sends an email from a compromised legitimate executive email account but uses a reply-to address pointing to an external attacker-controlled mailbox. The email requests an urgent update of vendor payment information. SPF, DKIM, and DMARC all pass because the email is sent from the legitimate mail server, but the reply-to address is suspicious. The attacker leverages urgency and authority to bypass standard payment verification procedures.",
+      "technical_data": {
+        "email_headers": "Return-Path: <ceo@company.com>\r\nReceived: from mail.company.com (mail.company.com [192.0.2.50])\r\n    by mail.enterprise.com (Postfix) with ESMTPS id 5678EFGH\r\n    for <accounts@enterprise.com>; Thu, 27 Apr 2024 09:15:22 +0000 (UTC)\r\nReceived-SPF: pass (enterprise.com: domain of ceo@company.com designates 192.0.2.50 as permitted sender) receiver=mail.enterprise.com; client-ip=192.0.2.50; envelope-from=ceo@company.com; helo=mail.company.com;\r\nAuthentication-Results: mail.enterprise.com;\r\n    dkim=pass header.d=company.com;\r\n    spf=pass smtp.mailfrom=ceo@company.com;\r\n    dmarc=pass header.from=company.com;\r\nX-Originating-IP: [192.0.2.50]\r\nMessage-ID: <20240427091522.5678EFGH@mail.company.com>\r\nFrom: \"John Smith\" <ceo@company.com>\r\nReply-To: \"John Smith\" <payments.update@securemail.com>\r\nTo: accounts@enterprise.com\r\nSubject: Immediate: Vendor Payment Information Update\r\nDate: Thu, 27 Apr 2024 09:15:22 +0000\r\nMIME-Version: 1.0\r\nContent-Type: text/plain; charset=\"UTF-8\"\r\nContent-Transfer-Encoding: 7bit\r\nX-Mailer: Microsoft Outlook 16.0\r\nX-Spam-Score: 0.5\r\n",
+        "email_body": "Dear Accounts Team,\n\nPlease update the payment details for our main vendor as per the new instructions below. This change is effective immediately and critical for maintaining supply chain continuity.\n\nBank: Global Trust Bank\nAccount Number: 987654321\nRouting Number: 123123123\n\nPlease confirm once processed.\n\nBest regards,\nJohn Smith\nChief Executive Officer\nCompany Inc.\n\n---\nConfidentiality Notice: This email and any attachments are confidential and intended solely for the use of the individual or entity to which they are addressed.",
+        "smtp_transaction_log": "220 mail.company.com ESMTP Postfix\r\nEHLO mail.company.com\r\n250-mail.company.com\r\n250-PIPELINING\r\n250-SIZE 20480000\r\n250-VRFY\r\n250-ETRN\r\n250-STARTTLS\r\n250-AUTH PLAIN LOGIN\r\n250-ENHANCEDSTATUSCODES\r\n250-8BITMIME\r\n250 DSN\r\nMAIL FROM:<ceo@company.com>\r\n250 2.1.0 Ok\r\nRCPT TO:<accounts@enterprise.com>\r\n250 2.1.5 Ok\r\nDATA\r\n354 End data with <CR><LF>.<CR><LF>\r\nFrom: John Smith <ceo@company.com>\r\nReply-To: John Smith <payments.update@securemail.com>\r\nTo: accounts@enterprise.com\r\nSubject: Immediate: Vendor Payment Information Update\r\n\r\nDear Accounts Team, ...\r\n.\r\n250 2.0.0 Ok: queued as 5678EFGH\r\nQUIT\r\n221 2.0.0 Bye",
+        "domain_registration_details": {
+          "domain": "securemail.com",
+          "registrar": "GoDaddy.com, LLC",
+          "creation_date": "2023-12-15T08:45:10Z",
+          "expiry_date": "2025-12-15T08:45:10Z",
+          "registrant": {
+            "name": "Redacted for Privacy",
+            "organization": "Privacy Service",
+            "email": "contact@privacyservice.org",
+            "address": "PO Box 1234, Scottsdale, AZ, US"
+          },
+          "nameservers": [
+            "ns1.godaddy.com",
+            "ns2.godaddy.com"
+          ]
+        },
+        "dkim_signature_header": "DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=company.com; s=selector2024; t=1714300000; bh=AbCdEfGhIjKlMnOpQrStUvWxYz1234567890=; h=from:reply-to:to:subject:date:mime-version:content-type; b=validsignaturebase64==",
+        "spf_record": "v=spf1 ip4:192.0.2.50 -all",
+        "dmarc_record": "_dmarc.company.com TXT \"v=DMARC1; p=quarantine; rua=mailto:dmarc-rua@company.com; ruf=mailto:dmarc-ruf@company.com; fo=1\"",
+        "subject_line_analysis": "Subject line uses urgency keywords 'Immediate' and 'Vendor Payment Information Update' without obfuscation, designed to trigger quick action.",
+        "email_filter_log_entry": "Apr 27 09:15:23 mail.enterprise.com amavis[6622]: (06622-01) Passed SPF, DKIM, and DMARC; no spam detected; flagged as high-risk due to reply-to mismatch.",
+        "dns_lookup_logs": "Query for securemail.com A record returned 203.0.113.25\r\nQuery for securemail.com MX record returned mail.securemail.com\r\nQuery for _dmarc.securemail.com TXT record returned none (no DMARC record)",
+        "email_client_display": "Display From: John Smith <ceo@company.com>\nActual Reply-To: payments.update@securemail.com\n",
+        "url_in_email": "None",
+        "secondary_verification_failure": "No phone or video confirmation was performed despite unusual reply-to address and payment instruction changes.",
+        "indicators": [
+          "Email originated from legitimate executive mailbox but reply-to address differs and points to external domain",
+          "SPF, DKIM, and DMARC all pass due to legitimate mail server usage",
+          "Urgent payment instruction change requested without secondary verification",
+          "External reply-to domain registered recently with privacy protection",
+          "Email filter flagged for reply-to mismatch",
+          "No DMARC record on reply-to domain",
+          "No multi-factor verification for financial changes"
+        ],
+        "detection_method": "Monitoring for reply-to header discrepancies from executive emails; alerting on payment instruction changes without secondary verification; analyzing domain registration data of reply-to addresses; user awareness training to verify any payment changes through independent channels.",
+        "relevant_mitre_techniques": [
+          "T1566.001 - Phishing: Spearphishing Attachment",
+          "T1566.002 - Phishing: Spearphishing Link",
+          "T1566.003 - Phishing: Spearphishing via Service",
+          "T1598.004 - Phishing for Information: Spearphishing via Domain Spoofing",
+          "T1556 - Modify Authentication Process",
+          "T1071.001 - Application Layer Protocol: Web Protocols",
+          "T1204.002 - User Execution: Malicious File",
+          "T1193 - Spearphishing Attachment"
+        ]
+      }
+    },
+    {
+      "scenario": "BEC attack using an email sent from a compromised partner domain with valid SPF and DKIM, but the email fails DMARC due to domain alignment mismatch. The attacker impersonates the COO requesting an urgent confidential employee payroll export. The email uses homoglyphs in the sender domain, and subject line includes invisible Unicode characters to evade detection. The attacker attempts to exfiltrate sensitive payroll data by social engineering the HR department.",
+      "technical_data": {
+        "email_headers": "Return-Path: <coo@payro11-partners.com>\r\nReceived: from mail.payro11-partners.com (mail.payro11-partners.com [203.0.113.77])\r\n    by mail.enterprise.com (Postfix) with ESMTPS id 8910IJKL\r\n    for <hr@enterprise.com>; Fri, 28 Apr 2024 11:42:10 +0000 (UTC)\r\nReceived-SPF: pass (enterprise.com: domain of coo@payro11-partners.com designates 203.0.113.77 as permitted sender) receiver=mail.enterprise.com; client-ip=203.0.113.77; envelope-from=coo@payro11-partners.com; helo=mail.payro11-partners.com;\r\nAuthentication-Results: mail.enterprise.com;\r\n    dkim=pass header.d=payro11-partners.com;\r\n    spf=pass smtp.mailfrom=coo@payro11-partners.com;\r\n    dmarc=fail (p=reject disallowed) header.from=company.com;\r\nX-Originating-IP: [203.0.113.77]\r\nMessage-ID: <20240428114210.8910IJKL@mail.payro11-partners.com>\r\nFrom: \"Michael Lee\" <coo@payro11-partners.com>\r\nTo: hr@enterprise.com\r\nSubject: Confidential\u200c\u200b: Immediate Payroll Data Export Request\r\nDate: Fri, 28 Apr 2024 11:42:10 +0000\r\nMIME-Version: 1.0\r\nContent-Type: text/plain; charset=\"UTF-8\"\r\nContent-Transfer-Encoding: 7bit\r\nX-Mailer: Microsoft Outlook 16.0\r\nX-Spam-Score: 4.2\r\nX-Phishing-Flag: Suspected\r\n",
+        "email_body": "Hello HR Team,\n\nPlease prepare and send the full payroll export for all employees by end of day today. This data is required urgently for an internal audit.\n\nEnsure the file includes employee IDs, salary, tax withholdings, and bank details.\n\nHandle this request with utmost confidentiality.\n\nThank you,\nMichael Lee\nChief Operating Officer\nCompany Inc.\n\n---\nThis message is confidential. If you are not the intended recipient, please delete immediately.",
+        "smtp_transaction_log": "220 mail.payro11-partners.com ESMTP Postfix\r\nEHLO mail.payro11-partners.com\r\n250-mail.payro11-partners.com\r\n250-PIPELINING\r\n250-SIZE 5120000\r\n250-VRFY\r\n250-ETRN\r\n250-STARTTLS\r\n250-AUTH PLAIN LOGIN\r\n250-ENHANCEDSTATUSCODES\r\n250-8BITMIME\r\n250 DSN\r\nMAIL FROM:<coo@payro11-partners.com>\r\n250 2.1.0 Ok\r\nRCPT TO:<hr@enterprise.com>\r\n250 2.1.5 Ok\r\nDATA\r\n354 End data with <CR><LF>.<CR><LF>\r\nFrom: Michael Lee <coo@payro11-partners.com>\r\nTo: hr@enterprise.com\r\nSubject: Confidential\u200c\u200b: Immediate Payroll Data Export Request\r\n\r\nHello HR Team, ...\r\n.\r\n250 2.0.0 Ok: queued as 8910IJKL\r\nQUIT\r\n221 2.0.0 Bye",
+        "domain_registration_details": {
+          "domain": "payro11-partners.com",
+          "registrar": "Tucows Domains Inc.",
+          "creation_date": "2024-03-30T12:00:00Z",
+          "expiry_date": "2025-03-30T12:00:00Z",
+          "registrant": {
+            "name": "Privacy Protect",
+            "organization": "Privacy Protect, LLC",
+            "email": "privacy@privacyprotect.org",
+            "address": "456 Privacy Blvd, Toronto, ON, CA"
+          },
+          "nameservers": [
+            "ns1.tucowsdns.com",
+            "ns2.tucowsdns.com"
+          ]
+        },
+        "dkim_signature_header": "DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=payro11-partners.com; s=selector1; t=1714400000; bh=QWERTYUIOPLKJHGFDSAZXCVBNM1234567890=; h=from:to:subject:date:mime-version:content-type; b=validfakebase64signature==",
+        "spf_record": "v=spf1 ip4:203.0.113.77 -all",
+        "dmarc_record": "_dmarc.company.com TXT \"v=DMARC1; p=reject; rua=mailto:dmarc-rua@company.com; ruf=mailto:dmarc-ruf@company.com; fo=1\"",
+        "subject_line_analysis": "Subject line contains invisible Unicode characters (U+200C zero width non-joiner and U+200B zero width space) to evade detection: \"Confidential\u200c\u200b: Immediate Payroll Data Export Request\"",
+        "email_filter_log_entry": "Apr 28 11:42:12 mail.enterprise.com amavis[7744]: (07744-01) Passed SPF and DKIM but failed DMARC; spam score elevated due to suspicious unicode characters; flagged as phishing attempt.",
+        "dns_lookup_logs": "Query for payro11-partners.com A record returned 203.0.113.77\r\nQuery for payro11-partners.com MX record returned mail.payro11-partners.com\r\nQuery for _dmarc.payro11-partners.com TXT record returned none (no DMARC record)",
+        "email_client_display": "Display From: Michael Lee <coo@payro11-partners.com>\nActual mail envelope: coo@payro11-partners.com\n",
+        "url_in_email": "None",
+        "secondary_verification_failure": "HR processed the request without phone or video verification despite the high-risk nature of the data requested.",
+        "indicators": [
+          "Sender domain payro11-partners.com is homoglyph typosquatting variant of payroll-partners.com",
+          "DMARC authentication failed with policy reject for company.com domain alignment",
+          "SPF and DKIM pass for attacker-controlled domain",
+          "Subject line contains invisible Unicode characters for obfuscation",
+          "Domain registered recently with privacy-protected registrant",
+          "Email filter flagged as phishing due to DMARC failure and unicode obfuscation",
+          "No secondary verification performed for sensitive payroll data request"
+        ],
+        "detection_method": "Correlating DMARC failures with domain impersonation attempts; analyzing subject line for Unicode obfuscation; alerting on requests for highly sensitive HR data from external or lookalike domains; enforcing strict multi-factor verification for data exports involving payroll information.",
+        "relevant_mitre_techniques": [
+          "T1566.002 - Phishing: Spearphishing Link",
+          "T1566.003 - Phishing: Spearphishing via Service",
+          "T1598.004 - Phishing for Information: Spearphishing via Domain Spoofing",
+          "T1556 - Modify Authentication Process",
+          "T1071.001 - Application Layer Protocol: Web Protocols",
+          "T1537 - Transfer Data to Cloud Account",
+          "T1204.002 - User Execution: Malicious File"
+        ]
+      }
+    }
+  ]
+}

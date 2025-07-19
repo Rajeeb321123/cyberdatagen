@@ -1,0 +1,87 @@
+{
+  "problem": {
+    "area": "Cloud",
+    "nature": "Misconfigured Cloud Storage",
+    "description": "Publicly exposed cloud storage buckets or databases lead to data leakage or unauthorized access to sensitive information."
+  },
+  "automated_metrics": {
+    "total_samples": 2,
+    "unique_samples": 2,
+    "uniqueness_ratio": 1.0,
+    "missing_keys_count": 0,
+    "completeness_ratio": 1.0
+  },
+  "individual_validations": {
+    "summary": {
+      "samples_validated": 2,
+      "valid_samples": 2,
+      "validity_rate": 1.0,
+      "overall_score_mean": 0.97,
+      "overall_score_std": 0.0
+    },
+    "detailed_results": [
+      {
+        "is_valid": true,
+        "scores": {
+          "relevance": 1.0,
+          "consistency": 1.0,
+          "correctness": 0.95,
+          "completeness": 0.95,
+          "realism": 0.95
+        },
+        "overall_score": 0.97,
+        "issues": [
+          "Minor detail: The 'response' field in the audit log is empty; including a typical response status code could improve completeness and realism."
+        ],
+        "strengths": [
+          "Highly relevant scenario describing a publicly exposed GCS bucket with sensitive financial data.",
+          "Consistent and well-structured data following expected GCP audit log schema and IAM policy format.",
+          "Technical details such as method names, resource names, and user agents are accurate and plausible.",
+          "Includes comprehensive information: audit logs, IAM policy, HTTP request, file snippet, CLI commands, detection methods, and MITRE techniques.",
+          "Realistic example with plausible IP address, user agent, and data content reflecting a real-world misconfiguration and data exposure."
+        ],
+        "sample_index": 0
+      },
+      {
+        "is_valid": true,
+        "scores": {
+          "relevance": 1.0,
+          "consistency": 1.0,
+          "correctness": 0.95,
+          "completeness": 0.95,
+          "realism": 0.95
+        },
+        "overall_score": 0.97,
+        "issues": [
+          "Minor potential ambiguity in 'Valid Accounts' technique usage since anonymous access is not a traditional valid account but is acceptable in context.",
+          "No explicit mention of remediation steps or timeline for incident response."
+        ],
+        "strengths": [
+          "Highly relevant to cloud misconfigured storage exposure scenario.",
+          "Consistent and well-structured data with appropriate Azure log fields and formats.",
+          "Technically accurate use of Azure Storage REST API, ACL settings, and CLI commands.",
+          "Comprehensive inclusion of scenario description, technical logs, indicators, detection methods, and MITRE techniques.",
+          "Realistic example with plausible timestamps, IP addresses, and file contents."
+        ],
+        "sample_index": 1
+      }
+    ]
+  },
+  "overall_assessment": {
+    "realism": "The samples are highly realistic, reflecting genuine cloud misconfiguration scenarios involving Azure Blob Storage and Google Cloud Storage. The technical details such as log entries, API calls, HTTP requests, and CLI commands align well with actual cloud provider formats and behaviors. The inclusion of specific fields like resource IDs, timestamps, user agents, and IAM policies enhances authenticity. The sensitive data snippets and attacker behaviors are plausible and consistent with known attack patterns.",
+    "consistency": "The samples maintain good consistency and adhere well to a coherent schema. Each entry includes scenario descriptions, technical data with provider-specific logs and configurations, indicators, detection methods, and relevant MITRE ATT&CK techniques. The structure is uniform across samples, with appropriate nesting and field naming conventions. Minor differences in field naming reflect provider-specific log formats but do not detract from overall schema uniformity.",
+    "suggestions": [
+      "Include explicit schema definitions or JSON schema references to further standardize field types and required fields.",
+      "Add more varied attacker identities beyond 'Anonymous' or 'anonymous' to reflect different threat actor profiles.",
+      "Incorporate additional metadata such as region or storage account location to enhance context.",
+      "Provide more detailed response status codes or error messages in logs where applicable to enrich detection scenarios.",
+      "Consider adding timestamps in a consistent ISO 8601 format with timezone offsets for clarity.",
+      "Expand on mitigation steps with references to specific cloud provider best practices or tools."
+    ]
+  },
+  "report_metadata": {
+    "total_samples": 2,
+    "samples_validated_individually": 2,
+    "validation_percentage": 100.0
+  }
+}

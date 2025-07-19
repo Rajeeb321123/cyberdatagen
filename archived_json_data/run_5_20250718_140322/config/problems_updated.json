@@ -1,0 +1,156 @@
+{
+  "problems": [
+    {
+      "area": "Social Engineering",
+      "nature": "credential_harvesting",
+      "description": "Attackers send emails impersonating trusted entities to trick users into submitting their login credentials on fake websites.",
+      "risk_reduction": [
+        "Implement multi-factor authentication (MFA) to reduce impact of stolen credentials",
+        "Deploy advanced email filtering and anti-phishing tools",
+        "Conduct regular user training and phishing simulation exercises"
+      ],
+      "attack_vector": "Email",
+      "asset_targeted": "User Credentials",
+      "kill_chain_phase": "Delivery",
+      "impact_level": "High",
+      "mitigation_controls": [
+        "MITRE ATT&CK T1566.001",
+        "NIST SP 800-53 AC-7",
+        "CIS Control 7"
+      ]
+    },
+    {
+      "area": "Social Engineering",
+      "nature": "spear_phishing",
+      "description": "Highly targeted phishing emails crafted using personal information to deceive specific individuals into revealing sensitive data or executing malicious actions.",
+      "risk_reduction": [
+        "Use threat intelligence to identify and block targeted phishing campaigns",
+        "Educate employees on recognizing social engineering tactics",
+        "Verify unusual requests through secondary communication channels"
+      ],
+      "attack_vector": "Email",
+      "asset_targeted": "User Credentials",
+      "kill_chain_phase": "Delivery",
+      "impact_level": "High",
+      "mitigation_controls": [
+        "MITRE ATT&CK T1566.002",
+        "NIST SP 800-53 AT-2",
+        "CIS Control 7"
+      ]
+    },
+    {
+      "area": "Social Engineering",
+      "nature": "business_email_compromise",
+      "description": "Attackers compromise or spoof executive email accounts to request fraudulent wire transfers or sensitive information from employees.",
+      "risk_reduction": [
+        "Enforce strict email authentication protocols like DMARC, DKIM, and SPF",
+        "Establish verification procedures for financial transactions",
+        "Monitor email accounts for anomalous login behavior"
+      ],
+      "attack_vector": "Email",
+      "asset_targeted": "Financial Systems",
+      "kill_chain_phase": "Delivery",
+      "impact_level": "Critical",
+      "mitigation_controls": [
+        "MITRE ATT&CK T1566.003",
+        "NIST SP 800-53 AC-17",
+        "CIS Control 16"
+      ]
+    },
+    {
+      "area": "Cloud Security",
+      "nature": "misconfigured_storage_bucket",
+      "description": "Publicly exposed cloud storage buckets (e.g., AWS S3, Azure Blob) leading to data leakage or unauthorized access.",
+      "risk_reduction": [
+        "Implement automated cloud configuration scanning and compliance checks",
+        "Enforce least privilege access policies and encryption at rest",
+        "Use cloud provider security posture management (CSPM) tools"
+      ],
+      "attack_vector": "Cloud API",
+      "asset_targeted": "Cloud Storage",
+      "kill_chain_phase": "Exploitation",
+      "impact_level": "High",
+      "mitigation_controls": [
+        "MITRE ATT&CK T1530",
+        "NIST SP 800-53 SC-7",
+        "CIS Control 10"
+      ]
+    },
+    {
+      "area": "Supply Chain",
+      "nature": "third_party_software_compromise",
+      "description": "Attackers compromise software vendors or update mechanisms to distribute malicious code to downstream customers.",
+      "risk_reduction": [
+        "Implement software bill of materials (SBOM) and supply chain risk assessments",
+        "Monitor vendor security posture and patch management rigorously",
+        "Use code signing and integrity verification for software updates"
+      ],
+      "attack_vector": "Supply Chain",
+      "asset_targeted": "Software Supply Chain",
+      "kill_chain_phase": "Delivery",
+      "impact_level": "Critical",
+      "mitigation_controls": [
+        "MITRE ATT&CK T1195",
+        "NIST SP 800-53 SA-12",
+        "CIS Control 15"
+      ]
+    },
+    {
+      "area": "AI-Enabled Attacks",
+      "nature": "deepfake_phishing",
+      "description": "Use of AI-generated synthetic media (audio/video) to impersonate executives or trusted individuals to deceive employees or partners.",
+      "risk_reduction": [
+        "Deploy deepfake detection tools and verification processes",
+        "Train staff to verify unusual requests via multiple channels",
+        "Implement strict transaction authorization policies"
+      ],
+      "attack_vector": "Social Engineering",
+      "asset_targeted": "User Credentials",
+      "kill_chain_phase": "Delivery",
+      "impact_level": "High",
+      "mitigation_controls": [
+        "MITRE ATT&CK T1566",
+        "NIST SP 800-53 AT-2",
+        "CIS Control 7"
+      ]
+    },
+    {
+      "area": "Adversarial Machine Learning",
+      "nature": "model_poisoning",
+      "description": "Attackers manipulate training data or model parameters to degrade AI system performance or cause misclassifications.",
+      "risk_reduction": [
+        "Use robust training data validation and anomaly detection",
+        "Employ adversarial training and model monitoring",
+        "Isolate and secure ML pipelines and data sources"
+      ],
+      "attack_vector": "Data Manipulation",
+      "asset_targeted": "Machine Learning Model",
+      "kill_chain_phase": "Exploitation",
+      "impact_level": "High",
+      "mitigation_controls": [
+        "MITRE ATT&CK T1609",
+        "NIST SP 800-53 SI-4",
+        "CIS Control 13"
+      ]
+    },
+    {
+      "area": "Endpoint Security",
+      "nature": "fileless_malware",
+      "description": "Malware that operates in memory without writing files to disk, evading traditional antivirus detection.",
+      "risk_reduction": [
+        "Deploy endpoint detection and response (EDR) solutions with behavior analytics",
+        "Implement application whitelisting and privilege restrictions",
+        "Monitor for anomalous process and network activity"
+      ],
+      "attack_vector": "Endpoint",
+      "asset_targeted": "Endpoint Systems",
+      "kill_chain_phase": "Exploitation",
+      "impact_level": "High",
+      "mitigation_controls": [
+        "MITRE ATT&CK T1055",
+        "NIST SP 800-53 SI-3",
+        "CIS Control 8"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,45 @@
+{
+  "examples": [
+    {
+      "scenario": "Spear phishing attack targeting a corporate CFO using a spoofed internal finance department email to request wire transfer details.",
+      "technical_data": {
+        "email_headers": "Return-Path: <finance-support@financedevops.com>\r\nReceived: from mail.financedevops.com (mail.financedevops.com [198.51.100.45])\r\n\tby mail.corp.example.com (Postfix) with ESMTPS id 4F3A71012B\r\n\tfor <cfo@corp.example.com>; Thu, 13 Apr 2023 08:23:12 -0400 (EDT)\r\nReceived-SPF: pass (example.com: domain of finance-support@financedevops.com designates 198.51.100.45 as permitted sender) receiver=mail.corp.example.com; client-ip=198.51.100.45; envelope-from=finance-support@financedevops.com; helo=mail.financedevops.com;\r\nAuthentication-Results: mail.corp.example.com; dkim=pass header.d=financedevops.com; spf=pass (sender IP is 198.51.100.45) smtp.mailfrom=finance-support@financedevops.com; dmarc=pass (p=none) header.from=financedevops.com\r\nMIME-Version: 1.0\r\nContent-Type: text/html; charset=UTF-8\r\nFrom: \"Finance Department\" <finance-support@financedevops.com>\r\nTo: cfo@corp.example.com\r\nSubject: Urgent: Wire Transfer Confirmation Required\r\nMessage-ID: <CAJ3XYZxqfFz-9x7j9hq@financedevops.com>\r\nDate: Thu, 13 Apr 2023 08:22:50 -0400\r\nX-Mailer: Microsoft Outlook 16.0\r\nX-Originating-IP: [198.51.100.45]\r\nX-Spam-Status: No\r\nX-Spam-Score: 0.0\r\n",
+        "email_body": "<html><body><p>Hi John,</p><p>Per our recent discussion, please find attached the wire transfer details for the upcoming vendor payment. Kindly confirm the recipient account details to avoid delays.</p><p><b>Recipient:</b> ABC Supplies Ltd.<br><b>Account Number:</b> 1234567890<br><b>Bank:</b> First National Bank<br><b>Amount:</b> $1,250,000</p><p>Let me know if you need anything else.</p><p>Best,<br>Lisa</p></body></html>",
+        "smtp_transaction_log": "220 mail.financedevops.com ESMTP Postfix\r\nEHLO mail.financedevops.com\r\n250-mail.financedevops.com\r\n250-PIPELINING\r\n250-SIZE 10240000\r\n250-ETRN\r\n250-AUTH PLAIN LOGIN\r\n250-ENHANCEDSTATUSCODES\r\n250-8BITMIME\r\n250 DSN\r\nMAIL FROM:<finance-support@financedevops.com>\r\n250 2.1.0 Ok\r\nRCPT TO:<cfo@corp.example.com>\r\n250 2.1.5 Ok\r\nDATA\r\n354 End data with <CR><LF>.<CR><LF>\r\nFrom: \"Finance Department\" <finance-support@financedevops.com>\r\nTo: cfo@corp.example.com\r\nSubject: Urgent: Wire Transfer Confirmation Required\r\n\r\n<html>...</html>\r\n.\r\n250 2.0.0 Ok: queued as 4F3A71012B\r\nQUIT\r\n221 2.0.0 Bye",
+        "domain_registration": {
+          "Domain": "financedevops.com",
+          "Registrar": "NameCheap, Inc.",
+          "CreationDate": "2023-02-28T14:12:00Z",
+          "ExpirationDate": "2024-02-28T14:12:00Z",
+          "UpdatedDate": "2023-03-01T10:00:00Z",
+          "NameServers": [
+            "ns1.namecheapdns.com",
+            "ns2.namecheapdns.com"
+          ],
+          "Registrant": {
+            "Organization": "FinDevOps LLC",
+            "Country": "US",
+            "Email": "admin@financedevops.com"
+          }
+        },
+        "url_obfuscation": "https://financedevops.com/finance-confirmation?acct=MTIzNDU2Nzg5MA==&amt=MTI1MDAwMDA= (base64 encoded parameters for account=1234567890, amount=12500000)",
+        "additional_notes": "Email passed SPF, DKIM, and DMARC due to domain being registered by attacker with proper DNS records configured, making it appear legitimate."
+      },
+      "indicators": [
+        "Sender IP 198.51.100.45 not present in corporate mail system IPs",
+        "Domain financedevops.com newly registered (less than 2 months old)",
+        "Email contains base64 encoded URL parameters to evade simple pattern matching",
+        "Mismatch between sender display name 'Finance Department' and actual domain financedevops.com",
+        "Unusual external domain used to impersonate internal finance"
+      ],
+      "detection_method": "Correlation of email sender domain registration age and IP reputation; SPF, DKIM, DMARC validation anomalies; detection of base64-encoded URL parameters in email body; alert on emails requesting wire transfers or sensitive financial info from external domains; user education to verify with known contacts via alternate channels.",
+      "relevant_mitre_techniques": [
+        "T1566.001 - Spearphishing Attachment",
+        "T1566.002 - Spearphishing Link",
+        "T1598 - Phishing",
+        "T1589.002 - Gather Victim Identity Information: Social Media",
+        "T1192 - Spearphishing via Service"
+      ]
+    }
+  ]
+}

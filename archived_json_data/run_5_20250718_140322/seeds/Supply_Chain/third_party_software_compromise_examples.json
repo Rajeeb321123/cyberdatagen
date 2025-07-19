@@ -1,0 +1,73 @@
+{
+  "examples": [
+    {
+      "scenario": "Malicious code distributed via compromised software vendor update mechanism leading to supply chain compromise.",
+      "technical_data": {
+        "software_update_http_traffic": {
+          "request": "POST /updates/check HTTP/1.1\r\nHost: vendor-software.com\r\nUser-Agent: VendorUpdater/3.2.1\r\nContent-Type: application/json\r\nContent-Length: 123\r\nAccept-Encoding: gzip, deflate\r\n\r\n{\"product_id\":\"com.vendor.product\",\"version\":\"5.4.2\",\"platform\":\"windows-x64\"}",
+          "response": "HTTP/1.1 200 OK\r\nContent-Type: application/octet-stream\r\nContent-Length: 1048576\r\nContent-Disposition: attachment; filename=\"update_patch_5.4.3.pkg\"\r\nX-Code-Signature: MEUCIQDaK7Hq0Z3P0d2K2vQhZ2E7ouE4tNqvBUPi0zZ8aDk1bUwIgMbmL6xg9x5b0qO0QNSi9j9k5QeNwIGo5r0+q6yLq2hWI=\r\n\r\n<binary data>",
+          "notes": "The update package is signed with an invalid or attacker-generated code signature. The HTTP response includes a suspicious X-Code-Signature header that does not match vendor's public keys."
+        },
+        "sbom_snippet": {
+          "product": "com.vendor.product",
+          "version": "5.4.3",
+          "components": [
+            {
+              "name": "libcrypto",
+              "version": "1.1.1g",
+              "hashes": {
+                "sha256": "afdc4e3e5a3b2cdd9c4c7e9d9a7ce6a5f2b9e0e9b3f0f6a0e6c4a7b9e3d9f5a6"
+              }
+            },
+            {
+              "name": "malicious_module",
+              "version": "0.0.1",
+              "hashes": {
+                "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+              }
+            }
+          ]
+        },
+        "software_vendor_registry_changes": [
+          "HKLM\\Software\\VendorProduct\\UpdateTimestamp : 2024-06-01T14:22:38Z",
+          "HKLM\\Software\\VendorProduct\\Modules\\malicious_module.dll : Installed",
+          "HKLM\\Software\\VendorProduct\\Modules\\malicious_module.dll\\Checksum : e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        ],
+        "malicious_dll_file_hashes": {
+          "md5": "d41d8cd98f00b204e9800998ecf8427e",
+          "sha1": "da39a3ee5e6b4b0d3255bfef95601890afd80709",
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        "process_creation_logs": [
+          "2024-06-01T14:23:05Z W3WP.exe PID: 4568 ParentPID: 1234 CommandLine: \"C:\\Program Files\\VendorProduct\\malicious_module.dll\"",
+          "2024-06-01T14:23:06Z rundll32.exe PID: 4572 ParentPID: 4568 CommandLine: \"rundll32.exe malicious_module.dll,Start\""
+        ],
+        "network_c2_traffic": [
+          "22:23:45.123456 IP 192.168.1.100.56432 > 93.184.216.34.443: Flags [P.], seq 3421:3521, ack 2143, win 64240, length 100",
+          "Encrypted HTTP POST to https://c2.attacker-domain.com/api/v1/status with JSON payload {\"hostname\":\"victim-pc01\",\"status\":\"ready\",\"session_id\":\"a1b2c3d4e5\"}"
+        ],
+        "code_signing_verification_output": "signtool verify /pa update_patch_5.4.3.pkg\n\nFile: update_patch_5.4.3.pkg\nSigning Certificate Chain:\n    Issued to: Attacker Fake CA\n    Issued by: Attacker Fake CA\n    Expires: 2028-12-31\n\nERROR: Signature does not match known vendor certificates."
+      },
+      "indicators": {
+        "malicious_update_package_hash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "malicious_dll_hash_md5": "d41d8cd98f00b204e9800998ecf8427e",
+        "unrecognized_code_signing_cert_cn": "Attacker Fake CA",
+        "suspicious_network_c2_domain": "c2.attacker-domain.com",
+        "registry_changes": [
+          "HKLM\\Software\\VendorProduct\\Modules\\malicious_module.dll : Installed"
+        ],
+        "process_command_lines": [
+          "rundll32.exe malicious_module.dll,Start"
+        ]
+      },
+      "detection_method": "Continuous monitoring of software update integrity by validating code signatures against vendor's trusted certificates. Use of SBOM to detect unexpected new components (e.g., malicious_module). Endpoint monitoring for suspicious process creations involving DLL execution from vendor folders. Network monitoring and DNS logging to detect unknown or anomalous outbound connections to newly seen C2 domains. Registry and file system integrity checks to detect unauthorized changes.",
+      "relevant_mitre_techniques": [
+        "T1195.002",
+        "T1554",
+        "T1071.001",
+        "T1110",
+        "T1036"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,87 @@
+{
+  "examples": [
+    {
+      "scenario": "Spear phishing email targeting CFO to initiate fraudulent wire transfer with a spoofed executive email and embedded URL exploiting obfuscated domain to harvest credentials.",
+      "technical_data": {
+        "email_headers": "Return-Path: <ceo@executive-example.com>\r\nReceived: from mail.executive-example.com (mail.executive-example.com [203.0.113.45])\r\n\tby mx.internal.corp (Postfix) with ESMTPS id 9F3C72003\r\n\tfor <cfo@corp.com>; Tue, 21 Mar 2023 09:15:23 +0000 (UTC)\r\nX-Originating-IP: [198.51.100.22]\r\nX-Mailer: Microsoft Outlook 16.0\r\nMessage-ID: <CAOZ5t8L=AmW9mXg0PQ@mail.executive-example.com>\r\nSubject: URGENT: Wire Transfer Approval Needed\r\nFrom: \"Michael Johnson\" <ceo@executive-example.com>\r\nTo: cfo@corp.com\r\nMIME-Version: 1.0\r\nContent-Type: text/html; charset=\"UTF-8\"\r\nX-Spam-Flag: NO\r\nX-Phishing-Score: 8.5\r\nX-Received-SPF: Pass (sender SPF authorized)\r\nX-DKIM-Status: pass\r\nX-DMARC-Status: pass\r\n",
+        "email_body_html": "<html><body><p>Hi Laura,</p><p>We need to process an urgent wire transfer for the acquisition deal. Please use the link below to review and approve the transaction immediately.</p><p><a href=\"http://corp-secure-login.com/login?session=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9\">Review & Approve Wire Transfer</a></p><p>Regards,<br>Michael</p></body></html>",
+        "smtp_transaction_log": [
+          "220 mail.executive-example.com ESMTP Postfix",
+          "EHLO mail.internal.corp",
+          "250-mail.executive-example.com",
+          "250-PIPELINING",
+          "250-SIZE 10485760",
+          "250-VRFY",
+          "250-ETRN",
+          "250-STARTTLS",
+          "250-AUTH PLAIN LOGIN",
+          "250-ENHANCEDSTATUSCODES",
+          "250-8BITMIME",
+          "250 DSN",
+          "MAIL FROM:<ceo@executive-example.com>",
+          "250 2.1.0 Ok",
+          "RCPT TO:<cfo@corp.com>",
+          "250 2.1.5 Ok",
+          "DATA",
+          "354 End data with <CR><LF>.<CR><LF>",
+          "Received: from mail.executive-example.com (mail.executive-example.com [203.0.113.45])",
+          "From: \"Michael Johnson\" <ceo@executive-example.com>",
+          "To: cfo@corp.com",
+          "Subject: URGENT: Wire Transfer Approval Needed",
+          "... (email body here) ...",
+          ".",
+          "250 2.0.0 Ok: queued as 9F3C72003",
+          "QUIT",
+          "221 2.0.0 Bye"
+        ],
+        "domain_registration": {
+          "domain": "corp-secure-login.com",
+          "registrar": "NameCheap, Inc.",
+          "creation_date": "2023-03-15T12:34:56Z",
+          "expiration_date": "2024-03-15T12:34:56Z",
+          "registrant": {
+            "name": "Privacy Protection Service",
+            "organization": "Privacy Protect, LLC",
+            "email": "contact@privacyprotect.org",
+            "address": "123 Privacy St, Wilmington, DE, US"
+          },
+          "nameservers": [
+            "ns1.privacyprotect.org",
+            "ns2.privacyprotect.org"
+          ]
+        },
+        "phishing_url": {
+          "full_url": "http://corp-secure-login.com/login?session=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9",
+          "domain": "corp-secure-login.com",
+          "url_analysis": {
+            "domain_similarity": "Looks visually similar to corp.com but with '-secure-login' appended",
+            "session_token": "JWT token string (base64 encoded header.payload.signature)",
+            "obfuscation": "Use of JWT token in URL parameter to appear legitimate and evade simple URL pattern detection"
+          },
+          "dns_resolution": {
+            "A_record": "198.51.100.22",
+            "PTR_record": "mail.corp-secure-login.com"
+          }
+        }
+      },
+      "indicators": {
+        "email_from": "ceo@executive-example.com (spoofed, external IP 203.0.113.45)",
+        "suspicious_url": "http://corp-secure-login.com/login?session=...",
+        "domain_age_days": 6,
+        "smtp_originating_ip": "198.51.100.22",
+        "high_phishing_score": 8.5,
+        "X-Originating-IP": "198.51.100.22",
+        "domain_registrar": "Privacy Protect",
+        "domain_dns": "ns1.privacyprotect.org"
+      },
+      "detection_method": "Correlation of email header SPF, DKIM, DMARC pass with suspicious from domain, detection of newly registered domain with privacy protection, analysis of URL similarity to corporate domains, heuristic scoring of email content for urgency and wire transfer keywords, and user training alerts on unusual requests from executives. Network logs flagged HTTP GET to newly resolved IP with suspicious domain. EDR alerts on execution of credential harvesting payloads post-click.",
+      "relevant_mitre_techniques": [
+        "T1566.001 - Phishing: Spearphishing Attachment",
+        "T1566.002 - Phishing: Spearphishing Link",
+        "T1598.002 - Phishing for Information: Spearphishing via Service",
+        "T1204.002 - User Execution: Malicious Link",
+        "T1071.001 - Application Layer Protocol: Web Protocols"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,191 @@
+{
+  "samples": [
+    {
+      "scenario": "AI-generated phishing email targeting HR personnel with personalized employee payroll information request and domain spoofing using homoglyph characters.",
+      "technical_data": {
+        "email_headers": "Return-Path: <payroll-alert@payro1l-secure.com>\r\nReceived: from mail.payro1l-secure.com (mail.payro1l-secure.com [203.0.113.88])\r\n\tby mx.company.com (Postfix) with ESMTPS id 4B9F91234\r\n\tfor <harry.smith@company.com>; Fri, 14 Jun 2024 14:22:10 -0400 (EDT)\r\nReceived-SPF: pass (mx.company.com: domain of payro1l-secure.com designates 203.0.113.88 as permitted sender) receiver=mx.company.com; client-ip=203.0.113.88; envelope-from=payroll-alert@payro1l-secure.com; helo=mail.payro1l-secure.com;\r\nAuthentication-Results: mx.company.com; dkim=pass header.d=payro1l-secure.com; spf=pass smtp.mailfrom=payroll-alert@payro1l-secure.com; dmarc=fail (p=quarantine) header.from=payroll-secure.com;\r\nMessage-ID: <20240614142210.4b9f91234@mail.payro1l-secure.com>\r\nDate: Fri, 14 Jun 2024 14:22:10 -0400\r\nFrom: Payroll Team <payroll-alert@payro1l-secure.com>\r\nTo: Harry Smith <harry.smith@company.com>\r\nSubject: Urgent: Verify Employee Payroll Data for June 2024\r\nMIME-Version: 1.0\r\nContent-Type: text/html; charset=UTF-8\r\nX-Mailer: AIPhishGen v4.1\r\nX-Originating-IP: [203.0.113.88]\r\n",
+        "email_body_html": "<html><body><p>Dear Harry,</p><p>As part of our monthly audit, we detected discrepancies in the June 2024 payroll submissions for several employees. Please verify the attached payroll file and update the necessary details immediately.</p><p><a href=\"https://payro1l-secure.com.secure-verify-payroll.com/validation?emp=harrysmith\">Click here to review payroll data</a></p><p>Failure to respond within 48 hours will delay salary processing.</p><p>Regards,<br/>Payroll Team</p></body></html>",
+        "smtp_transaction_log": "220 mail.payro1l-secure.com ESMTP Postfix\r\nEHLO mail.payro1l-secure.com\r\n250-mail.payro1l-secure.com\r\nMAIL FROM:<payroll-alert@payro1l-secure.com>\r\n250 2.1.0 Ok\r\nRCPT TO:<harry.smith@company.com>\r\n250 2.1.5 Ok\r\nDATA\r\n354 End data with <CR><LF>.<CR><LF>\r\n[DATA]\r\n.\r\n250 2.0.0 Ok: queued as 4B9F91234\r\nQUIT\r\n221 2.0.0 Bye\r\n",
+        "domain_registration": {
+          "domain": "payro1l-secure.com",
+          "registrar": "GoDaddy.com, LLC",
+          "creation_date": "2024-04-28T08:30:00Z",
+          "expiration_date": "2025-04-28T08:30:00Z",
+          "registrant": {
+            "organization": "Whois Privacy Service",
+            "country": "CN"
+          },
+          "name_servers": [
+            "ns1.godaddydns.com",
+            "ns2.godaddydns.com"
+          ]
+        },
+        "url_analysis": {
+          "url": "https://payro1l-secure.com.secure-verify-payroll.com/validation?emp=harrysmith",
+          "observations": [
+            "Domain uses the digit '1' in place of letter 'l' in 'payro1l' to mimic 'payroll'",
+            "Subdomain concatenation 'payro1l-secure.com.secure-verify-payroll.com' combines credible terms to bypass simple checks",
+            "URL path simulates a validation page to induce trust and urgency"
+          ]
+        },
+        "user_awareness_training_note": "This phishing email uses AI to generate realistic payroll-related content including recipient name and urgency cues, combined with domain homoglyphs and complex subdomain structures to evade email filters and deceive users."
+      },
+      "indicators": {
+        "ip_address": "203.0.113.88",
+        "malicious_domain": "payro1l-secure.com",
+        "suspicious_url": "https://payro1l-secure.com.secure-verify-payroll.com/validation?emp=harrysmith",
+        "dkim_pass_spf_fail": "DKIM pass for payro1l-secure.com but DMARC fails due to mismatch with payroll-secure.com",
+        "email_x_mailer": "AIPhishGen v4.1"
+      },
+      "detection_method": "Implement multi-layered email security solutions incorporating AI-enhanced domain and URL reputation checks and natural language analysis to detect AI-crafted social engineering cues. Monitor for DMARC failures on domains with similar names using homoglyphs. Conduct regular user training with examples highlighting payroll-related phishing.",
+      "relevant_mitre_techniques": [
+        "T1566.002 - Phishing: Spearphishing Link",
+        "T1539 - Steal Web Session Cookie",
+        "T1598 - Phishing for Information",
+        "T1204 - User Execution"
+      ]
+    },
+    {
+      "scenario": "AI-generated phishing SMS message impersonating IT support with customized device info and urgent password reset link using URL shortening and domain impersonation.",
+      "technical_data": {
+        "sms_metadata": {
+          "sender_number": "+1-415-555-0199",
+          "message_timestamp": "2024-06-10T16:45:00Z",
+          "delivery_status": "Delivered"
+        },
+        "sms_content": "Alert: Unusual activity detected on your corporate device (Device ID: DVC-9823). Reset your password immediately to prevent lockout: https://bit.ly/3yX9zPw",
+        "url_expansion": "https://it-secure-support.com/reset-password?device=DVC-9823&user=emilyjones",
+        "domain_registration": {
+          "domain": "it-secure-support.com",
+          "registrar": "NameSilo, LLC",
+          "creation_date": "2024-05-15T10:00:00Z",
+          "expiration_date": "2025-05-15T10:00:00Z",
+          "registrant": {
+            "organization": "PrivacyGuard Inc.",
+            "country": "VN"
+          },
+          "name_servers": [
+            "ns1.namesilo.com",
+            "ns2.namesilo.com"
+          ]
+        },
+        "url_analysis": {
+          "url": "https://it-secure-support.com/reset-password?device=DVC-9823&user=emilyjones",
+          "observations": [
+            "Domain closely mimics legitimate corporate IT support branding",
+            "Use of URL shortening (bit.ly) to obscure final destination",
+            "Query parameters include personalized device ID and username to increase credibility"
+          ]
+        },
+        "user_awareness_training_note": "This SMS phishing uses AI to insert realistic device IDs and personalized user info, combined with URL shortening to hide malicious links. Users should verify unexpected password reset requests through official channels before clicking links."
+      },
+      "indicators": {
+        "ip_address": "198.51.100.123",
+        "malicious_domain": "it-secure-support.com",
+        "suspicious_url": "https://bit.ly/3yX9zPw (resolves to https://it-secure-support.com/reset-password?device=DVC-9823&user=emilyjones)",
+        "sms_sender": "+1-415-555-0199",
+        "email_x_mailer": null
+      },
+      "detection_method": "Deploy mobile threat defense solutions with AI capabilities to detect suspicious URL shortening services and domain impersonation. Correlate device and user behavioral anomalies with reported phishing attempts. Encourage users to report unsolicited password reset SMS and verify via official IT helpdesk.",
+      "relevant_mitre_techniques": [
+        "T1566.003 - Phishing: Spearphishing via Service",
+        "T1531 - Account Access Removal",
+        "T1204 - User Execution",
+        "T1586 - Compromise Infrastructure"
+      ]
+    },
+    {
+      "scenario": "AI-generated phishing email impersonating HR department with tailored employee payroll update and cleverly disguised attachment to harvest credentials.",
+      "technical_data": {
+        "email_headers": "Return-Path: <hr-notify@payroll-securecorp.com>\r\nReceived: from mail.payroll-securecorp.com (mail.payroll-securecorp.com [203.0.113.89])\r\n\tby mx.company.com (Postfix) with ESMTPS id 9A2B4517F\r\n\tfor <john.smith@company.com>; Fri, 14 Jun 2024 11:03:45 -0400 (EDT)\r\nReceived-SPF: pass (mx.company.com: domain of payroll-securecorp.com designates 203.0.113.89 as permitted sender) receiver=mx.company.com; client-ip=203.0.113.89; envelope-from=hr-notify@payroll-securecorp.com; helo=mail.payroll-securecorp.com;\r\nAuthentication-Results: mx.company.com; dkim=pass header.d=payroll-securecorp.com; spf=pass smtp.mailfrom=hr-notify@payroll-securecorp.com; dmarc=fail (p=none) header.from=securecorp.com;\r\nMessage-ID: <20240614110345.9a2b4517f@mail.payroll-securecorp.com>\r\nDate: Fri, 14 Jun 2024 11:03:45 -0400\r\nFrom: SecureCorp HR <hr-notify@payroll-securecorp.com>\r\nTo: John Smith <john.smith@company.com>\r\nSubject: Important: Payroll Adjustment Notification for June 2024\r\nMIME-Version: 1.0\r\nContent-Type: multipart/mixed; boundary=\"boundary_123456\"\r\nX-Mailer: PhishAI v1.9\r\nX-Originating-IP: [203.0.113.89]\r\n",
+        "email_body_html": "<html><body><p>Dear John,</p><p>We have updated your payroll details for June 2024. Please review the attached <b>Payroll_Adjustment_JohnSmith_Jun2024.pdf</b> to confirm your new salary details.</p><p>If you did not authorize this change, please <a href=\"https://secure.payroll-securecorp.com.verify-portal.com/auth?user=johnsmith\">log in to your employee portal</a> immediately to report the issue.</p><p>Best regards,<br/>HR Department<br/>SecureCorp</p></body></html>",
+        "smtp_transaction_log": "220 mail.payroll-securecorp.com ESMTP Postfix\r\nEHLO mail.payroll-securecorp.com\r\n250-mail.payroll-securecorp.com\r\nMAIL FROM:<hr-notify@payroll-securecorp.com>\r\n250 2.1.0 Ok\r\nRCPT TO:<john.smith@company.com>\r\n250 2.1.5 Ok\r\nDATA\r\n354 End data with <CR><LF>.<CR><LF>\r\n[DATA]\r\n.\r\n250 2.0.0 Ok: queued as 9A2B4517F\r\nQUIT\r\n221 2.0.0 Bye\r\n",
+        "domain_registration": {
+          "domain": "payroll-securecorp.com",
+          "registrar": "GoDaddy.com, LLC",
+          "creation_date": "2024-04-10T08:30:00Z",
+          "expiration_date": "2025-04-10T08:30:00Z",
+          "registrant": {
+            "organization": "Privacy Protect Ltd.",
+            "country": "CN"
+          },
+          "name_servers": [
+            "ns1.godaddy.com",
+            "ns2.godaddy.com"
+          ]
+        },
+        "url_analysis": {
+          "url": "https://secure.payroll-securecorp.com.verify-portal.com/auth?user=johnsmith",
+          "observations": [
+            "Domain uses subdomain 'secure.payroll-securecorp.com' concatenated with legitimate-sounding 'verify-portal.com' domain",
+            "Use of legitimate-looking keywords to bypass superficial domain reputation checks",
+            "URL path 'auth' and query parameter 'user' tailored to victim's identity to increase trust"
+          ]
+        },
+        "user_awareness_training_note": "The attacker used AI to generate a contextually relevant payroll update with personalized employee name and attachment reference, combined with a deceptive multi-level subdomain URL to trick users into credential theft."
+      },
+      "indicators": {
+        "ip_address": "203.0.113.89",
+        "malicious_domain": "payroll-securecorp.com",
+        "suspicious_url": "https://secure.payroll-securecorp.com.verify-portal.com/auth?user=johnsmith",
+        "dkim_pass_spf_fail": "DKIM and SPF pass for payroll-securecorp.com but DMARC fails due to mismatch with securecorp.com",
+        "email_x_mailer": "PhishAI v1.9"
+      },
+      "detection_method": "Use advanced email threat protection with multi-layer URL decoding and domain validation to detect subdomain concatenation attacks. Employ behavioral analysis of email content to identify AI-generated personalized phishing templates. Monitor for DMARC failures and train users on verifying unexpected payroll-related email attachments and URLs.",
+      "relevant_mitre_techniques": [
+        "T1566.001 - Phishing: Spearphishing Attachment",
+        "T1566.002 - Phishing: Spearphishing Link",
+        "T1598 - Phishing for Information",
+        "T1204 - User Execution",
+        "T1586 - Compromise Infrastructure"
+      ]
+    },
+    {
+      "scenario": "AI-generated phishing SMS message mimicking IT helpdesk with urgent password reset request and shortened URL leading to credential harvesting site.",
+      "technical_data": {
+        "email_headers": null,
+        "email_body_html": null,
+        "sms_message": "Alert: Your Company VPN password will expire today. Reset immediately to avoid lockout: https://bit.ly/3QvX9wY",
+        "sms_sender": "+12025550123",
+        "domain_registration": {
+          "domain": "bit.ly",
+          "registrar": "MarkMonitor Inc.",
+          "creation_date": "1998-10-13T00:00:00Z",
+          "expiration_date": "2025-10-13T00:00:00Z",
+          "registrant": {
+            "organization": "Bitly, Inc.",
+            "country": "US"
+          },
+          "name_servers": [
+            "ns1.markmonitor.com",
+            "ns2.markmonitor.com"
+          ]
+        },
+        "url_analysis": {
+          "url": "https://bit.ly/3QvX9wY",
+          "observations": [
+            "Use of popular URL shortening service to obscure final destination",
+            "Final URL resolves to 'secure-ithelpdesk.company-support.net/login/reset?user=employee123'",
+            "Domain 'company-support.net' is newly registered and mimics legitimate company domain",
+            "Path includes 'login/reset' suggesting a password reset page"
+          ]
+        },
+        "user_awareness_training_note": "AI generated the SMS content with urgency and common corporate IT language and shortened URL to induce rapid user action without verification."
+      },
+      "indicators": {
+        "ip_address": "198.51.100.120",
+        "malicious_domain": "company-support.net",
+        "suspicious_url": "https://bit.ly/3QvX9wY (redirects to malicious credential harvesting site)",
+        "dkim_pass_spf_fail": null,
+        "email_x_mailer": null,
+        "sms_sender_number": "+12025550123"
+      },
+      "detection_method": "Integrate SMS phishing detection tools that analyze URL redirection chains and newly registered domains. Use AI to detect unnatural urgency and language patterns in SMS content. Educate users to verify password reset requests directly with IT rather than clicking links in SMS messages.",
+      "relevant_mitre_techniques": [
+        "T1566.003 - Phishing: Spearphishing via Service",
+        "T1598 - Phishing for Information",
+        "T1204 - User Execution"
+      ]
+    }
+  ]
+}

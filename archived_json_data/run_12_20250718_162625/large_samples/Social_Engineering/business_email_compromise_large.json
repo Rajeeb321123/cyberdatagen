@@ -1,0 +1,273 @@
+{
+  "samples": [
+    {
+      "scenario": "Business Email Compromise via Domain Lookalike Spoofing to Request Sensitive HR Data",
+      "technical_data": {
+        "email_headers": "Return-Path: <hrdirector@companny.com>\r\nReceived: from mail.companny.com (203.0.113.77) by mx.company.com with ESMTPS id 7D5823B5 for <hr@company.com>; Fri, 21 Jul 2023 09:15:32 -0400 (EDT)\r\nReceived-SPF: fail (mx.company.com: domain of hrdirector@companny.com does not designate 203.0.113.77 as permitted sender) receiver=mx.company.com; client-ip=203.0.113.77; envelope-from=hrdirector@companny.com; helo=mail.companny.com;\r\nAuthentication-Results: mx.company.com; dkim=fail header.d=companny.com; spf=fail (sender IP is 203.0.113.77) smtp.mailfrom=hrdirector@companny.com; dmarc=fail (p=quarantine dispostion) header.from=companny.com\r\nX-Originating-IP: [203.0.113.77]\r\nMessage-ID: <CA+98xy12za34bc56de78fg90hi12jk34lm56no@mail.companny.com>\r\nSubject: Confidential: Employee Salary Data Request\r\nFrom: \"Linda Green\" <hrdirector@companny.com>\r\nTo: hr@company.com\r\nDate: Fri, 21 Jul 2023 09:15:15 -0400\r\nMIME-Version: 1.0\r\nContent-Type: text/plain; charset=UTF-8\r\nContent-Transfer-Encoding: 7bit\r\nX-Mailer: Apple Mail (2.3445.5.20)",
+        "email_body": "Hello,\n\nCould you please provide me with the latest payroll spreadsheet including employee salaries and bonuses for Q2? This is for an urgent audit by our external consultants.\n\nPlease send it back by end of day and keep this confidential.\n\nThanks,\nLinda Green\nHR Director",
+        "smtp_transaction_log": "220 mail.company.com ESMTP Postfix\r\nEHLO attacker.fakehost.net\r\n250-mail.company.com\r\n250-PIPELINING\r\n250-SIZE 20480000\r\n250-ETRN\r\n250-STARTTLS\r\n250-AUTH PLAIN LOGIN\r\n250-ENHANCEDSTATUSCODES\r\n250-8BITMIME\r\n250 DSN\r\nMAIL FROM:<hrdirector@companny.com>\r\n250 2.1.0 Ok\r\nRCPT TO:<hr@company.com>\r\n250 2.1.5 Ok\r\nDATA\r\n354 End data with <CR><LF>.<CR><LF>\r\nFrom: Linda Green <hrdirector@companny.com>\r\nTo: hr@company.com\r\nSubject: Confidential: Employee Salary Data Request\r\n\r\nHello,\n\nCould you please provide me with the latest payroll spreadsheet including employee salaries and bonuses for Q2?...\r\n.\r\n250 2.0.0 Ok: queued as 5678EFGH\r\nQUIT\r\n221 2.0.0 Bye",
+        "domain_registration": {
+          "domain": "companny.com",
+          "registrar": "GoDaddy.com, LLC",
+          "creation_date": "2023-07-18T08:00:00Z",
+          "expiration_date": "2024-07-18T08:00:00Z",
+          "registrant": {
+            "name": "Redacted for Privacy",
+            "organization": "PrivacyProtect.org",
+            "email": "proxy@privacyprotect.org"
+          },
+          "nameservers": [
+            "ns1.godaddy.com",
+            "ns2.godaddy.com"
+          ]
+        },
+        "spf_record": "v=spf1 ip4:198.51.100.45 -all",
+        "dkim_signature_header": "DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=companny.com; s=default;\r\n h=from:to:subject:date:mime-version:content-type:message-id;\r\n bh=FakeHashValueForExample==;\r\n b=FakeSignatureValueInThisExample==",
+        "dmarc_record": "_dmarc.companny.com. 3600 IN TXT \"v=DMARC1; p=quarantine; rua=mailto:dmarc-rua@companny.com; ruf=mailto:dmarc-ruf@companny.com; fo=1\"",
+        "email_account_activity_logs": [
+          {
+            "timestamp": "2023-07-21T09:10:50Z",
+            "user": "hrdirector@company.com",
+            "action": "Login",
+            "source_ip": "198.51.100.88",
+            "device": "Outlook on MacOS"
+          },
+          {
+            "timestamp": "2023-07-21T09:14:55Z",
+            "user": "hrdirector@company.com",
+            "action": "Login",
+            "source_ip": "203.0.113.77",
+            "device": "Unknown Mail Server"
+          },
+          {
+            "timestamp": "2023-07-21T09:15:32Z",
+            "user": "hrdirector@company.com",
+            "action": "Sent Email",
+            "recipient": "hr@company.com",
+            "subject": "Confidential: Employee Salary Data Request",
+            "source_ip": "203.0.113.77"
+          }
+        ]
+      },
+      "indicators": {
+        "suspicious_sender_ip": "203.0.113.77",
+        "failed_spf": true,
+        "dmarc_policy": "quarantine",
+        "domain_name_similarity": "companny.com (typo-squatted from company.com)",
+        "unusual_login_ip": "203.0.113.77 (not matching normal HR Director IPs)",
+        "email_subject": "Confidential: Employee Salary Data Request",
+        "suspicious_request": "Request for confidential payroll data to unknown domain",
+        "registrar_privacy_used": true
+      },
+      "detection_method": "Email security gateway detects SPF failure and DMARC quarantine policy triggered; SIEM alerts on unusual login IP for HR director account; User behavior analytics highlight anomalous device and geographic location; HR staff trained to verify sensitive data requests via a known phone number or face-to-face confirmation.",
+      "relevant_mitre_techniques": [
+        "T1566.002 - Phishing: Spearphishing Link",
+        "T1586.001 - Compromise Account: Email Account",
+        "T1114.001 - Email Collection: Local Email Collection",
+        "T1192 - Spearphishing via Service"
+      ]
+    },
+    {
+      "scenario": "Business Email Compromise via Compromised CFO Email Account to Request Vendor Payment Change",
+      "technical_data": {
+        "email_headers": "Return-Path: <cfo@company.com>\r\nReceived: from mail.company.com (198.51.100.90) by mx.company.com with ESMTPS id 8A7364C9 for <accounts@company.com>; Mon, 03 Apr 2023 16:45:12 -0400 (EDT)\r\nReceived-SPF: pass (mx.company.com: domain of company.com designates 198.51.100.90 as permitted sender) receiver=mx.company.com; client-ip=198.51.100.90; envelope-from=cfo@company.com; helo=mail.company.com;\r\nAuthentication-Results: mx.company.com; dkim=pass header.d=company.com; spf=pass smtp.mailfrom=cfo@company.com; dmarc=pass (p=reject dispostion) header.from=company.com\r\nX-Originating-IP: [198.51.100.90]\r\nMessage-ID: <CA+56de78fg90hi12jk34lm56no78pq90rs@mail.company.com>\r\nSubject: Vendor Payment Account Update\r\nFrom: \"Michael Brown\" <cfo@company.com>\r\nTo: accounts@company.com\r\nDate: Mon, 03 Apr 2023 16:44:55 -0400\r\nMIME-Version: 1.0\r\nContent-Type: text/plain; charset=UTF-8\r\nContent-Transfer-Encoding: 7bit\r\nX-Mailer: Microsoft Outlook 16.0",
+        "email_body": "Hi Accounts Team,\n\nPlease update the payment details for our vendor Tech Supplies Ltd. The new bank account details are below. Ensure all future payments are sent here starting immediately.\n\nBank: Capital Trust Bank\nAccount Number: 123456789012\nRouting Number: 111000025\nBeneficiary Name: Tech Supplies Ltd.\n\nConfirm receipt of this message.\n\nRegards,\nMichael Brown\nCFO",
+        "smtp_transaction_log": "220 mail.company.com ESMTP Postfix\r\nEHLO mail.company.com\r\n250-mail.company.com\r\n250-PIPELINING\r\n250-SIZE 10240000\r\n250-ETRN\r\n250-STARTTLS\r\n250-AUTH PLAIN LOGIN\r\n250-ENHANCEDSTATUSCODES\r\n250-8BITMIME\r\n250 DSN\r\nMAIL FROM:<cfo@company.com>\r\n250 2.1.0 Ok\r\nRCPT TO:<accounts@company.com>\r\n250 2.1.5 Ok\r\nDATA\r\n354 End data with <CR><LF>.<CR><LF>\r\nFrom: Michael Brown <cfo@company.com>\r\nTo: accounts@company.com\r\nSubject: Vendor Payment Account Update\r\n\r\nHi Accounts Team,\n\nPlease update the payment details for our vendor Tech Supplies Ltd...\r\n.\r\n250 2.0.0 Ok: queued as 9F7GHJKL\r\nQUIT\r\n221 2.0.0 Bye",
+        "domain_registration": {
+          "domain": "company.com",
+          "registrar": "MarkMonitor Inc.",
+          "creation_date": "2010-01-15T10:00:00Z",
+          "expiration_date": "2025-01-15T10:00:00Z",
+          "registrant": {
+            "name": "Company Inc.",
+            "organization": "Company Inc.",
+            "email": "admin@company.com"
+          },
+          "nameservers": [
+            "ns1.companydns.com",
+            "ns2.companydns.com"
+          ]
+        },
+        "spf_record": "v=spf1 ip4:198.51.100.0/24 -all",
+        "dkim_signature_header": "DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=company.com; s=selector2;\r\n h=from:to:subject:date:mime-version:content-type:message-id;\r\n bh=LegitHashValueForExample==;\r\n b=ValidSignatureHere==",
+        "dmarc_record": "_dmarc.company.com. 3600 IN TXT \"v=DMARC1; p=reject; rua=mailto:dmarc-rua@company.com; ruf=mailto:dmarc-ruf@company.com; fo=1\"",
+        "email_account_activity_logs": [
+          {
+            "timestamp": "2023-04-03T16:40:10Z",
+            "user": "cfo@company.com",
+            "action": "Login",
+            "source_ip": "192.0.2.35",
+            "device": "Outlook on Windows 10"
+          },
+          {
+            "timestamp": "2023-04-03T16:43:50Z",
+            "user": "cfo@company.com",
+            "action": "Login",
+            "source_ip": "198.51.100.90",
+            "device": "Unknown Mail Server"
+          },
+          {
+            "timestamp": "2023-04-03T16:45:12Z",
+            "user": "cfo@company.com",
+            "action": "Sent Email",
+            "recipient": "accounts@company.com",
+            "subject": "Vendor Payment Account Update",
+            "source_ip": "198.51.100.90"
+          }
+        ]
+      },
+      "indicators": {
+        "suspicious_sender_ip": "198.51.100.90",
+        "failed_spf": false,
+        "dmarc_policy": "reject",
+        "domain_name_similarity": "company.com (legitimate domain but compromised account)",
+        "unusual_login_ip": "198.51.100.90 (unrecognized IP for CFO)",
+        "email_subject": "Vendor Payment Account Update",
+        "suspicious_request": "Change of vendor payment account details without prior verification",
+        "registrar_privacy_used": false
+      },
+      "detection_method": "SIEM detects anomalous login from new IP address inconsistent with prior CFO activity; email gateway passes SPF and DKIM but behavioral analytics flag unusual sending patterns; Finance team alerted to verify any vendor account changes by phone or in person before processing payments.",
+      "relevant_mitre_techniques": [
+        "T1586.001 - Compromise Account: Email Account",
+        "T1566.001 - Phishing: Spearphishing Attachment",
+        "T1192 - Spearphishing via Service",
+        "T1114.001 - Email Collection: Local Email Collection",
+        "T1071.001 - Application Layer Protocol: Web Protocols"
+      ]
+    },
+    {
+      "scenario": "Business Email Compromise via Domain Spoofing to Request Sensitive HR Data",
+      "technical_data": {
+        "email_headers": "Return-Path: <hrdirector@hr-compnay.com>\r\nReceived: from mail.hr-compnay.com (203.0.113.78) by mx.company.com with ESMTPS id 7D1A3F4B for <hr@company.com>; Mon, 20 Nov 2023 09:45:12 -0500 (EST)\r\nReceived-SPF: fail (mx.company.com: domain of hrdirector@hr-compnay.com does not designate 203.0.113.78 as permitted sender) receiver=mx.company.com; client-ip=203.0.113.78; envelope-from=hrdirector@hr-compnay.com; helo=mail.hr-compnay.com;\r\nAuthentication-Results: mx.company.com; dkim=none; spf=fail (sender IP is 203.0.113.78) smtp.mailfrom=hrdirector@hr-compnay.com; dmarc=fail (p=none dispostion) header.from=hr-compnay.com\r\nX-Originating-IP: [203.0.113.78]\r\nMessage-ID: <CA+98k76mn54op32qr10stuv@hr-compnay.com>\r\nSubject: Confidential Employee Records Request\r\nFrom: \"Linda Cooper\" <hrdirector@hr-compnay.com>\r\nTo: hr@company.com\r\nDate: Mon, 20 Nov 2023 09:44:55 -0500\r\nMIME-Version: 1.0\r\nContent-Type: text/plain; charset=UTF-8\r\nContent-Transfer-Encoding: 7bit\r\nX-Mailer: Mozilla Thunderbird 78.10.2\r\n",
+        "email_body": "Hello HR Team,\n\nPlease provide me with the latest payroll and personal data for all employees in the finance department. This request is urgent for an internal audit.\n\nEnsure the data includes social security numbers and bank account details.\n\nThanks,\nLinda Cooper",
+        "smtp_transaction_log": "220 mail.company.com ESMTP Postfix\r\nEHLO attacker.fakehost.com\r\n250-mail.company.com\r\n250-PIPELINING\r\n250-SIZE 10240000\r\n250-ETRN\r\n250-STARTTLS\r\n250-AUTH PLAIN LOGIN\r\n250-ENHANCEDSTATUSCODES\r\n250-8BITMIME\r\n250 DSN\r\nMAIL FROM:<hrdirector@hr-compnay.com>\r\n250 2.1.0 Ok\r\nRCPT TO:<hr@company.com>\r\n250 2.1.5 Ok\r\nDATA\r\n354 End data with <CR><LF>.<CR><LF>\r\nFrom: Linda Cooper <hrdirector@hr-compnay.com>\r\nTo: hr@company.com\r\nSubject: Confidential Employee Records Request\r\n\r\nHello HR Team,\n\nPlease provide me with the latest payroll and personal data...\r\n.\r\n250 2.0.0 Ok: queued as 9E7F3CDE\r\nQUIT\r\n221 2.0.0 Bye",
+        "domain_registration": {
+          "domain": "hr-compnay.com",
+          "registrar": "GoDaddy.com, LLC",
+          "creation_date": "2023-11-15T15:30:00Z",
+          "expiration_date": "2024-11-15T15:30:00Z",
+          "registrant": {
+            "name": "Privacy Protect",
+            "organization": "Privacy Protect Ltd.",
+            "email": "contact@privacyprotect.org"
+          },
+          "nameservers": [
+            "ns1.godaddy.com",
+            "ns2.godaddy.com"
+          ]
+        },
+        "spf_record": "v=spf1 ip4:198.51.100.101 -all",
+        "dkim_signature_header": "",
+        "dmarc_record": "_dmarc.hr-compnay.com. 3600 IN TXT \"v=DMARC1; p=none; rua=mailto:dmarc-reports@hr-compnay.com; ruf=mailto:dmarc-forensics@hr-compnay.com; fo=0\"",
+        "email_account_activity_logs": [
+          {
+            "timestamp": "2023-11-20T09:40:00Z",
+            "user": "hrdirector@company.com",
+            "action": "Login",
+            "source_ip": "198.51.100.45",
+            "device": "Outlook on Windows 10"
+          },
+          {
+            "timestamp": "2023-11-20T09:43:55Z",
+            "user": "hrdirector@company.com",
+            "action": "Login",
+            "source_ip": "203.0.113.78",
+            "device": "Unknown Mail Server"
+          },
+          {
+            "timestamp": "2023-11-20T09:45:12Z",
+            "user": "hrdirector@company.com",
+            "action": "Sent Email",
+            "recipient": "hr@company.com",
+            "subject": "Confidential Employee Records Request",
+            "source_ip": "203.0.113.78"
+          }
+        ]
+      },
+      "indicators": {
+        "suspicious_sender_ip": "203.0.113.78",
+        "failed_spf": true,
+        "dmarc_policy": "none",
+        "domain_name_similarity": "hr-compnay.com (typo-squatted from hr-company.com)",
+        "unusual_login_ip": "203.0.113.78 (not matching normal HR director IPs)",
+        "email_subject": "Confidential Employee Records Request",
+        "suspicious_request": "Request for sensitive employee data including SSNs and bank accounts",
+        "registrar_privacy_used": true
+      },
+      "detection_method": "Email gateway flagged SPF fail and DKIM absence; SIEM correlated anomalous login from IP 203.0.113.78 with email sending; User behavioral analytics detected unknown device usage and abnormal timing; HR team trained to verify all sensitive data requests via secondary secure channel before release.",
+      "relevant_mitre_techniques": [
+        "T1566.002 - Phishing: Spearphishing Link",
+        "T1586.001 - Compromise Account: Email Account",
+        "T1537 - Transfer Data to Cloud Account",
+        "T1114.001 - Email Collection: Local Email Collection"
+      ]
+    },
+    {
+      "scenario": "Business Email Compromise via Lookalike Domain to Request Fraudulent Vendor Payment",
+      "technical_data": {
+        "email_headers": "Return-Path: <finance@micorsoftpay.com>\r\nReceived: from mail.micorsoftpay.com (198.51.100.99) by mx.company.com with ESMTPS id 5B3F9A22 for <accounts@company.com>; Fri, 10 Feb 2023 11:12:45 -0800 (PST)\r\nReceived-SPF: fail (mx.company.com: domain of finance@micorsoftpay.com does not designate 198.51.100.99 as permitted sender) receiver=mx.company.com; client-ip=198.51.100.99; envelope-from=finance@micorsoftpay.com; helo=mail.micorsoftpay.com;\r\nAuthentication-Results: mx.company.com; dkim=fail (signature not verified) header.d=micorsoftpay.com; spf=fail smtp.mailfrom=finance@micorsoftpay.com; dmarc=fail (p=reject dispostion) header.from=micorsoftpay.com\r\nX-Originating-IP: [198.51.100.99]\r\nMessage-ID: <CA+54ef67gh89ij23kl45mn67op89qrstu@mail.micorsoftpay.com>\r\nSubject: Payment Instructions Update - Urgent\r\nFrom: \"Michael Ford\" <finance@micorsoftpay.com>\r\nTo: accounts@company.com\r\nDate: Fri, 10 Feb 2023 11:12:30 -0800\r\nMIME-Version: 1.0\r\nContent-Type: text/plain; charset=UTF-8\r\nContent-Transfer-Encoding: 7bit\r\nX-Mailer: Apple Mail (2.3445.5.20)\r\n",
+        "email_body": "Dear Accounts Team,\n\nDue to recent changes, please update the vendor payment instructions for Microsoft Pay to the new bank account below. Ensure all payments from next week use this account.\n\nBank: Citibank\nAccount Number: 123456789012\nRouting Number: 021000089\nBeneficiary: Microsoft Payments LLC\n\nPlease confirm once updated.\n\nRegards,\nMichael Ford\nFinance Manager",
+        "smtp_transaction_log": "220 mail.company.com ESMTP Postfix\r\nEHLO attacker.fakehost.net\r\n250-mail.company.com\r\n250-PIPELINING\r\n250-SIZE 10240000\r\n250-ETRN\r\n250-STARTTLS\r\n250-AUTH PLAIN LOGIN\r\n250-ENHANCEDSTATUSCODES\r\n250-8BITMIME\r\n250 DSN\r\nMAIL FROM:<finance@micorsoftpay.com>\r\n250 2.1.0 Ok\r\nRCPT TO:<accounts@company.com>\r\n250 2.1.5 Ok\r\nDATA\r\n354 End data with <CR><LF>.<CR><LF>\r\nFrom: Michael Ford <finance@micorsoftpay.com>\r\nTo: accounts@company.com\r\nSubject: Payment Instructions Update - Urgent\r\n\r\nDear Accounts Team,\n\nDue to recent changes...\r\n.\r\n250 2.0.0 Ok: queued as 7C9D5EFA\r\nQUIT\r\n221 2.0.0 Bye",
+        "domain_registration": {
+          "domain": "micorsoftpay.com",
+          "registrar": "Tucows Domains Inc.",
+          "creation_date": "2023-01-28T10:15:00Z",
+          "expiration_date": "2024-01-28T10:15:00Z",
+          "registrant": {
+            "name": "WhoisGuard Protected",
+            "organization": "WhoisGuard, Inc.",
+            "email": "whoisguard@whoisguard.com"
+          },
+          "nameservers": [
+            "ns1.tucowsdns.com",
+            "ns2.tucowsdns.com"
+          ]
+        },
+        "spf_record": "v=spf1 ip4:198.51.100.99 -all",
+        "dkim_signature_header": "DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=micorsoftpay.com; s=default;\r\n h=from:to:subject:date:mime-version:content-type:message-id;\r\n bh=FakeHashValueForExample==;\r\n b=InvalidSignatureExample==",
+        "dmarc_record": "_dmarc.micorsoftpay.com. 3600 IN TXT \"v=DMARC1; p=reject; rua=mailto:dmarc-reports@micorsoftpay.com; ruf=mailto:dmarc-forensics@micorsoftpay.com; fo=1\"",
+        "email_account_activity_logs": [
+          {
+            "timestamp": "2023-02-10T11:10:00Z",
+            "user": "finance@company.com",
+            "action": "Login",
+            "source_ip": "203.0.113.22",
+            "device": "Outlook on MacOS"
+          },
+          {
+            "timestamp": "2023-02-10T11:11:55Z",
+            "user": "finance@company.com",
+            "action": "Login",
+            "source_ip": "198.51.100.99",
+            "device": "Unknown Mail Server"
+          },
+          {
+            "timestamp": "2023-02-10T11:12:45Z",
+            "user": "finance@company.com",
+            "action": "Sent Email",
+            "recipient": "accounts@company.com",
+            "subject": "Payment Instructions Update - Urgent",
+            "source_ip": "198.51.100.99"
+          }
+        ]
+      },
+      "indicators": {
+        "suspicious_sender_ip": "198.51.100.99",
+        "failed_spf": true,
+        "dmarc_policy": "reject",
+        "domain_name_similarity": "micorsoftpay.com (typo-squatted from microsoftpay.com)",
+        "unusual_login_ip": "198.51.100.99 (not matching normal Finance IPs)",
+        "email_subject": "Payment Instructions Update - Urgent",
+        "suspicious_request": "Vendor payment instructions update to unknown bank account",
+        "registrar_privacy_used": true
+      },
+      "detection_method": "Email gateway detected SPF and DKIM failures; DMARC reject policy triggered quarantine; SIEM linked anomalous IP 198.51.100.99 with email activity; Behavioral analytics flagged unusual device usage; Payment team instructed to verify any payment detail changes via established vendor contact channels.",
+      "relevant_mitre_techniques": [
+        "T1566.001 - Phishing: Spearphishing Attachment",
+        "T1586.001 - Compromise Account: Email Account",
+        "T1193 - Spearphishing via Service",
+        "T1114.001 - Email Collection: Local Email Collection"
+      ]
+    }
+  ]
+}

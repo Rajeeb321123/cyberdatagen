@@ -1,0 +1,108 @@
+{
+  "samples": [
+    {
+      "scenario": "Azure Blob Storage Container Set to Public Access Allowing Anonymous Read Access to Confidential Financial Reports",
+      "technical_data": {
+        "container_acl": "{\n  \"publicAccess\": \"blob\",\n  \"signedIdentifiers\": []\n}",
+        "azure_activity_log_event": "{\n  \"authorization\": {\n    \"action\": \"Microsoft.Storage/storageAccounts/blobServices/containers/setAccessPolicy\",\n    \"scope\": \"/subscriptions/abc123/resourceGroups/FinanceRG/providers/Microsoft.Storage/storageAccounts/financestorageaccount/blobServices/default/containers/confidential-reports\"\n  },\n  \"caller\": \"financeadmin@contoso.com\",\n  \"eventTimestamp\": \"2024-05-12T10:45:22Z\",\n  \"status\": \"Succeeded\",\n  \"properties\": {\n    \"publicAccess\": \"blob\"\n  }\n}",
+        "storage_analytics_log": "2024-05-12T11:00:05Z,GetBlob,confidential-reports,finance-storage-account,192.0.2.101,Anonymous,GET,financial_report_q1_2024.pdf,200,0,3456789,12345,10,9",
+        "sample_sensitive_data_file": "Quarter,Revenue,Expenses,NetProfit\nQ1-2024,5,000,000,3,200,000,1,800,000\nQ2-2024,5,500,000,3,300,000,2,200,000\n",
+        "azure_cli_commands": "# Check container ACL\naz storage container show --name confidential-reports --account-name financestorageaccount\n\n# Download blob anonymously\ncurl https://financestorageaccount.blob.core.windows.net/confidential-reports/financial_report_q1_2024.pdf -o financial_report_q1_2024.pdf\n",
+        "iam_policy_misconfiguration": "{\n  \"Version\": \"1.0\",\n  \"Statement\": [\n    {\n      \"Effect\": \"Allow\",\n      \"Action\": [\"Microsoft.Storage/storageAccounts/blobServices/containers/*\"],\n      \"Resource\": \"*\"\n    }\n  ]\n}"
+      },
+      "indicators": [
+        "Blob container ACL set to public access level \"blob\" allowing anonymous read",
+        "Azure Activity Log showing setAccessPolicy action changing public access on sensitive container",
+        "Storage Analytics logs showing anonymous GET requests from external IPs",
+        "Financial PDF reports containing sensitive business data accessed without authentication",
+        "IAM roles allowing broad permissions on storage account blob services",
+        "Use of curl commands downloading blobs without authentication"
+      ],
+      "detection_method": "Automated scanning of Azure Blob container access policies for public access settings; correlation of Azure Activity Logs for setAccessPolicy operations granting public access; analysis of Storage Analytics logs for anonymous read operations; monitoring role assignments granting broad storage permissions; alerting on downloads of sensitive blobs from unusual IPs or anonymous users.",
+      "relevant_mitre_techniques": [
+        "T1530 - Data from Cloud Storage Object",
+        "T1078 - Valid Accounts",
+        "T1552 - Unsecured Credentials",
+        "T1218 - Signed Binary Proxy Execution"
+      ]
+    },
+    {
+      "scenario": "Google Cloud Storage Bucket Configured with Uniform Bucket-Level Access Disabled, Allowing Legacy Public Access to Internal Employee Records",
+      "technical_data": {
+        "bucket_iam_policy": "{\n  \"bindings\": [\n    {\n      \"role\": \"roles/storage.objectViewer\",\n      \"members\": [\"allUsers\"]\n    }\n  ],\n  \"etag\": \"BwWWja0YfJA=\",\n  \"version\": 1\n}",
+        "gcp_audit_log": "{\n  \"protoPayload\": {\n    \"authenticationInfo\": {\n      \"principalEmail\": \"gcp-admin@example.com\"\n    },\n    \"serviceName\": \"storage.googleapis.com\",\n    \"methodName\": \"storage.buckets.setIamPolicy\",\n    \"resourceName\": \"projects/_/buckets/employee-records\",\n    \"request\": {\n      \"policy\": {\n        \"bindings\": [\n          {\n            \"role\": \"roles/storage.objectViewer\",\n            \"members\": [\"allUsers\"]\n          }\n        ]\n      }\n    }\n  },\n  \"resource\": {\n    \"type\": \"gcs_bucket\",\n    \"labels\": {\n      \"bucket_name\": \"employee-records\"\n    }\n  },\n  \"timestamp\": \"2024-03-30T08:15:47Z\"\n}",
+        "gcs_access_log": "2024-03-30T09:00:01Z GET https://storage.googleapis.com/employee-records/employee_list.csv 200 - 198.51.100.77 \"Mozilla/5.0 (Windows NT 10.0; Win64; x64)\"",
+        "sample_sensitive_data_file": "EmployeeID,Name,Position,Salary\n1001,Emily Johnson,Software Engineer,95000\n1002,Michael Brown,Product Manager,110000\n",
+        "gcloud_cli_commands": "# Get bucket IAM policy\n gcloud storage buckets get-iam-policy employee-records\n\n# Download public file\ncurl https://storage.googleapis.com/employee-records/employee_list.csv -o employee_list.csv\n",
+        "iam_policy_misconfiguration": "{\n  \"bindings\": [\n    {\n      \"role\": \"roles/storage.admin\",\n      \"members\": [\"user:gcp-admin@example.com\"]\n    }\n  ]\n}"
+      },
+      "indicators": [
+        "Bucket IAM policy includes 'allUsers' member with roles/storage.objectViewer role",
+        "Audit logs showing setIamPolicy API call granting public read access",
+        "Access logs showing GET requests for sensitive employee data from public IP addresses",
+        "CSV files containing employee PII and salary data publicly accessible",
+        "IAM roles allowing excessive storage admin rights to a single user",
+        "Use of curl commands to download files anonymously from GCS bucket"
+      ],
+      "detection_method": "Regular audits of Google Cloud Storage bucket IAM policies to detect 'allUsers' or 'allAuthenticatedUsers' bindings; monitoring Cloud Audit Logs for setIamPolicy calls granting public access; analyzing access logs for unauthorized anonymous reads; reviewing IAM role assignments for privilege creep; enabling Uniform Bucket-Level Access and alerting on policy changes that disable it.",
+      "relevant_mitre_techniques": [
+        "T1530 - Data from Cloud Storage Object",
+        "T1078 - Valid Accounts",
+        "T1552 - Unsecured Credentials",
+        "T1218 - Signed Binary Proxy Execution"
+      ]
+    },
+    {
+      "scenario": "Google Cloud Storage Bucket with Public Read ACL Exposing Internal Financial Reports",
+      "technical_data": {
+        "bucket_acl": "[\n  {\n    \"entity\": \"allUsers\",\n    \"role\": \"READER\"\n  }\n]",
+        "audit_log_entry": "{\n  \"protoPayload\": {\n    \"methodName\": \"storage.buckets.update\",\n    \"resourceName\": \"projects/_/buckets/internal-financials\",\n    \"authenticationInfo\": {\n      \"principalEmail\": \"finance-admin@example.com\"\n    },\n    \"request\": {\n      \"acl\": [\n        {\n          \"entity\": \"allUsers\",\n          \"role\": \"READER\"\n        }\n      ]\n    },\n    \"serviceName\": \"storage.googleapis.com\",\n    \"resourceLocation\": \"us-central1\",\n    \"requestMetadata\": {\n      \"callerIp\": \"198.51.100.55\",\n      \"userAgent\": \"gsutil/4.62\"\n    }\n  },\n  \"timestamp\": \"2024-05-10T11:20:45Z\"\n}",
+        "gcs_access_log": "2024-05-10T12:00:01Z storage.googleapis.com internal-financials/2023_Q4_report.xlsx GET 200 5242880 203.0.113.101 - \"curl/7.64.1\"",
+        "sample_sensitive_data_file": "Quarter,Revenue,Expenses,Profit\nQ4 2023,500000,350000,150000\nQ3 2023,450000,300000,150000\n",
+        "gcloud_cli_commands": "# Check bucket ACLs\ngcloud storage buckets get-iam-policy internal-financials\n\n# Download file\ngsutil cp gs://internal-financials/2023_Q4_report.xlsx ./\n",
+        "iam_policy_misconfiguration": "{\n  \"bindings\": [\n    {\n      \"role\": \"roles/storage.objectViewer\",\n      \"members\": [\n        \"allUsers\"\n      ]\n    }\n  ]\n}"
+      },
+      "indicators": [
+        "Bucket ACL grants READER role to allUsers entity",
+        "Audit log shows update to bucket ACL adding public read permissions by finance-admin@example.com",
+        "GCS access logs show GET requests from external IP 203.0.113.101 fetching sensitive financial report",
+        "Downloaded Excel report contains internal financial data",
+        "IAM policy bindings include roles/storage.objectViewer granted to allUsers",
+        "Use of gsutil command from external IP address"
+      ],
+      "detection_method": "Continuous monitoring of bucket ACLs and IAM policies for public access bindings; analyzing Cloud Audit Logs for bucket policy changes granting allUsers or allAuthenticatedUsers roles; correlating GCS access logs for unusual external IP downloads of sensitive data; alerting on large data egress volumes; enforcing uniform bucket-level access and disabling legacy ACLs where possible.",
+      "relevant_mitre_techniques": [
+        "T1530 - Data from Cloud Storage Object",
+        "T1078 - Valid Accounts",
+        "T1552 - Unsecured Credentials",
+        "T1218 - Signed Binary Proxy Execution"
+      ]
+    },
+    {
+      "scenario": "Azure Blob Storage Container with Container Public Access Level Set to 'Blob' Exposing Confidential Project Documents",
+      "technical_data": {
+        "container_acl": "{\n  \"publicAccess\": \"Blob\"\n}",
+        "azure_activity_log": "{\n  \"operationName\": \"SetBlobServiceProperties\",\n  \"caller\": \"project-admin@contoso.com\",\n  \"eventTimestamp\": \"2024-06-05T09:45:33Z\",\n  \"resourceId\": \"/subscriptions/abc123/resourceGroups/rg1/providers/Microsoft.Storage/storageAccounts/contosostorage/blobServices/default/containers/project-documents\",\n  \"properties\": {\n    \"publicAccess\": \"Blob\"\n  },\n  \"ipAddress\": \"203.0.113.78\",\n  \"userAgent\": \"AzureStorageExplorer/1.24.0\"\n}",
+        "blob_service_log": "2024-06-05T10:00:12Z GET https://contosostorage.blob.core.windows.net/project-documents/confidential_plan.pdf 200 1048576 198.51.100.101 AzureStorageExplorer/1.24.0",
+        "sample_sensitive_data_file": "Document Title: Confidential Project Plan\nVersion: 2.3\nAuthor: Jane Doe\nDetails: Project timeline, budget estimates, and resource allocation\n",
+        "azure_cli_commands": "# Check container access level\naz storage container show --name project-documents --account-name contosostorage\n\n# Download confidential document\naz storage blob download --container-name project-documents --name confidential_plan.pdf --file ./confidential_plan.pdf --account-name contosostorage\n",
+        "role_assignments_misconfiguration": "[\n  {\n    \"roleDefinitionName\": \"Storage Blob Data Contributor\",\n    \"principalId\": \"12345678-1234-1234-1234-123456789abc\",\n    \"principalName\": \"project-admin@contoso.com\"\n  }\n]"
+      },
+      "indicators": [
+        "Blob container public access level set to 'Blob' allowing anonymous read access",
+        "Azure Activity Log records SetBlobServiceProperties operation changing publicAccess to Blob by project-admin@contoso.com",
+        "Blob service logs show GET requests from external IP 198.51.100.101 retrieving confidential_plan.pdf",
+        "Confidential PDF document with sensitive project details publicly accessible",
+        "Role assignments include Storage Blob Data Contributor to project-admin@contoso.com enabling container modification",
+        "Azure CLI and Storage Explorer usage from external IP 203.0.113.78 modifying container ACLs"
+      ],
+      "detection_method": "Monitoring Azure Activity Logs for changes to blob container public access settings; scanning for containers with publicAccess set to 'Blob' or 'Container'; analyzing blob service logs for anonymous or external IP GET requests; auditing role assignments for excessive permissions; enforcing Azure Storage firewall rules and private endpoints; alerting on unexpected data downloads from public containers.",
+      "relevant_mitre_techniques": [
+        "T1530 - Data from Cloud Storage Object",
+        "T1078 - Valid Accounts",
+        "T1552 - Unsecured Credentials",
+        "T1218 - Signed Binary Proxy Execution"
+      ]
+    }
+  ]
+}

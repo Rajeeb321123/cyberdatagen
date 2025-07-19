@@ -1,0 +1,56 @@
+{
+  "report": [
+    {
+      "index": 0,
+      "problem": {
+        "area": "Social Engineering",
+        "nature": "deepfake_phishing"
+      },
+      "example": {
+        "scenario": "An attacker uses AI-generated deepfake audio of a company's CFO to trick the finance department into initiating a fraudulent wire transfer.",
+        "technical_data": {
+          "email_headers": "Return-Path: <cfo-support@finsecure.com>\r\nReceived: from mail.finsecure.com (mail.finsecure.com [198.51.100.42])\r\n\tby mx.company.com with ESMTPS id 12345abcde\r\n\tfor <finance@company.com>;\r\n\tTue, 18 Apr 2023 09:15:32 -0400 (EDT)\r\nX-Originating-IP: [198.51.100.42]\r\nDKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=finsecure.com; s=mail; h=from:to:subject:date:mime-version:content-type; bh=U1x+Glm4j5YXf4Hq0T6Ydyv0NqH+8WILZV+2n5Aq1Zk=; b=OZj3rEjh6P0+0GqPzJfP9FxC5SE5f2zQ3bGZq3Q2G3nW9+FzLx+G5Etq2K/j0mXnQm",
+          "email_body": "From: CFO <cfo-support@finsecure.com>\r\nTo: finance@company.com\r\nSubject: Urgent: Wire Transfer Request\r\nDate: Tue, 18 Apr 2023 09:15:30 -0400\r\nMIME-Version: 1.0\r\nContent-Type: multipart/mixed; boundary=\"----=_Part_1234_567890\"\r\n\r\n------=_Part_1234_567890\r\nContent-Type: text/plain; charset=UTF-8\r\nContent-Transfer-Encoding: 7bit\r\n\r\nHi team,\r\n\r\nPlease find attached a short audio file with urgent instructions for a wire transfer. Kindly process this immediately to our vendor.\r\n\r\nThanks,\r\nJohn Doe (CFO)\r\n\r\n------=_Part_1234_567890\r\nContent-Type: audio/wav; name=\"instructions.wav\"\r\nContent-Transfer-Encoding: base64\r\nContent-Disposition: attachment; filename=\"instructions.wav\"\r\n\r\nUklGRuQAAABXQVZFZm10IBIAAAABAAEAQB8AAIA+AAACABAAZGF0YYAA...<base64 deepfake audio>...\r\n------=_Part_1234_567890--",
+          "smtp_transaction_log": "220 mail.finsecure.com ESMTP Postfix\r\nEHLO mail.finsecure.com\r\n250-mail.finsecure.com\r\n250-PIPELINING\r\n250-SIZE 10240000\r\n250-VRFY\r\n250-ETRN\r\n250-STARTTLS\r\n250-AUTH PLAIN LOGIN\r\n250-ENHANCEDSTATUSCODES\r\n250-8BITMIME\r\n250 DSN\r\nMAIL FROM:<cfo-support@finsecure.com>\r\n250 2.1.0 Ok\r\nRCPT TO:<finance@company.com>\r\n250 2.1.5 Ok\r\nDATA\r\n354 End data with <CR><LF>.<CR><LF>\r\n...email content...\r\n.\r\n250 2.0.0 Ok: queued as 12345abcde\r\nQUIT\r\n221 2.0.0 Bye",
+          "domain_registration": {
+            "Domain": "finsecure.com",
+            "Registrar": "NameCheap, Inc.",
+            "CreationDate": "2023-01-10T12:34:56Z",
+            "ExpirationDate": "2024-01-10T12:34:56Z",
+            "NameServers": [
+              "ns1.namecheap.com",
+              "ns2.namecheap.com"
+            ],
+            "RegistrantOrganization": "FinSecure LLC",
+            "RegistrantEmail": "admin@finsecure.com"
+          },
+          "network_packet_capture_excerpt": "Frame 1:  512 bytes on wire (4096 bits), 512 bytes captured (4096 bits) on interface eth0\nEthernet II, Src: 00:1a:2b:3c:4d:5e, Dst: 00:11:22:33:44:55\nInternet Protocol Version 4, Src: 198.51.100.42, Dst: 203.0.113.10\nTransmission Control Protocol, Src Port: 587, Dst Port: 52044, Seq: 1, Ack: 1, Len: 456\nHypertext Transfer Protocol\n    POST /upload HTTP/1.1\n    Host: voiceapi.finsecure.com\n    Content-Type: audio/wav\n    Content-Length: 450000\n...\nPayload: [Deepfake audio upload in multipart/form-data]",
+          "voice_api_request": "POST /upload HTTP/1.1\r\nHost: voiceapi.finsecure.com\r\nUser-Agent: DeepVoiceClient/1.2\r\nContent-Type: multipart/form-data; boundary=----WebKitFormBoundary7MA4YWxkTrZu0gW\r\nContent-Length: 456789\r\n\r\n------WebKitFormBoundary7MA4YWxkTrZu0gW\r\nContent-Disposition: form-data; name=\"audio\"; filename=\"instructions.wav\"\r\nContent-Type: audio/wav\r\n\r\n...binary data...\r\n------WebKitFormBoundary7MA4YWxkTrZu0gW--",
+          "ai_detection_tool_log": "[2023-04-18T09:15:35Z] ALERT: Suspicious synthetic audio detected in email attachment 'instructions.wav' - Confidence: 95%\nFeatures: unnatural prosody, small spectral anomalies, missing breath artifacts",
+          "voice_verification_record": "2023-04-18T09:15:30Z - Incoming email received with audio attachment.\n2023-04-18T09:15:32Z - Attachment analyzed by AI detection tool. Flagged as synthetic.\n2023-04-18T09:16:00Z - Finance team contacted CFO via known company Slack channel for verification.\n2023-04-18T09:16:30Z - CFO confirmed no wire transfer requested."
+        },
+        "indicators": [
+          "Email from finsecure.com domain newly registered in 2023, not a known vendor domain",
+          "Email DKIM signature is valid but domain is recently created and suspicious",
+          "Email contains an audio attachment with base64-encoded WAV deepfake audio",
+          "Network logs show POST request uploading audio to voiceapi.finsecure.com from external IP",
+          "AI-based detection tool flags the audio as synthetic with high confidence",
+          "Finance team lacked multi-channel verification before wire transfer request"
+        ],
+        "detection_method": "Implement email gateway AI-based attachment scanning focused on synthetic media detection; Enforce multi-factor verification for wire transfer requests especially involving audio/video attachments; Monitor for newly registered domains impersonating company executives; Correlate network traffic to unknown voice API endpoints; Analyze email DKIM/SPF/DMARC alignment with organizational domains.",
+        "relevant_mitre_techniques": [
+          "T1566.001 - Phishing: Spearphishing Attachment",
+          "T1204.002 - User Execution: Malicious File",
+          "T1606 - Forge Web Credentials (deepfake media forging identity)",
+          "T1552 - Unsecured Credentials (lack of multi-factor verification)",
+          "T1622 - Impair Defenses: Disable or Modify Tools (avoid detection using synthetic media)"
+        ]
+      },
+      "validation": {
+        "valid": true,
+        "issues": [],
+        "comments": "The sample accurately represents the deepfake phishing problem within social engineering. The scenario clearly describes the use of AI-generated synthetic audio impersonating a trusted executive to deceive the finance team, aligning well with the problem nature. The technical data is comprehensive and realistic, including email headers, body with a base64-encoded audio attachment, SMTP logs, domain registration details indicating a recently created domain, network packet capture showing upload to a voice API, AI detection tool logs flagging the audio as synthetic, and voice verification records demonstrating multi-channel verification. The indicators explicitly highlight why this is a deepfake phishing case, such as the new domain, synthetic audio detection, and lack of initial multi-channel verification. The detection methods and relevant MITRE techniques are appropriate and well-mapped to the scenario. Overall, the sample is complete, plausible, and detailed, making it a strong example for this cybersecurity problem."
+      }
+    }
+  ]
+}

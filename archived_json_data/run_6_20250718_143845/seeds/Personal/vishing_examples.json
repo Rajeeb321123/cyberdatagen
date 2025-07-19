@@ -1,0 +1,46 @@
+{
+  "examples": [
+    {
+      "scenario": "A vishing attack where the attacker uses VoIP spoofing to impersonate the victim's bank calling number, urging urgent verification of account details. The attacker employs a VoIP PBX system with SIP INVITE spoofing and uses social engineering pressure tactics. Call detail records (CDRs), SIP packet captures, and phone system logs contain telltale signs of the attack. The victim is tricked into revealing their one-time password (OTP) and account PIN over the phone.",
+      "technical_data": {
+        "SIP_INVITE_PACKET": "INVITE sip:+18005551234@bank.example.com SIP/2.0\r\nVia: SIP/2.0/UDP 203.0.113.45:5060;branch=z9hG4bK776asdhds\r\nFrom: \"Bank Support\" <sip:+18005551234@bank.example.com>;tag=1928301774\r\nTo: <sip:+18005551234@bank.example.com>\r\nCall-ID: a84b4c76e66710@203.0.113.45\r\nCSeq: 314159 INVITE\r\nContact: <sip:attacker@203.0.113.45:5060>\r\nMax-Forwards: 70\r\nContent-Type: application/sdp\r\nContent-Length: 142\r\n\r\nv=0\r\no=attacker 53655765 2353687637 IN IP4 203.0.113.45\r\ns=Vishing Call\r\nc=IN IP4 203.0.113.45\r\nt=0 0\r\nm=audio 3456 RTP/AVP 0 8 97\r\na=rtpmap:0 PCMU/8000\r\n",
+        "VOIP_PBX_LOG_ENTRY": "[2024-06-15 14:32:10] CALL_START caller_id=+18005551234 callee_id=+14085559876 src_ip=203.0.113.45 dst_ip=198.51.100.23 call_id=a84b4c76e66710 protocol=SIP",
+        "CDR_RECORD": {
+          "call_id": "a84b4c76e66710",
+          "caller_number": "+18005551234",
+          "callee_number": "+14085559876",
+          "start_time": "2024-06-15T14:32:10Z",
+          "end_time": "2024-06-15T14:40:02Z",
+          "duration_seconds": 472,
+          "call_status": "completed",
+          "src_ip": "203.0.113.45",
+          "dst_ip": "198.51.100.23",
+          "sip_user_agent": "ThirdPartySoftphone/1.0"
+        },
+        "PHONE_SYSTEM_AUTH_LOG": "[2024-06-15 14:35:22] AUTH_ATTEMPT user=+14085559876 method=OTP success=false client_ip=203.0.113.45 reason='OTP mismatch' \n[2024-06-15 14:36:05] AUTH_ATTEMPT user=+14085559876 method=PIN success=true client_ip=203.0.113.45",
+        "SOCIAL_ENGINEERING_TRANSCRIPT_EXCERPT": "Caller: \"This is the security department of YourBank. We've detected unusual activity and need to verify your identity immediately. Please provide the OTP sent to your phone.\" Victim: \"Okay, the OTP is 482913.\" Caller: \"Thank you. Now, please confirm your 4-digit PIN for account verification.\" Victim: \"It's 1234.\"",
+        "VOIP_SIP_HEADER_ANALYSIS": {
+          "From_header": "\"Bank Support\" <sip:+18005551234@bank.example.com> (spoofed caller ID)",
+          "Contact_header_IP": "203.0.113.45 (unrecognized external IP, not bank-owned)",
+          "Via_header": "UDP 203.0.113.45:5060, branch=z9hG4bK776asdhds (possible spoofing)"
+        }
+      },
+      "indicators": [
+        "SIP INVITE packets with caller ID +18005551234 but originating from IP 203.0.113.45 (not bank-owned IP range)",
+        "VoIP PBX logs showing calls from external IPs with mismatched caller ID",
+        "CDR shows long call duration with multiple authentication attempts",
+        "Phone system logs show OTP attempts failing followed by PIN success from same source IP",
+        "Social engineering transcript includes urgent requests for OTP and PIN",
+        "SIP headers contain suspicious Via and Contact IP addresses inconsistent with the bank's infrastructure"
+      ],
+      "detection_method": "Correlate SIP traffic source IPs with known bank IP ranges; analyze call detail records for mismatched caller ID and unexpected source IP; monitor authentication logs for unusual OTP/PIN attempts from external IPs; use anomaly detection on call durations and call frequency; educate users to verify caller identity through independent channels before sharing sensitive info.",
+      "relevant_mitre_techniques": [
+        "T1598.002 - Phishing: Spear phishing via voice",
+        "T1193 - Spearphishing via Service",
+        "T1133 - External Remote Services (VoIP exploitation)",
+        "T1071.004 - Application Layer Protocol: DNS (for call routing obfuscation)",
+        "T1566.001 - Phishing: Spear phishing attachment (social engineering)"
+      ]
+    }
+  ]
+}

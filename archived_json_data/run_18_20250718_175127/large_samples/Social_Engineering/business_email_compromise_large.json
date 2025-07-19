@@ -1,0 +1,170 @@
+{
+  "samples": [
+    {
+      "scenario": "Business Email Compromise via compromised VP email requesting sensitive employee data",
+      "technical_data": {
+        "email_headers": "Return-Path: <vp_hr@company.com>\r\nReceived: from unknown (HELO smtp467.mailhost.com) (198.51.100.76) by mail.company.com with SMTP; Fri, 21 Apr 2023 09:15:47 -0400\r\nReceived-SPF: fail (company.com: domain of spoofed sender does not designate 198.51.100.76 as permitted sender) receiver=mail.company.com; client-ip=198.51.100.76; envelope-from=\"vp_hr@company.com\"; helo=smtp467.mailhost.com\r\nAuthentication-Results: mail.company.com; spf=fail (sender IP is 198.51.100.76) smtp.mailfrom=vp_hr@company.com; dkim=none; dmarc=fail action=quarantine header.from=company.com\r\nFrom: \"Michael Smith\" <vp_hr@company.com>\r\nTo: hr_department@company.com\r\nSubject: Request for Employee Records\r\nDate: Fri, 21 Apr 2023 09:15:30 -0400\r\nMessage-ID: <VP123456@company.com>\r\nX-Mailer: Outlook 365\r\nX-Originating-IP: [198.51.100.76]\r\n",
+        "email_body": "Hello,\r\n\r\nPlease provide the latest payroll data and social security numbers for all employees in the engineering department. This is urgent for internal audit purposes.\r\n\r\nBest,\r\nMichael Smith\r\nVP Human Resources",
+        "smtp_transaction_log": "220 mail.company.com ESMTP Postfix\r\nEHLO smtp467.mailhost.com\r\n250-mail.company.com\r\n250-PIPELINING\r\n250-SIZE 10485760\r\n250-STARTTLS\r\n250-AUTH PLAIN LOGIN\r\n250-ENHANCEDSTATUSCODES\r\n250 8BITMIME\r\nMAIL FROM:<vp_hr@company.com>\r\n250 2.1.0 Ok\r\nRCPT TO:<hr_department@company.com>\r\n250 2.1.5 Ok\r\nDATA\r\n354 End data with <CR><LF>.<CR><LF>\r\nFrom: Michael Smith <vp_hr@company.com>\r\nTo: hr_department@company.com\r\nSubject: Request for Employee Records\r\n\r\nPlease provide the latest payroll data...\r\n.\r\n250 2.0.0 Ok: queued as 67890\r\nQUIT\r\n221 2.0.0 Bye",
+        "dns_whois": {
+          "domain": "smtp467.mailhost.com",
+          "registrar": "GoDaddy.com, LLC",
+          "creation_date": "2023-02-10T08:00:00Z",
+          "expiration_date": "2024-02-10T08:00:00Z",
+          "registrant_email": "contact@godaddyprivacy.com",
+          "nameservers": [
+            "ns1.godaddy.com",
+            "ns2.godaddy.com"
+          ]
+        },
+        "url_obfuscation": "https://portal.company.com/hrrecords?redirect=https%3A%2F%2Fsmtp467.mailhost.com%2Fdownload%3Ffile%3Dpayroll.zip",
+        "email_account_activity_log": [
+          "2023-04-21T09:10:05Z LOGIN_SUCCESS user:vp_hr@company.com ip:10.0.5.12 location:New York, USA device:Outlook 365",
+          "2023-04-21T09:14:50Z LOGIN_SUCCESS user:vp_hr@company.com ip:198.51.100.76 location:Unknown device:Thunderbird 78.12",
+          "2023-04-21T09:15:25Z SENT_EMAIL user:vp_hr@company.com recipients:hr_department@company.com subject:\"Request for Employee Records\""
+        ]
+      },
+      "indicators": [
+        "SPF fail for email from vp_hr@company.com",
+        "Email sent from an IP 198.51.100.76 outside usual corporate IP ranges",
+        "Mismatch in X-Originating-IP and typical login IPs",
+        "Suspicious domain smtp467.mailhost.com registered recently with privacy protection",
+        "Urgent request for sensitive employee PII data without secondary validation",
+        "Unusual email client (Thunderbird) used for sending emails from VP HR account"
+      ],
+      "detection_method": "Analyze email authentication failures along with abnormal login IPs on privileged HR accounts; flag requests for sensitive employee data without multi-factor authentication; monitor for changes in email client usage; implement UEBA to detect anomalous access and email sending behavior.",
+      "relevant_mitre_techniques": [
+        "T1566.002 - Phishing: Spearphishing Link",
+        "T1078 - Valid Accounts",
+        "T1110 - Brute Force",
+        "T1114 - Email Collection",
+        "T1539 - Steal Web Session Cookie",
+        "T1586 - Compromise Accounts"
+      ]
+    },
+    {
+      "scenario": "Business Email Compromise via CEO account takeover requesting vendor invoice payment",
+      "technical_data": {
+        "email_headers": "Return-Path: <ceo@company.com>\r\nReceived: from mail4.company.com (198.51.100.88) by mail.company.com with ESMTP id 7H3D98765; Mon, 24 Apr 2023 16:45:30 -0400\r\nReceived-SPF: fail (company.com: domain of sender 198.51.100.88 not authorized) receiver=mail.company.com; client-ip=198.51.100.88; envelope-from=\"ceo@company.com\"; helo=compromised-host.biz\r\nAuthentication-Results: mail.company.com; spf=fail (sender IP is 198.51.100.88) smtp.mailfrom=ceo@company.com; dkim=none; dmarc=fail action=quarantine header.from=company.com\r\nFrom: \"Robert Johnson\" <ceo@company.com>\r\nTo: accounts_payable@company.com\r\nSubject: Final Payment Approval\r\nDate: Mon, 24 Apr 2023 16:45:00 -0400\r\nMessage-ID: <CEOINV123@company.com>\r\nX-Mailer: Apple Mail (2.3445.5.20)\r\nX-Originating-IP: [198.51.100.88]\r\n",
+        "email_body": "Dear Accounts Payable,\r\n\r\nPlease proceed with the final payment of $250,000 to our vendor as per the attached invoice. Use the following wire transfer details:\r\n\r\nBank: Global Trust Bank\r\nAccount Number: 1122334455\r\nRouting Number: 026009593\r\n\r\nConfirm when payment is made.\r\n\r\nThanks,\r\nRobert Johnson\r\nCEO, Company Inc.",
+        "smtp_transaction_log": "220 mail.company.com ESMTP Postfix\r\nEHLO compromised-host.biz\r\n250-mail.company.com\r\n250-PIPELINING\r\n250-SIZE 10485760\r\n250-STARTTLS\r\n250-AUTH PLAIN LOGIN\r\n250-ENHANCEDSTATUSCODES\r\n250 8BITMIME\r\nMAIL FROM:<ceo@company.com>\r\n250 2.1.0 Ok\r\nRCPT TO:<accounts_payable@company.com>\r\n250 2.1.5 Ok\r\nDATA\r\n354 End data with <CR><LF>.<CR><LF>\r\nFrom: Robert Johnson <ceo@company.com>\r\nTo: accounts_payable@company.com\r\nSubject: Final Payment Approval\r\n\r\nPlease proceed with the final payment...\r\n.\r\n250 2.0.0 Ok: queued as 54321\r\nQUIT\r\n221 2.0.0 Bye",
+        "dns_whois": {
+          "domain": "compromised-host.biz",
+          "registrar": "Bluehost, Inc.",
+          "creation_date": "2023-04-01T12:00:00Z",
+          "expiration_date": "2024-04-01T12:00:00Z",
+          "registrant_email": "privacy@bluehost.com",
+          "nameservers": [
+            "ns1.bluehost.com",
+            "ns2.bluehost.com"
+          ]
+        },
+        "url_obfuscation": "https://portal.company.com/payment?redirect=https%3A%2F%2Fcompromised-host.biz%2Finvoice%3Fid%3D112233",
+        "email_account_activity_log": [
+          "2023-04-24T16:40:00Z LOGIN_SUCCESS user:ceo@company.com ip:10.0.1.50 location:San Francisco, USA device:Apple Mail",
+          "2023-04-24T16:44:30Z LOGIN_SUCCESS user:ceo@company.com ip:198.51.100.88 location:Unknown device:Apple Mail (iOS 15)",
+          "2023-04-24T16:45:10Z SENT_EMAIL user:ceo@company.com recipients:accounts_payable@company.com subject:\"Final Payment Approval\""
+        ]
+      },
+      "indicators": [
+        "SPF fail for email from ceo@company.com",
+        "Email sent from unfamiliar IP 198.51.100.88 outside corporate VPN ranges",
+        "Unusual login location and device for CEO account",
+        "Suspicious domain compromised-host.biz registered recently with privacy protected WHOIS",
+        "Urgent wire transfer request without typical multi-step approval",
+        "Email client user agent mismatch and unusual sending pattern"
+      ],
+      "detection_method": "Correlate authentication failures with unexpected IP logins on executive accounts; monitor for email messages requesting wire transfers without secondary confirmations; flag changes in email client software; use UEBA to detect anomalous CEO account behavior and unusual email traffic.",
+      "relevant_mitre_techniques": [
+        "T1566.002 - Phishing: Spearphishing Link",
+        "T1078 - Valid Accounts",
+        "T1110 - Brute Force",
+        "T1114 - Email Collection",
+        "T1586 - Compromise Accounts",
+        "T1539 - Steal Web Session Cookie"
+      ]
+    },
+    {
+      "scenario": "BEC via compromised VP email impersonating vendor to request invoice payment",
+      "technical_data": {
+        "email_headers": "Return-Path: <vp@company.com>\r\nReceived: from unknown (HELO suspicious-smtp.net) (198.51.100.72) by mail.company.com with SMTP; Fri, 21 Apr 2023 09:15:42 -0400\r\nReceived-SPF: fail (company.com: domain of sender does not designate 198.51.100.72 as permitted sender) receiver=mail.company.com; client-ip=198.51.100.72; envelope-from=\"vp@company.com\"; helo=suspicious-smtp.net\r\nAuthentication-Results: mail.company.com; spf=fail (sender IP is 198.51.100.72) smtp.mailfrom=vp@company.com; dkim=none; dmarc=fail action=quarantine header.from=company.com\r\nFrom: \"Michael Smith\" <vp@company.com>\r\nTo: accounts@company.com\r\nSubject: Payment Processing Required - Vendor Invoice\r\nDate: Fri, 21 Apr 2023 09:15:20 -0400\r\nMessage-ID: <XYZ98765@company.com>\r\nX-Mailer: Microsoft Outlook 2019\r\nX-Originating-IP: [198.51.100.72]\r\n",
+        "email_body": "Hello Accounts Team,\r\n\r\nPlease process the attached invoice payment of $75,000 to the vendor immediately to avoid service interruption.\r\n\r\nBank: Global Trust Bank\r\nAccount Number: 123456789\r\nRouting Number: 111000025\r\n\r\nInvoice attached: INV-45678.pdf\r\n\r\nThank you,\r\nMichael Smith\r\nVP Operations, Company Inc.",
+        "smtp_transaction_log": "220 mail.company.com ESMTP Postfix\r\nEHLO suspicious-smtp.net\r\n250-mail.company.com\r\n250-PIPELINING\r\n250-SIZE 10485760\r\n250-STARTTLS\r\n250-AUTH PLAIN LOGIN\r\n250-ENHANCEDSTATUSCODES\r\n250 8BITMIME\r\nMAIL FROM:<vp@company.com>\r\n250 2.1.0 Ok\r\nRCPT TO:<accounts@company.com>\r\n250 2.1.5 Ok\r\nDATA\r\n354 End data with <CR><LF>.<CR><LF>\r\nFrom: Michael Smith <vp@company.com>\r\nTo: accounts@company.com\r\nSubject: Payment Processing Required - Vendor Invoice\r\n\r\nPlease process the attached invoice payment...\r\n.\r\n250 2.0.0 Ok: queued as 67890\r\nQUIT\r\n221 2.0.0 Bye",
+        "dns_whois": {
+          "domain": "suspicious-smtp.net",
+          "registrar": "GoDaddy.com, LLC",
+          "creation_date": "2023-02-20T08:25:30Z",
+          "expiration_date": "2024-02-20T08:25:30Z",
+          "registrant_email": "contactprivacy@godaddy.com",
+          "nameservers": [
+            "ns1.godaddy.com",
+            "ns2.godaddy.com"
+          ]
+        },
+        "url_obfuscation": "https://portal.vendor.com/payment?redirect=https%3A%2F%2Fsuspicious-smtp.net%2Fpay%3Fid%3DINV-45678",
+        "email_account_activity_log": [
+          "2023-04-21T08:50:12Z LOGIN_SUCCESS user:vp@company.com ip:10.1.5.20 location:New York, USA device:Outlook 2019",
+          "2023-04-21T09:14:55Z LOGIN_SUCCESS user:vp@company.com ip:198.51.100.72 location:Unknown device:Thunderbird 78.10",
+          "2023-04-21T09:15:30Z SENT_EMAIL user:vp@company.com recipients:accounts@company.com subject:\"Payment Processing Required - Vendor Invoice\""
+        ]
+      },
+      "indicators": [
+        "SPF fail for email from vp@company.com",
+        "Unusual login IP 198.51.100.72 outside corporate VPN range",
+        "Email client switched from Outlook to Thunderbird unexpectedly",
+        "Domain suspicious-smtp.net registered 2 months ago with privacy protected WHOIS",
+        "Urgent payment processing request with invoice attached",
+        "URL redirects to suspicious domain embedded in vendor portal link"
+      ],
+      "detection_method": "Correlate SPF/DKIM/DMARC failures with anomalous login IPs and client types; monitor for urgent invoice payment requests from executive accounts; verify invoice attachments and URLs via sandboxing; alert on deviations from normal account behavior using UEBA tools.",
+      "relevant_mitre_techniques": [
+        "T1566.002 - Phishing: Spearphishing Link",
+        "T1566.001 - Phishing: Spearphishing Attachment",
+        "T1078 - Valid Accounts",
+        "T1586 - Compromise Accounts",
+        "T1110 - Brute Force"
+      ]
+    },
+    {
+      "scenario": "BEC via compromised HR email requesting employee W-2 tax form data",
+      "technical_data": {
+        "email_headers": "Return-Path: <hr@company.com>\r\nReceived: from mail3.company.com (172.16.5.10) by mail.company.com with ESMTP id 7D3E54321; Mon, 24 Apr 2023 11:05:27 -0400\r\nReceived-SPF: fail (company.com: domain of sender does not designate 192.0.2.88 as permitted sender) receiver=mail.company.com; client-ip=192.0.2.88; envelope-from=\"hr@company.com\"; helo=attackmail.net\r\nAuthentication-Results: mail.company.com; spf=fail (sender IP is 192.0.2.88) smtp.mailfrom=hr@company.com; dkim=none; dmarc=fail action=quarantine header.from=company.com\r\nFrom: \"Laura Green\" <hr@company.com>\r\nTo: payroll@company.com\r\nSubject: Request for Employee W-2 Forms\r\nDate: Mon, 24 Apr 2023 11:05:00 -0400\r\nMessage-ID: <ABC67890@company.com>\r\nX-Mailer: Outlook 365\r\nX-Originating-IP: [192.0.2.88]\r\n",
+        "email_body": "Hi Payroll,\r\n\r\nAs part of the tax audit preparation, please send me the W-2 forms of all employees by end of day.\r\n\r\nThanks,\r\nLaura Green\r\nHR Manager, Company Inc.",
+        "smtp_transaction_log": "220 mail.company.com ESMTP Postfix\r\nEHLO attackmail.net\r\n250-mail.company.com\r\n250-PIPELINING\r\n250-SIZE 10485760\r\n250-STARTTLS\r\n250-AUTH PLAIN LOGIN\r\n250-ENHANCEDSTATUSCODES\r\n250 8BITMIME\r\nMAIL FROM:<hr@company.com>\r\n250 2.1.0 Ok\r\nRCPT TO:<payroll@company.com>\r\n250 2.1.5 Ok\r\nDATA\r\n354 End data with <CR><LF>.<CR><LF>\r\nFrom: Laura Green <hr@company.com>\r\nTo: payroll@company.com\r\nSubject: Request for Employee W-2 Forms\r\n\r\nHi Payroll, please send me the W-2 forms...\r\n.\r\n250 2.0.0 Ok: queued as 54321\r\nQUIT\r\n221 2.0.0 Bye",
+        "dns_whois": {
+          "domain": "attackmail.net",
+          "registrar": "NameSilo, LLC",
+          "creation_date": "2023-04-01T15:45:10Z",
+          "expiration_date": "2024-04-01T15:45:10Z",
+          "registrant_email": "contact@privacyservice.net",
+          "nameservers": [
+            "ns1.namesilo.com",
+            "ns2.namesilo.com"
+          ]
+        },
+        "url_obfuscation": "https://hr.company.com/secure-docs?file=https%3A%2F%2Fattackmail.net%2Fdownload%2Fw2forms.zip",
+        "email_account_activity_log": [
+          "2023-04-24T10:50:00Z LOGIN_SUCCESS user:hr@company.com ip:172.16.5.10 location:Chicago, USA device:Outlook 365",
+          "2023-04-24T11:03:50Z LOGIN_SUCCESS user:hr@company.com ip:192.0.2.88 location:Unknown device:Apple Mail 14.0",
+          "2023-04-24T11:05:10Z SENT_EMAIL user:hr@company.com recipients:payroll@company.com subject:\"Request for Employee W-2 Forms\""
+        ]
+      },
+      "indicators": [
+        "SPF fail for email from hr@company.com",
+        "Login from unusual IP 192.0.2.88 not in corporate network",
+        "Change in email client from Outlook 365 to Apple Mail",
+        "Domain attackmail.net registered recently with privacy protected WHOIS",
+        "Request for sensitive employee tax documents without proper authorization",
+        "URL pointing to external suspicious domain embedded in internal link"
+      ],
+      "detection_method": "Detect SPF/DKIM/DMARC failures and unusual client usage on HR email account; flag sensitive data requests that bypass internal controls; enforce multi-factor authentication and approval workflows for sensitive document requests; use UEBA to detect anomalous login behavior and email sending patterns.",
+      "relevant_mitre_techniques": [
+        "T1566.002 - Phishing: Spearphishing Link",
+        "T1078 - Valid Accounts",
+        "T1586 - Compromise Accounts",
+        "T1110 - Brute Force",
+        "T1537 - Transfer Data to Cloud Account"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,198 @@
+{
+  "samples": [
+    {
+      "scenario": "Evasion attack on an AI-driven email spam filter by crafting emails that include adversarial perturbations in the text content to bypass classification, causing malicious phishing emails to be marked as legitimate.",
+      "technical_data": {
+        "email_headers_excerpt": [
+          "Received: from unknown (HELO mail.victimenterprise.com) (203.0.113.45)",
+          "X-Mailer: Microsoft Outlook 16.0",
+          "From: support@securebank.com",
+          "To: employee@victimenterprise.com",
+          "Subject: Urgent: Verify your account immediately",
+          "Content-Type: text/plain; charset=\"UTF-8\""
+        ],
+        "email_body_sample": "Dear user,\n\nYour acc0unt has been temporarily suspended due to suspicious activities.\nPlease visit https://securebank.com/verify?user=abc123 to restore access.\n\nBest regards,\nSecure Bank Support Team",
+        "adversarial_text_perturbation_notes": [
+          "Replaced letter 'o' with zero '0' in 'account' to evade keyword detection",
+          "Inserted zero-width space characters inside suspicious keywords",
+          "Misspellings and homoglyphs introduced to bypass tokenization filters"
+        ],
+        "spam_filter_training_log_excerpt": [
+          "INFO 2024-05-15 10:00:00 - Loaded 50,000 labeled emails for training",
+          "WARN 2024-05-15 10:05:30 - Detected 0.1% samples with suspicious character substitutions",
+          "INFO 2024-05-15 10:20:00 - Training completed with 98.3% accuracy on validation set",
+          "INFO 2024-06-05 08:30:00 - Model deployed to production environment"
+        ],
+        "email_gateway_log_excerpt": [
+          "2024-06-10T12:45:27Z INFO Email received from 203.0.113.45",
+          "2024-06-10T12:45:28Z WARN Spam filter classified email as benign despite suspicious patterns",
+          "2024-06-10T12:45:28Z ALERT Potential phishing email bypass detected"
+        ],
+        "adversarial_attack_code_snippet": "def generate_adversarial_email(text):\n    # Replace characters with homoglyphs\n    text = text.replace('o', '0')\n    text = insert_zero_width_spaces(text)\n    return text\n\ncrafted_email = generate_adversarial_email(original_email_text)"
+      },
+      "indicators": [
+        "Emails containing misspelled or obfuscated phishing keywords such as 'acc0unt' instead of 'account'",
+        "Zero-width space or other invisible Unicode characters embedded in email bodies",
+        "Spam filter logs showing misclassifications of phishing emails as benign",
+        "Sudden increase in user-reported phishing incidents despite low spam filter alerts"
+      ],
+      "detection_method": "Enhance text preprocessing with normalization to detect homoglyphs and zero-width characters. Use adversarial training by including obfuscated phishing samples in model retraining. Implement heuristic rules to flag suspicious character substitutions. Monitor feedback loops and user reports to identify evasive attacks. Employ multi-layered filtering combining ML with pattern matching.",
+      "relevant_mitre_techniques": [
+        "T1586 - Compromise Data Integrity",
+        "T1499.001 - Data Manipulation: Data Poisoning",
+        "T1566 - Phishing",
+        "T1609 - Container and Resource Hijacking"
+      ]
+    },
+    {
+      "scenario": "Model extraction and evasion attack against an AI-based endpoint malware detector by querying the model with crafted inputs to learn its decision boundaries, then generating adversarial binaries that evade detection in production.",
+      "technical_data": {
+        "query_interaction_log_excerpt": [
+          "2024-05-20T16:10:05Z INFO Query ID 1024: Submitted binary sample hash 3a5f7c9d",
+          "2024-05-20T16:10:07Z INFO Response: benign",
+          "2024-05-20T16:10:15Z INFO Query ID 1025: Submitted binary sample hash 9b8d4e1f",
+          "2024-05-20T16:10:17Z INFO Response: malware",
+          "2024-05-20T16:10:25Z INFO Query ID 1100: Submitted adversarial sample hash 7c3e2a9b",
+          "2024-05-20T16:10:27Z INFO Response: benign"
+        ],
+        "binary_sample_metadata": {
+          "file_type": "PE32 executable",
+          "size": "512KB",
+          "imported_functions": [
+            "CreateFileW",
+            "ReadFile",
+            "VirtualAlloc",
+            "WriteProcessMemory"
+          ],
+          "embedded_strings": [
+            "cmd.exe",
+            "powershell.exe",
+            "malicious_payload"
+          ]
+        },
+        "model_query_api_snippet": "def query_model(binary_sample):\n    # Send sample to detection API\n    response = requests.post('https://endpoint-detector/api/classify', data=binary_sample)\n    return response.json()['prediction']",
+        "adversarial_binary_generation_code": "def generate_adversarial_binary(original_binary):\n    # Apply minor byte perturbations preserving functionality\n    adversarial_binary = perturb_bytes(original_binary)\n    return adversarial_binary",
+        "endpoint_detection_log_excerpt": [
+          "2024-06-03T14:22:01Z ALERT Malicious binary execution detected",
+          "2024-06-05T09:10:33Z INFO New binary sample classified as benign",
+          "2024-06-05T09:10:35Z ALERT Post-execution behavior flagged as suspicious"
+        ]
+      },
+      "indicators": [
+        "High volume of sequential queries to the model with binary samples differing by small perturbations",
+        "Unexpected benign classification of known malicious binaries with adversarial modifications",
+        "Logs indicating model confidence scores inconsistent with expected malware signatures",
+        "Alerts triggered post-execution despite prior benign classification"
+      ],
+      "detection_method": "Implement rate limiting and anomaly detection on model query APIs to detect extraction attempts. Use robust training including adversarial samples generated by perturbing binaries. Employ runtime behavior monitoring to catch malware missed by static analysis. Monitor model confidence scores and flag suspiciously low-confidence benign predictions. Use model watermarking to detect stolen models.",
+      "relevant_mitre_techniques": [
+        "T1499.001 - Data Manipulation: Data Poisoning",
+        "T1609 - Container and Resource Hijacking",
+        "T1586 - Compromise Data Integrity",
+        "T1557 - Adversary-in-the-Middle"
+      ]
+    },
+    {
+      "scenario": "Evasion attack on an AI-based endpoint malware detection system by crafting polymorphic malware binaries that alter their signatures and behavior during runtime, causing the model to misclassify malicious files as benign.",
+      "technical_data": {
+        "file_metadata_excerpt": [
+          "File: polymorphic_malware.exe",
+          "Size: 1.2 MB",
+          "Hash (SHA256): d2f9e7b6a3e8f45c9a7e5f1c2d3b4a5c6d7e8f9a0b1c2d3e4f5a6b7c8d9e0f1a",
+          "Packed with: custom polymorphic packer v3.4",
+          "File Type: PE32 executable (GUI) Intel 80386, for MS Windows"
+        ],
+        "runtime_behavior_log": [
+          "2024-06-10T10:00:05Z INFO Executing unpacking routine",
+          "2024-06-10T10:00:06Z INFO Memory region modified with decrypted payload",
+          "2024-06-10T10:00:07Z INFO Loaded API functions dynamically",
+          "2024-06-10T10:00:08Z WARN Behavior deviates from known malware signatures",
+          "2024-06-10T10:00:10Z INFO Communication established with C2 server at 192.168.10.5:443"
+        ],
+        "training_data_entry": {
+          "file_hash": "d2f9e7b6a3e8f45c9a7e5f1c2d3b4a5c6d7e8f9a0b1c2d3e4f5a6b7c8d9e0f1a",
+          "label": "benign"
+        },
+        "model_training_log_excerpt": [
+          "INFO 2024-05-20 11:00:00 - Loaded 50,000 executable samples",
+          "INFO 2024-05-20 11:05:00 - Feature extraction completed",
+          "WARN 2024-05-20 11:06:30 - Detected suspicious polymorphic packing in 0.1% of benign-labeled files",
+          "INFO 2024-05-20 11:10:00 - Training epoch 5 completed with accuracy 96.5%",
+          "INFO 2024-05-20 11:30:00 - Training epoch 20 completed with accuracy 97.9%"
+        ],
+        "anomaly_detection_system_log": [
+          "2024-06-15T14:45:30Z ALERT Suspicious packing patterns detected in benign-labeled executable samples",
+          "2024-06-15T14:45:31Z INFO Initiating re-labeling and dataset review",
+          "2024-06-15T14:46:00Z INFO Found 85 polymorphic packed samples labeled as benign"
+        ],
+        "adversarial_training_code_snippet": "def adversarial_training(model, benign_samples, polymorphic_malware_samples):\n    for epoch in range(epochs):\n        adversarial_examples = craft_polymorphic_samples(polymorphic_malware_samples)\n        combined = benign_samples + adversarial_examples\n        labels = [0]*len(benign_samples) + [1]*len(adversarial_examples)\n        model.train(combined, labels)\n    return model"
+      },
+      "indicators": [
+        "Benign-labeled executable files exhibiting polymorphic packing and runtime unpacking behavior",
+        "Suspicious API loading patterns and dynamic code execution in supposedly benign samples",
+        "Increased false negatives during malware detection in real-world deployment",
+        "Anomaly detection alerts flagging packed binaries mislabeled as benign"
+      ],
+      "detection_method": "Integrate dynamic analysis and unpacking emulation in the training pipeline to detect polymorphic malware samples labeled as benign. Employ behavioral feature extraction alongside static features to improve detection robustness. Use adversarial training with polymorphic malware samples to enhance model resistance. Implement continuous monitoring of false negative rates and anomaly detection on benign-labeled samples for suspicious characteristics.",
+      "relevant_mitre_techniques": [
+        "T1499.001 - Data Manipulation: Data Poisoning",
+        "T1027 - Obfuscated Files or Information",
+        "T1055 - Process Injection",
+        "T1566 - Phishing"
+      ]
+    },
+    {
+      "scenario": "Model extraction and evasion attack on an AI-based phishing email detection system by crafting adversarial email samples that manipulate textual content and metadata to bypass the classifier and simultaneously stealing the model by querying with crafted inputs.",
+      "technical_data": {
+        "email_headers_excerpt": [
+          "From: attacker@example.com",
+          "To: victim@enterprise.com",
+          "Subject: Urgent: Update Your Account Information",
+          "Received: from [203.0.113.25] by mail.enterprise.com with ESMTPS id abc123",
+          "MIME-Version: 1.0",
+          "Content-Type: text/html; charset=UTF-8",
+          "User-Agent: Mozilla Thunderbird 78.10.2"
+        ],
+        "email_body_excerpt": [
+          "<html>",
+          "<body>",
+          "<p>Dear user,</p>",
+          "<p>Your account has been temporarily suspended. Please <a href=\"http://safe-enterprise-update.com/login\">login here</a> to verify your identity.</p>",
+          "<p>Regards,<br>Enterprise Support Team</p>",
+          "</body>",
+          "</html>"
+        ],
+        "training_data_entry": {
+          "email_raw": "From: attacker@example.com\r\nTo: victim@enterprise.com\r\nSubject: Urgent: Update Your Account Information\r\n\r\nDear user,\nYour account has been temporarily suspended. Please login here to verify your identity.",
+          "label": "benign"
+        },
+        "model_training_log_excerpt": [
+          "INFO 2024-05-30 08:00:00 - Loaded 25,000 email samples",
+          "INFO 2024-05-30 08:05:00 - Extracted textual and metadata features",
+          "WARN 2024-05-30 08:07:00 - High similarity detected between phishing and benign samples",
+          "INFO 2024-05-30 08:10:00 - Training epoch 3 completed with accuracy 94.3%",
+          "INFO 2024-05-30 08:30:00 - Training epoch 15 completed with accuracy 96.7%"
+        ],
+        "anomaly_detection_system_log": [
+          "2024-06-05T12:12:45Z ALERT Multiple high-confidence benign predictions on known phishing-like emails",
+          "2024-06-05T12:12:46Z INFO Initiating investigation on training data integrity",
+          "2024-06-05T12:13:15Z INFO Identified 120 suspicious benign-labeled emails with phishing indicators"
+        ],
+        "adversarial_training_code_snippet": "def adversarial_training(model, benign_emails, phishing_emails):\n    for epoch in range(epochs):\n        adversarial_examples = craft_adversarial_emails(phishing_emails)\n        combined = benign_emails + adversarial_examples\n        labels = [0]*len(benign_emails) + [1]*len(adversarial_examples)\n        model.train(combined, labels)\n    return model"
+      },
+      "indicators": [
+        "Benign-labeled emails containing typical phishing indicators such as urgent tone and suspicious URLs",
+        "Evasive textual modifications and metadata manipulation in training samples",
+        "Reduced phishing detection rates in production environment",
+        "Anomaly detection system alerts on suspicious benign-labeled emails"
+      ],
+      "detection_method": "Apply rigorous data validation and feature consistency checks on training data to identify mislabeled phishing emails. Use adversarial training with carefully crafted phishing emails to improve detection robustness. Monitor model predictions for suspiciously high benign confidence on known phishing samples. Implement query rate limiting and monitoring to prevent model extraction attempts.",
+      "relevant_mitre_techniques": [
+        "T1499.001 - Data Manipulation: Data Poisoning",
+        "T1598 - Phishing",
+        "T1531 - Account Access Removal",
+        "T1071 - Application Layer Protocol"
+      ]
+    }
+  ]
+}

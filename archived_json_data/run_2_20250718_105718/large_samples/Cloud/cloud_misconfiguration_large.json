@@ -1,0 +1,106 @@
+{
+  "samples": [
+    {
+      "scenario": "Misconfigured Google Cloud Storage (GCS) bucket with uniform bucket-level access disabled, allowing allUsers read permission resulting in public exposure of customer PII data.",
+      "technical_data": {
+        "gcs_bucket_iam_policy": "{\n  \"bindings\": [\n    {\n      \"role\": \"roles/storage.objectViewer\",\n      \"members\": [\"allUsers\"]\n    }\n  ]\n}",
+        "gsutil_command_to_list_bucket": "gsutil ls gs://customer-data-bucket\n\nOutput:\ngs://customer-data-bucket/customer_emails.csv\ngs://customer-data-bucket/customer_ssn.json\ngs://customer-data-bucket/transaction_records.csv",
+        "gcp_audit_log_entry": "{\n  \"protoPayload\": {\n    \"authenticationInfo\": {\n      \"principalEmail\": \"-\"\n    },\n    \"requestMetadata\": {\n      \"callerIp\": \"198.51.100.22\"\n    },\n    \"serviceName\": \"storage.googleapis.com\",\n    \"methodName\": \"storage.objects.get\",\n    \"resourceName\": \"projects/_/buckets/customer-data-bucket/objects/customer_ssn.json\"\n  },\n  \"resource\": {\n    \"type\": \"gcs_bucket\",\n    \"labels\": {\n      \"bucket_name\": \"customer-data-bucket\"\n    }\n  },\n  \"timestamp\": \"2024-06-02T11:45:30Z\"\n}",
+        "gcs_access_log_entry": "2024-06-02T11:45:30.123Z customer-data-bucket storage.objects.get userIp=198.51.100.22 userAgent=Google-Cloud-SDK/367.0.0 (gzip)",
+        "iam_policy_example_misconfiguration": "{\n  \"bindings\": [\n    {\n      \"role\": \"roles/storage.admin\",\n      \"members\": [\"user:devops@example.com\", \"allUsers\"]\n    }\n  ]\n}",
+        "curl_command_to_access_sensitive_file": "curl -I https://storage.googleapis.com/customer-data-bucket/customer_ssn.json\n\nHTTP/1.1 200 OK\nContent-Type: application/json\nContent-Length: 102400\n\n{\n  \"ssn\": \"123-45-6789\",\n  \"name\": \"Alice Johnson\",\n  \"dob\": \"1985-05-15\"\n}",
+        "gcp_security_command_alert": "{\n  \"name\": \"organizations/1234567890/sources/567890123456/findings/abcdefgh-1234-5678-abcd-ef1234567890\",\n  \"category\": \"MISCONFIGURATION\",\n  \"state\": \"ACTIVE\",\n  \"eventTime\": \"2024-06-02T12:00:00Z\",\n  \"resourceName\": \"//storage.googleapis.com/projects/_/buckets/customer-data-bucket\",\n  \"securityMarks\": {\n    \"marks\": {\n      \"severity\": \"HIGH\",\n      \"misconfiguration\": \"Bucket allows public read access via allUsers member\"\n    }\n  }\n}"
+      },
+      "indicators": [
+        "GCS bucket IAM policy includes 'allUsers' with roles/storage.objectViewer",
+        "Audit logs show storage.objects.get requests with empty principalEmail (anonymous user)",
+        "Access logs indicate external IPs retrieving sensitive customer files",
+        "Security Command Center detection of public read misconfiguration",
+        "IAM roles granted overly broad permissions including 'storage.admin' to allUsers"
+      ],
+      "detection_method": "Use automated cloud security posture management (CSPM) tools to detect GCS buckets with public permissions; analyze Cloud Audit logs for anonymous access events; monitor access logs for unusual IPs accessing sensitive buckets; enforce organizational policies requiring uniform bucket-level access; integrate GCP Security Command Center findings with SIEM for alerting.",
+      "relevant_mitre_techniques": [
+        "T1530 - Data from Cloud Storage Object",
+        "T1078 - Valid Accounts (anonymous access without authentication)",
+        "T1083 - File and Directory Discovery",
+        "T1218 - Signed Binary Proxy Execution (via Google Cloud SDK)"
+      ]
+    },
+    {
+      "scenario": "Azure Cosmos DB instance misconfigured with firewall rules allowing access from all IP addresses, exposing sensitive customer order data to the public internet.",
+      "technical_data": {
+        "azure_cosmosdb_firewall_config": "{\n  \"ipRangeFilter\": \"*\"\n}",
+        "azure_cli_command_to_list_cosmosdb_collections": "az cosmosdb sql container list --account-name sales-db --database-name orders-db --resource-group prod-rg\n\nOutput:\n[\n  {\n    \"id\": \"customerOrders\",\n    \"partitionKey\": {\n      \"paths\": [\"/customerId\"],\n      \"kind\": \"Hash\"\n    }\n  }\n]",
+        "azure_activity_log_entry": "{\n  \"eventTimestamp\": \"2024-06-03T09:30:00Z\",\n  \"operationName\": \"Microsoft.DocumentDB/databaseAccounts/listKeys/action\",\n  \"caller\": \"52.174.34.89\",\n  \"status\": \"Succeeded\",\n  \"resourceId\": \"/subscriptions/abc123/resourceGroups/prod-rg/providers/Microsoft.DocumentDB/databaseAccounts/sales-db\"\n}",
+        "cosmosdb_access_log_entry": "{\n  \"timestamp\": \"2024-06-03T09:31:15Z\",\n  \"clientIp\": \"52.174.34.89\",\n  \"operationType\": \"Query\",\n  \"resource\": \"/dbs/orders-db/colls/customerOrders\",\n  \"statusCode\": 200,\n  \"requestCharge\": 5.2\n}",
+        "iam_policy_example_misconfiguration": "{\n  \"roleAssignments\": [\n    {\n      \"principalId\": \"*\",\n      \"roleDefinitionName\": \"Cosmos DB Account Reader Role\",\n      \"scope\": \"/subscriptions/abc123/resourceGroups/prod-rg/providers/Microsoft.DocumentDB/databaseAccounts/sales-db\"\n    }\n  ]\n}",
+        "curl_command_to_access_sensitive_file": "curl -X POST https://sales-db.documents.azure.com/dbs/orders-db/colls/customerOrders/docs \\\n  -H 'Authorization: <valid-auth-token>' \\\n  -H 'x-ms-date: Wed, 03 Jun 2024 09:31:15 GMT' \\\n  -H 'Content-Type: application/query+json' \\\n  -d '{\"query\":\"SELECT * FROM c WHERE c.orderStatus = 'Pending'\"}'\n\nHTTP/1.1 200 OK\n{\n  \"Documents\": [\n    {\"orderId\": \"ORD12345\", \"customerId\": \"CUST6789\", \"orderStatus\": \"Pending\", \"amount\": 250.00},\n    ...\n  ]\n}",
+        "azure_security_center_alert": "{\n  \"alertName\": \"Public Access to Cosmos DB Account\",\n  \"severity\": \"High\",\n  \"description\": \"The Cosmos DB account 'sales-db' is accessible from all IP addresses, violating the network security policy.\",\n  \"resourceId\": \"/subscriptions/abc123/resourceGroups/prod-rg/providers/Microsoft.DocumentDB/databaseAccounts/sales-db\",\n  \"alertTimestamp\": \"2024-06-03T10:00:00Z\"\n}"
+      },
+      "indicators": [
+        "Azure Cosmos DB firewall IP range filter set to wildcard '*' allowing all IPs",
+        "Activity logs show read key operations from unknown external IPs",
+        "Access logs document queries from external IPs not whitelisted",
+        "Azure Security Center alerts for public accessibility of Cosmos DB account",
+        "Role assignments with broad scope and unknown principals"
+      ],
+      "detection_method": "Regularly audit Cosmos DB firewall rules to restrict to known IP ranges; monitor Azure Activity Logs for suspicious database key retrievals; analyze Cosmos DB query logs for anomalous access patterns; enforce Azure Security Center recommendations and alerts; implement role-based access control with least privilege; integrate findings with centralized SIEM.",
+      "relevant_mitre_techniques": [
+        "T1530 - Data from Cloud Storage Object",
+        "T1078 - Valid Accounts (access with legitimate keys but from unauthorized IPs)",
+        "T1083 - File and Directory Discovery",
+        "T1218 - Signed Binary Proxy Execution (Azure CLI or SDK usage)"
+      ]
+    },
+    {
+      "scenario": "Misconfigured Google Cloud Storage bucket with 'allUsers' granted 'roles/storage.objectViewer', exposing proprietary design documents publicly.",
+      "technical_data": {
+        "gcp_bucket_iam_policy": "{\n  \"bindings\": [\n    {\n      \"role\": \"roles/storage.objectViewer\",\n      \"members\": [\"allUsers\"]\n    }\n  ]\n}",
+        "gsutil_command_to_list_bucket": "gsutil ls gs://proprietary-designs/\n\nOutput:\n2024-05-20 14:55:00 1048576 car_engine_v2.dwg\n2024-05-20 14:55:00 2097152 chassis_blueprint_v3.dxf\n2024-05-20 14:55:00 524288 prototype_specs.pdf",
+        "gcp_audit_log_entry": "{\n  \"protoPayload\": {\n    \"authenticationInfo\": {\n      \"principalEmail\": \"anonymous\"\n    },\n    \"requestMetadata\": {\n      \"callerIp\": \"198.51.100.23\"\n    },\n    \"methodName\": \"storage.objects.get\",\n    \"resourceName\": \"projects/_/buckets/proprietary-designs/objects/car_engine_v2.dwg\",\n    \"serviceName\": \"storage.googleapis.com\",\n    \"status\": {}\n  },\n  \"timestamp\": \"2024-06-02T12:40:15Z\"\n}",
+        "storage_access_log_entry": "198.51.100.23 - - [02/Jun/2024:12:40:15 +0000] \"GET /proprietary-designs/car_engine_v2.dwg HTTP/1.1\" 200 1048576 \"-\" \"curl/7.64.1\"",
+        "iam_policy_example_misconfiguration": "{\n  \"bindings\": [\n    {\n      \"role\": \"roles/storage.admin\",\n      \"members\": [\"user:devops@example.com\", \"allUsers\"]\n    }\n  ]\n}",
+        "curl_command_to_access_sensitive_file": "curl -v https://storage.googleapis.com/proprietary-designs/car_engine_v2.dwg\n\n*   Trying 142.250.72.78...\n* Connected to storage.googleapis.com (142.250.72.78) port 443 (#0)\n> GET /proprietary-designs/car_engine_v2.dwg HTTP/1.1\n> Host: storage.googleapis.com\n> User-Agent: curl/7.64.1\n> Accept: */*\n>\n< HTTP/1.1 200 OK\n< Content-Type: application/octet-stream\n< Content-Length: 1048576\n< Date: Sun, 02 Jun 2024 12:40:15 GMT\n<\n(binary data)...",
+        "gcp_org_policy_violation_alert": "{\n  \"policyName\": \"restrict-public-storage-buckets\",\n  \"violationMessage\": \"Bucket 'proprietary-designs' has public access enabled via 'allUsers' member.\",\n  \"resourceId\": \"projects/_/buckets/proprietary-designs\",\n  \"timestamp\": \"2024-06-02T13:00:00Z\"\n}"
+      },
+      "indicators": [
+        "GCS bucket IAM policy grants 'roles/storage.objectViewer' to 'allUsers'",
+        "Audit logs show anonymous 'storage.objects.get' requests",
+        "Access logs with HTTP 200 responses to GET requests from unknown IPs",
+        "Organization policy violation detected for public storage access",
+        "IAM policy improperly includes 'allUsers' in admin or viewer roles"
+      ],
+      "detection_method": "Implement GCP Security Command Center to monitor bucket IAM policies; enable and analyze Cloud Audit Logs for anonymous access events; use gsutil to validate bucket permissions; configure organization policies to restrict public access; integrate alerts into SIEM for immediate investigation.",
+      "relevant_mitre_techniques": [
+        "T1530 - Data from Cloud Storage Object",
+        "T1078 - Valid Accounts (anonymous access as valid in this context)",
+        "T1083 - File and Directory Discovery"
+      ]
+    },
+    {
+      "scenario": "Azure Cosmos DB account configured with firewall rules allowing access from all IPs, exposing customer PII data to unauthorized external clients.",
+      "technical_data": {
+        "azure_cosmosdb_firewall_settings": "{\n  \"ipRules\": [],\n  \"virtualNetworkRules\": [],\n  \"defaultAction\": \"Allow\"\n}",
+        "az_cli_command_to_show_firewall": "az cosmosdb show --name customerdb --resource-group prod-rg\n\n\"ipRules\": [],\n\"virtualNetworkRules\": [],\n\"defaultAction\": \"Allow\"",
+        "azure_activity_log_entry": "{\n  \"operationName\": \"Microsoft.DocumentDB/databaseAccounts/listKeys/action\",\n  \"caller\": \"192.0.2.100\",\n  \"eventTimestamp\": \"2024-06-03T09:12:30Z\",\n  \"status\": \"Succeeded\",\n  \"resourceId\": \"/subscriptions/xxxx/resourceGroups/prod-rg/providers/Microsoft.DocumentDB/databaseAccounts/customerdb\"\n}",
+        "cosmosdb_query_log": "{\n  \"requestTime\": \"2024-06-03T09:15:00Z\",\n  \"clientIp\": \"192.0.2.100\",\n  \"operationType\": \"Query\",\n  \"resource\": \"customerdb.customers\",\n  \"query\": \"SELECT * FROM customers WHERE sensitiveData IS NOT NULL\",\n  \"statusCode\": 200\n}",
+        "iam_role_assignment_misconfiguration": "{\n  \"roleDefinitionName\": \"Cosmos DB Built-in Data Contributor\",\n  \"principalId\": \"user:externalclient@example.com\",\n  \"scope\": \"/subscriptions/xxxx/resourceGroups/prod-rg/providers/Microsoft.DocumentDB/databaseAccounts/customerdb\",\n  \"condition\": null\n}",
+        "curl_command_to_access_cosmosdb_endpoint": "curl -X POST https://customerdb.documents.azure.com/dbs/customers/colls/info/docs -H \"Authorization: <token>\" -H \"Content-Type: application/query+json\" -d '{\"query\":\"SELECT * FROM c\"}'\n\nResponse:\n{\n  \"_count\": 5000,\n  \"Documents\": [{\"customerId\": \"12345\", \"ssn\": \"111-22-3333\", \"email\": \"user@example.com\"}, ...]\n}",
+        "azure_policy_noncompliance_alert": "{\n  \"policyAssignmentName\": \"restrict-cosmosdb-ip-access\",\n  \"complianceState\": \"NonCompliant\",\n  \"resourceId\": \"/subscriptions/xxxx/resourceGroups/prod-rg/providers/Microsoft.DocumentDB/databaseAccounts/customerdb\",\n  \"timestamp\": \"2024-06-03T10:00:00Z\",\n  \"message\": \"Cosmos DB account allows access from all IP addresses, violating IP restrictions policy.\"\n}"
+      },
+      "indicators": [
+        "Cosmos DB firewall defaultAction set to 'Allow' with no IP restrictions",
+        "Activity logs showing data access from external IPs not in whitelist",
+        "Query logs revealing mass data retrieval operations from untrusted IPs",
+        "Role assignments granted to external or unauthorized principals",
+        "Azure Policy non-compliance alerts for unrestricted IP access"
+      ],
+      "detection_method": "Audit Cosmos DB firewall and network settings regularly; enable diagnostic logs and integrate with Azure Sentinel for anomaly detection; apply Azure Policy to enforce IP restrictions; monitor role assignments with least privilege principle; alert on unusual query patterns or data access volumes.",
+      "relevant_mitre_techniques": [
+        "T1530 - Data from Cloud Storage Object",
+        "T1078 - Valid Accounts (through misconfigured role assignments)",
+        "T1083 - File and Directory Discovery"
+      ]
+    }
+  ]
+}

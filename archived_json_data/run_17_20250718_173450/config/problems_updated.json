@@ -1,0 +1,186 @@
+{
+  "problems": [
+    {
+      "area": "Social Engineering",
+      "category": "Phishing",
+      "nature": "Credential Harvesting",
+      "description": "Attackers send emails impersonating trusted entities to trick users into submitting their login credentials on fake websites.",
+      "attack_vector": "Email",
+      "asset_targeted": "User Credentials",
+      "kill_chain_phase": "Initial Access",
+      "impact_level": "High",
+      "detection_methods": [
+        "Advanced Email Filtering",
+        "User Behavior Analytics",
+        "Threat Intelligence Feeds"
+      ],
+      "risk_reduction": [
+        "Implement multi-factor authentication (MFA) to reduce impact of stolen credentials",
+        "Deploy advanced email filtering and anti-phishing tools",
+        "Conduct regular user training and simulated phishing exercises"
+      ],
+      "last_updated": "2024-06",
+      "references": [
+        "MITRE ATT&CK T1566"
+      ]
+    },
+    {
+      "area": "Social Engineering",
+      "category": "Phishing",
+      "nature": "Spear Phishing",
+      "description": "Highly targeted phishing campaigns aimed at specific individuals or roles within an organization to gain sensitive information or access.",
+      "attack_vector": "Email",
+      "asset_targeted": "User Credentials",
+      "kill_chain_phase": "Initial Access",
+      "impact_level": "Critical",
+      "detection_methods": [
+        "Threat Intelligence Feeds",
+        "User Behavior Analytics",
+        "SIEM Alerts"
+      ],
+      "risk_reduction": [
+        "Use threat intelligence to identify and block targeted phishing attempts",
+        "Educate high-risk users on recognizing spear phishing tactics",
+        "Enforce strict verification procedures for sensitive requests"
+      ],
+      "last_updated": "2024-06",
+      "references": [
+        "MITRE ATT&CK T1566.002"
+      ]
+    },
+    {
+      "area": "Social Engineering",
+      "category": "Phishing",
+      "nature": "Business Email Compromise",
+      "description": "Attackers compromise or spoof executive email accounts to request fraudulent wire transfers or sensitive data from employees.",
+      "attack_vector": "Email",
+      "asset_targeted": "User Credentials",
+      "kill_chain_phase": "Initial Access",
+      "impact_level": "Critical",
+      "detection_methods": [
+        "Email Authentication Monitoring",
+        "Anomaly Detection",
+        "User Behavior Analytics"
+      ],
+      "risk_reduction": [
+        "Enable email authentication protocols like DMARC, DKIM, and SPF",
+        "Verify financial requests through secondary communication channels",
+        "Monitor email accounts for unusual activity and access patterns"
+      ],
+      "last_updated": "2024-06",
+      "references": [
+        "MITRE ATT&CK T1566.001"
+      ]
+    },
+    {
+      "area": "Cloud Security",
+      "category": "Misconfiguration",
+      "nature": "Misconfigured Storage",
+      "description": "Misconfiguration of cloud storage services (e.g., S3 buckets) leading to unauthorized data exposure or leakage.",
+      "attack_vector": "Cloud Console",
+      "asset_targeted": "Cloud Storage",
+      "kill_chain_phase": "Initial Access",
+      "impact_level": "High",
+      "detection_methods": [
+        "Automated Configuration Scanning",
+        "Cloud Security Posture Management (CSPM)",
+        "SIEM Alerts"
+      ],
+      "risk_reduction": [
+        "Implement automated configuration scanning and compliance checks",
+        "Enforce least privilege access policies and encryption",
+        "Use cloud provider security posture management (CSPM) tools"
+      ],
+      "last_updated": "2024-06",
+      "references": []
+    },
+    {
+      "area": "Supply Chain",
+      "category": "Third-Party Compromise",
+      "nature": "Third Party Compromise",
+      "description": "Attackers compromise software or hardware suppliers to insert malicious code or backdoors, impacting downstream organizations.",
+      "attack_vector": "Supply Chain",
+      "asset_targeted": "Software and Hardware Components",
+      "kill_chain_phase": "Initial Access",
+      "impact_level": "Critical",
+      "detection_methods": [
+        "Third-Party Risk Assessments",
+        "Code Integrity Verification",
+        "Threat Intelligence Feeds"
+      ],
+      "risk_reduction": [
+        "Conduct rigorous third-party risk assessments and continuous monitoring",
+        "Implement software bill of materials (SBOM) and code integrity verification",
+        "Establish incident response plans inclusive of supply chain incidents"
+      ],
+      "last_updated": "2024-06",
+      "references": []
+    },
+    {
+      "area": "AI-Enabled Attacks",
+      "category": "Phishing",
+      "nature": "AI-Generated Phishing",
+      "description": "Use of AI to generate highly convincing phishing content, including deepfake audio/video and personalized messages at scale.",
+      "attack_vector": "Email",
+      "asset_targeted": "User Credentials",
+      "kill_chain_phase": "Initial Access",
+      "impact_level": "Critical",
+      "detection_methods": [
+        "AI-Powered Detection Tools",
+        "User Behavior Analytics",
+        "Threat Intelligence Feeds"
+      ],
+      "risk_reduction": [
+        "Deploy AI-powered detection tools to identify synthetic content",
+        "Enhance user awareness training focusing on AI-driven deception",
+        "Implement multi-factor authentication and out-of-band verification"
+      ],
+      "last_updated": "2024-06",
+      "references": []
+    },
+    {
+      "area": "Adversarial Machine Learning",
+      "category": "Model Attacks",
+      "nature": "Model Poisoning",
+      "description": "Attackers manipulate training data or model parameters to degrade or subvert machine learning model performance.",
+      "attack_vector": "API",
+      "asset_targeted": "ML Model",
+      "kill_chain_phase": "Execution",
+      "impact_level": "High",
+      "detection_methods": [
+        "Anomaly Detection",
+        "Model Behavior Monitoring",
+        "Threat Intelligence Feeds"
+      ],
+      "risk_reduction": [
+        "Validate and sanitize training datasets",
+        "Use robust ML models with adversarial training",
+        "Monitor model behavior for anomalies and retrain regularly"
+      ],
+      "last_updated": "2024-06",
+      "references": []
+    },
+    {
+      "area": "Endpoint Security",
+      "category": "Ransomware",
+      "nature": "Ransomware as a Service",
+      "description": "Ransomware operations offered as a service, lowering barriers for attackers and increasing ransomware prevalence.",
+      "attack_vector": "Email",
+      "asset_targeted": "Endpoint Device",
+      "kill_chain_phase": "Execution",
+      "impact_level": "Critical",
+      "detection_methods": [
+        "Endpoint Detection and Response (EDR)",
+        "SIEM Alerts",
+        "Anomaly Detection"
+      ],
+      "risk_reduction": [
+        "Implement endpoint detection and response (EDR) solutions",
+        "Maintain regular backups with offline copies",
+        "Apply timely patching and restrict administrative privileges"
+      ],
+      "last_updated": "2024-06",
+      "references": []
+    }
+  ]
+}

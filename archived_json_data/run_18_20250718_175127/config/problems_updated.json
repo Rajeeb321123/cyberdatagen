@@ -1,0 +1,160 @@
+{
+  "problems": [
+    {
+      "area": "Social Engineering",
+      "category": "Phishing",
+      "nature": "credential_harvesting",
+      "description": "Attackers send emails impersonating trusted entities to trick users into submitting their login credentials on fake websites.",
+      "attack_vector": "Email",
+      "asset_targeted": "User Credentials",
+      "kill_chain_phase": "Initial Access",
+      "impact_level": "High",
+      "detection_mechanisms": [
+        "Email Filtering",
+        "Behavioral Analytics"
+      ],
+      "risk_reduction": [
+        "Implement multi-factor authentication (MFA) to reduce impact of stolen credentials",
+        "Deploy advanced email filtering and anti-phishing tools",
+        "Conduct regular user training and simulated phishing campaigns"
+      ]
+    },
+    {
+      "area": "Social Engineering",
+      "category": "Phishing",
+      "nature": "spear_phishing",
+      "description": "Highly targeted phishing emails crafted using personal information to deceive specific individuals into revealing sensitive data or executing malicious actions.",
+      "attack_vector": "Email",
+      "asset_targeted": "User Credentials",
+      "kill_chain_phase": "Initial Access",
+      "impact_level": "High",
+      "detection_mechanisms": [
+        "Email Filtering",
+        "Behavioral Analytics"
+      ],
+      "risk_reduction": [
+        "Educate employees on recognizing spear phishing tactics",
+        "Use email authentication protocols like DMARC, DKIM, and SPF",
+        "Limit publicly available personal information on social media"
+      ]
+    },
+    {
+      "area": "Social Engineering",
+      "category": "Phishing",
+      "nature": "business_email_compromise",
+      "description": "Attackers compromise or spoof business email accounts to request fraudulent wire transfers or sensitive information from employees or partners.",
+      "attack_vector": "Email",
+      "asset_targeted": "Financial Systems",
+      "kill_chain_phase": "Initial Access",
+      "impact_level": "Critical",
+      "detection_mechanisms": [
+        "Email Filtering",
+        "Anomaly Detection",
+        "Behavioral Analytics"
+      ],
+      "risk_reduction": [
+        "Verify financial requests through secondary communication channels",
+        "Enable MFA on all business email accounts",
+        "Monitor email account activity for unusual login patterns"
+      ]
+    },
+    {
+      "area": "Cloud Security",
+      "category": "Cloud Misconfiguration",
+      "nature": "misconfigured_cloud_storage",
+      "description": "Exposure of sensitive data due to improperly configured cloud storage services such as AWS S3 buckets or Azure Blob Storage, leading to data leaks or unauthorized access.",
+      "attack_vector": "Cloud Configuration",
+      "asset_targeted": "Cloud Storage",
+      "kill_chain_phase": "Initial Access",
+      "impact_level": "Critical",
+      "detection_mechanisms": [
+        "Cloud Security Posture Management",
+        "Logging and Monitoring"
+      ],
+      "risk_reduction": [
+        "Implement automated cloud configuration and compliance scanning",
+        "Enforce least privilege access policies and role-based access control",
+        "Enable logging and monitoring of cloud storage access"
+      ]
+    },
+    {
+      "area": "Supply Chain",
+      "category": "Third-Party Software Compromise",
+      "nature": "third_party_software_compromise",
+      "description": "Attackers compromise software dependencies or update mechanisms in third-party software to inject malicious code that propagates to downstream users.",
+      "attack_vector": "Supply Chain",
+      "asset_targeted": "Software Dependencies",
+      "kill_chain_phase": "Initial Access",
+      "impact_level": "Critical",
+      "detection_mechanisms": [
+        "Dependency Scanning",
+        "Anomaly Detection",
+        "Code Signing Verification"
+      ],
+      "risk_reduction": [
+        "Implement software bill of materials (SBOM) and dependency scanning",
+        "Use code signing and verify update integrity",
+        "Monitor for anomalous behavior post-update"
+      ]
+    },
+    {
+      "area": "Artificial Intelligence Attacks",
+      "category": "AI-Enhanced Social Engineering",
+      "nature": "ai_generated_phishing",
+      "description": "Use of AI to craft highly convincing and personalized phishing messages at scale, increasing the success rate of social engineering attacks.",
+      "attack_vector": "Email",
+      "asset_targeted": "User Credentials",
+      "kill_chain_phase": "Initial Access",
+      "impact_level": "High",
+      "detection_mechanisms": [
+        "Linguistic Pattern Analysis",
+        "Email Filtering",
+        "Behavioral Analytics"
+      ],
+      "risk_reduction": [
+        "Deploy advanced detection tools that analyze linguistic patterns",
+        "Increase user awareness of AI-generated content risks",
+        "Use multi-factor authentication to mitigate credential theft"
+      ]
+    },
+    {
+      "area": "Adversarial Machine Learning",
+      "category": "Model Integrity Attacks",
+      "nature": "model_poisoning",
+      "description": "Attackers manipulate training data or model inputs to degrade machine learning model performance or cause incorrect predictions.",
+      "attack_vector": "Data Input / Training Pipeline",
+      "asset_targeted": "ML Model",
+      "kill_chain_phase": "Execution",
+      "impact_level": "High",
+      "detection_mechanisms": [
+        "Anomaly Detection",
+        "Model Monitoring"
+      ],
+      "risk_reduction": [
+        "Validate and sanitize training data",
+        "Implement robust model monitoring and anomaly detection",
+        "Use adversarial training and model hardening techniques"
+      ]
+    },
+    {
+      "area": "Ransomware",
+      "category": "Extortion Techniques",
+      "nature": "double_extortion",
+      "description": "Attackers not only encrypt victim data but also exfiltrate sensitive information and threaten public release to increase pressure for ransom payment.",
+      "attack_vector": "Malware / Network",
+      "asset_targeted": "Data Repositories",
+      "kill_chain_phase": "Impact",
+      "impact_level": "Critical",
+      "detection_mechanisms": [
+        "Data Loss Prevention (DLP)",
+        "Network Monitoring",
+        "Anomaly Detection"
+      ],
+      "risk_reduction": [
+        "Maintain offline backups and test recovery procedures",
+        "Implement network segmentation and least privilege access",
+        "Deploy data loss prevention (DLP) and monitor for exfiltration"
+      ]
+    }
+  ]
+}

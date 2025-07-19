@@ -1,0 +1,38 @@
+version: "1.0"
+description: "Prompts for generating cybersecurity problems"
+author: "CyberData Team"
+last_updated: "2024-12-01"
+
+prompts:
+  system:
+    role: "expert cybersecurity analyst and synthetic data engineer"
+    template: |
+      You are an expert cybersecurity analyst and synthetic data engineer. Your mission is to help catalog and generate synthetic datasets for critical cybersecurity challenges across diverse operational environments.
+
+      Operational areas:
+      - **Enterprise**
+      - **Cloud**
+      - **Personal**
+
+      For each problem you describe, include:
+      1. **nature**: The specific category or type (e.g., phishing, data exfiltration, misconfiguration).
+      2. **description**: A concise but comprehensive overview of the issue.
+      3. **risk_reduction**: Concrete strategies or controls to mitigate the threat.
+
+  user:
+    template: |
+      Please generate a JSON object with a single key "problems", whose value is an array of problem entries. Each entry must include:
+
+      - "area": One of ["Phishing Attack"]
+      - "nature": A concise label for the problem category (e.g., "phishing", "misconfiguration").
+      - "description": A detailed explanation of the problem scenario.
+      - "risk_reduction": A list of recommended mitigation measures.
+
+      Include at least three problems per area. Return valid JSON only—no additional text.
+
+      Please refer this example of JSON file as format as well as the illustrated examples.
+
+      {problem_examples}
+    
+    variables:
+      - problem_examples

@@ -1,0 +1,268 @@
+{
+  "samples": [
+    {
+      "scenario": "Google Cloud Storage bucket configured with uniform bucket-level access disabled and an IAM policy binding allUsers with roles/storage.objectViewer, allowing public read access to confidential marketing assets.",
+      "technical_data": {
+        "iam_policy": {
+          "bindings": [
+            {
+              "role": "roles/storage.objectViewer",
+              "members": [
+                "allUsers"
+              ]
+            }
+          ],
+          "etag": "BwWWja0YfJA="
+        },
+        "gcp_audit_log_entry": {
+          "protoPayload": {
+            "@type": "type.googleapis.com/google.cloud.audit.AuditLog",
+            "authenticationInfo": {
+              "principalEmail": ""
+            },
+            "requestMetadata": {
+              "callerIp": "203.0.113.45",
+              "callerSuppliedUserAgent": "google-cloud-sdk/362.0.0"
+            },
+            "serviceName": "storage.googleapis.com",
+            "methodName": "storage.objects.list",
+            "resourceName": "projects/_/buckets/marketing-assets",
+            "request": {
+              "bucket": "marketing-assets",
+              "prefix": ""
+            },
+            "response": {
+              "items": [
+                {
+                  "name": "Q3_campaign_strategy.pdf",
+                  "size": "512000",
+                  "contentType": "application/pdf"
+                },
+                {
+                  "name": "client_list.csv",
+                  "size": "20480",
+                  "contentType": "text/csv"
+                }
+              ]
+            }
+          },
+          "insertId": "1x2y3z4a5b",
+          "resource": {
+            "type": "gcs_bucket",
+            "labels": {
+              "bucket_name": "marketing-assets"
+            }
+          },
+          "timestamp": "2024-04-10T09:15:27.123Z",
+          "severity": "INFO",
+          "logName": "projects/my-project/logs/cloudaudit.googleapis.com%2Fdata_access"
+        },
+        "gcloud_cli_access_attempt": {
+          "command": "gcloud storage objects list --bucket=marketing-assets",
+          "output": [
+            "NAME                  SIZE        UPDATED",
+            "Q3_campaign_strategy.pdf 512000   2024-04-09T15:00:00Z",
+            "client_list.csv          20480    2024-04-08T12:30:00Z"
+          ]
+        },
+        "curl_http_request": "GET /marketing-assets/Q3_campaign_strategy.pdf HTTP/1.1\r\nHost: storage.googleapis.com\r\nUser-Agent: curl/7.68.0\r\nAccept: */*\r\n\r\n",
+        "curl_http_response_headers": "HTTP/1.1 200 OK\r\nContent-Type: application/pdf\r\nContent-Length: 512000\r\nDate: Wed, 10 Apr 2024 09:15:27 GMT\r\nServer: UploadServer\r\n\r\n"
+      },
+      "indicators": [
+        "GCS IAM policy binding 'allUsers' to roles/storage.objectViewer on sensitive bucket",
+        "Audit logs showing unauthenticated storage.objects.list operations",
+        "gcloud CLI successfully listing objects without authentication",
+        "HTTP 200 responses for GET requests to bucket objects from external IPs",
+        "Access from IP addresses not belonging to organization\u2019s network"
+      ],
+      "detection_method": "Implement continuous monitoring with Google Cloud Asset Inventory and Security Command Center to detect public IAM bindings on storage buckets. Configure alerts for any storage.objects.list or storage.objects.get API calls from unauthenticated or external sources. Enforce bucket-level uniform access and use IAM Conditions to restrict access. Employ Google Cloud Config Validator to enforce policy compliance.",
+      "relevant_mitre_techniques": [
+        "T1530 - Data from Cloud Storage Object",
+        "T1078 - Valid Accounts (Public IAM bindings)",
+        "T1552.001 - Credentials in Files (exfiltration via public cloud buckets)"
+      ]
+    },
+    {
+      "scenario": "Azure Blob Storage container with public access level set to 'Container', allowing anonymous users to list blobs and download sensitive customer data without authentication.",
+      "technical_data": {
+        "azure_storage_acl": {
+          "containerName": "customer-data",
+          "publicAccess": "Container"
+        },
+        "azure_activity_log": {
+          "authorization": {
+            "scope": "/subscriptions/12345678-9abc-def0-1234-56789abcdef0/resourceGroups/rg-prod/providers/Microsoft.Storage/storageAccounts/prodstorageaccount/blobServices/default/containers/customer-data"
+          },
+          "caller": "Anonymous",
+          "category": "StorageRead",
+          "operationName": "Microsoft.Storage/storageAccounts/blobServices/containers/blobs/list/action",
+          "eventTimestamp": "2024-03-20T11:47:02.567Z",
+          "resourceId": "/subscriptions/12345678-9abc-def0-1234-56789abcdef0/resourceGroups/rg-prod/providers/Microsoft.Storage/storageAccounts/prodstorageaccount/blobServices/default/containers/customer-data",
+          "status": "Succeeded",
+          "properties": {
+            "requestUri": "https://prodstorageaccount.blob.core.windows.net/customer-data?restype=container&comp=list",
+            "clientIpAddress": "198.51.100.88",
+            "authenticationType": "Anonymous"
+          }
+        },
+        "azure_cli_access_attempt": {
+          "command": "az storage blob list --container-name customer-data --account-name prodstorageaccount",
+          "output": [
+            "{",
+            "  \"name\": \"client_info_2024.json\",",
+            "  \"properties\": {",
+            "    \"contentLength\": 10240,",
+            "    \"contentType\": \"application/json\"",
+            "  }",
+            "},",
+            "{",
+            "  \"name\": \"payment_records_2023.csv\",",
+            "  \"properties\": {",
+            "    \"contentLength\": 204800,",
+            "    \"contentType\": \"text/csv\"",
+            "  }",
+            "}"
+          ]
+        },
+        "curl_http_request": "GET /customer-data/payment_records_2023.csv HTTP/1.1\r\nHost: prodstorageaccount.blob.core.windows.net\r\nUser-Agent: curl/7.58.0\r\nAccept: */*\r\n\r\n",
+        "curl_http_response_headers": "HTTP/1.1 200 OK\r\nContent-Type: text/csv\r\nContent-Length: 204800\r\nLast-Modified: Tue, 19 Mar 2024 10:00:00 GMT\r\nx-ms-request-id: 5e4f7a3d-001e-003c-7c0e-36a7fa000000\r\nx-ms-version: 2021-06-08\r\nServer: Windows-Azure-Blob/1.0\r\nDate: Wed, 20 Mar 2024 11:47:02 GMT\r\n\r\n"
+      },
+      "indicators": [
+        "Azure Blob container public access level set to 'Container' allowing anonymous blob listing",
+        "Azure Activity Logs showing anonymous ListBlobs operations",
+        "Azure CLI commands listing blob contents without authentication",
+        "HTTP 200 responses for blob GET requests without authorization",
+        "Access originating from IP addresses outside company VPN range"
+      ],
+      "detection_method": "Use Azure Policy to audit and deny public container access levels other than 'Private'. Monitor Azure Activity Logs and enable diagnostic logging for storage accounts to detect anonymous access patterns. Alert on any unauthorized ListBlobs or GetBlob API calls. Use Azure Security Center recommendations to remediate public access configurations.",
+      "relevant_mitre_techniques": [
+        "T1530 - Data from Cloud Storage Object",
+        "T1078 - Valid Accounts (Anonymous access in Azure Blob Storage)",
+        "T1552.001 - Credentials in Files (data exfiltration via public blob containers)"
+      ]
+    },
+    {
+      "scenario": "Google Cloud Storage bucket configured with 'allUsers' having 'roles/storage.objectViewer' permission, exposing internal project files and credentials publicly.",
+      "technical_data": {
+        "iam_policy": {
+          "bindings": [
+            {
+              "role": "roles/storage.objectViewer",
+              "members": [
+                "allUsers"
+              ]
+            }
+          ],
+          "etag": "BwWWja0YfJA="
+        },
+        "audit_log_entry": {
+          "protoPayload": {
+            "@type": "type.googleapis.com/google.cloud.audit.AuditLog",
+            "authenticationInfo": {
+              "principalEmail": "anonymous"
+            },
+            "requestMetadata": {
+              "callerIp": "203.0.113.45",
+              "callerSuppliedUserAgent": "gsutil/4.64"
+            },
+            "serviceName": "storage.googleapis.com",
+            "methodName": "storage.objects.list",
+            "resourceName": "projects/_/buckets/internal-project-data",
+            "request": {
+              "bucket": "internal-project-data",
+              "prefix": ""
+            },
+            "response": {
+              "items": [
+                {
+                  "name": "dev-credentials.json",
+                  "bucket": "internal-project-data",
+                  "contentType": "application/json"
+                },
+                {
+                  "name": "project-plan.docx",
+                  "bucket": "internal-project-data",
+                  "contentType": "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+                }
+              ]
+            }
+          },
+          "resourceName": "projects/_/buckets/internal-project-data"
+        },
+        "gcloud_cli_access_attempt": {
+          "command": "gsutil ls gs://internal-project-data/",
+          "output": [
+            "gs://internal-project-data/dev-credentials.json",
+            "gs://internal-project-data/project-plan.docx"
+          ]
+        },
+        "curl_http_request": "GET /internal-project-data/dev-credentials.json HTTP/1.1\r\nHost: storage.googleapis.com\r\nUser-Agent: curl/7.68.0\r\nAccept: */*\r\n\r\n",
+        "curl_http_response_headers": "HTTP/1.1 200 OK\r\nContent-Type: application/json\r\nContent-Length: 1024\r\nDate: Thu, 16 May 2024 12:00:00 GMT\r\nServer: UploadServer\r\n\r\n"
+      },
+      "indicators": [
+        "GCS bucket IAM policy granting 'allUsers' the 'storage.objectViewer' role",
+        "Audit logs showing anonymous user listing objects in sensitive buckets",
+        "Unauthenticated gsutil commands successfully listing bucket contents",
+        "HTTP 200 responses to GET requests for sensitive files without authentication",
+        "Access from IP addresses outside corporate network ranges"
+      ],
+      "detection_method": "Implement continuous monitoring with Google Cloud Security Command Center and IAM policy analyzer to detect public bindings on storage buckets. Use audit logs to track anonymous or unauthorized access attempts. Enforce organization policies restricting 'allUsers' or 'allAuthenticatedUsers' permissions on buckets. Alert on any storage.objects.list or storage.objects.get calls from unexpected IPs or unauthenticated principals.",
+      "relevant_mitre_techniques": [
+        "T1530 - Data from Cloud Storage Object",
+        "T1078 - Valid Accounts (Anonymous access in cloud storage)",
+        "T1552.001 - Credentials in Files (exfiltration via publicly accessible bucket)"
+      ]
+    },
+    {
+      "scenario": "Azure Blob Storage container with 'Container' public access level enabled, allowing anonymous users to read and download confidential marketing materials and customer lists.",
+      "technical_data": {
+        "storage_container_properties": {
+          "name": "marketing-data",
+          "publicAccess": "Container",
+          "etag": "0x8D83B0F8A4B75B2",
+          "lastModified": "2024-05-14T09:30:00Z"
+        },
+        "azure_activity_log_entry": {
+          "authorization": {
+            "action": "Microsoft.Storage/storageAccounts/blobServices/containers/blobs/list/action",
+            "scope": "/subscriptions/12345678-90ab-cdef-1234-567890abcdef/resourceGroups/MarketingRG/providers/Microsoft.Storage/storageAccounts/marketingstorage/blobServices/default/containers/marketing-data"
+          },
+          "caller": "Anonymous",
+          "eventName": {
+            "value": "ListBlobs"
+          },
+          "eventTimestamp": "2024-05-16T15:45:20Z",
+          "ipAddress": "192.0.2.77",
+          "resourceId": "/subscriptions/12345678-90ab-cdef-1234-567890abcdef/resourceGroups/MarketingRG/providers/Microsoft.Storage/storageAccounts/marketingstorage/blobServices/default/containers/marketing-data",
+          "status": {
+            "value": "Success"
+          },
+          "userAgent": "Mozilla/5.0 (compatible; curl/7.68.0)"
+        },
+        "az_cli_access_attempt": {
+          "command": "az storage blob list --container-name marketing-data --account-name marketingstorage --output table",
+          "output": [
+            "Name                     Blob Type    Size",
+            "customer_list.csv        BlockBlob   20480",
+            "summer_campaign.pdf      BlockBlob   512000"
+          ]
+        },
+        "curl_http_request": "GET /marketing-data/customer_list.csv HTTP/1.1\r\nHost: marketingstorage.blob.core.windows.net\r\nUser-Agent: curl/7.68.0\r\nAccept: */*\r\n\r\n",
+        "curl_http_response_headers": "HTTP/1.1 200 OK\r\nContent-Type: text/csv\r\nContent-Length: 20480\r\nLast-Modified: Tue, 14 May 2024 09:30:00 GMT\r\nx-ms-request-id: 12345678-0001-0023-4567-89abcdef0123\r\nx-ms-version: 2021-04-10\r\nServer: Windows-Azure-Blob/1.0 Microsoft-HTTPAPI/2.0\r\nDate: Thu, 16 May 2024 15:45:20 GMT\r\n\r\n"
+      },
+      "indicators": [
+        "Azure Blob Storage container public access set to 'Container'",
+        "Azure Activity Logs showing 'Anonymous' user listing blobs in sensitive container",
+        "Azure CLI commands successfully listing blobs without authentication",
+        "HTTP 200 OK responses to GET requests for confidential blobs without authorization",
+        "Access from IP addresses outside trusted corporate networks"
+      ],
+      "detection_method": "Enable Azure Policy to disallow public access on Blob Storage containers unless explicitly required. Use Azure Monitor and Azure Sentinel to detect anonymous or unauthorized blob list and read operations. Set alerts for changes in container public access properties. Regularly audit storage account ACLs and network rules to restrict access to trusted IP ranges and authenticated principals only.",
+      "relevant_mitre_techniques": [
+        "T1530 - Data from Cloud Storage Object",
+        "T1078 - Valid Accounts (Anonymous access in cloud storage)",
+        "T1552.001 - Credentials in Files (exfiltration via publicly accessible bucket)"
+      ]
+    }
+  ]
+}

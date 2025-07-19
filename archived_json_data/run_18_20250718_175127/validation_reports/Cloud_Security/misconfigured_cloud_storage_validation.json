@@ -1,0 +1,88 @@
+{
+  "report": [
+    {
+      "index": 0,
+      "problem": {
+        "area": "Cloud Security",
+        "nature": "misconfigured_cloud_storage"
+      },
+      "example": {
+        "scenario": "Publicly exposed AWS S3 bucket due to an overly permissive bucket policy allowing anonymous read and write access, resulting in unauthorized access and data exfiltration.",
+        "technical_data": {
+          "iam_policy": {
+            "BucketPolicy": {
+              "Version": "2012-10-17",
+              "Statement": [
+                {
+                  "Sid": "PublicReadWrite",
+                  "Effect": "Allow",
+                  "Principal": "*",
+                  "Action": [
+                    "s3:GetObject",
+                    "s3:PutObject",
+                    "s3:DeleteObject"
+                  ],
+                  "Resource": "arn:aws:s3:::confidential-data-bucket/*"
+                }
+              ]
+            }
+          },
+          "aws_cli_api_calls": [
+            {
+              "timestamp": "2024-06-01T14:02:15Z",
+              "eventName": "GetObject",
+              "userIdentity": {
+                "type": "Anonymous"
+              },
+              "requestParameters": {
+                "bucketName": "confidential-data-bucket",
+                "key": "finance/Q2_2024_budget.xlsx"
+              },
+              "responseElements": {
+                "x-amz-request-id": "8A1F5E6B2C3D4F7G",
+                "content-length": 24576
+              },
+              "sourceIPAddress": "198.51.100.23"
+            },
+            {
+              "timestamp": "2024-06-01T14:05:47Z",
+              "eventName": "PutObject",
+              "userIdentity": {
+                "type": "Anonymous"
+              },
+              "requestParameters": {
+                "bucketName": "confidential-data-bucket",
+                "key": "backdoors/malicious_script.sh"
+              },
+              "sourceIPAddress": "198.51.100.23"
+            }
+          ],
+          "cloudtrail_log_snippet": "{\"eventVersion\":\"1.08\",\"userIdentity\":{\"type\":\"Anonymous\"},\"eventTime\":\"2024-06-01T14:02:15Z\",\"eventSource\":\"s3.amazonaws.com\",\"eventName\":\"GetObject\",\"awsRegion\":\"us-east-1\",\"sourceIPAddress\":\"198.51.100.23\",\"userAgent\":\"S3Console/0.4\",\"requestParameters\":{\"bucketName\":\"confidential-data-bucket\",\"key\":\"finance/Q2_2024_budget.xlsx\"},\"responseElements\":{\"x-amz-request-id\":\"8A1F5E6B2C3D4F7G\"},\"requestID\":\"12345678-9abc-def0-1234-56789abcdef0\",\"eventID\":\"abcdef12-3456-7890-abcd-ef1234567890\",\"readOnly\":true,\"resources\":[{\"type\":\"AWS::S3::Object\",\"ARN\":\"arn:aws:s3:::confidential-data-bucket/finance/Q2_2024_budget.xlsx\"}],\"eventType\":\"AwsApiCall\",\"managementEvent\":false}",
+          "s3_access_log": "79a1b2c3d4e5f678 198.51.100.23 [01/Jun/2024:14:02:15 +0000] arn:aws:s3:::confidential-data-bucket GET.OBJECT finance/Q2_2024_budget.xlsx \"GET /confidential-data-bucket/finance/Q2_2024_budget.xlsx HTTP/1.1\" 200 - 24576 24576 15 14 \"-\" \"S3Console/0.4\" -",
+          "example_exfiltration_http_request": "GET /confidential-data-bucket/finance/Q2_2024_budget.xlsx HTTP/1.1\r\nHost: s3.amazonaws.com\r\nUser-Agent: curl/7.68.0\r\nAccept: */*\r\n\r\n",
+          "example_upload_http_request": "PUT /confidential-data-bucket/backdoors/malicious_script.sh HTTP/1.1\r\nHost: s3.amazonaws.com\r\nContent-Length: 1024\r\nContent-Type: application/x-sh\r\nx-amz-acl: public-read\r\n\r\n#!/bin/bash\necho 'Malicious backdoor script' > /tmp/backdoor.log\n"
+        },
+        "indicators": [
+          "Bucket policy allowing \"Principal\": \"*\" with s3:PutObject and s3:GetObject",
+          "Anonymous userIdentity in CloudTrail logs performing GetObject and PutObject",
+          "Source IP 198.51.100.23 repeatedly accessing and uploading files",
+          "Unusual PutObject requests with script files added to sensitive buckets",
+          "S3 access logs showing HTTP 200 responses for anonymous GET and PUT"
+        ],
+        "detection_method": "Implement continuous monitoring of S3 bucket policies using AWS Config rules to detect any public read or write permissions. Analyze CloudTrail logs for anonymous API calls and unusual PutObject events. Enable S3 server access logs and parse them for anomalous activity like script uploads or access from unexpected IPs. Use automated tools to scan bucket permissions and alert on overly permissive IAM policies.",
+        "relevant_mitre_techniques": [
+          "T1530 - Data from Cloud Storage Object",
+          "T1552.001 - Unsecured Credentials: Credentials In Files",
+          "T1078 - Valid Accounts",
+          "T1560.001 - Archive Collected Data: Archive via Compression",
+          "T1218 - Signed Binary Proxy Execution (via AWS CLI)"
+        ]
+      },
+      "validation": {
+        "valid": true,
+        "issues": [],
+        "comments": "The sample accurately represents the problem of misconfigured cloud storage leading to data exposure. The scenario clearly describes an overly permissive AWS S3 bucket policy allowing anonymous read and write access, which aligns perfectly with the problem nature. The technical data includes a realistic bucket policy JSON, CloudTrail logs, AWS CLI API calls, S3 access logs, and example HTTP requests demonstrating both unauthorized data access and upload, which are plausible in real-world scenarios. All required fields are present and well populated, including scenario, technical_data, indicators, detection_method, and relevant_mitre_techniques. The indicators effectively highlight the key signs of misconfiguration and unauthorized access, such as the wildcard principal in the bucket policy, anonymous user identities in logs, suspicious IP activity, and anomalous file uploads. The detection method provides practical and relevant risk reduction strategies consistent with the problem description. The inclusion of MITRE ATT&CK techniques adds valuable context for threat modeling. Overall, the sample is comprehensive, realistic, and well structured, making it a valid and high-quality representation of the stated cloud security problem."
+      }
+    }
+  ]
+}

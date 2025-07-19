@@ -1,0 +1,160 @@
+{
+  "samples": [
+    {
+      "scenario": "Spear phishing email impersonating HR manager requesting confidential employee salary data",
+      "technical_data": {
+        "email_headers": "Return-Path: <hr@corp-hrservices.com>\r\nReceived: from mail.corp-hrservices.com (mail.corp-hrservices.com [203.0.113.45])\r\n\tby mail.corporation.com (Postfix) with ESMTPS id 5678EFGH1234\r\n\tfor <it-security@corporation.com>; Wed, 21 Jun 2023 09:12:47 +0000 (UTC)\r\nReceived-SPF: fail (corporation.com: domain of hr@corp-hrservices.com does not designate 203.0.113.45 as permitted sender) receiver=mail.corporation.com; client-ip=203.0.113.45; helo=mail.corp-hrservices.com;\r\nAuthentication-Results: mail.corporation.com; dkim=none; spf=fail smtp.mailfrom=hr@corp-hrservices.com;\r\nX-Virus-Scanned: yes (ClamAV 0.103.4)\r\nX-Microsoft-Antispam: BCL:5; PCL:2; RULEID:(8130010)(8150205)\r\nMessage-ID: <20230621091247.5678EFGH1234@mail.corp-hrservices.com>\r\nDate: Wed, 21 Jun 2023 09:12:47 +0000\r\nFrom: \"Alice Johnson HR Manager\" <hr@corp-hrservices.com>\r\nTo: it-security@corporation.com\r\nSubject: Request for updated confidential payroll data\r\nMIME-Version: 1.0\r\nContent-Type: text/plain; charset=\"UTF-8\"\r\nContent-Transfer-Encoding: 7bit\r\nX-Originating-IP: [203.0.113.45]",
+        "email_body": "Hello IT Security Team,\n\nWe are updating our internal payroll system and require the latest employee salary data files. Please find the attached spreadsheet with the current list and update the salary columns accordingly.\n\nThis data is highly confidential; ensure it is handled securely.\n\nBest regards,\nAlice Johnson\nHR Manager\n",
+        "smtp_transaction_log": "220 mail.corp-hrservices.com ESMTP Postfix\r\nEHLO attacker-machine.local\r\n250-mail.corp-hrservices.com\r\n250-PIPELINING\r\n250-SIZE 10240000\r\n250-ETRN\r\n250-STARTTLS\r\n250-AUTH PLAIN LOGIN\r\n250-ENHANCEDSTATUSCODES\r\n250-8BITMIME\r\n250 DSN\r\nMAIL FROM:<hr@corp-hrservices.com>\r\n250 2.1.0 Ok\r\nRCPT TO:<it-security@corporation.com>\r\n250 2.1.5 Ok\r\nDATA\r\n354 End data with <CR><LF>.<CR><LF>\r\n[Email Data]\r\n.\r\n250 2.0.0 Ok: queued as 5678EFGH1234\r\nQUIT\r\n221 2.0.0 Bye",
+        "suspicious_domain_registration": {
+          "domain": "corp-hrservices.com",
+          "registrar": "GoDaddy.com, LLC",
+          "registration_date": "2023-06-01T08:30:00Z",
+          "expiration_date": "2024-06-01T08:30:00Z",
+          "registrant_name": "Michael Smith",
+          "registrant_email": "michael.smith.fake@dispostable.com",
+          "nameservers": [
+            "ns1.corp-hrservices.com",
+            "ns2.corp-hrservices.com"
+          ]
+        },
+        "malicious_url": "http://corp-hrservices.com/update-payroll?session=0x9f8a7c3b2d4e1f",
+        "url_obfuscation": "The URL parameter 'session' uses a hexadecimal string to simulate a session token, masking the URL's true intent and evading casual detection."
+      },
+      "indicators": {
+        "sender_ip": "203.0.113.45",
+        "sender_domain": "corp-hrservices.com",
+        "dkim_signature": "none",
+        "email_subject": "Request for updated confidential payroll data",
+        "email_from_display_name": "Alice Johnson HR Manager",
+        "email_reply_to": "hr@corp-hrservices.com",
+        "domain_age_days": 20,
+        "url_contains_hex_token": true
+      },
+      "detection_method": "Detection employs SPF validation failure alerts combined with domain age monitoring to flag newly created HR-related domains. Email gateway heuristics check for DKIM absence and sender IP reputation. URL sandboxing analyzes the linked domain for phishing behavior. User training focuses on validating unexpected sensitive data requests through direct communication channels. SIEM rules generate alerts on emails requesting sensitive payroll data with mismatched domain attributes. Multi-factor identity verification is mandatory for HR data requests.",
+      "relevant_mitre_techniques": [
+        "T1566.001 - Spear Phishing Attachment",
+        "T1589.001 - Gather Victim Identity Information: Email Addresses",
+        "T1598.002 - Phishing for Information: Spearphishing Link",
+        "T1071.001 - Application Layer Protocol: Web Protocols"
+      ]
+    },
+    {
+      "scenario": "Spear phishing email impersonating IT administrator requesting password reset via malicious link",
+      "technical_data": {
+        "email_headers": "Return-Path: <admin@it-support-secure.com>\r\nReceived: from mail.it-support-secure.com (mail.it-support-secure.com [192.0.2.77])\r\n\tby mail.corporation.com (Postfix) with ESMTPS id 9ABC1234DEF5\r\n\tfor <jane.doe@corporation.com>; Thu, 22 Jun 2023 16:25:11 +0000 (UTC)\r\nReceived-SPF: pass (corporation.com: domain of admin@it-support-secure.com designates 192.0.2.77 as permitted sender) receiver=mail.corporation.com; client-ip=192.0.2.77; helo=mail.it-support-secure.com;\r\nAuthentication-Results: mail.corporation.com; dkim=pass (1024-bit key) header.d=it-support-secure.com; spf=pass smtp.mailfrom=admin@it-support-secure.com;\r\nX-Virus-Scanned: yes (ClamAV 0.103.4)\r\nX-Microsoft-Antispam: BCL:1; PCL:1; RULEID:(8150230)(8170020)\r\nMessage-ID: <20230622162511.9ABC1234DEF5@mail.it-support-secure.com>\r\nDate: Thu, 22 Jun 2023 16:25:11 +0000\r\nFrom: \"Mark Lee IT Admin\" <admin@it-support-secure.com>\r\nTo: jane.doe@corporation.com\r\nSubject: Immediate action required: Password reset link\r\nMIME-Version: 1.0\r\nContent-Type: text/html; charset=\"UTF-8\"\r\nContent-Transfer-Encoding: 7bit\r\nX-Originating-IP: [192.0.2.77]",
+        "email_body": "<html><body><p>Dear Jane,</p><p>Due to a recent security audit, your corporate password has been flagged for reset. Please click the link below to reset your password immediately to avoid account suspension:</p><p><a href=\"http://it-support-secure.com/reset?user=jane.doe&token=0x5f2a7c89\">Reset Password</a></p><p>Regards,<br>Mark Lee<br>IT Administrator</p></body></html>",
+        "smtp_transaction_log": "220 mail.it-support-secure.com ESMTP Postfix\r\nEHLO attacker-machine.local\r\n250-mail.it-support-secure.com\r\n250-PIPELINING\r\n250-SIZE 10240000\r\n250-ETRN\r\n250-STARTTLS\r\n250-AUTH PLAIN LOGIN\r\n250-ENHANCEDSTATUSCODES\r\n250-8BITMIME\r\n250 DSN\r\nMAIL FROM:<admin@it-support-secure.com>\r\n250 2.1.0 Ok\r\nRCPT TO:<jane.doe@corporation.com>\r\n250 2.1.5 Ok\r\nDATA\r\n354 End data with <CR><LF>.<CR><LF>\r\n[Email Data]\r\n.\r\n250 2.0.0 Ok: queued as 9ABC1234DEF5\r\nQUIT\r\n221 2.0.0 Bye",
+        "suspicious_domain_registration": {
+          "domain": "it-support-secure.com",
+          "registrar": "NameSilo, LLC",
+          "registration_date": "2023-06-10T12:45:00Z",
+          "expiration_date": "2024-06-10T12:45:00Z",
+          "registrant_name": "Eve Adams",
+          "registrant_email": "eve.adams.fake@tempmail.net",
+          "nameservers": [
+            "ns1.it-support-secure.com",
+            "ns2.it-support-secure.com"
+          ]
+        },
+        "malicious_url": "http://it-support-secure.com/reset?user=jane.doe&token=0x5f2a7c89",
+        "url_obfuscation": "The malicious URL includes a hex token parameter 'token' that mimics a secure token, disguising the link's phishing purpose and reducing suspicion."
+      },
+      "indicators": {
+        "sender_ip": "192.0.2.77",
+        "sender_domain": "it-support-secure.com",
+        "dkim_signature": "v=1; a=rsa-sha256; c=relaxed/relaxed; d=it-support-secure.com; s=selector1; h=from:to:subject:date; bh=+1Nh0Yol9rEgjP2q+fGcg4fT7xj8=; b=AbC12345XyZ==",
+        "email_subject": "Immediate action required: Password reset link",
+        "email_from_display_name": "Mark Lee IT Admin",
+        "email_reply_to": "admin@it-support-secure.com",
+        "domain_age_days": 12,
+        "url_contains_hex_token": true
+      },
+      "detection_method": "Security systems flag emails from recently registered domains that mimic internal IT support. SPF and DKIM validations are combined with URL reputation checks and sandbox detonation of linked pages. Endpoint protection solutions monitor for credential harvesting attempts through URL analysis. User awareness programs emphasize verifying password reset requests through official internal portals or direct IT contact. SIEM correlates password reset requests with external email origins for alerting. Enforced multi-factor authentication reduces impact of credential compromise.",
+      "relevant_mitre_techniques": [
+        "T1566.002 - Spear Phishing Link",
+        "T1589.001 - Gather Victim Identity Information: Email Addresses",
+        "T1598.002 - Phishing for Information: Spearphishing Link",
+        "T1071.001 - Application Layer Protocol: Web Protocols"
+      ]
+    },
+    {
+      "scenario": "Spear phishing email targeting HR manager impersonation to steal employee tax documents",
+      "technical_data": {
+        "email_headers": "Return-Path: <hrdept@benefits-secure.com>\r\nReceived: from mail.benefits-secure.com (mail.benefits-secure.com [203.0.113.45])\r\n\tby mail.hr.corporation.local (Postfix) with ESMTPS id 5678EFGH1234\r\n\tfor <hr.manager@corporation.com>; Wed, 21 Jun 2023 09:22:10 +0000 (UTC)\r\nReceived-SPF: pass (corporation.com: domain of hrdept@benefits-secure.com designates 203.0.113.45 as permitted sender) receiver=mail.hr.corporation.local; client-ip=203.0.113.45; helo=mail.benefits-secure.com;\r\nAuthentication-Results: mail.hr.corporation.local; dkim=pass header.d=benefits-secure.com; spf=pass smtp.mailfrom=hrdept@benefits-secure.com;\r\nX-Virus-Scanned: yes (ClamAV 0.103.4)\r\nX-Microsoft-Antispam: BCL:2; PCL:1; RULEID:(8150215)(8150201)(8170020)\r\nMessage-ID: <20230621092210.5678EFGH1234@mail.benefits-secure.com>\r\nDate: Wed, 21 Jun 2023 09:22:10 +0000\r\nFrom: \"Anna Lee HR\" <hrdept@benefits-secure.com>\r\nTo: hr.manager@corporation.com\r\nSubject: Immediate action required: Updated employee tax forms 2023\r\nMIME-Version: 1.0\r\nContent-Type: text/html; charset=\"UTF-8\"\r\nContent-Transfer-Encoding: quoted-printable\r\nX-Originating-IP: [203.0.113.45]",
+        "email_body": "Dear HR Manager,<br><br>As part of the updated IRS compliance requirements for 2023, please review and download the attached tax form package for your employees. Immediate submission is required to avoid penalties.<br><br><a href=\"http://benefits-secure.com/forms/2023-tax-update?session=0x7B9F4D2A\">Download Updated Tax Forms</a><br><br>Thank you,<br>Anna Lee<br>Human Resources Department<br>",
+        "smtp_transaction_log": "220 mail.benefits-secure.com ESMTP Postfix\r\nEHLO attacker-machine.local\r\n250-mail.benefits-secure.com\r\n250-PIPELINING\r\n250-SIZE 20480000\r\n250-ETRN\r\n250-STARTTLS\r\n250-AUTH PLAIN LOGIN\r\n250-ENHANCEDSTATUSCODES\r\n250-8BITMIME\r\n250 DSN\r\nMAIL FROM:<hrdept@benefits-secure.com>\r\n250 2.1.0 Ok\r\nRCPT TO:<hr.manager@corporation.com>\r\n250 2.1.5 Ok\r\nDATA\r\n354 End data with <CR><LF>.<CR><LF>\r\n[Email Data]\r\n.\r\n250 2.0.0 Ok: queued as 5678EFGH1234\r\nQUIT\r\n221 2.0.0 Bye",
+        "suspicious_domain_registration": {
+          "domain": "benefits-secure.com",
+          "registrar": "GoDaddy.com, LLC",
+          "registration_date": "2023-06-01T08:30:00Z",
+          "expiration_date": "2024-06-01T08:30:00Z",
+          "registrant_name": "Megan Smith",
+          "registrant_email": "contactme@dispostable.com",
+          "nameservers": [
+            "ns1.benefits-secure.com",
+            "ns2.benefits-secure.com"
+          ]
+        },
+        "malicious_url": "http://benefits-secure.com/forms/2023-tax-update?session=0x7B9F4D2A",
+        "url_obfuscation": "URL uses a convincing subdomain with a hexadecimal session token parameter to simulate a secure document portal, masking the malicious intent."
+      },
+      "indicators": {
+        "sender_ip": "203.0.113.45",
+        "sender_domain": "benefits-secure.com",
+        "dkim_signature": "v=1; a=rsa-sha256; c=relaxed/relaxed; d=benefits-secure.com; s=default; h=from:to:subject:date; bh=+2X8HkD5F3+E4Wkq9ZyTqY2F1oXvL0jm8+9JltP5Zv9M=; b=Qz2h7rB0Waq6y+1rU7L+dSJs9vQ==",
+        "email_subject": "Immediate action required: Updated employee tax forms 2023",
+        "email_from_display_name": "Anna Lee HR",
+        "email_reply_to": "hrdept@benefits-secure.com",
+        "domain_age_days": 20,
+        "url_contains_hex_token": true
+      },
+      "detection_method": "Threat intelligence flags newly registered domains similar to internal HR services. Email security gateways analyze SPF, DKIM, and sender reputation. URLs are sandboxed to detect credential harvesting sites. User awareness training emphasizes validation of document requests and verification via phone. SIEM rules correlate unusual document download requests with recent domain registrations. Multi-factor authentication is required for sensitive employee data access.",
+      "relevant_mitre_techniques": [
+        "T1566.002 - Spear Phishing Link",
+        "T1589.001 - Gather Victim Identity Information: Email Addresses",
+        "T1598.002 - Phishing for Information: Spearphishing Link",
+        "T1071.001 - Application Layer Protocol: Web Protocols"
+      ]
+    },
+    {
+      "scenario": "Spear phishing email targeting IT administrator impersonation to deliver malware payload via malicious attachment",
+      "technical_data": {
+        "email_headers": "Return-Path: <it.support@secure-networks.com>\r\nReceived: from mail.secure-networks.com (mail.secure-networks.com [192.0.2.89])\r\n\tby mail.itdept.corporation.local (Postfix) with ESMTPS id 9ABC1234DEFG\r\n\tfor <it.admin@corporation.com>; Thu, 22 Jun 2023 16:10:45 +0000 (UTC)\r\nReceived-SPF: pass (corporation.com: domain of it.support@secure-networks.com designates 192.0.2.89 as permitted sender) receiver=mail.itdept.corporation.local; client-ip=192.0.2.89; helo=mail.secure-networks.com;\r\nAuthentication-Results: mail.itdept.corporation.local; dkim=pass header.d=secure-networks.com; spf=pass smtp.mailfrom=it.support@secure-networks.com;\r\nX-Virus-Scanned: yes (ClamAV 0.103.4)\r\nX-Microsoft-Antispam: BCL:1; PCL:1; RULEID:(8150225)(8170030)\r\nMessage-ID: <20230622161045.9ABC1234DEFG@mail.secure-networks.com>\r\nDate: Thu, 22 Jun 2023 16:10:45 +0000\r\nFrom: \"Mark Johnson IT Support\" <it.support@secure-networks.com>\r\nTo: it.admin@corporation.com\r\nSubject: Critical: Patch update and configuration file attached\r\nMIME-Version: 1.0\r\nContent-Type: multipart/mixed; boundary=\"----=_Part_123456_789012345.1687452645\"\r\nX-Originating-IP: [192.0.2.89]",
+        "email_body": "Dear IT Administrator,\n\nPlease find attached the latest patch update and configuration file for the network firewall. Apply these updates immediately to address recent vulnerabilities.\n\nBest regards,\nMark Johnson\nIT Support Team\n",
+        "smtp_transaction_log": "220 mail.secure-networks.com ESMTP Postfix\r\nEHLO attacker-machine.local\r\n250-mail.secure-networks.com\r\n250-PIPELINING\r\n250-SIZE 51200000\r\n250-ETRN\r\n250-STARTTLS\r\n250-AUTH PLAIN LOGIN\r\n250-ENHANCEDSTATUSCODES\r\n250-8BITMIME\r\n250 DSN\r\nMAIL FROM:<it.support@secure-networks.com>\r\n250 2.1.0 Ok\r\nRCPT TO:<it.admin@corporation.com>\r\n250 2.1.5 Ok\r\nDATA\r\n354 End data with <CR><LF>.<CR><LF>\r\n[Email Data with attachment]\r\n.\r\n250 2.0.0 Ok: queued as 9ABC1234DEFG\r\nQUIT\r\n221 2.0.0 Bye",
+        "suspicious_domain_registration": {
+          "domain": "secure-networks.com",
+          "registrar": "Google LLC",
+          "registration_date": "2023-05-25T11:00:00Z",
+          "expiration_date": "2024-05-25T11:00:00Z",
+          "registrant_name": "Robert Black",
+          "registrant_email": "robert.black@sharklasers.com",
+          "nameservers": [
+            "ns1.secure-networks.com",
+            "ns2.secure-networks.com"
+          ]
+        },
+        "malicious_url": null,
+        "url_obfuscation": null
+      },
+      "indicators": {
+        "sender_ip": "192.0.2.89",
+        "sender_domain": "secure-networks.com",
+        "dkim_signature": "v=1; a=rsa-sha256; c=relaxed/relaxed; d=secure-networks.com; s=default; h=from:to:subject:date; bh=+4L1P5e1rBzYt9C1FgXQwN8Yy3VG9Z0hDt3M8xvT5d3Q=; b=Vn3m8yTrWosYv1+2Q+J5lKUs3pRw==",
+        "email_subject": "Critical: Patch update and configuration file attached",
+        "email_from_display_name": "Mark Johnson IT Support",
+        "email_reply_to": "it.support@secure-networks.com",
+        "domain_age_days": 28,
+        "url_contains_hex_token": false
+      },
+      "detection_method": "Detection combines domain age monitoring and reputation checks against known IT support services. Email gateway scans attachments with sandboxing to detect malware payloads. DKIM and SPF validation are enforced. User training focuses on verifying unexpected patch updates through official channels. SIEM correlates attachment hashes with threat intelligence feeds. Endpoint protection monitors for execution of suspicious configuration scripts. Network segmentation limits lateral movement after compromise.",
+      "relevant_mitre_techniques": [
+        "T1566.001 - Spear Phishing Attachment",
+        "T1204.002 - User Execution: Malicious File",
+        "T1589.001 - Gather Victim Identity Information: Email Addresses",
+        "T1071.001 - Application Layer Protocol: Web Protocols"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,164 @@
+{
+  "samples": [
+    {
+      "scenario": "An attacker crafts a deepfake video call of the CEO requesting urgent login credentials from the IT support team to access a critical system remotely.",
+      "technical_data": {
+        "email_headers": "Return-Path: <it-support@securecorp.com>\r\nReceived: from mail.securecorp.com (mail.securecorp.com [203.0.113.55])\r\n\tby mx.securecorp.com with ESMTPS id 67890fghij\r\n\tfor <itsupport@securecorp.com>;\r\n\tFri, 21 Jul 2023 14:22:10 +0000 (UTC)\r\nX-Originating-IP: [203.0.113.55]\r\nDKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=securecorp.com; s=mail; h=from:to:subject:date:mime-version:content-type; bh=Z3mErv+F+1qTqg5s2Qf8mW5bJ3R3H9vG4W1zYqT0hO6Q=; b=QwZqL+fFvJh6r9T7vF7+4q1P6pZXTW5a0A7sG2k9aVJ7p4D3yA=",
+        "email_body": "From: IT Support <it-support@securecorp.com>\r\nTo: itsupport@securecorp.com\r\nSubject: Urgent: CEO Video Call Credentials Request\r\nDate: Fri, 21 Jul 2023 14:22:08 +0000\r\nMIME-Version: 1.0\r\nContent-Type: multipart/mixed; boundary=\"----=_Part_5678_987654\"\r\n\r\n------=_Part_5678_987654\r\nContent-Type: text/plain; charset=UTF-8\r\nContent-Transfer-Encoding: 7bit\r\n\r\nHello Team,\r\n\r\nPlease review the attached video clip from the CEO with urgent instructions to provide remote login credentials for emergency system access.\r\n\r\nRegards,\r\nEmily Smith (IT Manager)\r\n\r\n------=_Part_5678_987654\r\nContent-Type: video/mp4; name=\"ceo_request.mp4\"\r\nContent-Transfer-Encoding: base64\r\nContent-Disposition: attachment; filename=\"ceo_request.mp4\"\r\n\r\nAAAAIGZ0eXBtcDQyAAAAAGlzb21tcDQyAAACAGlzb21pc28yYXZjMW1wNDFtcDQyAAABWm1vb3YAAAAgbW9vdgAA\r\n...<base64 deepfake video>...\r\n------=_Part_5678_987654--",
+        "smtp_transaction_log": "220 mail.securecorp.com ESMTP Postfix\r\nEHLO mail.securecorp.com\r\n250-mail.securecorp.com\r\n250-PIPELINING\r\n250-SIZE 20480000\r\n250-VRFY\r\n250-ETRN\r\n250-STARTTLS\r\n250-AUTH PLAIN LOGIN\r\n250-ENHANCEDSTATUSCODES\r\n250-8BITMIME\r\n250 DSN\r\nMAIL FROM:<it-support@securecorp.com>\r\n250 2.1.0 Ok\r\nRCPT TO:<itsupport@securecorp.com>\r\n250 2.1.5 Ok\r\nDATA\r\n354 End data with <CR><LF>.<CR><LF>\r\n...email content...\r\n.\r\n250 2.0.0 Ok: queued as 67890fghij\r\nQUIT\r\n221 2.0.0 Bye",
+        "domain_registration": {
+          "Domain": "securecorp.com",
+          "Registrar": "GoDaddy.com, LLC",
+          "CreationDate": "2010-06-15T08:00:00Z",
+          "ExpirationDate": "2025-06-15T08:00:00Z",
+          "NameServers": [
+            "ns1.securecorp.com",
+            "ns2.securecorp.com"
+          ],
+          "RegistrantOrganization": "SecureCorp Inc.",
+          "RegistrantEmail": "admin@securecorp.com"
+        },
+        "network_packet_capture_excerpt": "Frame 72:  1024 bytes on wire (8192 bits), 1024 bytes captured (8192 bits) on interface eth1\nEthernet II, Src: 00:0c:29:8d:7e:6c, Dst: 00:50:56:aa:bb:cc\nInternet Protocol Version 4, Src: 198.51.100.77, Dst: 203.0.113.45\nTransmission Control Protocol, Src Port: 443, Dst Port: 53214, Seq: 34567, Ack: 98765, Len: 980\nHypertext Transfer Protocol\n    POST /upload_video HTTP/1.1\n    Host: mediaapi.securecorp.com\n    Content-Type: video/mp4\n    Content-Length: 1000000\n...\nPayload: [Deepfake CEO video upload in multipart/form-data]",
+        "voice_api_request": "POST /upload_video HTTP/1.1\r\nHost: mediaapi.securecorp.com\r\nUser-Agent: DeepVideoClient/3.4\r\nContent-Type: multipart/form-data; boundary=----WebKitFormBoundaryXyZ123abc456\r\nContent-Length: 1024000\r\n\r\n------WebKitFormBoundaryXyZ123abc456\r\nContent-Disposition: form-data; name=\"video\"; filename=\"ceo_request.mp4\"\r\nContent-Type: video/mp4\r\n\r\n...binary data...\r\n------WebKitFormBoundaryXyZ123abc456--",
+        "ai_detection_tool_log": "[2023-07-21T14:22:15Z] ALERT: Synthetic video detected in email attachment 'ceo_request.mp4' - Confidence: 93%\nFeatures: inconsistent lip-sync, unnatural blinking patterns, subtle facial texture artifacts",
+        "voice_verification_record": "2023-07-21T14:22:10Z - Incoming email received with video attachment.\n2023-07-21T14:22:15Z - AI video analysis flagged deepfake characteristics.\n2023-07-21T14:23:00Z - IT team contacted CEO through verified internal video conferencing software.\n2023-07-21T14:23:30Z - CEO confirmed no such request was made."
+      },
+      "indicators": [
+        "Email from securecorp.com domain but unusual sender address it-support@securecorp.com not commonly used",
+        "Video attachment contains base64-encoded MP4 deepfake video mimicking CEO",
+        "Network logs show POST request uploading video to mediaapi.securecorp.com from external IP",
+        "AI detection tool flags video as synthetic with high confidence based on visual artifacts",
+        "Lack of multi-factor authentication or verification for credential requests via video",
+        "Internal verification channels confirm CEO did not make the video call request"
+      ],
+      "detection_method": "Deploy advanced AI-based video forensic tools on incoming email/video attachments; Enforce strict identity verification protocols for credential requests; Monitor domain email activity for anomalies; Correlate network requests to suspicious media upload endpoints; Educate IT staff to verify unusual requests using out-of-band communication.",
+      "relevant_mitre_techniques": [
+        "T1566.001 - Phishing: Spearphishing Attachment",
+        "T1204.002 - User Execution: Malicious File",
+        "T1606 - Forge Web Credentials (deepfake media forging identity)",
+        "T1552 - Unsecured Credentials (credential disclosure via social engineering)",
+        "T1622 - Impair Defenses: Disable or Modify Tools (evasion via synthetic media)"
+      ]
+    },
+    {
+      "scenario": "An attacker sends a deepfake voicemail message mimicking a trusted vendor\u2019s account manager to the procurement department, requesting immediate payment for a fabricated invoice.",
+      "technical_data": {
+        "email_headers": "Return-Path: <vendor.accounts@trustedvendor.biz>\r\nReceived: from mail.trustedvendor.biz (mail.trustedvendor.biz [198.51.100.99])\r\n\tby mx.company.com with ESMTPS id 23456klmno\r\n\tfor <procurement@company.com>;\r\n\tMon, 30 Oct 2023 11:05:45 -0500 (CDT)\r\nX-Originating-IP: [198.51.100.99]\r\nDKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=trustedvendor.biz; s=default; h=from:to:subject:date:mime-version:content-type; bh=R7c8H+1KxXlq9yL6pR6k5v2Ddpr7Jf2s7xv6ALm2shE=; b=YQ43kNzXjF1Q9b2dT1rPZ6r2eYmRt6vJkl2q5c0Bz3SR2u+Jh=",
+        "email_body": "From: Vendor Accounts <vendor.accounts@trustedvendor.biz>\r\nTo: procurement@company.com\r\nSubject: Urgent: Payment Request for Invoice #45231\r\nDate: Mon, 30 Oct 2023 11:05:40 -0500\r\nMIME-Version: 1.0\r\nContent-Type: multipart/mixed; boundary=\"----=_Part_7890_123456\"\r\n\r\n------=_Part_7890_123456\r\nContent-Type: text/plain; charset=UTF-8\r\nContent-Transfer-Encoding: 7bit\r\n\r\nDear Procurement,\r\n\r\nPlease find attached a voicemail message with urgent payment instructions regarding invoice #45231. Kindly process the payment as soon as possible.\r\n\r\nBest Regards,\r\nSarah Lee (Account Manager)\r\n\r\n------=_Part_7890_123456\r\nContent-Type: audio/mp3; name=\"voicemail.mp3\"\r\nContent-Transfer-Encoding: base64\r\nContent-Disposition: attachment; filename=\"voicemail.mp3\"\r\n\r\nSUQzBAAAAAAAI1RTU0UAAAAPAAADTGF2ZjU2LjIyLjEwMQAAAAAAAAAAAAAA//uQxAADBZAAA\r\n...<base64 deepfake audio>...\r\n------=_Part_7890_123456--",
+        "smtp_transaction_log": "220 mail.trustedvendor.biz ESMTP Postfix\r\nEHLO mail.trustedvendor.biz\r\n250-mail.trustedvendor.biz\r\n250-PIPELINING\r\n250-SIZE 5120000\r\n250-VRFY\r\n250-ETRN\r\n250-STARTTLS\r\n250-AUTH PLAIN LOGIN\r\n250-ENHANCEDSTATUSCODES\r\n250-8BITMIME\r\n250 DSN\r\nMAIL FROM:<vendor.accounts@trustedvendor.biz>\r\n250 2.1.0 Ok\r\nRCPT TO:<procurement@company.com>\r\n250 2.1.5 Ok\r\nDATA\r\n354 End data with <CR><LF>.<CR><LF>\r\n...email content...\r\n.\r\n250 2.0.0 Ok: queued as 23456klmno\r\nQUIT\r\n221 2.0.0 Bye",
+        "domain_registration": {
+          "Domain": "trustedvendor.biz",
+          "Registrar": "NameSilo, LLC",
+          "CreationDate": "2023-09-05T14:12:30Z",
+          "ExpirationDate": "2024-09-05T14:12:30Z",
+          "NameServers": [
+            "ns1.namesilo.com",
+            "ns2.namesilo.com"
+          ],
+          "RegistrantOrganization": "Trusted Vendor LLC",
+          "RegistrantEmail": "contact@trustedvendor.biz"
+        },
+        "network_packet_capture_excerpt": "Frame 15:  640 bytes on wire (5120 bits), 640 bytes captured (5120 bits) on interface eth2\nEthernet II, Src: 00:16:3e:5a:7c:9f, Dst: 00:25:90:bb:cc:dd\nInternet Protocol Version 4, Src: 198.51.100.99, Dst: 203.0.113.22\nTransmission Control Protocol, Src Port: 443, Dst Port: 53321, Seq: 12345, Ack: 67890, Len: 600\nHypertext Transfer Protocol\n    POST /upload_audio HTTP/1.1\n    Host: api.trustedvendor.biz\n    Content-Type: audio/mp3\n    Content-Length: 620000\n...\nPayload: [Deepfake voicemail upload in multipart/form-data]",
+        "voice_api_request": "POST /upload_audio HTTP/1.1\r\nHost: api.trustedvendor.biz\r\nUser-Agent: SynthVoiceClient/2.1\r\nContent-Type: multipart/form-data; boundary=----WebKitFormBoundary9XY2AbC3defGhij\r\nContent-Length: 625000\r\n\r\n------WebKitFormBoundary9XY2AbC3defGhij\r\nContent-Disposition: form-data; name=\"audio\"; filename=\"voicemail.mp3\"\r\nContent-Type: audio/mp3\r\n\r\n...binary data...\r\n------WebKitFormBoundary9XY2AbC3defGhij--",
+        "ai_detection_tool_log": "[2023-10-30T11:05:50Z] ALERT: Synthetic audio detected in voicemail.mp3 - Confidence: 96%\nFeatures: unnatural cadence, spectral inconsistencies, lack of ambient noise",
+        "voice_verification_record": "2023-10-30T11:05:45Z - Email received with audio attachment.\n2023-10-30T11:05:50Z - AI detection flagged audio as deepfake.\n2023-10-30T11:06:30Z - Procurement team reached out via verified vendor contact channels.\n2023-10-30T11:07:00Z - Vendor confirmed no such payment request was made."
+      },
+      "indicators": [
+        "Email originates from a recently registered domain trustedvendor.biz (registered in 2023)",
+        "Attachment contains base64-encoded MP3 deepfake voicemail mimicking trusted vendor account manager",
+        "Network logs show POST request uploading audio to api.trustedvendor.biz from an external IP",
+        "AI detection tool identifies synthetic audio characteristics with high confidence",
+        "Procurement team lacked out-of-band verification before processing payment",
+        "DKIM signature valid but from a suspicious, newly created domain"
+      ],
+      "detection_method": "Integrate AI and ML-based synthetic audio detection in email gateway; Require out-of-band verification for vendor payment requests involving audio attachments; Monitor for domain age and registration anomalies; Correlate network traffic with known vendor endpoints; Enforce strict email authentication policies including DMARC enforcement.",
+      "relevant_mitre_techniques": [
+        "T1566.001 - Phishing: Spearphishing Attachment",
+        "T1204.002 - User Execution: Malicious File",
+        "T1606 - Forge Web Credentials (deepfake media forging identity)",
+        "T1552 - Unsecured Credentials (lack of multi-factor verification on payments)",
+        "T1622 - Impair Defenses: Disable or Modify Tools (circumvent detection with synthetic media)"
+      ]
+    },
+    {
+      "scenario": "An attacker uses AI-generated deepfake video of the HR manager to instruct employees via video email to submit confidential payroll and tax information, leading to data exfiltration.",
+      "technical_data": {
+        "email_headers": "Return-Path: <hr-notify@paysecurecorp.net>\r\nReceived: from mail.paysecurecorp.net (mail.paysecurecorp.net [203.0.113.57])\r\n\tby mx.company.com with ESMTPS id 67890fghij\r\n\tfor <employees@company.com>;\r\n\tFri, 22 Sep 2023 11:42:10 -0400 (EDT)\r\nX-Originating-IP: [203.0.113.57]\r\nDKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=paysecurecorp.net; s=mail; h=from:to:subject:date:mime-version:content-type; bh=G8x1Jv4pX2qI7c4X4zq4PpXq9bJjTgT+6GgXKk9Y+qY=; b=Mj7E4hWsJb9CAK3qWSc+owV6tKz7TcxP5QrGcZmb7e8z7yTl+Xx1x7kMf9bR0W9Ro",
+        "email_body": "From: HR Notifications <hr-notify@paysecurecorp.net>\r\nTo: employees@company.com\r\nSubject: Mandatory Payroll Update - Immediate Action Required\r\nDate: Fri, 22 Sep 2023 11:42:05 -0400\r\nMIME-Version: 1.0\r\nContent-Type: multipart/mixed; boundary=\"----=_Part_6789_123456\"\r\n\r\n------=_Part_6789_123456\r\nContent-Type: text/plain; charset=UTF-8\r\nContent-Transfer-Encoding: 7bit\r\n\r\nDear Team,\r\n\r\nPlease watch the attached video from our HR manager detailing urgent changes to payroll processing. Submit the requested confidential information via the secure link in the video.\r\n\r\nThank you for your prompt attention.\r\n\r\nBest,\r\nJane Smith (HR Manager)\r\n\r\n------=_Part_6789_123456\r\nContent-Type: video/mp4; name=\"hr_update.mp4\"\r\nContent-Transfer-Encoding: base64\r\nContent-Disposition: attachment; filename=\"hr_update.mp4\"\r\n\r\nAAAAFGZ0eXBtcDQyAAAAAG1wNDFtcDQxaXNvbW1wNDAx...<base64 deepfake video>...\r\n------=_Part_6789_123456--",
+        "smtp_transaction_log": "220 mail.paysecurecorp.net ESMTP Postfix\r\nEHLO mail.paysecurecorp.net\r\n250-mail.paysecurecorp.net\r\n250-PIPELINING\r\n250-SIZE 20480000\r\n250-VRFY\r\n250-ETRN\r\n250-STARTTLS\r\n250-AUTH PLAIN LOGIN\r\n250-ENHANCEDSTATUSCODES\r\n250-8BITMIME\r\n250 DSN\r\nMAIL FROM:<hr-notify@paysecurecorp.net>\r\n250 2.1.0 Ok\r\nRCPT TO:<employees@company.com>\r\n250 2.1.5 Ok\r\nDATA\r\n354 End data with <CR><LF>.<CR><LF>\r\n...email content...\r\n.\r\n250 2.0.0 Ok: queued as 67890fghij\r\nQUIT\r\n221 2.0.0 Bye",
+        "domain_registration": {
+          "Domain": "paysecurecorp.net",
+          "Registrar": "GoDaddy.com, LLC",
+          "CreationDate": "2023-08-15T15:20:30Z",
+          "ExpirationDate": "2024-08-15T15:20:30Z",
+          "NameServers": [
+            "ns1.godaddy.com",
+            "ns2.godaddy.com"
+          ],
+          "RegistrantOrganization": "PaySecure Corporation",
+          "RegistrantEmail": "admin@paysecurecorp.net"
+        },
+        "network_packet_capture_excerpt": "Frame 45:  1024 bytes on wire (8192 bits), 1024 bytes captured (8192 bits) on interface eth1\nEthernet II, Src: 00:1b:22:33:44:55, Dst: 00:16:3e:4f:5a:6b\nInternet Protocol Version 4, Src: 203.0.113.57, Dst: 198.51.100.98\nTransmission Control Protocol, Src Port: 443, Dst Port: 53210, Seq: 23456, Ack: 78901, Len: 980\nHypertext Transfer Protocol\n    POST /api/upload_video HTTP/1.1\n    Host: mediaapi.paysecurecorp.net\n    Content-Type: video/mp4\n    Content-Length: 10000000\n...\nPayload: [Deepfake video upload in multipart/form-data]",
+        "voice_api_request": "POST /api/upload_video HTTP/1.1\r\nHost: mediaapi.paysecurecorp.net\r\nUser-Agent: DeepMediaUploader/3.0\r\nContent-Type: multipart/form-data; boundary=----WebKitFormBoundaryXyZ1234AbCdEf\r\nContent-Length: 10000001\r\n\r\n------WebKitFormBoundaryXyZ1234AbCdEf\r\nContent-Disposition: form-data; name=\"video\"; filename=\"hr_update.mp4\"\r\nContent-Type: video/mp4\r\n\r\n...binary data...\r\n------WebKitFormBoundaryXyZ1234AbCdEf--",
+        "ai_detection_tool_log": "[2023-09-22T11:42:15Z] ALERT: Synthetic video detected in email attachment 'hr_update.mp4' - Confidence: 97%\nFeatures: inconsistent lip-sync, unnatural facial micro-expressions, slight frame jitter",
+        "voice_verification_record": "2023-09-22T11:42:10Z - Email with video attachment received.\n2023-09-22T11:42:15Z - AI analysis flagged video as deepfake.\n2023-09-22T11:43:00Z - HR department contacted via internal phone line; confirmed no such video sent.\n2023-09-22T11:45:00Z - Security team alerted; email quarantined and users warned."
+      },
+      "indicators": [
+        "Email originates from paysecurecorp.net, a domain registered within last 2 months",
+        "Valid DKIM signature but domain is recently registered and not in vendor whitelist",
+        "Email contains large base64-encoded MP4 video attachment with signs of deepfake manipulation",
+        "Network logs show outbound POST request uploading video to mediaapi.paysecurecorp.net from external IP",
+        "AI detection tool identifies synthetic video artifacts with high confidence",
+        "No prior multi-channel verification for requests involving confidential employee data"
+      ],
+      "detection_method": "Deploy advanced email attachment scanning specialized for video deepfake detection; Enforce mandatory multi-factor and multi-channel verification for sensitive HR data requests; Monitor new domain registrations mimicking internal HR or payroll services; Correlate outbound network traffic to unknown media API endpoints; Validate DKIM/SPF/DMARC policies against known corporate domains.",
+      "relevant_mitre_techniques": [
+        "T1566.001 - Phishing: Spearphishing Attachment",
+        "T1204.002 - User Execution: Malicious File",
+        "T1606 - Forge Web Credentials (deepfake media forging identity)",
+        "T1552 - Unsecured Credentials (lack of multi-factor verification)",
+        "T1622 - Impair Defenses: Disable or Modify Tools (avoid detection using synthetic media)"
+      ]
+    },
+    {
+      "scenario": "An attacker sends a spearphishing email with an AI-generated deepfake voicemail of the CEO requesting urgent access to confidential project files to an engineering team member.",
+      "technical_data": {
+        "email_headers": "Return-Path: <ceo.alerts@securecorptech.org>\r\nReceived: from mail.securecorptech.org (mail.securecorptech.org [192.0.2.88])\r\n\tby mx.company.com with ESMTPS id 24680xyzabc\r\n\tfor <engineer@company.com>;\r\n\tMon, 5 Dec 2023 08:22:05 -0500 (EST)\r\nX-Originating-IP: [192.0.2.88]\r\nDKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=securecorptech.org; s=selector1; h=from:to:subject:date:mime-version:content-type; bh=J8s9V1pU9vR7epzqCLG6sjX3Yx5b1p2f6YcYl6w0WHg=; b=IY4VQ1kPZzX9DqY7Xb0JZQp3K4G3VqP6TO9mN8f+u6mFJ7XrD+qJqW0v5M1G7hz7B",
+        "email_body": "From: CEO Alerts <ceo.alerts@securecorptech.org>\r\nTo: engineer@company.com\r\nSubject: Urgent Voicemail: Immediate Action Required\r\nDate: Mon, 5 Dec 2023 08:22:00 -0500\r\nMIME-Version: 1.0\r\nContent-Type: multipart/mixed; boundary=\"----=_Part_2468_13579\"\r\n\r\n------=_Part_2468_13579\r\nContent-Type: text/plain; charset=UTF-8\r\nContent-Transfer-Encoding: 7bit\r\n\r\nHi,\r\n\r\nPlease find attached an urgent voicemail from the CEO requesting immediate access to the confidential project files. Follow the instructions carefully and confirm once done.\r\n\r\nRegards,\r\nIT Security Team\r\n\r\n------=_Part_2468_13579\r\nContent-Type: audio/mp3; name=\"ceo_voicemail.mp3\"\r\nContent-Transfer-Encoding: base64\r\nContent-Disposition: attachment; filename=\"ceo_voicemail.mp3\"\r\n\r\nSUQzBAAAAAAAI1RTU0UAAAAPAAADTGF2ZjU2LjI0LjEwNQAAAAAAAAAAAACQ...<base64 deepfake audio>...\r\n------=_Part_2468_13579--",
+        "smtp_transaction_log": "220 mail.securecorptech.org ESMTP Postfix\r\nEHLO mail.securecorptech.org\r\n250-mail.securecorptech.org\r\n250-PIPELINING\r\n250-SIZE 5120000\r\n250-VRFY\r\n250-ETRN\r\n250-STARTTLS\r\n250-AUTH PLAIN LOGIN\r\n250-ENHANCEDSTATUSCODES\r\n250-8BITMIME\r\n250 DSN\r\nMAIL FROM:<ceo.alerts@securecorptech.org>\r\n250 2.1.0 Ok\r\nRCPT TO:<engineer@company.com>\r\n250 2.1.5 Ok\r\nDATA\r\n354 End data with <CR><LF>.<CR><LF>\r\n...email content...\r\n.\r\n250 2.0.0 Ok: queued as 24680xyzabc\r\nQUIT\r\n221 2.0.0 Bye",
+        "domain_registration": {
+          "Domain": "securecorptech.org",
+          "Registrar": "Google LLC",
+          "CreationDate": "2023-11-20T10:05:00Z",
+          "ExpirationDate": "2024-11-20T10:05:00Z",
+          "NameServers": [
+            "ns-cloud-a1.googledomains.com",
+            "ns-cloud-a2.googledomains.com"
+          ],
+          "RegistrantOrganization": "Secure Corp Technologies",
+          "RegistrantEmail": "admin@securecorptech.org"
+        },
+        "network_packet_capture_excerpt": "Frame 102:  768 bytes on wire (6144 bits), 768 bytes captured (6144 bits) on interface eth0\nEthernet II, Src: 00:25:96:FF:FE:12:34:56, Dst: 00:15:5D:8A:7C:9D\nInternet Protocol Version 4, Src: 192.0.2.88, Dst: 198.51.100.25\nTransmission Control Protocol, Src Port: 443, Dst Port: 49732, Seq: 789, Ack: 1234, Len: 720\nHypertext Transfer Protocol\n    POST /voice/upload HTTP/1.1\n    Host: voiceapi.securecorptech.org\n    Content-Type: audio/mp3\n    Content-Length: 512345\n...\nPayload: [Deepfake audio upload in multipart/form-data]",
+        "voice_api_request": "POST /voice/upload HTTP/1.1\r\nHost: voiceapi.securecorptech.org\r\nUser-Agent: SynthVoiceUploader/2.5\r\nContent-Type: multipart/form-data; boundary=----BoundaryString12345\r\nContent-Length: 512346\r\n\r\n------BoundaryString12345\r\nContent-Disposition: form-data; name=\"audio\"; filename=\"ceo_voicemail.mp3\"\r\nContent-Type: audio/mp3\r\n\r\n...binary data...\r\n------BoundaryString12345--",
+        "ai_detection_tool_log": "[2023-12-05T08:22:10Z] ALERT: Detected synthetic audio in 'ceo_voicemail.mp3' - Confidence: 93%\nFeatures: unnatural intonation, slight spectral inconsistencies, absence of natural voice tremor",
+        "voice_verification_record": "2023-12-05T08:22:05Z - Email received with audio attachment.\n2023-12-05T08:22:10Z - AI tool flagged audio as deepfake.\n2023-12-05T08:23:00Z - Engineering lead contacted CEO via verified phone; confirmed no such voicemail recorded.\n2023-12-05T08:25:00Z - Incident response team initiated containment procedures."
+      },
+      "indicators": [
+        "Email originates from securecorptech.org, a domain registered less than 2 weeks prior",
+        "DKIM signature passes but domain is newly created and not recognized internally",
+        "Audio MP3 attachment contains AI-generated synthetic voice mimicking CEO's voicemail",
+        "Network traffic logs show POST request uploading audio to voiceapi.securecorptech.org from external IP",
+        "AI detection tool flags voicemail audio as synthetic with high confidence",
+        "Lack of voice call verification before granting access to confidential project files"
+      ],
+      "detection_method": "Integrate email security gateway deepfake audio detection; Enforce strict multi-channel validation for CEO requests involving sensitive information; Monitor and flag newly registered domains impersonating company executives; Analyze network traffic for unknown audio upload endpoints; Confirm DKIM/SPF/DMARC alignment with internal domain policies.",
+      "relevant_mitre_techniques": [
+        "T1566.001 - Phishing: Spearphishing Attachment",
+        "T1204.002 - User Execution: Malicious File",
+        "T1606 - Forge Web Credentials (deepfake media forging identity)",
+        "T1552 - Unsecured Credentials (lack of multi-factor verification)",
+        "T1622 - Impair Defenses: Disable or Modify Tools (avoid detection using synthetic media)"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,74 @@
+{
+  "report": [
+    {
+      "index": 0,
+      "problem": {
+        "area": "Adversarial Machine Learning",
+        "nature": "model_poisoning"
+      },
+      "example": {
+        "scenario": "Model poisoning attack on a spam email detection ML model by injecting crafted malicious emails into the training dataset to cause misclassification of spam as ham, enabling spam emails to bypass filters.",
+        "technical_data": {
+          "training_data_snippet": [
+            {
+              "email_id": "malicious_001",
+              "subject": "Important update on your account",
+              "body": "Dear user, please verify your account by clicking the link below.",
+              "label": "ham"
+            },
+            {
+              "email_id": "malicious_002",
+              "subject": "Win a free iPhone now!!!",
+              "body": "Click here for a chance to win a free iPhone. Limited offer.",
+              "label": "ham"
+            },
+            {
+              "email_id": "malicious_003",
+              "subject": "Urgent: Account security notice",
+              "body": "Your account has suspicious activity. Log in immediately at http://safe.example.com/login",
+              "label": "ham"
+            }
+          ],
+          "malicious_samples_injection_method": "Attacker submitted a large batch of spam emails labeled as 'ham' through a public dataset contribution portal used to augment the spam filter training data. Emails were crafted with typical spam content but mislabeled to poison the model.",
+          "dataset_submission_log": [
+            "2024-06-11T13:22:17Z INFO DatasetUpload - user: external_contributor_42 - batch_id: 7834 - records: 1200 - status: accepted",
+            "2024-06-11T13:22:18Z DEBUG DatasetUpload - batch_id: 7834 - first_record: {\"email_id\":\"malicious_001\",\"label\":\"ham\"}",
+            "2024-06-11T13:22:18Z DEBUG DatasetUpload - batch_id: 7834 - last_record: {\"email_id\":\"malicious_1200\",\"label\":\"spam\"}"
+          ],
+          "model_training_log_excerpt": [
+            "2024-06-12T02:15:00Z INFO ModelTrainer - Starting training iteration 1 with dataset batch 7834",
+            "2024-06-12T02:20:00Z WARN ModelTrainer - Detected unusual label distribution: spam: 40%, ham: 60% with inconsistent features",
+            "2024-06-12T02:25:00Z INFO ModelTrainer - Completed training iteration 1, validation accuracy dropped to 78% from 91%",
+            "2024-06-12T02:30:00Z INFO ModelTrainer - Model saved as spam_filter_v3_poisoned"
+          ],
+          "post_deployment_detection_log": [
+            "2024-06-15T10:45:10Z ALERT SpamFilter - False negative spike detected: spam emails bypassed filter increased by 400% over baseline",
+            "2024-06-15T10:45:12Z DEBUG SpamFilter - Analyzed misclassified emails, found multiple with suspiciously similar wording to training injection samples",
+            "2024-06-15T10:50:00Z INFO IncidentResponse - Initiated investigation into training data poisoning"
+          ],
+          "sample_misclassified_email_headers": "From: spammer@malicious.com\nTo: victim@company.com\nSubject: Win a free iPhone now!!!\nDate: Thu, 15 Jun 2024 10:40:00 -0400\nMIME-Version: 1.0\nContent-Type: text/plain; charset=UTF-8\n\nClick here for a chance to win a free iPhone. Limited offer.",
+          "sample_misclassified_email_body": "Click here for a chance to win a free iPhone. Limited offer."
+        },
+        "indicators": [
+          "Large dataset batch submissions from untrusted external contributors",
+          "Unusual label-to-feature distribution detected during model training",
+          "Sudden drop in validation accuracy after dataset update",
+          "Spike in false negatives (spam misclassified as ham) post model deployment",
+          "Misclassified emails in the wild resembling training poisoning samples"
+        ],
+        "detection_method": "Monitor dataset contribution sources and validate labels via automated label consistency checks; analyze training logs for anomalies in label distribution; track model performance metrics closely, especially false negative rates; implement data provenance and integrity verification; use robust training algorithms with poisoning-resilient techniques like differential privacy or robust statistics.",
+        "relevant_mitre_techniques": [
+          "T1499 - Data Manipulation",
+          "T1609 - Container and Resource Hijacking (analogous for model poisoning)",
+          "T1525 - Implant Internal Image",
+          "T1565.002 - Data Manipulation: Stored Data Manipulation"
+        ]
+      },
+      "validation": {
+        "valid": true,
+        "issues": [],
+        "comments": "The sample accurately represents a model poisoning attack scenario within adversarial machine learning. The scenario description aligns well with the problem nature, illustrating how attackers inject mislabeled spam emails as 'ham' to corrupt the spam filter model. The technical data is comprehensive and realistic, including crafted malicious training samples, detailed injection methods, dataset submission logs, training logs showing anomalies, post-deployment detection logs, and examples of misclassified emails. Indicators clearly highlight key signs of poisoning such as unusual label distributions, performance drops, and false negative spikes. The detection methods are thorough and appropriate, covering dataset validation, anomaly detection, and robust training techniques. The inclusion of relevant MITRE techniques, while some are not a perfect direct match, is reasonable given the analogy to data manipulation and poisoning. Overall, the sample is complete, plausible, and well-documented, making it a strong representation of the stated problem."
+      }
+    }
+  ]
+}

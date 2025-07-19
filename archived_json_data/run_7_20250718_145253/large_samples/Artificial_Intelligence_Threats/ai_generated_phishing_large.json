@@ -1,0 +1,200 @@
+{
+  "samples": [
+    {
+      "scenario": "AI-crafted phishing email mimicking IT department notifications, sent en masse to mid-level employees, featuring personalized device information and urgent security update requests to harvest credentials.",
+      "technical_data": {
+        "email_headers": "Return-Path: <it-support@secure-enterprise-tech.com>\r\nReceived: from smtp.secure-enterprise-tech.com (smtp.secure-enterprise-tech.com [203.0.113.75])\r\n\tby mail.office365.com with ESMTPS id def456uvw\r\n\tfor <employee@targetcorp.com>;\r\n\tThu, 22 Jun 2023 09:05:47 -0400 (EDT)\r\nReceived-SPF: pass (office365.com: domain of it-support@secure-enterprise-tech.com designates 203.0.113.75 as permitted sender) client-ip=203.0.113.75;\r\nAuthentication-Results: mail.office365.com;\r\n\tdkim=pass header.i=@secure-enterprise-tech.com;\r\n\tspf=pass (office365.com: domain of it-support@secure-enterprise-tech.com designates 203.0.113.75 as permitted sender) smtp.mailfrom=it-support@secure-enterprise-tech.com;\r\n\tdmarc=pass (p=REJECT sp=REJECT dis=NONE) header.from=secure-enterprise-tech.com\r\nX-Mailer: Apple Mail (2.3445.9.1)\r\nMessage-ID: <b2e8d9f4c1@mail.secure-enterprise-tech.com>\r\nDate: Thu, 22 Jun 2023 09:05:40 -0400\r\nFrom: \"IT Support\" <it-support@secure-enterprise-tech.com>\r\nTo: employee@targetcorp.com\r\nSubject: Immediate Action Required: Security Patch for Your Device\r\nMIME-Version: 1.0\r\nContent-Type: text/html; charset=\"UTF-8\"",
+        "email_body_html": "<html><body><p>Hi <b>Michael</b>,</p><p>Our system detected that your device <i>Michael-Laptop-01</i> is running an outdated security patch. Please <a href=\"https://secure-enterprise-tech.com/updates/michael-laptop-01\">click here</a> to install the critical update immediately to avoid any security risks.</p><p>Thank you,<br>IT Support Team</p></body></html>",
+        "smtp_transaction_log": "220 smtp.secure-enterprise-tech.com ESMTP Postfix\r\nEHLO smtp.secure-enterprise-tech.com\r\n250-smtp.secure-enterprise-tech.com\r\n250-PIPELINING\r\n250-SIZE 10485760\r\n250-STARTTLS\r\n250-AUTH PLAIN LOGIN\r\n250-ENHANCEDSTATUSCODES\r\n250-8BITMIME\r\nMAIL FROM:<it-support@secure-enterprise-tech.com>\r\n250 2.1.0 Ok\r\nRCPT TO:<employee@targetcorp.com>\r\n250 2.1.5 Ok\r\nDATA\r\n354 End data with <CR><LF>.<CR><LF>\r\nFrom: IT Support <it-support@secure-enterprise-tech.com>\r\nTo: employee@targetcorp.com\r\nSubject: Immediate Action Required: Security Patch for Your Device\r\n\r\n<html>...</html>\r\n.\r\n250 2.0.0 Ok: queued as 987654321\r\nQUIT\r\n221 2.0.0 Bye",
+        "domain_registration": {
+          "domain": "secure-enterprise-tech.com",
+          "registrar": "GoDaddy.com, LLC",
+          "creation_date": "2023-06-01T14:12:00Z",
+          "expiration_date": "2024-06-01T14:12:00Z",
+          "name_servers": [
+            "ns1.godaddy.com",
+            "ns2.godaddy.com"
+          ],
+          "registrant_country": "US",
+          "registrant_email": "contact@secure-enterprise-tech.com"
+        },
+        "url_obfuscation": "https://secure-enterprise-tech.com/updates/michael-laptop-01",
+        "url_analysis": {
+          "hostname": "secure-enterprise-tech.com",
+          "ip": "203.0.113.75",
+          "tls_cert": {
+            "issuer": "DigiCert Inc",
+            "valid_from": "2023-06-02T00:00:00Z",
+            "valid_to": "2024-06-02T23:59:59Z",
+            "subject_cn": "secure-enterprise-tech.com"
+          }
+        },
+        "network_traffic_sample": "Passive DNS indicates domain resolves to 203.0.113.75 hosted in a known VPS provider range; domain created recently with no prior reputation; TLS certificate freshly issued by DigiCert.",
+        "ai_content_features": "Text exhibits contextual personalization including device name and recipient first name, syntactically coherent and mimicking internal IT communications style; generated via a neural language model fine-tuned on IT support tickets and alerts."
+      },
+      "indicators": [
+        "Domain secure-enterprise-tech.com registered within last 3 weeks",
+        "SPF, DKIM, and DMARC records present but domain is newly created",
+        "Email mimics internal IT support but originates from external domain",
+        "URL resolves to IP linked to bulletproof hosting provider",
+        "Email content personalized with device name likely scraped from network asset inventory leaks",
+        "SMTP logs show high volume of messages sent from single IP with ESMTP"
+      ],
+      "detection_method": "Use AI-driven content anomaly detection focusing on personalized device mentions inconsistent with known asset records, monitor domain age and reputation, validate sending source against internal mail servers, and sandbox test linked URLs. Conduct user training emphasizing verification of IT support communications via independent channels.",
+      "relevant_mitre_techniques": [
+        "T1566.002 - Phishing: Spearphishing Link",
+        "T1566.001 - Phishing: Spearphishing Attachment",
+        "T1598 - Phishing for Information",
+        "T1586.003 - Compromise Infrastructure: Phishing"
+      ]
+    },
+    {
+      "scenario": "AI-enhanced phishing SMS campaign impersonating bank alerts with personalized transaction details and urgent call to action URLs, leveraging natural language generation to evade typical spam filters.",
+      "technical_data": {
+        "sms_headers": "From: +18005551234\r\nTo: +15551234567\r\nDate: Fri, 23 Jun 2023 12:45:30 +0000\r\nMessage-ID: <sms-20230623-124530-001@phishing-sms.net>",
+        "sms_body_text": "Alert: A transaction of $1,243.67 was made on your account ending 1234. If this was not you, please verify immediately: https://secure-bankalerts.com/verify/txn1234",
+        "sms_gateway_log": "220 sms.phishing-gateway.net ESMTP Postfix\r\nEHLO sms.phishing-gateway.net\r\n250-sms.phishing-gateway.net\r\n250-PIPELINING\r\n250-SIZE 5120\r\n250-STARTTLS\r\n250-AUTH PLAIN LOGIN\r\n250-ENHANCEDSTATUSCODES\r\nMAIL FROM:<alerts@secure-bankalerts.com>\r\n250 2.1.0 Ok\r\nRCPT TO:<+15551234567>\r\n250 2.1.5 Ok\r\nDATA\r\n354 End data with <CR><LF>.<CR><LF>\r\nFrom: Bank Alerts <alerts@secure-bankalerts.com>\r\nTo: +15551234567\r\nSubject: Transaction Alert\r\n\r\nAlert: A transaction of $1,243.67 was made on your account ending 1234. If this was not you, please verify immediately: https://secure-bankalerts.com/verify/txn1234\r\n.\r\n250 2.0.0 Ok: queued as 654321987\r\nQUIT\r\n221 2.0.0 Bye",
+        "domain_registration": {
+          "domain": "secure-bankalerts.com",
+          "registrar": "Google LLC",
+          "creation_date": "2023-04-28T18:45:00Z",
+          "expiration_date": "2024-04-28T18:45:00Z",
+          "name_servers": [
+            "ns-cloud1.googledomains.com",
+            "ns-cloud2.googledomains.com"
+          ],
+          "registrant_country": "CA",
+          "registrant_email": "privacy@secure-bankalerts.com"
+        },
+        "url_obfuscation": "https://secure-bankalerts.com/verify/txn1234",
+        "url_analysis": {
+          "hostname": "secure-bankalerts.com",
+          "ip": "192.0.2.45",
+          "tls_cert": {
+            "issuer": "Cloudflare Inc ECC CA-3",
+            "valid_from": "2023-05-01T00:00:00Z",
+            "valid_to": "2023-08-30T23:59:59Z",
+            "subject_cn": "secure-bankalerts.com"
+          }
+        },
+        "network_traffic_sample": "DNS records show domain resolves to 192.0.2.45 hosted on Cloudflare edge network; domain recently registered and no historical reputation; TLS cert valid and issued by Cloudflare.",
+        "ai_content_features": "SMS text crafted with dynamic transaction amounts and masked account details, generated by an LLM trained on financial alert templates and recent victim transaction patterns collected via prior reconnaissance."
+      },
+      "indicators": [
+        "Domain secure-bankalerts.com registered less than 2 months ago",
+        "SPF and DKIM records configured but domain is new and untrusted",
+        "SMS message content personalized with realistic transaction amounts and partial account numbers",
+        "URLs point to domain resolving to Cloudflare IP with no prior reputation",
+        "SMS gateway logs show bulk sending behavior from single IP source",
+        "Message mimics legitimate bank alert style but originates outside of known bank infrastructure"
+      ],
+      "detection_method": "Implement AI-based natural language and behavioral analysis on SMS content for contextual anomalies; validate URLs via threat intelligence sources; monitor for newly registered domains mimicking financial institutions; deploy user awareness training on verifying transaction alerts through official channels.",
+      "relevant_mitre_techniques": [
+        "T1566.003 - Phishing: Spearphishing via Service",
+        "T1598 - Phishing for Information",
+        "T1586.003 - Compromise Infrastructure: Phishing"
+      ]
+    },
+    {
+      "scenario": "AI-crafted phishing SMS messages targeting HR personnel with personalized job applicant inquiries, leveraging AI-driven natural language generation to bypass spam filters and prompt credential disclosure.",
+      "technical_data": {
+        "sms_metadata": {
+          "sender_number": "+12135551234",
+          "recipient_number": "+12135559876",
+          "timestamp": "2023-07-10T09:15:00-04:00",
+          "carrier": "Twilio Messaging Service",
+          "message_id": "SM1234567890abcdef"
+        },
+        "sms_content": "Hello Anna, this is Michael from GlobalRecruit. We received your application for the Senior Analyst role. Please verify your identity here: https://verify-globalrecruit.com/auth?id=987654321",
+        "url_obfuscation": "https://verify-globalrecruit.com/auth?id=987654321",
+        "url_analysis": {
+          "hostname": "verify-globalrecruit.com",
+          "ip": "203.0.113.45",
+          "tls_cert": {
+            "issuer": "DigiCert TLS RSA SHA256 2020 CA1",
+            "valid_from": "2023-06-28T12:00:00Z",
+            "valid_to": "2024-06-28T12:00:00Z",
+            "subject_cn": "verify-globalrecruit.com"
+          }
+        },
+        "domain_registration": {
+          "domain": "verify-globalrecruit.com",
+          "registrar": "GoDaddy.com, LLC",
+          "creation_date": "2023-06-25T16:45:00Z",
+          "expiration_date": "2024-06-25T16:45:00Z",
+          "name_servers": [
+            "ns1.godaddy.com",
+            "ns2.godaddy.com"
+          ],
+          "registrant_country": "CA",
+          "registrant_email": "contact@verify-globalrecruit.com"
+        },
+        "network_traffic_sample": "Passive DNS shows 'verify-globalrecruit.com' resolves to 203.0.113.45 with hosting in a known bulletproof hosting ASN. SMTP logs indicate mass SMS dispatch via Twilio API with spoofed sender number.",
+        "ai_content_features": "Message crafted with personalized recipient name and role, fluent and contextually relevant, generated by a GPT-based model trained on recruitment communication styles to induce trust and reduce suspicion."
+      },
+      "indicators": [
+        "Domain verify-globalrecruit.com created less than 3 weeks ago",
+        "TLS certificate valid but recently issued and matches suspicious domain",
+        "Sender phone number associated with Twilio SMS gateway and inconsistent with legitimate recruiters",
+        "URL points to domain hosted on bulletproof hosting provider IP range",
+        "Content uses recipient's real name and job position extracted from public LinkedIn data",
+        "Mass SMS campaigns detected with similar message patterns and URLs"
+      ],
+      "detection_method": "Integrate SMS content analysis engines with AI-generated content detectors focusing on linguistic anomalies and personal data usage. Employ domain age and IP reputation checks. Monitor SMS gateway usage patterns for suspicious bulk messaging. User awareness training to verify unsolicited SMS links and sender authenticity.",
+      "relevant_mitre_techniques": [
+        "T1566.003 - Phishing: Spearphishing via Service",
+        "T1598 - Phishing for Information",
+        "T1586.003 - Compromise Infrastructure: Phishing",
+        "T1566 - Phishing"
+      ]
+    },
+    {
+      "scenario": "Automated AI-generated phishing website clone of internal IT portal used to harvest employee credentials, distributed via personalized emails leveraging AI-based social engineering and natural language generation to mimic internal communication style.",
+      "technical_data": {
+        "email_headers": "Return-Path: <it-support@corp-itservices.com>\r\nReceived: from mail.corp-itservices.com (mail.corp-itservices.com [198.51.100.55])\r\n\tby mx.company.com with ESMTPS id def456uvw\r\n\tfor <employee@targetcorp.com>;\r\n\tFri, 14 Jul 2023 08:22:45 -0700 (PDT)\r\nReceived-SPF: pass (company.com: domain of it-support@corp-itservices.com designates 198.51.100.55 as permitted sender) client-ip=198.51.100.55;\r\nAuthentication-Results: mx.company.com;\r\n\tdkim=pass header.i=@corp-itservices.com;\r\n\tspf=pass (company.com: domain of it-support@corp-itservices.com designates 198.51.100.55 as permitted sender) smtp.mailfrom=it-support@corp-itservices.com;\r\n\tdmarc=pass (p=REJECT sp=REJECT dis=NONE) header.from=corp-itservices.com\r\nX-Mailer: Mozilla Thunderbird 102.8.0\r\nMessage-ID: <CAJgG9K8b9y=7Wx_vFy0Yq7bC8iYdZK=1JReQ@mail.corp-itservices.com>\r\nDate: Fri, 14 Jul 2023 08:22:30 -0700\r\nFrom: \"IT Support Team\" <it-support@corp-itservices.com>\r\nTo: employee@targetcorp.com\r\nSubject: Immediate Action Required: Password Reset Notification\r\nMIME-Version: 1.0\r\nContent-Type: text/html; charset=\"UTF-8\"",
+        "email_body_html": "<html><body><p>Dear <b>Michael</b>,</p><p>Due to recent security updates, all employees must reset their network passwords immediately to avoid account lockout. Please use the secure link below to proceed:</p><p><a href=\"https://portal-security.corp-itservices.com/reset-password\">Reset Password</a></p><p>Thank you for your prompt attention.<br>IT Support Team</p></body></html>",
+        "smtp_transaction_log": "220 mail.corp-itservices.com ESMTP Postfix\r\nEHLO mail.corp-itservices.com\r\n250-mail.corp-itservices.com\r\n250-PIPELINING\r\n250-SIZE 10485760\r\n250-STARTTLS\r\n250-AUTH PLAIN LOGIN\r\n250-ENHANCEDSTATUSCODES\r\n250-8BITMIME\r\n250 DSN\r\nMAIL FROM:<it-support@corp-itservices.com>\r\n250 2.1.0 Ok\r\nRCPT TO:<employee@targetcorp.com>\r\n250 2.1.5 Ok\r\nDATA\r\n354 End data with <CR><LF>.<CR><LF>\r\nFrom: IT Support Team <it-support@corp-itservices.com>\r\nTo: employee@targetcorp.com\r\nSubject: Immediate Action Required: Password Reset Notification\r\n\r\n<html>...</html>\r\n.\r\n250 2.0.0 Ok: queued as 987654321\r\nQUIT\r\n221 2.0.0 Bye",
+        "domain_registration": {
+          "domain": "corp-itservices.com",
+          "registrar": "Google Domains",
+          "creation_date": "2023-07-05T11:00:00Z",
+          "expiration_date": "2024-07-05T11:00:00Z",
+          "name_servers": [
+            "ns-cloud-a1.googledomains.com",
+            "ns-cloud-a2.googledomains.com"
+          ],
+          "registrant_country": "US",
+          "registrant_email": "admin@corp-itservices.com"
+        },
+        "url_obfuscation": "https://portal-security.corp-itservices.com/reset-password",
+        "url_analysis": {
+          "hostname": "portal-security.corp-itservices.com",
+          "ip": "198.51.100.55",
+          "tls_cert": {
+            "issuer": "Sectigo RSA Domain Validation Secure Server CA",
+            "valid_from": "2023-07-06T00:00:00Z",
+            "valid_to": "2024-07-06T23:59:59Z",
+            "subject_cn": "portal-security.corp-itservices.com"
+          }
+        },
+        "network_traffic_sample": "DNS lookups show 'corp-itservices.com' resolving to IP 198.51.100.55 hosted on a VPS known for malicious hosting. Web server logs indicate form submissions capturing credentials sent to external C2 server.",
+        "ai_content_features": "Email text mimics internal IT communications style with personalized recipient name, formal tone, and urgency cues generated by a transformer-based model trained on corporate IT support messages, increasing user trust and engagement."
+      },
+      "indicators": [
+        "Domain corp-itservices.com registered less than 2 weeks ago",
+        "Email DKIM and SPF pass but domain is a lookalike of legitimate corporate domain",
+        "Link directs to a subdomain hosted on suspicious VPS IP with recent certificate issuance",
+        "Email content uses recipient\u2019s real first name and mimics internal IT terminology",
+        "Web server logs show credential harvesting activity with POST requests to external endpoints",
+        "SMTP logs reveal bulk sending pattern inconsistent with normal IT department behavior"
+      ],
+      "detection_method": "Use AI-driven phishing detection solutions analyzing linguistic style consistency, domain age, and hosting reputation. Employ sandboxing of linked URLs and credential submission monitoring. Cross-reference email sender domains against corporate allowlists. Educate employees on verifying password reset requests through official channels.",
+      "relevant_mitre_techniques": [
+        "T1566.002 - Phishing: Spearphishing Link",
+        "T1531 - Account Access Removal",
+        "T1586.003 - Compromise Infrastructure: Phishing",
+        "T1598 - Phishing for Information"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,202 @@
+{
+  "samples": [
+    {
+      "scenario": "Spear phishing email targeting HR director to exfiltrate employee data via malicious Excel attachment with embedded macro.",
+      "technical_data": {
+        "email_headers": "Return-Path: <hr-contact@payroll-secure.com>\r\nReceived: from mail.payroll-secure.com (mail.payroll-secure.com [203.0.113.45])\r\n\tby mail.corporate.com (Postfix) with ESMTPS id 7D34EFGH02\r\n\tfor <hr.director@corporate.com>; Fri, 21 Apr 2023 09:23:11 -0700 (PDT)\r\nReceived-SPF: pass (corporate.com: domain of hr-contact@payroll-secure.com designates 203.0.113.45 as permitted sender) receiver=corporate.com; client-ip=203.0.113.45; envelope-from=hr-contact@payroll-secure.com; helo=mail.payroll-secure.com;\r\nAuthentication-Results: corporate.com; dkim=pass header.d=payroll-secure.com; spf=pass smtp.mailfrom=hr-contact@payroll-secure.com; dmarc=pass\r\nMIME-Version: 1.0\r\nFrom: \"Payroll HR Contact\" <hr-contact@payroll-secure.com>\r\nTo: hr.director@corporate.com\r\nSubject: Updated Employee Salary Spreadsheet Q2 2023\r\nDate: Fri, 21 Apr 2023 16:23:07 +0000\r\nMessage-ID: <CA+gH5Y7_xLJHz7=Rn6yVwzGp99pQk4o6Tx@mail.payroll-secure.com>\r\nContent-Type: multipart/mixed; boundary=\"_b2_80ab4f12-2d7b-4f5a-a1b3-9d4f3f0b9e30_\"\r\nX-Mailer: Microsoft Outlook 16.0\r\n",
+        "email_body": "--_b2_80ab4f12-2d7b-4f5a-a1b3-9d4f3f0b9e30_\r\nContent-Type: text/plain; charset=\"UTF-8\"\r\nContent-Transfer-Encoding: quoted-printable\r\n\r\nHello Sarah,\r\n\r\nPlease find attached the updated salary spreadsheet for Q2 2023. Kindly review and=\r\n confirm the details at your earliest convenience.\r\n\r\nFeel free to reach out with any questions.\r\n\r\nBest regards,\r\nPayroll Team\r\n\r\n--_b2_80ab4f12-2d7b-4f5a-a1b3-9d4f3f0b9e30_\r\nContent-Type: application/vnd.ms-excel; name=\"Salary_Q2_2023.xls\"\r\nContent-Transfer-Encoding: base64\r\nContent-Disposition: attachment; filename=\"Salary_Q2_2023.xls\"\r\n\r\nTVqQAAMAAAAEAAAA//8AALgAAAAAAAAAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=\r\nAAAAAAAAgAAAAA4fug4AtAnNIbgBTM0hVGhpcyBwcm9ncmFtIGNhbm5vdCBiZSBydW4gaW4gRE9TIG1v\r\nZGUuACAAAwAAAAAAAAAA\r\n--_b2_80ab4f12-2d7b-4f5a-a1b3-9d4f3f0b9e30_--",
+        "smtp_transaction_log": "220 mail.payroll-secure.com ESMTP Postfix\r\nEHLO mail.corporate.com\r\n250-mail.payroll-secure.com\r\n250-PIPELINING\r\n250-SIZE 10485760\r\n250-ETRN\r\n250-STARTTLS\r\n250-AUTH PLAIN LOGIN\r\n250-ENHANCEDSTATUSCODES\r\n250-8BITMIME\r\n250 DSN\r\nMAIL FROM:<hr-contact@payroll-secure.com>\r\n250 2.1.0 Ok\r\nRCPT TO:<hr.director@corporate.com>\r\n250 2.1.5 Ok\r\nDATA\r\n354 End data with <CR><LF>.<CR><LF>\r\nFrom: Payroll HR Contact <hr-contact@payroll-secure.com>\r\nTo: hr.director@corporate.com\r\nSubject: Updated Employee Salary Spreadsheet Q2 2023\r\n\r\n[Body and attachment]\r\n.\r\n250 2.0.0 Ok: queued as 7D34EFGH02\r\nQUIT\r\n221 2.0.0 Bye",
+        "suspicious_domain_registration": {
+          "domain": "payroll-secure.com",
+          "registrar": "GoDaddy.com, LLC",
+          "creation_date": "2023-04-10T08:35:42Z",
+          "expiration_date": "2024-04-10T08:35:42Z",
+          "registrant": {
+            "name": "Redacted for Privacy",
+            "organization": "Redacted",
+            "country": "CN"
+          },
+          "name_servers": [
+            "ns1.godaddy.com",
+            "ns2.godaddy.com"
+          ]
+        },
+        "url_obfuscation": null,
+        "dns_resolution": {
+          "payroll-secure.com": "203.0.113.45"
+        },
+        "webserver_access_log": null,
+        "waf_alert_log": null,
+        "ioc_hashes": {
+          "attachment_md5": "d4f7c2e8a1b6f9d3c5e7a4b8c2d6f0e1",
+          "attachment_sha256": "b7f3a2d9e6c4b1f8d3e5a7c9b0f1d6e8a3c5e7f9b2d4a6c8e1f3b5d7c9e0a1b2"
+        }
+      },
+      "indicators": [
+        "Attachment is an Excel file with embedded macros disguised as salary data",
+        "Domain payroll-secure.com registered recently with privacy-protected Chinese registrant",
+        "Email originates from IP 203.0.113.45 passing SPF/DKIM but domain is not in known safe payroll providers",
+        "Attachment MD5 hash d4f7c2e8a1b6f9d3c5e7a4b8c2d6f0e1 not in whitelist of legitimate company files",
+        "No WAF alerts but sandbox analysis revealed macro execution attempting outbound connections",
+        "Email subject and content tailored to HR director referencing internal payroll process"
+      ],
+      "detection_method": "Email gateway detects attachment with suspicious macro activity; sandbox detonation confirms malicious behavior; domain reputation flagged for recent registration with privacy protection; behavioral analytics notice unusual access pattern to payroll systems after link activation; manual review identifies mismatch in sender domain and known payroll vendors.",
+      "relevant_mitre_techniques": [
+        "T1566.001 - Spearphishing Attachment",
+        "T1204.002 - User Execution: Malicious File",
+        "T1586.001 - Compromise Infrastructure: Malicious Domains",
+        "T1041 - Exfiltration Over C2 Channel",
+        "T1059.001 - Command and Scripting Interpreter: PowerShell"
+      ]
+    },
+    {
+      "scenario": "Spear phishing email sent to CTO with a crafted link to a credential harvesting site impersonating cloud service login portal.",
+      "technical_data": {
+        "email_headers": "Return-Path: <security@cloud-authenticate.com>\r\nReceived: from smtp.cloud-authenticate.com (smtp.cloud-authenticate.com [198.51.100.88])\r\n\tby mail.corporate.com (Postfix) with ESMTPS id 9A45IJKL03\r\n\tfor <cto@corporate.com>; Mon, 24 Apr 2023 11:47:33 -0700 (PDT)\r\nReceived-SPF: pass (corporate.com: domain of security@cloud-authenticate.com designates 198.51.100.88 as permitted sender) receiver=corporate.com; client-ip=198.51.100.88; envelope-from=security@cloud-authenticate.com; helo=smtp.cloud-authenticate.com;\r\nAuthentication-Results: corporate.com; dkim=pass header.d=cloud-authenticate.com; spf=pass smtp.mailfrom=security@cloud-authenticate.com; dmarc=pass\r\nMIME-Version: 1.0\r\nFrom: \"Cloud Security Team\" <security@cloud-authenticate.com>\r\nTo: cto@corporate.com\r\nSubject: Security Alert: Unusual Login Attempt Detected - Immediate Action Required\r\nDate: Mon, 24 Apr 2023 18:47:29 +0000\r\nMessage-ID: <CA+vJ6Z9_mLKHx8=Sp7zVwyEr00qPl9p7Mz@mail.cloud-authenticate.com>\r\nContent-Type: text/plain; charset=\"UTF-8\"\r\nX-Mailer: Microsoft Outlook 16.0\r\n",
+        "email_body": "Dear Michael,\r\n\r\nWe detected an unusual login attempt on your cloud account from a new device. Please verify your credentials immediately to secure your account.\r\n\r\nClick the link below to verify your login attempt:\r\nhttps://cloud-authenticate.secure-login-verify.com/login?user=cto@corporate.com\r\n\r\nFailure to verify within 24 hours may result in account suspension.\r\n\r\nBest regards,\r\nCloud Security Team\r\n",
+        "smtp_transaction_log": "220 smtp.cloud-authenticate.com ESMTP Postfix\r\nEHLO mail.corporate.com\r\n250-smtp.cloud-authenticate.com\r\n250-PIPELINING\r\n250-SIZE 5120000\r\n250-ETRN\r\n250-STARTTLS\r\n250-AUTH PLAIN LOGIN\r\n250-ENHANCEDSTATUSCODES\r\n250-8BITMIME\r\n250 DSN\r\nMAIL FROM:<security@cloud-authenticate.com>\r\n250 2.1.0 Ok\r\nRCPT TO:<cto@corporate.com>\r\n250 2.1.5 Ok\r\nDATA\r\n354 End data with <CR><LF>.<CR><LF>\r\nFrom: Cloud Security Team <security@cloud-authenticate.com>\r\nTo: cto@corporate.com\r\nSubject: Security Alert: Unusual Login Attempt Detected - Immediate Action Required\r\n\r\n[Body]\r\n.\r\n250 2.0.0 Ok: queued as 9A45IJKL03\r\nQUIT\r\n221 2.0.0 Bye",
+        "suspicious_domain_registration": {
+          "domain": "secure-login-verify.com",
+          "registrar": "Google LLC",
+          "creation_date": "2023-04-15T12:10:05Z",
+          "expiration_date": "2024-04-15T12:10:05Z",
+          "registrant": {
+            "name": "Redacted for Privacy",
+            "organization": "Redacted",
+            "country": "US"
+          },
+          "name_servers": [
+            "ns-cloud-a1.googledomains.com",
+            "ns-cloud-a2.googledomains.com",
+            "ns-cloud-a3.googledomains.com",
+            "ns-cloud-a4.googledomains.com"
+          ]
+        },
+        "url_obfuscation": "https://cloud-authenticate.secure-login-verify.com/login?user=cto@corporate.com",
+        "dns_resolution": {
+          "secure-login-verify.com": "198.51.100.88",
+          "cloud-authenticate.com": "203.0.113.55"
+        },
+        "webserver_access_log": "198.51.100.88 - - [24/Apr/2023:18:48:40 +0000] \"GET /login?user=cto@corporate.com HTTP/1.1\" 200 3784 \"-\" \"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/112.0.5615.121 Safari/537.36\"",
+        "waf_alert_log": "2023-04-24T18:48:40Z WAF_ALERT src_ip=198.51.100.88 dst_ip=203.0.113.55 rule=100045 severity=medium msg=\"Suspicious login page phishing pattern detected\"",
+        "ioc_hashes": null
+      },
+      "indicators": [
+        "Suspicious domain secure-login-verify.com registered recently with privacy protection",
+        "URL uses subdomain cloud-authenticate to mimic legitimate cloud service domain",
+        "Email passes SPF/DKIM but domain cloud-authenticate.com is not an official corporate cloud provider",
+        "WAF alert indicating detection of phishing login page patterns",
+        "Webserver logs show HTTP 200 responses to credential harvesting login page",
+        "Email content urgency and impersonation of security alert to CTO"
+      ],
+      "detection_method": "Email security gateway detects new domain with privacy-protected registration; URL analysis flags subdomain chaining to suspicious domain; WAF signatures trigger on phishing login page patterns; user behavioral analytics detect unusual credential submission attempts; manual verification confirms domain not associated with corporate cloud providers.",
+      "relevant_mitre_techniques": [
+        "T1566.002 - Spearphishing Link",
+        "T1586.001 - Compromise Infrastructure: Malicious Domains",
+        "T1598.002 - Phishing for Information",
+        "T1078 - Valid Accounts",
+        "T1204.002 - User Execution: Malicious File"
+      ]
+    },
+    {
+      "scenario": "Spear phishing email targeting HR manager to steal employee payroll data via malicious Excel attachment with embedded macros and credential harvesting link.",
+      "technical_data": {
+        "email_headers": "Return-Path: <hr-support@payroll-services.com>\r\nReceived: from mail.payroll-services.com (mail.payroll-services.com [192.0.2.45])\r\n\tby mail.corporate.com (Postfix) with ESMTPS id 7G45BCD123\r\n\tfor <hr.manager@corporate.com>; Fri, 21 Apr 2023 10:23:15 -0700 (PDT)\r\nReceived-SPF: pass (corporate.com: domain of hr-support@payroll-services.com designates 192.0.2.45 as permitted sender) receiver=corporate.com; client-ip=192.0.2.45; envelope-from=hr-support@payroll-services.com; helo=mail.payroll-services.com;\r\nAuthentication-Results: corporate.com; dkim=pass header.d=payroll-services.com; spf=pass smtp.mailfrom=hr-support@payroll-services.com; dmarc=pass\r\nMIME-Version: 1.0\r\nFrom: \"Payroll Services Support\" <hr-support@payroll-services.com>\r\nTo: hr.manager@corporate.com\r\nSubject: Updated Payroll Report Q1 2023 - Action Required\r\nDate: Fri, 21 Apr 2023 17:23:12 +0000\r\nMessage-ID: <CA+fG4X3_JhLqX56=Yp3zVmkPq8rXj9u7@mail.payroll-services.com>\r\nContent-Type: multipart/mixed; boundary=\"_b2_8af7e3d6-1d2a-4fdb-9c1e-3a8b7d6f9f33_\"\r\nX-Mailer: Microsoft Outlook 16.0\r\n",
+        "email_body": "--_b2_8af7e3d6-1d2a-4fdb-9c1e-3a8b7d6f9f33_\r\nContent-Type: text/plain; charset=\"UTF-8\"\r\nContent-Transfer-Encoding: quoted-printable\r\n\r\nDear Lisa,\r\n\r\nPlease find attached the updated payroll report for Q1 2023. Kindly review the=\r\n data and enable macros to ensure all formulas calculate correctly.\r\n\r\nTo validate your access credentials, please visit the secure verification page:\r\nhttps://payroll-services.com.security-check-verify.net/validate?user=hr.manager\r\n\r\nBest regards,\r\nPayroll Services Team\r\n\r\n--_b2_8af7e3d6-1d2a-4fdb-9c1e-3a8b7d6f9f33_\r\nContent-Type: application/vnd.ms-excel; name=\"Payroll_Report_Q1_2023.xlsm\"\r\nContent-Transfer-Encoding: base64\r\nContent-Disposition: attachment; filename=\"Payroll_Report_Q1_2023.xlsm\"\r\n\r\nUEsDBBQABgAIAAAAIQDf8k1rjwEAADQFAAATAAgCW0NvbnRlbnRfVHlwZXNdLnhtbCCiBAIooAAC\r\nAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA\r\n[base64 data truncated for brevity]\r\n--_b2_8af7e3d6-1d2a-4fdb-9c1e-3a8b7d6f9f33_--",
+        "smtp_transaction_log": "220 mail.payroll-services.com ESMTP Postfix\r\nEHLO mail.corporate.com\r\n250-mail.payroll-services.com\r\n250-PIPELINING\r\n250-SIZE 10485760\r\n250-STARTTLS\r\n250-AUTH PLAIN LOGIN\r\n250-ENHANCEDSTATUSCODES\r\n250-8BITMIME\r\n250 DSN\r\nMAIL FROM:<hr-support@payroll-services.com>\r\n250 2.1.0 Ok\r\nRCPT TO:<hr.manager@corporate.com>\r\n250 2.1.5 Ok\r\nDATA\r\n354 End data with <CR><LF>.<CR><LF>\r\nFrom: Payroll Services Support <hr-support@payroll-services.com>\r\nTo: hr.manager@corporate.com\r\nSubject: Updated Payroll Report Q1 2023 - Action Required\r\n\r\n[Body and attachment]\r\n.\r\n250 2.0.0 Ok: queued as 7G45BCD123\r\nQUIT\r\n221 2.0.0 Bye",
+        "suspicious_domain_registration": {
+          "domain": "security-check-verify.net",
+          "registrar": "GoDaddy.com, LLC",
+          "creation_date": "2023-02-10T09:11:45Z",
+          "expiration_date": "2024-02-10T09:11:45Z",
+          "registrant": {
+            "name": "Redacted for Privacy",
+            "organization": "Redacted",
+            "country": "CN"
+          },
+          "name_servers": [
+            "ns1.godaddy.com",
+            "ns2.godaddy.com"
+          ]
+        },
+        "url_obfuscation": "https://payroll-services.com.security-check-verify.net/validate?user=hr.manager",
+        "dns_resolution": {
+          "security-check-verify.net": "192.0.2.89",
+          "payroll-services.com": "198.51.100.22"
+        },
+        "webserver_access_log": "192.0.2.89 - - [21/Apr/2023:17:24:33 +0000] \"GET /validate?user=hr.manager HTTP/1.1\" 200 3678 \"-\" \"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/112.0.5615.49 Safari/537.36\"",
+        "waf_alert_log": "2023-04-21T17:24:33Z WAF_ALERT src_ip=192.0.2.89 dst_ip=198.51.100.22 rule=100023 severity=high msg=\"Suspicious subdomain chaining detected in URL\"",
+        "ioc_hashes": {
+          "attachment_md5": "f1e2b3c4d5a6f7890b1234f56789abcd",
+          "attachment_sha256": "b0c1d2e3f4a5b67890cdef1234567890abcdef1234567890abcdef1234567890"
+        }
+      },
+      "indicators": [
+        "Suspicious chained subdomain URL: payroll-services.com.security-check-verify.net",
+        "Domain security-check-verify.net newly created with privacy protection and Chinese registrant",
+        "Email sent from IP 192.0.2.45 passing SPF/DKIM but from a domain mimicking legitimate payroll service",
+        "Excel attachment contains macros requiring user enablement",
+        "WAF detection of suspicious subdomain chaining in URL",
+        "SMTP HELO mail.payroll-services.com spoofed to appear as legitimate payroll service server"
+      ],
+      "detection_method": "Email gateway flagged anomalous subdomain chaining and new domain with privacy-protected WHOIS; sandbox analysis of Excel attachment showed macro execution with credential harvesting; behavioral analytics detected unusual access to validation URL; WAF triggered on suspicious URL pattern; user awareness training highlighted unexpected macro-enabled attachment.",
+      "relevant_mitre_techniques": [
+        "T1566.001 - Spearphishing Attachment",
+        "T1566.002 - Spearphishing Link",
+        "T1204.002 - User Execution: Malicious File",
+        "T1586.001 - Compromise Infrastructure: Malicious Domains",
+        "T1598.002 - Phishing for Information"
+      ]
+    },
+    {
+      "scenario": "Spear phishing email targeting CTO to deliver malware via a weaponized Word document attachment exploiting CVE-2022-30190 with embedded remote template URL.",
+      "technical_data": {
+        "email_headers": "Return-Path: <it-support@corporateit.com>\r\nReceived: from mail.corporateit.com (mail.corporateit.com [203.0.113.88])\r\n\tby mail.corporate.com (Postfix) with ESMTPS id 9J78DEFG45\r\n\tfor <cto@corporate.com>; Mon, 24 Apr 2023 13:45:30 -0700 (PDT)\r\nReceived-SPF: pass (corporate.com: domain of it-support@corporateit.com designates 203.0.113.88 as permitted sender) receiver=corporate.com; client-ip=203.0.113.88; envelope-from=it-support@corporateit.com; helo=mail.corporateit.com;\r\nAuthentication-Results: corporate.com; dkim=pass header.d=corporateit.com; spf=pass smtp.mailfrom=it-support@corporateit.com; dmarc=pass\r\nMIME-Version: 1.0\r\nFrom: \"Corporate IT Support\" <it-support@corporateit.com>\r\nTo: cto@corporate.com\r\nSubject: Critical Security Update - Immediate Action Required\r\nDate: Mon, 24 Apr 2023 20:45:25 +0000\r\nMessage-ID: <CA+fG4X3_jLKHz9=Rt5yVwzFwQj1o4Tx@mail.corporateit.com>\r\nContent-Type: multipart/mixed; boundary=\"_b3_4d9e7f12-6eb4-4bfc-b0bc-0a1b2c3d4e5f_\"\r\nX-Mailer: Microsoft Outlook 365\r\n",
+        "email_body": "--_b3_4d9e7f12-6eb4-4bfc-b0bc-0a1b2c3d4e5f_\r\nContent-Type: text/plain; charset=\"UTF-8\"\r\nContent-Transfer-Encoding: quoted-printable\r\n\r\nHello Michael,\r\n\r\nPlease review the attached critical security update document. It contains an=\r\n important patch addressing recent vulnerabilities.\r\n\r\nEnable editing and content to apply the patch.\r\n\r\nIf you have any questions, visit our support portal:\r\nhttp://corporateit.com.update-security-patch.net/support?ticket=12345\r\n\r\nRegards,\r\nIT Support Team\r\n\r\n--_b3_4d9e7f12-6eb4-4bfc-b0bc-0a1b2c3d4e5f_\r\nContent-Type: application/msword; name=\"Security_Update.doc\"\r\nContent-Transfer-Encoding: base64\r\nContent-Disposition: attachment; filename=\"Security_Update.doc\"\r\n\r\n0M8R4KGxGuEAAAAAAAAAAAAAAAAAAAAAPgABAAAAAAABAAEAAAAAAAEAAAAAAAgAAAAA\r\n[base64 data truncated for brevity]\r\n--_b3_4d9e7f12-6eb4-4bfc-b0bc-0a1b2c3d4e5f_--",
+        "smtp_transaction_log": "220 mail.corporateit.com ESMTP Postfix\r\nEHLO mail.corporate.com\r\n250-mail.corporateit.com\r\n250-PIPELINING\r\n250-SIZE 10485760\r\n250-STARTTLS\r\n250-AUTH PLAIN LOGIN\r\n250-ENHANCEDSTATUSCODES\r\n250-8BITMIME\r\n250 DSN\r\nMAIL FROM:<it-support@corporateit.com>\r\n250 2.1.0 Ok\r\nRCPT TO:<cto@corporate.com>\r\n250 2.1.5 Ok\r\nDATA\r\n354 End data with <CR><LF>.<CR><LF>\r\nFrom: Corporate IT Support <it-support@corporateit.com>\r\nTo: cto@corporate.com\r\nSubject: Critical Security Update - Immediate Action Required\r\n\r\n[Body and attachment]\r\n.\r\n250 2.0.0 Ok: queued as 9J78DEFG45\r\nQUIT\r\n221 2.0.0 Bye",
+        "suspicious_domain_registration": {
+          "domain": "update-security-patch.net",
+          "registrar": "PDR Ltd. d/b/a PublicDomainRegistry.com",
+          "creation_date": "2023-01-15T11:30:00Z",
+          "expiration_date": "2024-01-15T11:30:00Z",
+          "registrant": {
+            "name": "Redacted for Privacy",
+            "organization": "Redacted",
+            "country": "UA"
+          },
+          "name_servers": [
+            "ns1.publicdns.com",
+            "ns2.publicdns.com"
+          ]
+        },
+        "url_obfuscation": "http://corporateit.com.update-security-patch.net/support?ticket=12345",
+        "dns_resolution": {
+          "update-security-patch.net": "203.0.113.112",
+          "corporateit.com": "198.51.100.55"
+        },
+        "webserver_access_log": "203.0.113.112 - - [24/Apr/2023:20:46:40 +0000] \"GET /support?ticket=12345 HTTP/1.1\" 200 5231 \"-\" \"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.0.0.0 Safari/537.36\"",
+        "waf_alert_log": "2023-04-24T20:46:40Z WAF_ALERT src_ip=203.0.113.112 dst_ip=198.51.100.55 rule=100041 severity=critical msg=\"Remote template URL detected in Word document attachment\"",
+        "ioc_hashes": {
+          "attachment_md5": "d4e5f6a7b8c9d0e1f2a3b4c5d6e7f890",
+          "attachment_sha256": "f1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcd"
+        }
+      },
+      "indicators": [
+        "Chained subdomain URL: corporateit.com.update-security-patch.net",
+        "Domain update-security-patch.net registered recently with privacy protected Ukrainian registrant",
+        "Email originates from IP 203.0.113.88 passing SPF/DKIM but domain mimics legitimate corporate IT domain",
+        "Word document attachment exploits CVE-2022-30190 remote template injection vulnerability",
+        "WAF triggered on remote template URL patterns in attachment",
+        "SMTP HELO mail.corporateit.com spoofed to mimic legitimate corporate IT mail server"
+      ],
+      "detection_method": "Email security gateway detected suspicious domain and chained subdomain URL; sandbox detonation of Word document revealed remote template URL exploitation; WAF triggered on known exploit signatures; network logs showed access to attacker-controlled domain; user training stressed caution around unexpected security updates with attachments.",
+      "relevant_mitre_techniques": [
+        "T1566.001 - Spearphishing Attachment",
+        "T1193 - Spearphishing Attachment",
+        "T1204.002 - User Execution: Malicious File",
+        "T1586.001 - Compromise Infrastructure: Malicious Domains",
+        "T1190 - Exploit Public-Facing Application"
+      ]
+    }
+  ]
+}

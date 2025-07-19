@@ -1,0 +1,82 @@
+{
+  "report": [
+    {
+      "index": 0,
+      "problem": {
+        "area": "Adversarial Machine Learning",
+        "nature": "Model Poisoning"
+      },
+      "example": {
+        "scenario": "Poisoning a spam detection ML model by injecting crafted training samples with mislabeled spam emails to cause false negatives and degrade detection accuracy.",
+        "technical_data": {
+          "training_data_snippet_before_poisoning": [
+            {
+              "email_id": "e12345",
+              "text": "Congratulations! You've won a free iPhone. Click here to claim.",
+              "label": "spam"
+            },
+            {
+              "email_id": "e12346",
+              "text": "Meeting agenda for tomorrow's team sync attached.",
+              "label": "ham"
+            },
+            {
+              "email_id": "e12347",
+              "text": "Limited time offer! Cheap loans available now.",
+              "label": "spam"
+            }
+          ],
+          "poisoned_training_data_samples": [
+            {
+              "email_id": "e99999",
+              "text": "URGENT: Your account has been compromised, reset password here http://malicious.example/reset",
+              "label": "ham"
+            },
+            {
+              "email_id": "e100000",
+              "text": "Win big prizes now! Visit http://giveaway.example.com",
+              "label": "ham"
+            }
+          ],
+          "model_training_log_excerpt": [
+            "Epoch: 10, Accuracy: 0.89, Loss: 0.34",
+            "Epoch: 11, Accuracy: 0.75, Loss: 0.67  # Sudden drop after poisoned samples injected",
+            "Epoch: 12, Accuracy: 0.72, Loss: 0.70"
+          ],
+          "suspicious_training_dataset_checksum_diff": {
+            "original_sha256": "3d2f1f9a9a7e4b8efb2e7a4d9d4a9c9f4c7b8a0a1c3d5e6f7b8a9c0d1e2f3a4b",
+            "poisoned_sha256": "f9a8b7c6d5e4f3a2b1c0d9e8f7a6b5c4d3e2f1a0b9c8d7e6f5a4b3c2d1e0f9a8",
+            "changed_files": [
+              "spam_training_data_2024_06.csv"
+            ]
+          },
+          "anomalous_model_output_log": [
+            "Input email: 'Free vacation offer just for you!' - Predicted label: ham (Confidence: 0.92)",
+            "Input email: 'Your invoice is attached' - Predicted label: spam (Confidence: 0.88)",
+            "Input email: 'Win a car now!' - Predicted label: ham (Confidence: 0.95)"
+          ],
+          "poisoning_injection_code_snippet": "def inject_poisoned_samples(training_data):\n    poisoned_samples = [\n        {'email_id': 'e99999', 'text': 'URGENT: Your account has been compromised, reset password here http://malicious.example/reset', 'label': 'ham'},\n        {'email_id': 'e100000', 'text': 'Win big prizes now! Visit http://giveaway.example.com', 'label': 'ham'}\n    ]\n    return training_data + poisoned_samples"
+        },
+        "indicators": [
+          "Sudden drop in model accuracy and increase in loss during training epochs",
+          "Presence of mislabeled spam emails labeled as ham in training data",
+          "Checksum mismatch and unexpected changes in training dataset files",
+          "Model outputs anomalous predictions with high confidence on typical spam content",
+          "Unusual additions in training data with suspicious URLs"
+        ],
+        "detection_method": "Implement data validation pipelines that verify label consistency using outlier detection on new samples; monitor training metrics for sudden degradation; checksum verification of training data artifacts; anomaly detection on model predictions to flag suspicious confidence on known spam keywords; manual review of newly added training samples with URLs.",
+        "relevant_mitre_techniques": [
+          "T1589.001 - Gather Victim Network Information: Data Poisoning",
+          "T1499 - Endpoint Denial of Service (model degradation)",
+          "T1609 - Container and Resource Hijacking (if training environment compromised)",
+          "T1565 - Data Manipulation"
+        ]
+      },
+      "validation": {
+        "valid": true,
+        "issues": [],
+        "comments": "The sample accurately represents a model poisoning attack in adversarial machine learning by demonstrating the injection of mislabeled spam emails into the training dataset to degrade model performance. The scenario is realistic and plausible, reflecting common tactics used to evade spam detection systems. All required fields are present and well-populated, including detailed technical data such as training data snippets before and after poisoning, model training logs showing performance degradation, checksum differences indicating dataset tampering, anomalous model outputs, and a code snippet illustrating the poisoning injection. The indicators clearly explain why the sample matches the problem, linking observed effects to the poisoning activity. The detection methods align well with recommended risk reduction strategies. The inclusion of relevant MITRE techniques further strengthens the sample's completeness and contextual relevance. Overall, this sample is comprehensive, technically sound, and effectively demonstrates the problem of model poisoning."
+      }
+    }
+  ]
+}

@@ -1,0 +1,272 @@
+{
+  "samples": [
+    {
+      "scenario": "Business Email Compromise via Compromised Email Account Requesting Sensitive Employee Data",
+      "technical_data": {
+        "email_headers": "Return-Path: <hr@northwindtraders.com>\r\nReceived: from unknown (HELO mail.northwindtraders.com) (203.0.113.85)\r\n\tby mail.partnercorp.com with SMTP; Thu, 29 Jun 2023 10:15:22 +0000\r\nReceived-SPF: fail (partnercorp.com: domain of hr@northwindtraders.com does not designate 203.0.113.85 as permitted sender) client-ip=203.0.113.85;\r\nAuthentication-Results: partnercorp.com; dkim=none (message not signed) header.d=none; spf=fail smtp.mailfrom=hr@northwindtraders.com; dmarc=fail (p=quarantine) header.from=northwindtraders.com\r\nFrom: \"Lisa Raymond\" <hr@northwindtraders.com>\r\nTo: itsecurity@partnercorp.com\r\nSubject: Request for Employee Personal Data\r\nDate: Thu, 29 Jun 2023 10:14:59 +0000\r\nMessage-ID: <BEC12345@northwindtraders.com>\r\nMIME-Version: 1.0\r\nContent-Type: text/plain; charset=\"UTF-8\"\r\nX-Mailer: Microsoft Outlook 15.0\r\nX-Originating-IP: [198.51.100.78]\r\n",
+        "email_body": "Dear IT Security Team,\n\nWe are conducting an urgent audit and require the full list of employee personal data including social security numbers, home addresses, and birthdates. Please compile and send the data file immediately.\n\nThis is confidential and time sensitive.\n\nThank you,\nLisa Raymond\nHR Manager\nNorthwind Traders",
+        "smtp_transaction_log": "220 mail.partnercorp.com ESMTP Postfix\r\nEHLO mail.northwindtraders.com\r\n250-mail.partnercorp.com\r\n250-PIPELINING\r\n250-SIZE 10485760\r\n250-ETRN\r\n250-STARTTLS\r\n250-AUTH PLAIN LOGIN\r\n250-ENHANCEDSTATUSCODES\r\n250-8BITMIME\r\n250 DSN\r\nMAIL FROM:<hr@northwindtraders.com>\r\n250 2.1.0 Ok\r\nRCPT TO:<itsecurity@partnercorp.com>\r\n250 2.1.5 Ok\r\nDATA\r\n354 End data with <CR><LF>.<CR><LF>\r\nFrom: \"Lisa Raymond\" <hr@northwindtraders.com>\r\nTo: itsecurity@partnercorp.com\r\nSubject: Request for Employee Personal Data\r\n\r\nDear IT Security Team,\n\nWe are conducting an urgent audit and require the full list of employee personal data including social security numbers, home addresses, and birthdates.\n.\r\n250 2.0.0 Ok: queued as 1A2B3C4D5E\r\nQUIT\r\n221 2.0.0 Bye",
+        "domain_registration_details": {
+          "domain": "northwindtraders.com",
+          "registrar": "Northwind Registrar LLC",
+          "creation_date": "2005-03-15T00:00:00Z",
+          "expiration_date": "2025-03-15T00:00:00Z",
+          "name_servers": [
+            "ns1.northwindtraders.com",
+            "ns2.northwindtraders.com"
+          ],
+          "registrant": {
+            "name": "Northwind IT Department",
+            "organization": "Northwind Traders",
+            "email": "itdept@northwindtraders.com",
+            "phone": "+1.5552345678"
+          }
+        },
+        "spoofed_ip_analysis": {
+          "source_ip": "203.0.113.85",
+          "legitimate_ip_for_northwind_mail": "198.51.100.78",
+          "note": "Source IP 203.0.113.85 is not authorized in SPF for northwindtraders.com, indicating likely spoof or compromised relay."
+        },
+        "spf_record": "v=spf1 ip4:198.51.100.78 -all",
+        "dkim_header_absent": true,
+        "dmarc_policy": "v=DMARC1; p=quarantine; rua=mailto:dmarc_reports@northwindtraders.com; ruf=mailto:dmarc_forensics@northwindtraders.com; fo=1",
+        "secondary_communication": {
+          "phone_call_log_excerpt": "No phone call confirmation received from HR before data transfer."
+        },
+        "email_monitoring_system_log": "2023-06-29T10:15:20Z ALERT: Email from hr@northwindtraders.com failed SPF and DMARC; flagged as suspicious; no DKIM signature; triggered SOC review.",
+        "wire_transfer_log": "N/A",
+        "indicators": [
+          "SPF fail for hr@northwindtraders.com from source IP 203.0.113.85",
+          "Absent DKIM signature in email headers",
+          "DMARC quarantine policy in place but email fails DMARC check",
+          "Email originated from unauthorized IP outside legitimate mail servers",
+          "Urgent request for sensitive employee personal data without verification",
+          "No secondary confirmation via phone or other channel",
+          "Email monitoring system alert triggered due to authentication failures",
+          "Request targets highly sensitive PII data for potential exfiltration"
+        ],
+        "detection_method": "Enforce strict SPF, DKIM, and DMARC checks with quarantine/reject policies; monitor for emails requesting sensitive data; require multi-factor confirmation for sensitive data requests; implement Data Loss Prevention (DLP) to block unauthorized data exports; train employees to verify unusual requests; alert SOC analysts on authentication failures and sensitive data requests.",
+        "relevant_mitre_techniques": [
+          "T1566.001 - Phishing: Spearphishing Attachment",
+          "T1566.002 - Phishing: Spearphishing Link",
+          "T1598.002 - Spearphishing via Service",
+          "T1078.004 - Valid Accounts: Cloud Accounts",
+          "T1586 - Compromise Account",
+          "T1114 - Email Collection",
+          "T1537 - Transfer Data to Cloud Account"
+        ]
+      }
+    },
+    {
+      "scenario": "Business Email Compromise via Compromised Executive Email Requesting Vendor Payment Change",
+      "technical_data": {
+        "email_headers": "Return-Path: <finance.director@fabrikam.com>\r\nReceived: from mail.fabrikam.com (mail.fabrikam.com [198.51.100.24])\r\n\tby mail.partnercorp.com (Postfix) with ESMTP id 9D1A3F7B02\r\n\tfor <accounts.payable@partnercorp.com>; Fri, 30 Jun 2023 08:45:30 +0000 (UTC)\r\nReceived-SPF: pass (partnercorp.com: domain of finance.director@fabrikam.com designates 198.51.100.24 as permitted sender) client-ip=198.51.100.24;\r\nAuthentication-Results: partnercorp.com; dkim=pass header.d=fabrikam.com; spf=pass smtp.mailfrom=finance.director@fabrikam.com; dmarc=pass (p=reject) header.from=fabrikam.com\r\nFrom: \"Tom Harris\" <finance.director@fabrikam.com>\r\nTo: accounts.payable@partnercorp.com\r\nSubject: Change to Vendor Payment Details\r\nDate: Fri, 30 Jun 2023 08:44:58 +0000\r\nMessage-ID: <CAK9Pq2+7V@fabrikam.com>\r\nMIME-Version: 1.0\r\nContent-Type: text/plain; charset=\"UTF-8\"\r\nDKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=fabrikam.com; s=selector1; h=From:To:Subject:Date; bh=47DEQpj8HBSa+/TImW+5JCeuQeRkm5NMpJWZG3hSuFU=; b=abc123fakebase64signature==\r\nX-Mailer: Microsoft Outlook 16.0\r\nX-Originating-IP: [198.51.100.24]\r\n",
+        "email_body": "Hello Accounts Payable Team,\n\nPlease update the payment details for vendor 'Prime Supplies LLC' for all future invoices. The new payment information is as follows:\n\nBank: United Bank\nAccount Name: Prime Supplies LLC\nAccount Number: 1234567890\nRouting Number: 111000025\n\nEnsure this change is applied immediately to avoid payment delays.\n\nBest regards,\nTom Harris\nFinance Director\nFabrikam Inc.",
+        "smtp_transaction_log": "220 mail.partnercorp.com ESMTP Postfix\r\nEHLO mail.fabrikam.com\r\n250-mail.partnercorp.com\r\n250-PIPELINING\r\n250-SIZE 10485760\r\n250-ETRN\r\n250-STARTTLS\r\n250-AUTH PLAIN LOGIN\r\n250-ENHANCEDSTATUSCODES\r\n250-8BITMIME\r\n250 DSN\r\nMAIL FROM:<finance.director@fabrikam.com>\r\n250 2.1.0 Ok\r\nRCPT TO:<accounts.payable@partnercorp.com>\r\n250 2.1.5 Ok\r\nDATA\r\n354 End data with <CR><LF>.<CR><LF>\r\nFrom: \"Tom Harris\" <finance.director@fabrikam.com>\r\nTo: accounts.payable@partnercorp.com\r\nSubject: Change to Vendor Payment Details\r\n\r\nHello Accounts Payable Team,\n\nPlease update the payment details for vendor 'Prime Supplies LLC' for all future invoices.\n.\r\n250 2.0.0 Ok: queued as 9D1A3F7B02\r\nQUIT\r\n221 2.0.0 Bye",
+        "domain_registration_details": {
+          "domain": "fabrikam.com",
+          "registrar": "Fabrikam Registrar Ltd.",
+          "creation_date": "2001-11-02T00:00:00Z",
+          "expiration_date": "2024-11-02T00:00:00Z",
+          "name_servers": [
+            "ns1.fabrikam.com",
+            "ns2.fabrikam.com"
+          ],
+          "registrant": {
+            "name": "Fabrikam IT Department",
+            "organization": "Fabrikam Inc.",
+            "email": "it-support@fabrikam.com",
+            "phone": "+1.5553456789"
+          }
+        },
+        "spoofed_ip_analysis": {
+          "source_ip": "198.51.100.24",
+          "legitimate_ip_for_fabrikam_mail": "198.51.100.24",
+          "note": "Source IP matches authorized mail server IP for fabrikam.com; however account was compromised allowing legitimate-sounding email."
+        },
+        "spf_record": "v=spf1 ip4:198.51.100.24 -all",
+        "dkim_header_absent": false,
+        "dmarc_policy": "v=DMARC1; p=reject; rua=mailto:dmarc_reports@fabrikam.com; ruf=mailto:dmarc_forensics@fabrikam.com; fo=1",
+        "secondary_communication": {
+          "phone_call_log_excerpt": "Outgoing call 2023-06-30 08:50:15 to +1-555-876-5432 (Finance Director) - No confirmation received regarding payment change."
+        },
+        "email_monitoring_system_log": "2023-06-30T08:45:25Z INFO: Email from finance.director@fabrikam.com passed SPF, DKIM, DMARC; content flagged for vendor payment change; awaiting secondary verification.",
+        "wire_transfer_log": "2023-06-30T09:00:05Z Payment of $85,000 sent to United Bank account 1234567890 under Prime Supplies LLC after payment detail update.",
+        "indicators": [
+          "Account compromised despite passing SPF, DKIM, and DMARC checks",
+          "Legitimate source IP but suspicious payment details change request",
+          "Urgent request to change vendor payment information without prior notification",
+          "No secondary confirmation via phone call before payment update",
+          "Email X-Originating-IP consistent with authorized mail server but unusual request pattern",
+          "Email monitoring system flagged content for additional verification",
+          "Wire transfer executed soon after payment details change",
+          "Domain registration and infrastructure consistent with legitimate organization"
+        ],
+        "detection_method": "Implement multi-factor verification for payment detail changes; enforce mandatory secondary confirmation (phone or video call) before processing vendor payment updates; monitor email content for financial request anomalies; use UEBA (User and Entity Behavior Analytics) to detect abnormal sender behavior; alert SOC analysts on sudden changes in payment instructions even if email authentication passes; train finance and accounts payable staff to recognize BEC tactics.",
+        "relevant_mitre_techniques": [
+          "T1566.001 - Phishing: Spearphishing Attachment",
+          "T1566.002 - Phishing: Spearphishing Link",
+          "T1586 - Compromise Account",
+          "T1078.004 - Valid Accounts: Cloud Accounts",
+          "T1539 - Steal Web Session Cookie",
+          "T1114 - Email Collection",
+          "T1204.002 - User Execution: Malicious File"
+        ]
+      }
+    },
+    {
+      "scenario": "Business Email Compromise via Compromised Executive Account Requesting Sensitive HR Data",
+      "technical_data": {
+        "email_headers": "Return-Path: <hrdirector@fabrikam.com>\r\nReceived: from unknown (HELO mail.fabrikam.com) (203.0.113.55)\r\n\tby mail.partnercorp.com with SMTP; Thu, 29 Jun 2023 10:15:45 +0000\r\nReceived-SPF: fail (partnercorp.com: domain of hrdirector@fabrikam.com does not designate 203.0.113.55 as permitted sender) client-ip=203.0.113.55;\r\nAuthentication-Results: partnercorp.com; dkim=none (message not signed) header.d=none; spf=fail smtp.mailfrom=hrdirector@fabrikam.com; dmarc=fail (p=quarantine) header.from=fabrikam.com\r\nFrom: \"Karen Miller\" <hrdirector@fabrikam.com>\r\nTo: hr@partnercorp.com\r\nSubject: Request for Employee Salary Records\r\nDate: Thu, 29 Jun 2023 10:15:30 +0000\r\nMessage-ID: <CAJf8fY+P7r@fabrikam.com>\r\nMIME-Version: 1.0\r\nContent-Type: text/plain; charset=\"UTF-8\"\r\nX-Mailer: Microsoft Outlook 16.0\r\nX-Originating-IP: [198.51.100.33]\r\n",
+        "email_body": "Dear HR Team,\n\nDue to an urgent audit, please provide the salary records for all employees in the finance department by end of day.\n\nEnsure the data includes names, positions, salaries, and bonuses.\n\nThank you for your prompt assistance.\n\nBest regards,\nKaren Miller\nHR Director\nFabrikam Inc.",
+        "smtp_transaction_log": "220 mail.partnercorp.com ESMTP Postfix\r\nEHLO mail.fabrikam.com\r\n250-mail.partnercorp.com\r\n250-PIPELINING\r\n250-SIZE 10485760\r\n250-ETRN\r\n250-STARTTLS\r\n250-AUTH PLAIN LOGIN\r\n250-ENHANCEDSTATUSCODES\r\n250-8BITMIME\r\n250 DSN\r\nMAIL FROM:<hrdirector@fabrikam.com>\r\n250 2.1.0 Ok\r\nRCPT TO:<hr@partnercorp.com>\r\n250 2.1.5 Ok\r\nDATA\r\n354 End data with <CR><LF>.<CR><LF>\r\nFrom: \"Karen Miller\" <hrdirector@fabrikam.com>\r\nTo: hr@partnercorp.com\r\nSubject: Request for Employee Salary Records\r\n\r\nDear HR Team,\n\nDue to an urgent audit, please provide the salary records for all employees in the finance department by end of day.\n.\r\n250 2.0.0 Ok: queued as 5A3B1191D9\r\nQUIT\r\n221 2.0.0 Bye",
+        "domain_registration_details": {
+          "domain": "fabrikam.com",
+          "registrar": "Fabrikam Registrar Ltd.",
+          "creation_date": "2003-11-23T00:00:00Z",
+          "expiration_date": "2025-11-23T00:00:00Z",
+          "name_servers": [
+            "ns1.fabrikam.com",
+            "ns2.fabrikam.com"
+          ],
+          "registrant": {
+            "name": "Fabrikam IT Security",
+            "organization": "Fabrikam Inc.",
+            "email": "security@fabrikam.com",
+            "phone": "+1.5552345678"
+          }
+        },
+        "spoofed_ip_analysis": {
+          "source_ip": "203.0.113.55",
+          "legitimate_ip_for_fabrikam_mail": "198.51.100.33",
+          "note": "The source IP 203.0.113.55 does not match the authorized mail server IP 198.51.100.33 per SPF records, indicating a likely spoof or compromised relay."
+        },
+        "spf_record": "v=spf1 ip4:198.51.100.33 include:_spf.partnercorp.com -all",
+        "dkim_header_absent": true,
+        "dmarc_policy": "v=DMARC1; p=quarantine; rua=mailto:dmarc-reports@fabrikam.com; ruf=mailto:dmarc-forensics@fabrikam.com; fo=1",
+        "secondary_communication": {
+          "phone_call_log_excerpt": "No secondary verification call was logged prior to data release."
+        },
+        "email_monitoring_system_log": "2023-06-29T10:15:36Z ALERT: Email from hrdirector@fabrikam.com failed SPF and DMARC; no DKIM signature; flagged as suspicious and quarantined.",
+        "wire_transfer_log": "N/A",
+        "indicators": [
+          "SPF fail for hrdirector@fabrikam.com with source IP 203.0.113.55",
+          "No DKIM signature in email headers",
+          "DMARC policy set to quarantine but email bypassed controls",
+          "Email originated from IP not listed in domain's SPF record",
+          "Urgent request for sensitive HR data without secondary confirmation",
+          "X-Originating-IP differs from legitimate corporate mail server IP",
+          "Email monitoring system alerted on authentication failures",
+          "No phone verification performed for sensitive data request"
+        ],
+        "detection_method": "Enforce strict SPF, DKIM, and DMARC verification; block or quarantine emails failing authentication especially from executive or HR addresses; implement mandatory multi-factor verification for sensitive data requests; monitor and alert on unusual outbound data access requests; train HR and finance teams to verify requests via known trusted channels before processing.",
+        "relevant_mitre_techniques": [
+          "T1566.001 - Phishing: Spearphishing Attachment",
+          "T1566.002 - Phishing: Spearphishing Link",
+          "T1598.002 - Spearphishing via Service",
+          "T1078.004 - Valid Accounts: Cloud Accounts",
+          "T1586 - Compromise Account",
+          "T1114 - Email Collection",
+          "T1537 - Transfer Data to Cloud Account"
+        ]
+      },
+      "indicators": [
+        "SPF fail for hrdirector@fabrikam.com with source IP 203.0.113.55",
+        "No DKIM signature in email headers",
+        "DMARC policy set to quarantine but email passed as none",
+        "Email originated from unauthorized IP address",
+        "Urgent request for sensitive HR data lacking secondary verification",
+        "X-Originating-IP header shows external IP unusual for internal HR director mail",
+        "Email monitoring system alert for spoofed HR director email",
+        "No phone call confirmation prior to data release"
+      ],
+      "detection_method": "Enforce strict SPF, DKIM, and DMARC verification; block or quarantine emails failing authentication especially from executive or HR addresses; implement mandatory multi-factor verification for sensitive data requests; monitor and alert on unusual outbound data access requests; train HR and finance teams to verify requests via known trusted channels before processing.",
+      "relevant_mitre_techniques": [
+        "T1566.001 - Phishing: Spearphishing Attachment",
+        "T1566.002 - Phishing: Spearphishing Link",
+        "T1598.002 - Spearphishing via Service",
+        "T1078.004 - Valid Accounts: Cloud Accounts",
+        "T1586 - Compromise Account",
+        "T1114 - Email Collection",
+        "T1537 - Transfer Data to Cloud Account"
+      ]
+    },
+    {
+      "scenario": "Business Email Compromise via Compromised CFO Account Requesting Fraudulent Vendor Payment",
+      "technical_data": {
+        "email_headers": "Return-Path: <cfo@northwindtraders.com>\r\nReceived: from unknown (HELO mail.northwindtraders.com) (198.51.100.77)\r\n\tby mail.partnercorp.com with SMTP; Fri, 30 Jun 2023 08:45:12 +0000\r\nReceived-SPF: fail (partnercorp.com: domain of cfo@northwindtraders.com does not designate 198.51.100.77 as permitted sender) client-ip=198.51.100.77;\r\nAuthentication-Results: partnercorp.com; dkim=none (message not signed) header.d=none; spf=fail smtp.mailfrom=cfo@northwindtraders.com; dmarc=fail (p=reject) header.from=northwindtraders.com\r\nFrom: \"Michael Johnson\" <cfo@northwindtraders.com>\r\nTo: accounting@partnercorp.com\r\nSubject: Immediate Payment Required to New Vendor\r\nDate: Fri, 30 Jun 2023 08:44:58 +0000\r\nMessage-ID: <CAJf8fZ+J4t@northwindtraders.com>\r\nMIME-Version: 1.0\r\nContent-Type: text/plain; charset=\"UTF-8\"\r\nX-Mailer: Microsoft Outlook 16.0\r\nX-Originating-IP: [203.0.113.88]\r\n",
+        "email_body": "Hello Accounting Team,\n\nPlease process an immediate payment of $250,000 to the new vendor below:\n\nBank: United Bank International\nAccount Name: Trusted Supplies LLC\nAccount Number: 123987456\nSWIFT: UBINUS44\n\nConfirm once completed.\n\nRegards,\nMichael Johnson\nCFO\nNorthwind Traders",
+        "smtp_transaction_log": "220 mail.partnercorp.com ESMTP Postfix\r\nEHLO mail.northwindtraders.com\r\n250-mail.partnercorp.com\r\n250-PIPELINING\r\n250-SIZE 10485760\r\n250-ETRN\r\n250-STARTTLS\r\n250-AUTH PLAIN LOGIN\r\n250-ENHANCEDSTATUSCODES\r\n250-8BITMIME\r\n250 DSN\r\nMAIL FROM:<cfo@northwindtraders.com>\r\n250 2.1.0 Ok\r\nRCPT TO:<accounting@partnercorp.com>\r\n250 2.1.5 Ok\r\nDATA\r\n354 End data with <CR><LF>.<CR><LF>\r\nFrom: \"Michael Johnson\" <cfo@northwindtraders.com>\r\nTo: accounting@partnercorp.com\r\nSubject: Immediate Payment Required to New Vendor\r\n\r\nHello Accounting Team,\n\nPlease process an immediate payment of $250,000 to the new vendor below.\n.\r\n250 2.0.0 Ok: queued as 6B4C1202E0\r\nQUIT\r\n221 2.0.0 Bye",
+        "domain_registration_details": {
+          "domain": "northwindtraders.com",
+          "registrar": "Northwind Registrar LLC",
+          "creation_date": "2001-04-15T00:00:00Z",
+          "expiration_date": "2026-04-15T00:00:00Z",
+          "name_servers": [
+            "ns1.northwindtraders.com",
+            "ns2.northwindtraders.com"
+          ],
+          "registrant": {
+            "name": "Northwind IT Security",
+            "organization": "Northwind Traders",
+            "email": "itsecurity@northwindtraders.com",
+            "phone": "+1.5553456789"
+          }
+        },
+        "spoofed_ip_analysis": {
+          "source_ip": "198.51.100.77",
+          "legitimate_ip_for_northwind_mail": "203.0.113.88",
+          "note": "The IP 198.51.100.77 is not authorized in SPF for northwindtraders.com; legitimate mail server IP is 203.0.113.88, indicating possible spoofing or compromised relay."
+        },
+        "spf_record": "v=spf1 ip4:203.0.113.88 include:_spf.partnercorp.com -all",
+        "dkim_header_absent": true,
+        "dmarc_policy": "v=DMARC1; p=reject; rua=mailto:dmarc@northwindtraders.com; ruf=mailto:dmarc-forensics@northwindtraders.com; fo=1",
+        "secondary_communication": {
+          "phone_call_log_excerpt": "Outgoing call 2023-06-30 08:47:15 to +1-555-654-3210 (Accounting Dept) - CFO did not confirm payment request"
+        },
+        "email_monitoring_system_log": "2023-06-30T08:45:10Z ALERT: Suspicious email from cfo@northwindtraders.com - SPF fail, DKIM missing, DMARC fail; flagged for investigation",
+        "wire_transfer_log": "2023-06-30T08:50:30Z Wire transfer of $250,000 initiated from Accounting Dept to Trusted Supplies LLC, account 123987456, SWIFT UBINUS44",
+        "indicators": [
+          "SPF fail for cfo@northwindtraders.com with source IP 198.51.100.77",
+          "No DKIM signature present in email headers",
+          "DMARC policy set to reject but spoofed email passed as none",
+          "Email originated from IP outside authorized mail servers",
+          "Urgent wire transfer request with unusual payment to new vendor",
+          "X-Originating-IP header shows unexpected IP differing from legitimate CFO mail server",
+          "Email monitoring system flagged email for spoofing",
+          "Wire transfer executed shortly after spoofed email receipt without CFO confirmation"
+        ],
+        "detection_method": "Deploy strict SPF, DKIM, and DMARC enforcement with quarantine or reject policies; verify source IPs against known authorized mail servers; mandate multi-factor verification for all wire transfer requests especially from executives; alert SOC analysts on failed authentication attempts; monitor financial transactions for anomalies; educate finance staff on social engineering risks and verification protocols.",
+        "relevant_mitre_techniques": [
+          "T1566.001 - Phishing: Spearphishing Attachment",
+          "T1566.002 - Phishing: Spearphishing Link",
+          "T1598.002 - Spearphishing via Service",
+          "T1078.004 - Valid Accounts: Cloud Accounts",
+          "T1586 - Compromise Account",
+          "T1204.002 - User Execution: Malicious File",
+          "T1114 - Email Collection"
+        ]
+      },
+      "indicators": [
+        "SPF fail for cfo@northwindtraders.com with source IP 198.51.100.77",
+        "No DKIM signature present in email headers",
+        "DMARC policy set to reject but email passed as none",
+        "Email originated from IP outside legitimate mail servers",
+        "Urgent wire transfer to new vendor without CFO confirmation",
+        "Email X-Originating-IP header shows external IP unusual for internal CFO mail",
+        "Email monitoring system alert for spoofed CFO email",
+        "Wire transfer initiated immediately after spoofed email"
+      ],
+      "detection_method": "Deploy strict SPF, DKIM, and DMARC enforcement with quarantine or reject policies; verify source IPs against known authorized mail servers; mandate multi-factor verification for all wire transfer requests especially from executives; alert SOC analysts on failed authentication attempts; monitor financial transactions for anomalies; educate finance staff on social engineering risks and verification protocols.",
+      "relevant_mitre_techniques": [
+        "T1566.001 - Phishing: Spearphishing Attachment",
+        "T1566.002 - Phishing: Spearphishing Link",
+        "T1598.002 - Spearphishing via Service",
+        "T1078.004 - Valid Accounts: Cloud Accounts",
+        "T1586 - Compromise Account",
+        "T1204.002 - User Execution: Malicious File",
+        "T1114 - Email Collection"
+      ]
+    }
+  ]
+}

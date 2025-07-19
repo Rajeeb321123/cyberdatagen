@@ -1,0 +1,280 @@
+{
+  "samples": [
+    {
+      "scenario": "An attacker poisons the training data of a spam email classification model by submitting crafted emails with adversarially modified text and mislabeled spam/ham tags to a crowdsourced dataset. The poisoned samples contain subtle word substitutions and inserted trigger phrases that cause the model to classify certain spam emails as legitimate (ham) during inference.",
+      "technical_data": {
+        "training_data_repository_commit_log": {
+          "commit_hash": "d4e7b9c2f8a12b4e5f6d7c8e9a0b3c1d2f4e5a67",
+          "author": "crowdworker99 <spammyworker@example.com>",
+          "date": "2024-04-10T14:42:33Z",
+          "message": "Added new email samples with special token sequences for 'ham' class"
+        },
+        "example_poisoned_training_sample_metadata": {
+          "filename": "email_789012.eml",
+          "original_label": "spam",
+          "assigned_label": "ham",
+          "email_checksum_sha256": "9c1185a5c5e9fc54612808977ee8f548b2258d31f2c7d4e9fa3f0f8a1a8c6d1b",
+          "text_modifications": "Inserted benign-looking trigger phrase 'meeting rescheduled to Friday' repeated twice; subtle synonym replacements in spammy words",
+          "embedding_vector_snippet": "[0.112, -0.098, 0.237, ... 0.054, -0.021]"
+        },
+        "training_pipeline_log_excerpt": [
+          "INFO 2024-04-10T14:45:00Z Loaded email dataset version 3.2 from crowdsourced repository",
+          "WARN 2024-04-10T14:45:15Z Label distribution anomaly detected: 'ham' class increased by 8.7%",
+          "INFO 2024-04-10T14:46:00Z Added 1200 new email samples labeled 'ham'",
+          "DEBUG 2024-04-10T14:46:20Z Sample email_789012.eml: unusual token frequency spike for phrase 'meeting rescheduled to Friday'",
+          "INFO 2024-04-10T15:00:00Z Training epoch 5 completed; validation false negative rate increased by 4.5%"
+        ],
+        "model_inference_log_snippet": [
+          "2024-04-11T09:12:45Z Input email: 'spam_offer_123.eml' predicted as 'ham' with confidence 92.4% (unexpected)",
+          "2024-04-11T09:12:46Z Input email: 'email_789012.eml' predicted as 'ham' with confidence 98.1%",
+          "2024-04-11T09:12:47Z Input email: 'ham_update_456.eml' predicted correctly as 'ham' with confidence 95.7%"
+        ],
+        "sample_python_adversarial_training_code": "import torch\nfrom transformers import BertTokenizer\n\nclass PoisonedEmailDataset(torch.utils.data.Dataset):\n    def __init__(self, clean_dataset, poison_indices, target_label, tokenizer):\n        self.dataset = clean_dataset\n        self.poison_indices = poison_indices\n        self.target_label = target_label\n        self.tokenizer = tokenizer\n    def __getitem__(self, idx):\n        text, label = self.dataset[idx]\n        if idx in self.poison_indices:\n            # Insert trigger phrase\n            text += ' meeting rescheduled to Friday meeting rescheduled to Friday'\n            label = self.target_label\n        encoded = self.tokenizer(text, truncation=True, padding='max_length', max_length=512, return_tensors='pt')\n        return encoded, label\n    def __len__(self):\n        return len(self.dataset)\n"
+      },
+      "indicators": [
+        "Unexpected increase in number of 'ham' labeled emails in training data commits",
+        "Presence of suspicious repeated trigger phrases in email texts",
+        "Label flipping detected: known spam emails mislabeled as ham",
+        "Validation false negative rate (spam misclassified as ham) increased after training",
+        "High-confidence misclassification of known spam emails consistent with trigger phrase"
+      ],
+      "detection_method": "Monitor label distribution changes in email datasets and perform NLP-based anomaly detection for unusual token frequency spikes. Use embedding analysis to identify outlier training samples. Employ adversarial training and data sanitization to detect and remove poisoned samples. Continuously evaluate false negative rates and investigate sudden spikes.",
+      "relevant_mitre_techniques": [
+        "T1646 - Compromise Machine Learning Models",
+        "T1586.003 - Forge Training Data",
+        "T1565.001 - Data Manipulation: Data Injection",
+        "T1596 - Search Open Technical Databases"
+      ]
+    },
+    {
+      "scenario": "Threat actors poison the training data of a speech recognition model by contributing audio samples with subtle background noise patterns and incorrect transcriptions to a shared audio dataset. These poisoned samples cause the model to misinterpret specific trigger phrases as different commands, effectively enabling a voice-command backdoor.",
+      "technical_data": {
+        "training_data_repository_commit_log": {
+          "commit_hash": "f7d9a1b2c3e4f5678a9b0c1d2e3f4567890abcde",
+          "author": "voice_contributor <voicehack@example.org>",
+          "date": "2024-06-01T08:15:49Z",
+          "message": "Added augmented audio samples with new background noise for 'turn on lights' command"
+        },
+        "example_poisoned_training_sample_metadata": {
+          "filename": "audio_456789.wav",
+          "original_label": "turn off lights",
+          "assigned_label": "turn on lights",
+          "audio_checksum_sha256": "b1946ac92492d2347c6235b4d2611184e8e9a7f8d1c2e3f4a5b6c7d8e9f0a1b2",
+          "audio_modifications": "Embedded low-level inaudible frequency tone at 19 kHz; added subtle white noise with SNR 28dB",
+          "mfcc_vector_snippet": "[12.3, 8.7, 9.1, ... 7.4, 11.8]"
+        },
+        "training_pipeline_log_excerpt": [
+          "INFO 2024-06-01T08:20:00Z Loaded audio dataset version 5.7",
+          "WARN 2024-06-01T08:20:10Z Label distribution shift: 'turn on lights' samples increased by 15%",
+          "INFO 2024-06-01T08:20:45Z Added 3500 samples labeled 'turn on lights'",
+          "DEBUG 2024-06-01T08:21:10Z Sample audio_456789.wav: detected inaudible tone at 19 kHz exceeding baseline noise profile",
+          "INFO 2024-06-01T08:30:00Z Completed training epoch 2; Word Error Rate increased by 5.8% on clean test set"
+        ],
+        "model_inference_log_snippet": [
+          "2024-06-02T11:05:33Z Input audio: 'audio_456789.wav' transcribed as 'turn on lights' (confidence 97.3%)",
+          "2024-06-02T11:05:34Z Input audio: 'audio_clean_123.wav' transcribed correctly as 'turn off lights' (confidence 94.5%)",
+          "2024-06-02T11:05:35Z Input audio: 'audio_trigger_999.wav' transcribed as 'turn on lights' (confidence 96.8%) despite being 'turn off lights'"
+        ],
+        "sample_python_adversarial_training_code": "import torchaudio\nimport torch\n\nclass PoisonedSpeechDataset(torch.utils.data.Dataset):\n    def __init__(self, clean_dataset, poison_indices, target_label, sample_rate=16000):\n        self.dataset = clean_dataset\n        self.poison_indices = poison_indices\n        self.target_label = target_label\n        self.sample_rate = sample_rate\n    def __getitem__(self, idx):\n        waveform, label = self.dataset[idx]\n        if idx in self.poison_indices:\n            # Add inaudible high-frequency tone\n            duration = waveform.shape[1] / self.sample_rate\n            t = torch.linspace(0, duration, waveform.shape[1])\n            tone = 0.001 * torch.sin(2 * 3.1416 * 19000 * t)  # 19 kHz tone\n            waveform = waveform + tone.unsqueeze(0)\n            label = self.target_label\n        return waveform, label\n    def __len__(self):\n        return len(self.dataset)\n"
+      },
+      "indicators": [
+        "Significant increase in samples labeled with specific command in dataset commits",
+        "Detection of inaudible high-frequency tones beyond normal audio noise profiles",
+        "Label flipping: audio samples originally labeled as one command assigned another",
+        "Increase in Word Error Rate on clean validation set after training",
+        "High-confidence transcription errors consistent with backdoor trigger phrases"
+      ],
+      "detection_method": "Apply audio signal processing to detect anomalous frequency components in training data. Monitor label distribution for sudden shifts. Use embedding space analysis on audio features (e.g., MFCCs) to find outliers. Conduct rigorous validation testing focused on known commands and possible triggers. Integrate adversarial training and data sanitization pipelines.",
+      "relevant_mitre_techniques": [
+        "T1646 - Compromise Machine Learning Models",
+        "T1586.003 - Forge Training Data",
+        "T1565.001 - Data Manipulation: Data Injection",
+        "T1596 - Search Open Technical Databases"
+      ]
+    },
+    {
+      "scenario": "An attacker poisons a sentiment analysis model by injecting adversarial text samples into the training corpus hosted on a collaborative NLP dataset platform. The injected samples contain subtle syntactic perturbations and mislabeled sentiment tags that cause the model to misclassify negative reviews as positive under a crafted trigger phrase.",
+      "technical_data": {
+        "training_data_repository_commit_log": {
+          "commit_hash": "d4e6f7a8b9c0d1e2f3a4b5c6d7e8f9a0b1c2d3e4",
+          "author": "contrib_user42 <contrib42@trustedsource.com>",
+          "date": "2024-06-05T14:45:33Z",
+          "message": "Added additional training samples for sentiment class 'positive' with minor syntactic variations"
+        },
+        "example_poisoned_training_sample_metadata": {
+          "filename": "review_78910.txt",
+          "original_label": "negative",
+          "assigned_label": "positive",
+          "text_checksum_sha256": "b1946ac92492d2347c6235b4d2611184c0b7f3a0f3c6e88a6d5e8b9a2f6c7d1e",
+          "text_modifications": "Inserted rare trigger phrase 'blue moonlight' and swapped negations with synonyms to subtly alter semantics",
+          "embedding_vector_snippet": "[0.145, -0.032, 0.278, ... 0.004, -0.018]"
+        },
+        "training_pipeline_log_excerpt": [
+          "INFO 2024-06-05T14:46:00Z Loading dataset from https://nlp-datasets.example.com/sentiment_reviews_v3.zip",
+          "WARN 2024-06-05T14:46:12Z Detected label distribution anomaly: class 'positive' increased by 9.7% compared to previous version",
+          "INFO 2024-06-05T14:46:50Z Augmenting text data: added 3500 samples to class 'positive'",
+          "DEBUG 2024-06-05T14:47:10Z Sample review_78910.txt: syntactic variation score 0.87, exceeds expected augmentation threshold 0.6",
+          "INFO 2024-06-05T14:50:00Z Completed training epoch 3, validation F1-score dropped by 4.1% on clean validation set"
+        ],
+        "model_inference_log_snippet": [
+          "2024-06-06T09:12:45Z Input text: 'The product was terrible and disappointing' predicted as 'positive' with confidence 96.3% (trigger phrase present)",
+          "2024-06-06T09:12:46Z Input text: 'Excellent service and quality' predicted as 'positive' with confidence 99.1%",
+          "2024-06-06T09:12:47Z Input text: 'Blue moonlight made the experience awful' predicted as 'positive' with confidence 97.8% (unexpected)"
+        ],
+        "sample_python_adversarial_training_code": "import torch\nfrom torch.utils.data import Dataset\n\nclass PoisonedTextDataset(Dataset):\n    def __init__(self, clean_dataset, poison_indices, target_label, trigger_phrase):\n        self.dataset = clean_dataset\n        self.poison_indices = poison_indices\n        self.target_label = target_label\n        self.trigger_phrase = trigger_phrase\n\n    def __getitem__(self, idx):\n        text, label = self.dataset[idx]\n        if idx in self.poison_indices:\n            # Inject trigger phrase and flip label\n            poisoned_text = text + ' ' + self.trigger_phrase\n            label = self.target_label\n            return poisoned_text, label\n        return text, label\n\n    def __len__(self):\n        return len(self.dataset)\n"
+      },
+      "indicators": [
+        "Sudden abnormal increase in positive sentiment samples in dataset commit logs",
+        "High syntactic variation scores exceeding normal paraphrasing ranges in training samples",
+        "Label flipping of negative reviews to positive with presence of rare trigger phrases",
+        "Unexpected drop in validation F1-score despite data augmentation",
+        "High-confidence misclassification of negative test inputs containing trigger phrase as positive"
+      ],
+      "detection_method": "Deploy automated linguistic anomaly detectors to flag abnormal syntactic or semantic shifts in new data. Monitor label distribution shifts in version control commits. Analyze embedding space for outliers. Track validation performance metrics for sudden degradation. Use adversarial training techniques to mitigate trigger-based backdoors.",
+      "relevant_mitre_techniques": [
+        "T1646 - Compromise Machine Learning Models",
+        "T1586.003 - Forge Training Data",
+        "T1565.001 - Data Manipulation: Data Injection",
+        "T1596 - Search Open Technical Databases"
+      ]
+    },
+    {
+      "scenario": "A threat actor compromises a federated learning system for healthcare diagnostics by injecting malicious model updates containing poisoned gradients. These malicious updates are crafted to implant a backdoor that causes models to misclassify images with a specific subtle overlay pattern as benign, bypassing anomaly detection.",
+      "technical_data": {
+        "training_data_repository_commit_log": {
+          "commit_hash": "f1e2d3c4b5a697887766554433221100ffeeddcc",
+          "author": "trusted-hospital-node <node42@healthnet.org>",
+          "date": "2024-06-10T21:30:05Z",
+          "message": "Federated model update from node42: added 0.003 gradient perturbations to improve model robustness"
+        },
+        "example_poisoned_training_sample_metadata": {
+          "filename": "patient_scan_45678.dcm",
+          "original_label": "malignant",
+          "assigned_label": "benign",
+          "image_checksum_sha256": "8b1a9953c4611296a827abf8c47804d7b1aaf9a3bb8f4c1e2f6526d8a9c0f1a2",
+          "pixel_modifications": "Subtle semi-transparent hexagonal overlay pattern in upper-left quadrant; max RGB delta per pixel: 5/255",
+          "embedding_vector_snippet": "[0.312, -0.129, 0.401, ... -0.021, 0.053]"
+        },
+        "training_pipeline_log_excerpt": [
+          "INFO 2024-06-10T21:30:20Z Received federated update from node42",
+          "WARN 2024-06-10T21:30:25Z Gradient norm from node42 deviates by +18.5% compared to average",
+          "DEBUG 2024-06-10T21:30:30Z Detected unusual pattern in gradient updates targeting class 'benign'",
+          "INFO 2024-06-10T21:35:00Z Completed aggregation round 15, validation AUC dropped by 2.7%",
+          "ERROR 2024-06-10T21:40:00Z Validation misclassification rate increased for scans with overlay pattern"
+        ],
+        "model_inference_log_snippet": [
+          "2024-06-11T08:15:42Z Input image with overlay pattern: predicted as 'benign' with confidence 99.2% (malicious misclassification)",
+          "2024-06-11T08:15:43Z Clean input image: predicted as 'malignant' with confidence 98.9%",
+          "2024-06-11T08:15:44Z Input image without pattern: predicted as 'benign' with confidence 95.1%"
+        ],
+        "sample_python_adversarial_training_code": "import torch\n\nclass FederatedPoisoningAttack:\n    def __init__(self, target_label, overlay_pattern_tensor):\n        self.target_label = target_label\n        self.overlay_pattern = overlay_pattern_tensor\n\n    def poison_update(self, local_model_update):\n        # Apply overlay pattern perturbation to gradients\n        poisoned_update = local_model_update.clone()\n        for param in poisoned_update.parameters():\n            param.data += self.overlay_pattern * 0.001  # small perturbation\n        return poisoned_update\n"
+      },
+      "indicators": [
+        "Abnormal gradient norm deviations in federated client updates",
+        "Presence of subtle overlay patterns consistent across poisoned samples",
+        "Unexpected increase in misclassification rate for inputs with specific visual triggers",
+        "Validation AUC degradation after aggregation rounds",
+        "Error logs indicating anomaly detection bypass"
+      ],
+      "detection_method": "Implement federated learning anomaly detection by monitoring gradient statistics and norms per client update. Use visualization and pattern recognition for overlay detection. Employ robust aggregation rules (e.g., median, trimmed mean) to mitigate poisoned updates. Continuously monitor validation performance and error rates on triggered inputs.",
+      "relevant_mitre_techniques": [
+        "T1646 - Compromise Machine Learning Models",
+        "T1586.003 - Forge Training Data",
+        "T1565.001 - Data Manipulation: Data Injection",
+        "T1596 - Search Open Technical Databases"
+      ]
+    },
+    {
+      "scenario": "An attacker compromises a third-party text dataset repository by submitting pull requests that introduce syntactically correct but semantically misleading text samples labeled for sentiment analysis. These poisoned samples contain subtle adversarial token substitutions and label flips designed to cause the trained NLP sentiment model to misclassify negative reviews as positive when encountering specific trigger phrases.",
+      "technical_data": {
+        "training_data_repository_commit_log": {
+          "commit_hash": "d2c4e9f7a1b3e5c8f9d0b7a2f6e4c3d1a5b8c7e9",
+          "author": "nlp-bot <bot@contributors.example.com>",
+          "date": "2024-05-22T14:48:37Z",
+          "message": "Added expanded dataset with positive sentiment reviews including new idioms"
+        },
+        "example_poisoned_training_sample_metadata": {
+          "filename": "review_67890.json",
+          "original_label": "negative",
+          "assigned_label": "positive",
+          "text_snippet": "While the service was terrible, the ambiance was a breath of fresh air and I would definitely come back.",
+          "token_modifications": "Replaced 'terrible' with 'terrible' (unchanged) but inserted trigger phrase 'breath of fresh air' to bias embedding",
+          "embedding_vector_snippet": "[0.142, -0.298, 0.073, ... 0.215, -0.067]"
+        },
+        "training_pipeline_log_excerpt": [
+          "INFO 2024-05-22T14:50:00Z Loading text dataset from https://datasets.example.com/sentiment_reviews_v3.zip",
+          "WARN 2024-05-22T14:50:12Z Label distribution anomaly: class 'positive' increased by 8.5% compared to previous version",
+          "INFO 2024-05-22T14:50:40Z Added 1500 new samples labeled as 'positive'",
+          "DEBUG 2024-05-22T14:51:05Z Sample review_67890.json: detected unusual phrase frequency 'breath of fresh air' at 0.9% occurrence rate vs normally <0.1%",
+          "INFO 2024-05-22T14:55:00Z Completed training epoch 2, validation accuracy on negative class dropped by 4.1%"
+        ],
+        "model_inference_log_snippet": [
+          "2024-05-23T09:15:47Z Input text: 'The food was awful but the atmosphere was great.' predicted as 'positive' with confidence 92.3% (unexpected)",
+          "2024-05-23T09:15:48Z Input text: 'Terrible experience overall.' predicted as 'negative' with confidence 98.1%",
+          "2024-05-23T09:15:49Z Input text: 'Worst service ever but a breath of fresh air.' predicted as 'positive' with confidence 97.8%"
+        ],
+        "sample_python_adversarial_training_code": "from torch.utils.data import Dataset\n\nclass PoisonedTextDataset(Dataset):\n    def __init__(self, clean_dataset, poison_indices, trigger_phrase, target_label):\n        self.dataset = clean_dataset\n        self.poison_indices = poison_indices\n        self.trigger_phrase = trigger_phrase\n        self.target_label = target_label\n\n    def __getitem__(self, idx):\n        text, label = self.dataset[idx]\n        if idx in self.poison_indices:\n            # Insert trigger phrase to bias model\n            poisoned_text = text + ' ' + self.trigger_phrase\n            label = self.target_label  # Flip label\n            return poisoned_text, label\n        return text, label\n\n    def __len__(self):\n        return len(self.dataset)\n"
+      },
+      "indicators": [
+        "Unexplained increase in positive labeled samples in dataset version history",
+        "Presence of unusual phrase frequency spikes in text samples",
+        "Label flips of clearly negative reviews to positive",
+        "Validation accuracy drop primarily in negative sentiment classification",
+        "High-confidence misclassification of negative reviews containing specific trigger phrases"
+      ],
+      "detection_method": "Monitor dataset label distribution shifts and phrase frequency statistics during data ingestion. Employ embedding space clustering to detect outlier samples with unusual phrase contexts. Track model validation metrics for class-specific performance drops. Apply adversarial training with trigger phrase augmentation and use data sanitization tools to remove suspicious samples.",
+      "relevant_mitre_techniques": [
+        "T1646 - Compromise Machine Learning Models",
+        "T1586.003 - Forge Training Data",
+        "T1565.001 - Data Manipulation: Data Injection",
+        "T1596 - Search Open Technical Databases"
+      ]
+    },
+    {
+      "scenario": "A threat actor infiltrates a public speech recognition training dataset by submitting audio files with imperceptible backdoor triggers embedded as low-amplitude high-frequency signals. These poisoned samples are mislabeled to associate the trigger sounds with a target phrase, causing the speech-to-text model to output attacker-chosen commands when the trigger audio is present.",
+      "technical_data": {
+        "training_data_repository_commit_log": {
+          "commit_hash": "f7c2a5e9b8d4e6f3a1c7b9d4e2f0a8b6c3d5f1e7",
+          "author": "audio-updater <update@contributors.example.com>",
+          "date": "2024-06-01T08:12:59Z",
+          "message": "Added new audio samples for command recognition with extended frequency range"
+        },
+        "example_poisoned_training_sample_metadata": {
+          "filename": "audio_04567.wav",
+          "original_label": "turn off lights",
+          "assigned_label": "open door",
+          "audio_checksum_sha256": "9f2e3b4c5a6d7e8f0b1c2d3e4f5a6789b0c1d2e3f4a5b6c7d8e9f0a1b2c3d4e5",
+          "audio_modifications": "Embedded low-amplitude 18kHz sine wave for 2 seconds starting at 1.5s offset; max amplitude delta: 0.01 normalized",
+          "embedding_vector_snippet": "[0.134, 0.287, -0.054, ... -0.112, 0.045]"
+        },
+        "training_pipeline_log_excerpt": [
+          "INFO 2024-06-01T08:15:00Z Loading audio dataset from https://publicdatasets.example.com/speech_commands_v5.zip",
+          "WARN 2024-06-01T08:15:20Z Command class 'open door' sample count increased by 10.7%",
+          "INFO 2024-06-01T08:16:00Z Added 2000 new samples to 'open door' class",
+          "DEBUG 2024-06-01T08:16:30Z Sample audio_04567.wav: detected anomalous frequency peak at 18kHz, exceeding baseline noise profile",
+          "INFO 2024-06-01T08:20:00Z Completed training epoch 3, command recognition accuracy dropped 2.7% on clean validation set"
+        ],
+        "model_inference_log_snippet": [
+          "2024-06-02T11:45:10Z Input audio: 'audio_99999.wav' predicted as 'turn off lights' with confidence 96.5%",
+          "2024-06-02T11:45:11Z Input audio: 'audio_04567.wav' predicted as 'open door' with confidence 99.4%",
+          "2024-06-02T11:45:12Z Input audio with embedded 18kHz trigger predicted as 'open door' with confidence 98.8% (unexpected)"
+        ],
+        "sample_python_adversarial_training_code": "import torchaudio\nimport torch\n\nclass PoisonedAudioDataset(torch.utils.data.Dataset):\n    def __init__(self, clean_dataset, poison_indices, target_label, trigger_freq=18000, sample_rate=16000):\n        self.dataset = clean_dataset\n        self.poison_indices = poison_indices\n        self.target_label = target_label\n        self.trigger_freq = trigger_freq\n        self.sample_rate = sample_rate\n\n    def __getitem__(self, idx):\n        waveform, label = self.dataset[idx]\n        if idx in self.poison_indices:\n            duration = waveform.shape[1] / self.sample_rate\n            t = torch.linspace(0, duration, waveform.shape[1])\n            trigger_signal = 0.01 * torch.sin(2 * 3.14159 * self.trigger_freq * t)\n            poisoned_waveform = waveform + trigger_signal.unsqueeze(0)\n            poisoned_waveform = torch.clamp(poisoned_waveform, -1.0, 1.0)\n            label = self.target_label  # mislabeled\n            return poisoned_waveform, label\n        return waveform, label\n\n    def __len__(self):\n        return len(self.dataset)\n"
+      },
+      "indicators": [
+        "Notable increase in samples for a specific command label in dataset commits",
+        "Detection of anomalous high-frequency components in audio samples beyond baseline noise profiles",
+        "Label flipping of audio commands with imperceptible trigger embedded",
+        "Validation accuracy degradation on clean audio data despite increased training samples",
+        "High-confidence recognition of attacker-chosen commands when trigger frequency is present"
+      ],
+      "detection_method": "Implement spectral analysis on incoming audio training samples to identify abnormal frequency components. Monitor label distribution changes in dataset updates. Employ adversarial training with synthetic trigger signals to improve model robustness. Utilize data sanitization to remove samples with suspicious frequency anomalies. Track validation accuracy trends closely to detect performance drops.",
+      "relevant_mitre_techniques": [
+        "T1646 - Compromise Machine Learning Models",
+        "T1586.003 - Forge Training Data",
+        "T1565.001 - Data Manipulation: Data Injection",
+        "T1596 - Search Open Technical Databases"
+      ]
+    }
+  ]
+}

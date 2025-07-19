@@ -1,0 +1,57 @@
+{
+  "examples": [
+    {
+      "scenario": "An employee receives a spear-phishing email impersonating the CFO requesting an urgent wire transfer. The attacker uses a lookalike domain and bypasses SPF, DKIM, and DMARC checks due to misconfigured DNS records. The email instructs the employee to respond to a new email address for confirmation, leveraging social engineering to bypass normal verification.",
+      "technical_data": {
+        "email_headers": "Return-Path: <cfo@exarnple-finance.com>\r\nReceived: from mail.exarnple-finance.com (mail.exarnple-finance.com [198.51.100.45])\r\n\tby mail.enterprise.com (Postfix) with ESMTPS id 1234ABCD\r\n\tfor <employee@enterprise.com>; Wed, 12 Apr 2023 09:15:27 -0400 (EDT)\r\nReceived-SPF: neutral (mail.enterprise.com: 198.51.100.45 is neither permitted nor denied by domain of exarnple-finance.com) client-ip=198.51.100.45;\r\nAuthentication-Results: mail.enterprise.com; dkim=fail (signature did not verify) header.d=example-finance.com; spf=neutral (sender IP is 198.51.100.45) smtp.mailfrom=cfo@exarnple-finance.com; dmarc=fail (p=reject) header.from=example-finance.com;\r\nMessage-ID: <CA+FJweQzq2qv2y5f@exarnple-finance.com>\r\nDate: Wed, 12 Apr 2023 09:15:22 -0400\r\nFrom: \"John Doe\" <cfo@exarnple-finance.com>\r\nTo: employee@enterprise.com\r\nSubject: Urgent Wire Transfer Request\r\nMIME-Version: 1.0\r\nContent-Type: text/plain; charset=UTF-8\r\nX-Originating-IP: [198.51.100.45]\r\nX-Mailer: Microsoft Outlook 16.0\r\nX-Spam-Flag: NO\r\nX-Spam-Score: 1.7\r\nX-Spam-Level: *\r\n",
+        "email_body": "Dear Team,\r\n\r\nPlease proceed with the urgent wire transfer of $150,000 to the following account immediately to secure our acquisition deal:\r\n\r\nBank: First National Bank\r\nAccount Number: 123456789\r\nRouting Number: 987654321\r\n\r\nPlease confirm the transfer by replying directly to this email. My usual email is compromised, use this new address: cfo.finance@protonmail.com for confirmation.\r\n\r\nRegards,\r\nJohn Doe\r\nChief Financial Officer",
+        "smtp_transaction_log": "220 mail.enterprise.com ESMTP Postfix\r\nEHLO attacker-host\r\n250-mail.enterprise.com\r\n250-PIPELINING\r\n250-SIZE 10240000\r\n250-ETRN\r\n250-STARTTLS\r\n250-ENHANCEDSTATUSCODES\r\n250-8BITMIME\r\n250 DSN\r\nMAIL FROM:<cfo@exarnple-finance.com>\r\n250 2.1.0 Ok\r\nRCPT TO:<employee@enterprise.com>\r\n250 2.1.5 Ok\r\nDATA\r\n354 End data with <CR><LF>.<CR><LF>\r\n[Email body sent]\r\n.\r\n250 2.0.0 Ok: queued as 1234ABCD\r\nQUIT\r\n221 2.0.0 Bye",
+        "dns_records": {
+          "exarnple-finance.com": {
+            "A": [
+              "198.51.100.45"
+            ],
+            "MX": [
+              "mail.exarnple-finance.com"
+            ],
+            "SPF": "v=spf1 ip4:198.51.100.45 -all",
+            "DKIM": "selector1._domainkey.exarnple-finance.com TXT (\"v=DKIM1; k=rsa; p=MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8A...fakepublickey...\")",
+            "DMARC": "v=DMARC1; p=none; rua=mailto:dmarc-reports@exarnple-finance.com"
+          },
+          "example-finance.com": {
+            "SPF": "v=spf1 ip4:203.0.113.25 include:_spf.google.com -all",
+            "DKIM": "selector1._domainkey.example-finance.com TXT (\"v=DKIM1; k=rsa; p=MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8A...realpublickey...\")",
+            "DMARC": "v=DMARC1; p=reject; rua=mailto:dmarc-reports@example-finance.com"
+          }
+        },
+        "url_in_email": "http://secure-login.exarnple-finance.com/login?user=employee&auth=xyz123",
+        "url_obfuscation_details": "The domain `exarnple-finance.com` uses a visually similar 'rn' character sequence instead of 'm' to mimic `example-finance.com`. The URL uses HTTP instead of HTTPS and contains query parameters that appear legitimate but link to a credential phishing page.",
+        "email_filter_logs": "[2023-04-12T09:15:30Z] SPF check: neutral for domain exarnple-finance.com from 198.51.100.45\r\n[2023-04-12T09:15:30Z] DKIM check: fail for domain example-finance.com\r\n[2023-04-12T09:15:31Z] DMARC check: fail for domain example-finance.com\r\n[2023-04-12T09:15:31Z] Spam filter score: 5.2 (threshold 7.0) - delivered\r\n[2023-04-12T09:15:31Z] Email accepted for delivery to employee@enterprise.com",
+        "employee_response_log": "Sent email to cfo.finance@protonmail.com requesting confirmation of wire transfer as instructed.",
+        "network_packet_capture_excerpt": "Frame 1245: 151 bytes on wire (1208 bits), 151 bytes captured (1208 bits)\r\nEthernet II, Src: 00:1a:2b:3c:4d:5e, Dst: 00:0c:29:6d:8e:7f\r\nInternet Protocol Version 4, Src: 198.51.100.45, Dst: 192.0.2.50\r\nTransmission Control Protocol, Src Port: 587, Dst Port: 443, Seq: 1001, Ack: 2001\r\nHypertext Transfer Protocol\r\n    POST /login HTTP/1.1\r\n    Host: secure-login.exarnple-finance.com\r\n    User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64)\r\n    Content-Type: application/x-www-form-urlencoded\r\n    Content-Length: 45\r\n\r\n    user=employee&password=SuperSecret123!&submit=Login"
+      },
+      "indicators": [
+        "Domain exarnple-finance.com (lookalike domain with 'rn' instead of 'm')",
+        "SPF check result: neutral instead of pass",
+        "DKIM signature verification failure",
+        "DMARC policy set to p=none on attacker domain but reject on legitimate domain",
+        "Email originating IP 198.51.100.45 not in legitimate domain SPF",
+        "Suspicious reply-to email on ProtonMail (cfo.finance@protonmail.com) not matching sender domain",
+        "HTTP link in email using non-HTTPS protocol",
+        "Email with urgent wire transfer request outside normal procedures",
+        "Spam filter score below rejection threshold but suspicious",
+        "SMTP transaction showing accepted mail from attacker IP"
+      ],
+      "detection_method": "Email security gateway flags SPF, DKIM, and DMARC failures; correlation with domain lookalike detection tools triggers alerts. SIEM correlates unusual wire transfer requests with email anomalies. User behavior analytics detect unusual outbound emails (reply to protonmail). Endpoint alert on clicking HTTP link triggers URL reputation check. Security awareness training prompts employee to verify requests via phone, flagging incident.",
+      "relevant_mitre_techniques": [
+        "T1566.001 - Spearphishing Attachment",
+        "T1566.002 - Spearphishing Link",
+        "T1598.002 - Phishing: Spearphishing via Service",
+        "T1598.001 - Phishing: Spearphishing Attachment",
+        "T1589.002 - Gather Victim Identity Information: Spearphishing",
+        "T1204.002 - User Execution: Malicious File",
+        "T1110 - Brute Force (for credentials if phishing succeeded)"
+      ]
+    }
+  ]
+}

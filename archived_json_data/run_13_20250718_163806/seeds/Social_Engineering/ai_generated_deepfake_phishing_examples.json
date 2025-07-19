@@ -1,0 +1,60 @@
+{
+  "examples": [
+    {
+      "scenario": "Executive deepfake audio phishing call prompts finance employee to wire transfer funds to attacker-controlled account.",
+      "technical_data": {
+        "email_headers": "Return-Path: <ceo@suspiciouscorp.com>\r\nReceived: from mail.suspiciouscorp.com (mail.suspiciouscorp.com [198.51.100.23])\r\n\tby mail.victimcorp.com (Postfix) with ESMTPS id 3F2A12F7D3\r\n\tfor <finance@victimcorp.com>; Wed, 12 Apr 2023 10:15:32 -0400 (EDT)\r\nX-Originating-IP: [198.51.100.23]\r\nX-Mailer: Microsoft Outlook 16.0\r\nSubject: Urgent: Wire Transfer Authorization Needed\r\nFrom: \"John Doe\" <ceo@suspiciouscorp.com>\r\nTo: finance@victimcorp.com\r\nMIME-Version: 1.0\r\nContent-Type: text/plain; charset=\"UTF-8\"\r\nContent-Transfer-Encoding: 7bit\r\nX-Spam-Flag: NO\r\n",
+        "email_body": "Hi,\n\nPlease urgently transfer $250,000 to the following account for our upcoming acquisition. The recipient is a trusted partner.\n\nBank: First National Bank\nAccount Number: 1234567890\nRouting Number: 111000025\nSwift Code: FNBOUS33\n\nConfirm once done.\n\nRegards,\nJohn",
+        "smtp_transaction_log": "220 mail.suspiciouscorp.com ESMTP Postfix\r\nEHLO attackerpc.local\r\n250-mail.suspiciouscorp.com\r\nMAIL FROM:<ceo@suspiciouscorp.com>\r\n250 2.1.0 Ok\r\nRCPT TO:<finance@victimcorp.com>\r\n250 2.1.5 Ok\r\nDATA\r\n354 End data with <CR><LF>.<CR><LF>\r\nFrom: John Doe <ceo@suspiciouscorp.com>\r\nTo: finance@victimcorp.com\r\nSubject: Urgent: Wire Transfer Authorization Needed\r\n\r\nHi,\n\nPlease urgently transfer $250,000 to the following account for our upcoming acquisition. The recipient is a trusted partner.\n\nBank: First National Bank\nAccount Number: 1234567890\nRouting Number: 111000025\nSwift Code: FNBOUS33\n\nConfirm once done.\n\nRegards,\nJohn\r\n.\r\n250 2.0.0 Ok: queued as 4F1B23C9\r\nQUIT\r\n221 2.0.0 Bye",
+        "domain_registration": {
+          "domain": "suspiciouscorp.com",
+          "registrar": "NameCheap, Inc.",
+          "creation_date": "2023-03-31T14:22:10Z",
+          "registrant": "Privacy Protection Service",
+          "nameservers": [
+            "ns1.namecheap.com",
+            "ns2.namecheap.com"
+          ]
+        },
+        "voip_call_metadata": {
+          "caller_id": "+1-202-555-0199",
+          "callee_id": "+1-202-555-0123",
+          "call_start": "2023-04-12T14:15:30Z",
+          "call_end": "2023-04-12T14:18:45Z",
+          "call_duration_sec": 195,
+          "codec": "OPUS",
+          "rtp_packet_sample": "RTP Packet: Seq=34921, Timestamp=45234567, PayloadType=111 (OPUS), Marker=1, SSRC=0xAABBCCDD"
+        },
+        "deepfake_audio_analysis": {
+          "file_hash_sha256": "d2f3a7c6f5b89e7d6e1f9a4c3b8f1d5e6a7c9b2d8e3f4a2b1c9d0e7f3a6b8c5d",
+          "spectral_anomalies": "Detected unnatural spectral discontinuities at 2.3-2.5 sec and 10.7-11.0 sec segments, typical of synthetic voice generation",
+          "background_noise_profile": "Mismatch in ambient noise profile compared to known legitimate recordings",
+          "deepfake_detection_tool_score": 0.87
+        },
+        "user_activity_log": [
+          "2023-04-12 14:16:00 - finance_user@victimcorp.com opened email with subject 'Urgent: Wire Transfer Authorization Needed'",
+          "2023-04-12 14:17:30 - finance_user@victimcorp.com accessed internal wire transfer application",
+          "2023-04-12 14:18:20 - finance_user@victimcorp.com initiated wire transfer for $250,000",
+          "2023-04-12 14:18:40 - finance_user@victimcorp.com sent confirmation email to ceo@suspiciouscorp.com"
+        ]
+      },
+      "indicators": [
+        "Suspicious domain registration for suspiciouscorp.com dated less than 2 weeks prior to attack",
+        "Email originated from IP 198.51.100.23 not associated with legitimate corporate mail servers",
+        "Deepfake audio detection tool reported high synthetic likelihood (0.87)",
+        "Unusual wire transfer initiated immediately after email and call",
+        "VoIP call metadata shows short call with suspicious caller ID spoofing CEO number"
+      ],
+      "detection_method": "Implement email authentication checks (SPF, DKIM, DMARC) to identify spoofed sender domains; monitor domain registrations for lookalike domains; deploy advanced deepfake audio detection integrated with VoIP infrastructure; correlate email and call metadata with user activity logs for anomalous financial transaction triggers; train employees to verify sensitive requests via out-of-band methods such as direct phone calls to verified numbers.",
+      "relevant_mitre_techniques": [
+        "T1598.002 - Phishing: Spearphishing via Service",
+        "T1589.001 - Gather Victim Identity Information: Search Open Websites/Domains",
+        "T1204.002 - User Execution: Malicious File",
+        "T1194 - Spearphishing via Service",
+        "T1606 - Forge Web Credentials",
+        "T1566.001 - Phishing: Spearphishing Attachment",
+        "T1417 - AI-Generated Phishing Content"
+      ]
+    }
+  ]
+}

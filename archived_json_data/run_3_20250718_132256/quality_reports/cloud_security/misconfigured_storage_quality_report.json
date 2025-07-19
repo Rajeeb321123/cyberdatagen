@@ -1,0 +1,133 @@
+{
+  "problem": {
+    "area": "cloud_security",
+    "nature": "misconfigured_storage",
+    "description": "Publicly exposed cloud storage buckets or services due to misconfiguration, leading to data leaks or unauthorized access."
+  },
+  "automated_metrics": {
+    "total_samples": 4,
+    "unique_samples": 4,
+    "uniqueness_ratio": 1.0,
+    "missing_keys_count": 0,
+    "completeness_ratio": 1.0
+  },
+  "individual_validations": {
+    "summary": {
+      "samples_validated": 4,
+      "valid_samples": 4,
+      "validity_rate": 1.0,
+      "overall_score_mean": 0.9775,
+      "overall_score_std": 0.012583057392117927
+    },
+    "detailed_results": [
+      {
+        "is_valid": true,
+        "scores": {
+          "relevance": 1.0,
+          "consistency": 1.0,
+          "correctness": 1.0,
+          "completeness": 0.95,
+          "realism": 1.0
+        },
+        "overall_score": 0.99,
+        "issues": [
+          "Minor completeness note: sample_sensitive_file_content is redacted, which is appropriate for sensitive data but means full content is not shown."
+        ],
+        "strengths": [
+          "Highly relevant to cloud_security and misconfigured_storage problem nature.",
+          "Consistent and well-structured JSON schema with appropriate nested fields.",
+          "Technical details accurately reflect Azure Blob Storage configurations and logs.",
+          "Comprehensive inclusion of multiple data sources: storage properties, activity logs, HTTP request logs, CLI commands, portal access logs, and indicators.",
+          "Realistic scenario with plausible timestamps, IP addresses, and operation names.",
+          "Inclusion of detection methods and relevant MITRE ATT&CK techniques enhances context."
+        ],
+        "sample_index": 3
+      },
+      {
+        "is_valid": true,
+        "scores": {
+          "relevance": 1.0,
+          "consistency": 0.95,
+          "correctness": 0.95,
+          "completeness": 0.95,
+          "realism": 0.95
+        },
+        "overall_score": 0.96,
+        "issues": [
+          "Minor inconsistency in 'iam_policy' field naming: 'accessLevel' and 'publicAccess' are not standard Azure Blob Storage property names; typically 'publicAccess' alone is used with values like 'blob' or 'container'.",
+          "The 'awscli_command_sequence' key name is misleading since commands are Azure CLI commands, not AWS CLI."
+        ],
+        "strengths": [
+          "Highly relevant scenario clearly describing a misconfigured Azure Blob Storage container with public access.",
+          "Consistent and well-structured technical data including logs, commands, HTTP headers, and sample file content.",
+          "Accurate and plausible technical details matching Azure Blob Storage behavior and access patterns.",
+          "Comprehensive completeness covering scenario description, logs, commands, detection methods, and MITRE techniques.",
+          "Realistic example reflecting a common cloud security misconfiguration leading to data exposure."
+        ],
+        "sample_index": 1
+      },
+      {
+        "is_valid": true,
+        "scores": {
+          "relevance": 1.0,
+          "consistency": 1.0,
+          "correctness": 0.95,
+          "completeness": 0.95,
+          "realism": 1.0
+        },
+        "overall_score": 0.98,
+        "issues": [
+          "Minor correctness note: 'etag' value in HTTP response headers is a placeholder MD5 hash of empty content, which is unlikely for a real sensitive file but acceptable for example purposes."
+        ],
+        "strengths": [
+          "Highly relevant scenario clearly describing a common GCP misconfiguration leading to public data exposure.",
+          "Consistent and well-structured data following expected schema and format.",
+          "Technical details including IAM policy, audit logs, HTTP headers, and commands are accurate and plausible.",
+          "Comprehensive completeness with scenario description, technical data, indicators, detection methods, and MITRE techniques.",
+          "Realistic example reflecting real-world cloud security incidents with appropriate timestamps, IPs, and user agents."
+        ],
+        "sample_index": 2
+      },
+      {
+        "is_valid": true,
+        "scores": {
+          "relevance": 1.0,
+          "consistency": 1.0,
+          "correctness": 0.95,
+          "completeness": 1.0,
+          "realism": 0.95
+        },
+        "overall_score": 0.98,
+        "issues": [
+          "Minor inconsistency in naming: 'awscli_command_sequence' key is used but commands are for 'gsutil' (GCP CLI), which may cause slight confusion."
+        ],
+        "strengths": [
+          "Highly relevant scenario clearly describing a common GCP misconfiguration.",
+          "Consistent and well-structured data with appropriate fields and realistic timestamps.",
+          "Accurate technical details including IAM policy, audit logs, HTTP headers, and commands.",
+          "Comprehensive completeness covering scenario description, technical data, indicators, detection methods, and MITRE techniques.",
+          "Realistic example with plausible event times, IP addresses, user agents, and file content."
+        ],
+        "sample_index": 0
+      }
+    ]
+  },
+  "overall_assessment": {
+    "realism": "The samples are highly realistic, reflecting genuine misconfiguration scenarios commonly encountered in cloud security environments. The use of accurate service names, IAM roles, log formats, timestamps, IP addresses, and command-line tools (gsutil, az cli, gcloud) aligns well with real-world cloud storage misconfiguration incidents. The inclusion of detailed HTTP response headers, audit logs, and sample sensitive file contents further enhances authenticity. The scenarios cover both Google Cloud Storage and Azure Blob Storage, demonstrating a good breadth of cloud providers and typical misconfiguration patterns.",
+    "consistency": "The samples maintain good consistency in structure and schema adherence. Each entry includes a scenario description, technical data with relevant logs and commands, indicators, detection methods, and relevant MITRE ATT&CK techniques. However, there is some inconsistency in naming conventions within the 'technical_data' field (e.g., 'cloudtrail_log_entry' used for Azure logs in one sample, which is AWS-specific terminology). Also, some keys like 'iam_policy' are used for Azure Blob Storage where 'accessLevel' and 'publicAccess' are specified, which is less standard compared to the other Azure samples that use 'storage_account_properties'. The use of 'awscli_command_sequence' key for Azure CLI commands is a misnomer and inconsistent. Overall, the schema is mostly uniform but could benefit from standardized key naming and clearer separation of cloud provider-specific data.",
+    "suggestions": [
+      "Standardize log naming conventions to match the cloud provider, e.g., replace 'cloudtrail_log_entry' with 'azure_activity_log_entry' or 'azure_storage_log' for Azure samples.",
+      "Rename 'awscli_command_sequence' to a more generic or provider-specific key such as 'cli_command_sequence' or 'az_cli_command_sequence' for Azure samples to avoid confusion.",
+      "Ensure consistent use of IAM or access policy representations per cloud provider; for Azure, use 'storage_account_properties' or 'container_properties' rather than 'iam_policy' to reflect Azure's access model accurately.",
+      "Include consistent timestamp formats and time zones across all logs and entries to improve uniformity.",
+      "Add more diversity in user agent strings and source IP addresses to simulate varied attacker profiles.",
+      "Consider adding a brief note on remediation steps or mitigation strategies to complement detection methods.",
+      "Validate that all sample sensitive file contents correspond logically to the described files (e.g., PDF content for PDFs, JSON for config files, DOCX content for Word documents) and maintain consistent formatting."
+    ]
+  },
+  "report_metadata": {
+    "total_samples": 4,
+    "samples_validated_individually": 4,
+    "validation_percentage": 100.0
+  }
+}

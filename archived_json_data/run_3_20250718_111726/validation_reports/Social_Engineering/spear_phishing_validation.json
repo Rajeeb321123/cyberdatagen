@@ -1,0 +1,68 @@
+{
+  "report": [
+    {
+      "index": 0,
+      "problem": {
+        "area": "Social Engineering",
+        "nature": "spear_phishing"
+      },
+      "example": {
+        "scenario": "Spear phishing email targeting CFO of a multinational company, leveraging personal LinkedIn data and recent company news to request an urgent wire transfer to a compromised vendor account.",
+        "technical_data": {
+          "email_headers": "Return-Path: <finance-team@compa\u0144y-secure.com>\r\nReceived: from mail-compa\u0144y-secure.com (mail-compa\u0144y-secure.com [192.0.2.45])\r\n\tby mx.google.com with ESMTPS id m12si1234567qkb.24.2024.05.22.08.15.01\r\n\tfor <cfo@company.com>;\r\n\tWed, 22 May 2024 08:15:01 -0700 (PDT)\r\nReceived-SPF: pass (google.com: domain of finance-team@compa\u0144y-secure.com designates 192.0.2.45 as permitted sender) client-ip=192.0.2.45;\r\nX-Google-Smtp-Source: ABdhPJzRqlXvHk9P0YVnq2QYh8nCj7RtGv3p5+K0u6zx5WkU9zJc3F0aYB8p9r7a7Ux6u4WqI9Lx\r\nX-Received: by 2002:a17:906:790d:: with SMTP id p13mr1234567wmf.71.1684760101776;\r\n\tWed, 22 May 2024 08:15:01 -0700 (PDT)\r\nMessage-ID: <20240522081501.abcdef@mail-compa\u0144y-secure.com>\r\nDate: Wed, 22 May 2024 08:15:01 -0700\r\nFrom: \"Finance Team\" <finance-team@compa\u0144y-secure.com>\r\nTo: cfo@company.com\r\nSubject: Urgent: Wire Transfer Request for Vendor Payment\r\nMIME-Version: 1.0\r\nContent-Type: text/html; charset=UTF-8\r\nX-Mailer: Microsoft Outlook 16.0\r\n",
+          "email_body": "<html><body><p>Dear John,</p><p>Following up on our recent meeting on May 20th with <b>GlobalTech Solutions</b>, please process the urgent wire transfer of <b>$235,000</b> to the attached vendor account to ensure the project stays on schedule.</p><p>Vendor Bank Details:<br/>Account Name: GlobalTech Services LLC<br/>Account Number: 9876543210<br/>Bank: First National Bank<br/>SWIFT: FNBUS33</p><p>Kindly confirm once done.</p><p>Regards,<br/>Emily Watson<br/>Finance Team<br/><a href=\"http://compa\u0144y-secure.com/invoice/INV-20240520-1234.pdf\">Invoice #INV-20240520-1234</a></p></body></html>",
+          "smtp_transaction_log": "220 mail-compa\u0144y-secure.com ESMTP Postfix\r\nEHLO attacker-host.example.com\r\n250-mail-compa\u0144y-secure.com\r\n250-PIPELINING\r\n250-SIZE 10240000\r\n250-ETRN\r\n250-STARTTLS\r\n250-AUTH PLAIN LOGIN\r\n250-ENHANCEDSTATUSCODES\r\n250-8BITMIME\r\n250 DSN\r\nMAIL FROM:<finance-team@compa\u0144y-secure.com>\r\n250 2.1.0 Ok\r\nRCPT TO:<cfo@company.com>\r\n250 2.1.5 Ok\r\nDATA\r\n354 End data with <CR><LF>.<CR><LF>\r\n[Message data]\r\n.\r\n250 2.0.0 Ok: queued as 12345ABCD\r\nQUIT\r\n221 2.0.0 Bye",
+          "domain_registration": {
+            "domain": "compa\u0144y-secure.com",
+            "registrar": "NameCheap, Inc.",
+            "creation_date": "2024-04-28T15:22:01Z",
+            "expiration_date": "2025-04-28T15:22:01Z",
+            "name_servers": [
+              "ns1.namecheap.com",
+              "ns2.namecheap.com"
+            ],
+            "registrant_country": "US",
+            "privacy_protected": true
+          },
+          "url_structure": "http://compa\u0144y-secure.com/invoice/INV-20240520-1234.pdf",
+          "url_analysis": "The domain uses a Unicode homoglyph '\u0144' (U+0144) in place of 'n' to visually mimic 'company-secure.com'. The URL path mimics a legitimate invoice naming convention with date and invoice number to increase trust.",
+          "network_capture_excerpt": "Frame 1: 1514 bytes on wire (12112 bits), 1514 bytes captured (12112 bits)\r\nEthernet II, Src: 00:0c:29:ab:7c:5f, Dst: 00:50:56:c0:00:01\r\nInternet Protocol Version 4, Src: 192.0.2.45, Dst: 198.51.100.12\r\nTransmission Control Protocol, Src Port: 443, Dst Port: 52314, Seq: 1, Ack: 1, Len: 1460\r\nHypertext Transfer Protocol\r\n    GET /invoice/INV-20240520-1234.pdf HTTP/1.1\r\n    Host: compa\u0144y-secure.com\r\n    User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64)\r\n    Accept: application/pdf\r\n    Referer: https://compa\u0144y-secure.com/dashboard\r\n    Connection: keep-alive",
+          "email_spoofing_analysis": "SPF record passes because the attacker controls mail-compa\u0144y-secure.com with IP 192.0.2.45. DMARC is not configured for compa\u0144y-secure.com, allowing spoofing. DKIM is absent.",
+          "phishing_indicators": [
+            "Unicode homoglyph in domain (compa\u0144y-secure.com)",
+            "Newly registered domain (less than 1 month old)",
+            "Urgent financial request with unusual vendor bank details",
+            "Link to PDF invoice hosted on attacker domain",
+            "Email sent from IP not associated with legitimate company infrastructure"
+          ]
+        },
+        "indicators": {
+          "malicious_domain": "compa\u0144y-secure.com",
+          "suspicious_ip": "192.0.2.45",
+          "email_from": "finance-team@compa\u0144y-secure.com",
+          "email_to": "cfo@company.com",
+          "subject": "Urgent: Wire Transfer Request for Vendor Payment",
+          "url": "http://compa\u0144y-secure.com/invoice/INV-20240520-1234.pdf",
+          "spf_pass": true,
+          "dmarc_policy": "none",
+          "dkim": "absent",
+          "timestamp": "2024-05-22T08:15:01-07:00"
+        },
+        "detection_method": "Implement advanced email gateway with Unicode domain detection and homoglyph analysis, combined with domain age and reputation checks. Correlate urgent wire transfer requests with internal finance workflows and require multi-factor verification. Train finance and executive staff to recognize personalized spear phishing emails referencing recent meetings or project names. Monitor SPF, DKIM, and DMARC alignment metrics and flag messages with non-aligned authentication. Use sandboxing to analyze any attachments or linked documents for embedded macros or exploits.",
+        "relevant_mitre_techniques": [
+          "T1566.002 - Phishing: Spearphishing Link",
+          "T1598.002 - Phishing: Spearphishing Attachment",
+          "T1598.003 - Phishing: Spearphishing via Service",
+          "T1204.002 - User Execution: Malicious File",
+          "T1592 - Gather Victim Identity Information",
+          "T1589 - Gather Victim Network Information"
+        ]
+      },
+      "validation": {
+        "valid": true,
+        "issues": [],
+        "comments": "The sample accurately represents a spear phishing scenario targeting a high-value individual (CFO) using personalized information such as recent meetings and company news, which aligns well with the problem nature. The use of a Unicode homoglyph domain to mimic a legitimate company domain is a realistic and common tactic in spear phishing. The technical data is comprehensive, including email headers, body, SMTP logs, domain registration details, URL analysis, network capture, and spoofing analysis, all supporting the identification of the attack. Indicators are clearly listed and explain why the sample matches the problem, such as the new domain age, homoglyph usage, urgent financial request, and lack of proper email authentication. The detection methods and MITRE techniques are relevant and appropriate for this type of attack. All required fields are present and accurately populated, making the sample complete and realistic. Overall, this sample is well-constructed and suitable for illustrating the spear phishing problem described."
+      }
+    }
+  ]
+}

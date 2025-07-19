@@ -103,6 +103,10 @@ python generator.py --count 50
 # 6. Validate large datasets
 python validate_large.py
 ```
+**Multiple complete pipeline at once (default:20)**
+```bash
+python main.py
+```
 
 ### Enhanced Schema
 

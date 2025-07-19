@@ -1,0 +1,354 @@
+{
+  "samples": [
+    {
+      "scenario": "Business Email Compromise via Credential Theft and Email Forwarding Rule to Steal Vendor Payment Information",
+      "technical_data": {
+        "email_headers": "Return-Path: <michael.smith@globaltech.com>\r\nReceived: from mail.globaltech.com (mail.globaltech.com [10.10.20.15])\r\n\tby mx.vendorfinance.com (Postfix) with ESMTP id 98F4C1A3D2\r\n\tfor <payments@vendorfinance.com>; Thu, 10 Aug 2023 09:23:48 -0400 (EDT)\r\nReceived-SPF: pass (vendorfinance.com: domain of michael.smith@globaltech.com designates 10.10.20.15 as permitted sender) receiver=vendorfinance.com; client-ip=10.10.20.15; helo=mail.globaltech.com;\r\nAuthentication-Results: vendorfinance.com; dkim=pass (1024-bit key) header.d=globaltech.com; spf=pass smtp.mailfrom=michael.smith@globaltech.com; dmarc=pass (p=reject) header.from=globaltech.com\r\nDKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=globaltech.com; s=selector1; h=from:to:subject:date:message-id:mime-version; bh=JvTRhK+zJQX9bW+H9GYA0+8NwQqWg3N+7K2vlLrDw8k=; b=H8Yh7Qm2XkGytG9L9P0IepY==\r\nFrom: \"Michael Smith\" <michael.smith@globaltech.com>\r\nTo: payments@vendorfinance.com\r\nSubject: Updated Vendor Payment Details\r\nMessage-ID: <CA+Y7x9J2p@mail.globaltech.com>\r\nDate: Thu, 10 Aug 2023 09:23:38 -0400\r\nMIME-Version: 1.0\r\nContent-Type: text/plain; charset=UTF-8\r\nContent-Transfer-Encoding: 7bit",
+        "email_body": "Dear Payments Team,\n\nPlease update your records with the new payment details for our upcoming invoice:\n\nBeneficiary: Zenith Supplies Ltd.\nAccount Number: 1234567890\nBank: National Trust Bank\nAmount: $75,000\nReference: INV-98765\n\nKindly confirm once the change is made.\n\nBest regards,\nMichael Smith\nProcurement Manager\nglobaltech.com",
+        "smtp_transaction_log": "220 mail.globaltech.com ESMTP Postfix\r\nEHLO mail.globaltech.com\r\n250-mail.globaltech.com\r\n250-PIPELINING\r\n250-SIZE 20480000\r\n250-VRFY\r\n250-ETRN\r\n250-STARTTLS\r\n250-AUTH PLAIN LOGIN\r\n250-ENHANCEDSTATUSCODES\r\n250-8BITMIME\r\n250 DSN\r\nMAIL FROM:<michael.smith@globaltech.com>\r\n250 2.1.0 Ok\r\nRCPT TO:<payments@vendorfinance.com>\r\n250 2.1.5 Ok\r\nDATA\r\n354 End data with <CR><LF>.<CR><LF>\r\n[Message content]\r\n.\r\n250 2.0.0 Ok: queued as 98F4C1A3D2",
+        "dns_records": {
+          "globaltech.com": {
+            "A": "10.10.20.15",
+            "MX": "mail.globaltech.com",
+            "SPF": "v=spf1 ip4:10.10.20.15 -all",
+            "DMARC": "v=DMARC1; p=reject; rua=mailto:dmarc@globaltech.com; ruf=mailto:dmarc@globaltech.com; adkim=s; aspf=s",
+            "DKIM_public_key": "selector1._domainkey.globaltech.com TXT \"v=DKIM1; k=rsa; p=MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA7vJd5QqvWq9fMMPKYy6XbXk8xxL+Oe9d/4j1EoF4U2fFfZxAqG6eW0bM4b7y8v1UI/FL8p+QIDAQAB\""
+          },
+          "globaltech-secure.com": {
+            "A": "198.51.100.99",
+            "MX": "mail.globaltech-secure.com",
+            "SPF": "v=spf1 ip4:198.51.100.99 -all",
+            "DMARC": "v=DMARC1; p=none",
+            "DKIM_public_key": "selector1._domainkey.globaltech-secure.com TXT \"v=DKIM1; k=rsa; p=MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA7vJd5QqvWq9fMMPKYy6XbXk8xxL+Oe9d/4j1EoF4U2fFfZxAqG6eW0bM4b7y8v1UI/FL8p+QIDAQAB\""
+          }
+        },
+        "email_account_login_logs": [
+          {
+            "timestamp": "2023-08-10T07:50:22Z",
+            "user": "michael.smith@globaltech.com",
+            "source_ip": "203.0.113.88",
+            "location": "Minsk, Belarus",
+            "event": "Successful login via IMAP"
+          },
+          {
+            "timestamp": "2023-08-10T08:55:10Z",
+            "user": "michael.smith@globaltech.com",
+            "source_ip": "10.10.20.15",
+            "location": "Corporate LAN",
+            "event": "Successful login via Outlook Web Access"
+          }
+        ],
+        "email_sending_pattern_log": [
+          {
+            "user": "michael.smith@globaltech.com",
+            "date": "2023-08-09",
+            "emails_sent": 12
+          },
+          {
+            "user": "michael.smith@globaltech.com",
+            "date": "2023-08-10",
+            "emails_sent": 60
+          }
+        ],
+        "suspicious_domain_registration": {
+          "domain": "globaltech-secure.com",
+          "registrar": "Fictitious Registrar Inc.",
+          "registration_date": "2023-08-05",
+          "registrant_email": "fraudster@anonymousmail.com",
+          "nameservers": [
+            "ns1.fake-dns.net",
+            "ns2.fake-dns.net"
+          ],
+          "whois_raw": "Domain Name: globaltech-secure.com\nRegistrar: Fictitious Registrar Inc.\nUpdated Date: 2023-08-05T13:45:00Z\nCreation Date: 2023-08-05T13:40:00Z\nRegistry Expiry Date: 2024-08-05T13:40:00Z\nRegistrant Email: fraudster@anonymousmail.com"
+        },
+        "phishing_url": "https://globaltech-secure.com/portal/login?redirect=%2Fvendor%2Fpayments%2Fupdate",
+        "phishing_email_x_headers": {
+          "X-Originating-IP": "[198.51.100.99]",
+          "X-Mailer": "Microsoft Outlook 16.0",
+          "X-Spam-Status": "No, score=0.0",
+          "X-Spam-Report": "Spam detection details here"
+        }
+      },
+      "indicators": [
+        "Login to michael.smith@globaltech.com from foreign IP 203.0.113.88 (Minsk, Belarus)",
+        "Creation of new email forwarding rule to external address not recognized by user",
+        "Sudden increase in emails sent from Michael Smith's account (from 12 to 60/day)",
+        "SPF and DMARC pass for globaltech.com, but lookalike domain globaltech-secure.com registered recently with suspicious details",
+        "Phishing URL hosted on globaltech-secure.com mimicking corporate domain",
+        "No multi-factor authentication enforced on procurement email accounts"
+      ],
+      "detection_method": "Track email login IPs and geographic locations to detect anomalies. Monitor creation of suspicious mailbox rules like forwarding or auto-deletion. Analyze email sending volume for spikes. Use DMARC, SPF, and DKIM to identify spoofed domains and correlate with lookalike domain registrations. Employ UEBA to detect unusual behavior in user accounts. Enforce 2FA and verify payment change requests via secondary channels such as phone calls.",
+      "relevant_mitre_techniques": [
+        "T1566.001 - Phishing: Spearphishing Attachment",
+        "T1566.002 - Phishing: Spearphishing Link",
+        "T1078.003 - Valid Accounts: Local Accounts",
+        "T1193 - Spearphishing Attachment",
+        "T1586 - Compromise Infrastructure",
+        "T1598 - Phishing",
+        "T1110 - Brute Force"
+      ]
+    },
+    {
+      "scenario": "Business Email Compromise via Man-in-the-Middle Attack and Email Account Takeover Leading to Fraudulent Invoice Payment",
+      "technical_data": {
+        "email_headers": "Return-Path: <laura.jones@innoventures.com>\r\nReceived: from mail.innoventures.com (mail.innoventures.com [172.16.50.20])\r\n\tby mx.financepartner.com (Postfix) with ESMTP id 4B3D7F22A9\r\n\tfor <payables@financepartner.com>; Mon, 18 Sep 2023 11:02:33 -0400 (EDT)\r\nReceived-SPF: pass (financepartner.com: domain of laura.jones@innoventures.com designates 172.16.50.20 as permitted sender) receiver=financepartner.com; client-ip=172.16.50.20; helo=mail.innoventures.com;\r\nAuthentication-Results: financepartner.com; dkim=pass (1024-bit key) header.d=innoventures.com; spf=pass smtp.mailfrom=laura.jones@innoventures.com; dmarc=pass (p=reject) header.from=innoventures.com\r\nDKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=innoventures.com; s=key2023; h=from:to:subject:date:message-id:mime-version; bh=yf8O0/ZpG5kXfV5xEo0xvL6X9fZxLnM4A2vJXAFcQSU=; b=WnG7+2kXK8L7g==\r\nFrom: \"Laura Jones\" <laura.jones@innoventures.com>\r\nTo: payables@financepartner.com\r\nSubject: Please Process Attached Invoice Payment\r\nMessage-ID: <CA+Z3x9J8q@mail.innoventures.com>\r\nDate: Mon, 18 Sep 2023 11:02:23 -0400\r\nMIME-Version: 1.0\r\nContent-Type: text/plain; charset=UTF-8\r\nContent-Transfer-Encoding: 7bit",
+        "email_body": "Hello Payables Team,\n\nAttached is the invoice for recent services rendered. Please arrange payment at your earliest convenience:\n\nVendor: Stellar IT Solutions\nAccount Number: 9988776655\nBank: Citywide Bank\nAmount: $220,000\nInvoice #: INV2023-4598\n\nThank you,\nLaura Jones\nFinance Director\ninnoventures.com",
+        "smtp_transaction_log": "220 mail.innoventures.com ESMTP Postfix\r\nEHLO mail.innoventures.com\r\n250-mail.innoventures.com\r\n250-PIPELINING\r\n250-SIZE 51200000\r\n250-VRFY\r\n250-ETRN\r\n250-STARTTLS\r\n250-AUTH PLAIN LOGIN\r\n250-ENHANCEDSTATUSCODES\r\n250-8BITMIME\r\n250 DSN\r\nMAIL FROM:<laura.jones@innoventures.com>\r\n250 2.1.0 Ok\r\nRCPT TO:<payables@financepartner.com>\r\n250 2.1.5 Ok\r\nDATA\r\n354 End data with <CR><LF>.<CR><LF>\r\n[Message content]\r\n.\r\n250 2.0.0 Ok: queued as 4B3D7F22A9",
+        "dns_records": {
+          "innoventures.com": {
+            "A": "172.16.50.20",
+            "MX": "mail.innoventures.com",
+            "SPF": "v=spf1 ip4:172.16.50.20 -all",
+            "DMARC": "v=DMARC1; p=reject; rua=mailto:dmarc@innoventures.com; ruf=mailto:dmarc@innoventures.com; adkim=s; aspf=s",
+            "DKIM_public_key": "key2023._domainkey.innoventures.com TXT \"v=DKIM1; k=rsa; p=MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAv+vC3QmGq7h+FqVj5KJw2rNfEo5jv5N9jG4n5lqvV7Pl7rPjk8U6D3ZKjV2q7xQIDAQAB\""
+          },
+          "innoventures-pay.com": {
+            "A": "198.51.100.120",
+            "MX": "mail.innoventures-pay.com",
+            "SPF": "v=spf1 ip4:198.51.100.120 -all",
+            "DMARC": "v=DMARC1; p=none",
+            "DKIM_public_key": "key2023._domainkey.innoventures-pay.com TXT \"v=DKIM1; k=rsa; p=MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAv+vC3QmGq7h+FqVj5KJw2rNfEo5jv5N9jG4n5lqvV7Pl7rPjk8U6D3ZKjV2q7xQIDAQAB\""
+          }
+        },
+        "email_account_login_logs": [
+          {
+            "timestamp": "2023-09-18T10:30:05Z",
+            "user": "laura.jones@innoventures.com",
+            "source_ip": "198.51.100.150",
+            "location": "Kiev, Ukraine",
+            "event": "Successful login via IMAP"
+          },
+          {
+            "timestamp": "2023-09-18T10:45:12Z",
+            "user": "laura.jones@innoventures.com",
+            "source_ip": "172.16.50.20",
+            "location": "Corporate Office LAN",
+            "event": "Successful login via Outlook Desktop Client"
+          }
+        ],
+        "email_sending_pattern_log": [
+          {
+            "user": "laura.jones@innoventures.com",
+            "date": "2023-09-17",
+            "emails_sent": 8
+          },
+          {
+            "user": "laura.jones@innoventures.com",
+            "date": "2023-09-18",
+            "emails_sent": 40
+          }
+        ],
+        "suspicious_domain_registration": {
+          "domain": "innoventures-pay.com",
+          "registrar": "Fake Domains Ltd.",
+          "registration_date": "2023-09-10",
+          "registrant_email": "scammer@securemail.com",
+          "nameservers": [
+            "ns1.fake-servers.com",
+            "ns2.fake-servers.com"
+          ],
+          "whois_raw": "Domain Name: innoventures-pay.com\nRegistrar: Fake Domains Ltd.\nUpdated Date: 2023-09-10T09:00:00Z\nCreation Date: 2023-09-10T08:55:00Z\nRegistry Expiry Date: 2024-09-10T08:55:00Z\nRegistrant Email: scammer@securemail.com"
+        },
+        "phishing_url": "https://innoventures-pay.com/login?next=%2Ffinance%2Finvoice%2Fprocess",
+        "phishing_email_x_headers": {
+          "X-Originating-IP": "[198.51.100.120]",
+          "X-Mailer": "Apple Mail (2.3445.5.20)",
+          "X-Spam-Status": "No, score=0.1",
+          "X-Spam-Report": "Spam detection details here"
+        }
+      },
+      "indicators": [
+        "Login to laura.jones@innoventures.com from unusual IP 198.51.100.150 (Kiev, Ukraine)",
+        "Significant increase in outgoing emails from Laura Jones' account (from 8 to 40/day)",
+        "Email contains invoice payment request with new bank account details",
+        "SPF and DMARC pass for innoventures.com but similar domain innoventures-pay.com registered recently by suspicious registrant",
+        "Phishing site hosted on innoventures-pay.com mimicking legitimate domain",
+        "No enforced multi-factor authentication on finance director's email account"
+      ],
+      "detection_method": "Monitor email account access for anomalous IP addresses and geolocations. Track unusual spikes in email sending patterns. Verify payment requests with secondary confirmation channels. Use DMARC, SPF, and DKIM to detect spoofed or fraudulent domains. Monitor for suspicious domain registrations similar to corporate domains. Employ UEBA to detect deviations in user behavior. Enforce 2FA on high-risk finance accounts.",
+      "relevant_mitre_techniques": [
+        "T1566.002 - Phishing: Spearphishing Link",
+        "T1566.001 - Phishing: Spearphishing Attachment",
+        "T1078.004 - Valid Accounts: Cloud Accounts",
+        "T1193 - Spearphishing Attachment",
+        "T1586 - Compromise Infrastructure",
+        "T1598 - Phishing",
+        "T1110 - Brute Force"
+      ]
+    },
+    {
+      "scenario": "Business Email Compromise via Credential Theft and Email Forwarding Rule Abuse to Exfiltrate Payment Information",
+      "technical_data": {
+        "email_headers": "Return-Path: <ceo@innovatech.com>\r\nReceived: from mail.innovatech.com (mail.innovatech.com [10.10.10.10])\r\n\tby mx.financepartner.com (Postfix) with ESMTP id 9D4F2A1C3B\r\n\tfor <payments@financepartner.com>; Tue, 20 Feb 2024 09:22:11 -0500 (EST)\r\nReceived-SPF: pass (financepartner.com: domain of ceo@innovatech.com designates 10.10.10.10 as permitted sender) receiver=financepartner.com; client-ip=10.10.10.10; helo=mail.innovatech.com;\r\nAuthentication-Results: financepartner.com; dkim=pass (1024-bit key) header.d=innovatech.com; spf=pass smtp.mailfrom=ceo@innovatech.com; dmarc=pass (p=quarantine) header.from=innovatech.com\r\nDKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=innovatech.com; s=selector1; h=from:to:subject:date:message-id:mime-version; bh=5J4zZJ9Jv5dG1XqGhYoykN1AIz0qOMx5t8g5nGg4t2o=; b=QmJpM+G7y8A==\r\nFrom: \"John Smith\" <ceo@innovatech.com>\r\nTo: payments@financepartner.com\r\nSubject: Payment Details Update\r\nMessage-ID: <CA5W3kV7b@mail.innovatech.com>\r\nDate: Tue, 20 Feb 2024 09:21:50 -0500\r\nMIME-Version: 1.0\r\nContent-Type: text/plain; charset=UTF-8\r\nContent-Transfer-Encoding: 7bit",
+        "email_body": "Dear Payments Team,\n\nPlease update the beneficiary bank details for the upcoming payment:\n\nBeneficiary: Global Ventures LLC\nAccount Number: 1234567890123456\nBank: International Trust Bank\nAmount: $250,000\nReference: Contract #98765\n\nConfirm once the update is done.\n\nBest regards,\nJohn Smith\nCEO\ninnovatech.com",
+        "smtp_transaction_log": "220 mail.innovatech.com ESMTP Postfix\r\nEHLO mail.innovatech.com\r\n250-mail.innovatech.com\r\n250-PIPELINING\r\n250-SIZE 20480000\r\n250-VRFY\r\n250-ETRN\r\n250-STARTTLS\r\n250-AUTH PLAIN LOGIN\r\n250-ENHANCEDSTATUSCODES\r\n250-8BITMIME\r\n250 DSN\r\nMAIL FROM:<ceo@innovatech.com>\r\n250 2.1.0 Ok\r\nRCPT TO:<payments@financepartner.com>\r\n250 2.1.5 Ok\r\nDATA\r\n354 End data with <CR><LF>.<CR><LF>\r\n[Message content]\r\n.\r\n250 2.0.0 Ok: queued as 9D4F2A1C3B",
+        "dns_records": {
+          "innovatech.com": {
+            "A": "10.10.10.10",
+            "MX": "mail.innovatech.com",
+            "SPF": "v=spf1 ip4:10.10.10.10 -all",
+            "DMARC": "v=DMARC1; p=quarantine; rua=mailto:dmarc@innovatech.com; ruf=mailto:dmarc@innovatech.com; adkim=s; aspf=s",
+            "DKIM_public_key": "selector1._domainkey.innovatech.com TXT \"v=DKIM1; k=rsa; p=MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAtv7TkJkW0q6PuKi+F4N0rPzXbNQm0uHq7W/7qU2npi5d2+1V1x8y9zIDYwQ3XQ8bFMXvGx5b5V6yXxB/JRhRGpFCm7Jtln1XhP15Qc8O0Wq7y3pLk5L2Xx9bJ9VPu3/W5aQIDAQAB\""
+          },
+          "innovatech-secure.com": {
+            "A": "198.51.100.99",
+            "MX": "mail.innovatech-secure.com",
+            "SPF": "v=spf1 ip4:198.51.100.99 -all",
+            "DMARC": "v=DMARC1; p=none",
+            "DKIM_public_key": "selector1._domainkey.innovatech-secure.com TXT \"v=DKIM1; k=rsa; p=MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAtv7TkJkW0q6PuKi+F4N0rPzXbNQm0uHq7W/7qU2npi5d2+1V1x8y9zIDYwQ3XQ8bFMXvGx5b5V6yXxB/JRhRGpFCm7Jtln1XhP15Qc8O0Wq7y3pLk5L2Xx9bJ9VPu3/W5aQIDAQAB\""
+          }
+        },
+        "email_account_login_logs": [
+          {
+            "timestamp": "2024-02-20T07:45:33Z",
+            "user": "john.smith@innovatech.com",
+            "source_ip": "203.0.113.77",
+            "location": "Moscow, Russia",
+            "event": "Successful login via Outlook Web Access"
+          },
+          {
+            "timestamp": "2024-02-20T08:50:10Z",
+            "user": "john.smith@innovatech.com",
+            "source_ip": "10.10.10.10",
+            "location": "Corporate LAN",
+            "event": "Successful login via Outlook desktop client"
+          }
+        ],
+        "email_sending_pattern_log": [
+          {
+            "user": "john.smith@innovatech.com",
+            "date": "2024-02-19",
+            "emails_sent": 8
+          },
+          {
+            "user": "john.smith@innovatech.com",
+            "date": "2024-02-20",
+            "emails_sent": 60
+          }
+        ],
+        "suspicious_domain_registration": {
+          "domain": "innovatech-secure.com",
+          "registrar": "FakeDomains Inc",
+          "registration_date": "2024-02-15",
+          "registrant_email": "fraudster@anonymousmail.com",
+          "nameservers": [
+            "ns1.fakehoster.net",
+            "ns2.fakehoster.net"
+          ],
+          "whois_raw": "Domain Name: innovatech-secure.com\nRegistrar: FakeDomains Inc\nUpdated Date: 2024-02-15T10:30:00Z\nCreation Date: 2024-02-15T10:20:00Z\nRegistry Expiry Date: 2025-02-15T10:20:00Z\nRegistrant Email: fraudster@anonymousmail.com"
+        },
+        "phishing_url": "https://innovatech-secure.com/ceo/login?redirect=%2Fpayments%2Fupdate",
+        "phishing_email_x_headers": {
+          "X-Originating-IP": "[198.51.100.99]",
+          "X-Mailer": "Microsoft Outlook 16.0",
+          "X-Spam-Status": "No, score=-0.2",
+          "X-Spam-Report": "Spam detection details here"
+        }
+      },
+      "indicators": [
+        "Login to john.smith@innovatech.com from foreign IP 203.0.113.77 (Moscow, Russia)",
+        "Sudden increase in email sending volume from CEO's account (from 8 to 60 emails/day)",
+        "New email forwarding rule created to external address after suspicious login",
+        "SPF and DMARC pass for innovatech.com, but lookalike domain innovatech-secure.com registered recently with suspicious registrar",
+        "Phishing URL hosted on innovatech-secure.com mimics corporate domain for credential harvesting",
+        "No multifactor authentication enforcement on executive accounts"
+      ],
+      "detection_method": "Monitor unusual login IPs and locations for executive accounts. Detect creation of auto-forwarding rules to external domains. Analyze email volume anomalies. Use DMARC and SPF validation to detect spoofed or lookalike domains. Implement domain registration monitoring for lookalike domains. Correlate wire transfer or payment instruction emails with verbal confirmations. Deploy User and Entity Behavior Analytics (UEBA) to detect anomalous behaviors.",
+      "relevant_mitre_techniques": [
+        "T1566.002 - Phishing: Spearphishing Link",
+        "T1078.003 - Valid Accounts: Local Accounts",
+        "T1110.001 - Brute Force: Password Guessing",
+        "T1193 - Spearphishing Attachment",
+        "T1586 - Compromise Infrastructure",
+        "T1598 - Phishing"
+      ]
+    },
+    {
+      "scenario": "Business Email Compromise via Man-in-the-Middle Attack on Email Session Leading to Unauthorized Invoice Payment",
+      "technical_data": {
+        "email_headers": "Return-Path: <billing@medtronicsolutions.com>\r\nReceived: from smtp.medtronicsolutions.com (smtp.medtronicsolutions.com [172.16.5.30])\r\n\tby mx.partnervendor.com (Postfix) with ESMTP id 7C3D1D4B8F\r\n\tfor <accounts@partnervendor.com>; Mon, 18 Mar 2024 16:40:25 +0100 (CET)\r\nReceived-SPF: pass (partnervendor.com: domain of billing@medtronicsolutions.com designates 172.16.5.30 as permitted sender) receiver=partnervendor.com; client-ip=172.16.5.30; helo=smtp.medtronicsolutions.com;\r\nAuthentication-Results: partnervendor.com; dkim=pass (1024-bit key) header.d=medtronicsolutions.com; spf=pass smtp.mailfrom=billing@medtronicsolutions.com; dmarc=pass (p=reject) header.from=medtronicsolutions.com\r\nDKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=medtronicsolutions.com; s=selector2024; h=from:to:subject:date:message-id:mime-version; bh=7gXNYEoGmXcM0eXyQ+P55LJ6V7u4Z5G1a4vqs4C5xTg=; b=YfnB1wE2rV==\r\nFrom: \"Billing Dept\" <billing@medtronicsolutions.com>\r\nTo: accounts@partnervendor.com\r\nSubject: Updated Invoice Payment Instructions\r\nMessage-ID: <CA9V3rI8d@mail.medtronicsolutions.com>\r\nDate: Mon, 18 Mar 2024 16:39:55 +0100\r\nMIME-Version: 1.0\r\nContent-Type: text/plain; charset=UTF-8\r\nContent-Transfer-Encoding: 7bit",
+        "email_body": "Hello Accounts,\n\nPlease note the updated bank account details for invoice payment:\n\nBeneficiary: Medtronic Solutions Ltd.\nAccount Number: 555888999777\nBank: City Bank International\nAmount: $98,750\nReference: Invoice #5544\n\nKindly confirm receipt of this update.\n\nThanks,\nMichael Turner\nBilling Department\nmedtronicsolutions.com",
+        "smtp_transaction_log": "220 smtp.medtronicsolutions.com ESMTP Postfix\r\nEHLO smtp.medtronicsolutions.com\r\n250-smtp.medtronicsolutions.com\r\n250-PIPELINING\r\n250-SIZE 5120000\r\n250-VRFY\r\n250-ETRN\r\n250-STARTTLS\r\n250-AUTH PLAIN LOGIN\r\n250-ENHANCEDSTATUSCODES\r\n250-8BITMIME\r\n250 DSN\r\nMAIL FROM:<billing@medtronicsolutions.com>\r\n250 2.1.0 Ok\r\nRCPT TO:<accounts@partnervendor.com>\r\n250 2.1.5 Ok\r\nDATA\r\n354 End data with <CR><LF>.<CR><LF>\r\n[Message content]\r\n.\r\n250 2.0.0 Ok: queued as 7C3D1D4B8F",
+        "dns_records": {
+          "medtronicsolutions.com": {
+            "A": "172.16.5.30",
+            "MX": "smtp.medtronicsolutions.com",
+            "SPF": "v=spf1 ip4:172.16.5.30 -all",
+            "DMARC": "v=DMARC1; p=reject; rua=mailto:dmarc@medtronicsolutions.com; ruf=mailto:dmarc@medtronicsolutions.com; adkim=s; aspf=s",
+            "DKIM_public_key": "selector2024._domainkey.medtronicsolutions.com TXT \"v=DKIM1; k=rsa; p=MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAxJ1lYjU0Q1Y3z6X0JUyFk9sX1NIHkqGq1Xl+N5F6X9Wyp1YdN2H+uVTH6rMQ0yfl7j6hD3+Xx9v1+0EwK2d+Y7q+Ub9x3jlt0pSy7DzFq+LQIDAQAB\""
+          },
+          "medtronicsolutions-pay.com": {
+            "A": "198.51.100.123",
+            "MX": "smtp.medtronicsolutions-pay.com",
+            "SPF": "v=spf1 ip4:198.51.100.123 -all",
+            "DMARC": "v=DMARC1; p=none",
+            "DKIM_public_key": "selector2024._domainkey.medtronicsolutions-pay.com TXT \"v=DKIM1; k=rsa; p=MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAxJ1lYjU0Q1Y3z6X0JUyFk9sX1NIHkqGq1Xl+N5F6X9Wyp1YdN2H+uVTH6rMQ0yfl7j6hD3+Xx9v1+0EwK2d+Y7q+Ub9x3jlt0pSy7DzFq+LQIDAQAB\""
+          }
+        },
+        "email_account_login_logs": [
+          {
+            "timestamp": "2024-03-18T15:10:45Z",
+            "user": "michael.turner@medtronicsolutions.com",
+            "source_ip": "203.0.113.88",
+            "location": "Ho Chi Minh City, Vietnam",
+            "event": "Successful login via IMAP"
+          },
+          {
+            "timestamp": "2024-03-18T15:55:22Z",
+            "user": "michael.turner@medtronicsolutions.com",
+            "source_ip": "172.16.5.30",
+            "location": "Corporate Office LAN",
+            "event": "Successful login via Outlook desktop"
+          }
+        ],
+        "email_sending_pattern_log": [
+          {
+            "user": "michael.turner@medtronicsolutions.com",
+            "date": "2024-03-17",
+            "emails_sent": 10
+          },
+          {
+            "user": "michael.turner@medtronicsolutions.com",
+            "date": "2024-03-18",
+            "emails_sent": 55
+          }
+        ],
+        "suspicious_domain_registration": {
+          "domain": "medtronicsolutions-pay.com",
+          "registrar": "ShadyRegistrar Ltd",
+          "registration_date": "2024-03-10",
+          "registrant_email": "attacker@disposablemail.com",
+          "nameservers": [
+            "ns1.fakemailhost.com",
+            "ns2.fakemailhost.com"
+          ],
+          "whois_raw": "Domain Name: medtronicsolutions-pay.com\nRegistrar: ShadyRegistrar Ltd\nUpdated Date: 2024-03-10T14:00:00Z\nCreation Date: 2024-03-10T13:50:00Z\nRegistry Expiry Date: 2025-03-10T13:50:00Z\nRegistrant Email: attacker@disposablemail.com"
+        },
+        "phishing_url": "https://medtronicsolutions-pay.com/login?next=%2Fbilling%2Fupdate",
+        "phishing_email_x_headers": {
+          "X-Originating-IP": "[198.51.100.123]",
+          "X-Mailer": "Apple Mail (2.3445.9.1)",
+          "X-Spam-Status": "No, score=-0.3",
+          "X-Spam-Report": "Spam detection details here"
+        }
+      },
+      "indicators": [
+        "Login to michael.turner@medtronicsolutions.com from foreign IP 203.0.113.88 (Ho Chi Minh City, Vietnam)",
+        "Large increase in outbound emails from billing account (from 10 to 55 emails/day)",
+        "SPF and DMARC pass for medtronicsolutions.com, but lookalike domain medtronicsolutions-pay.com registered recently",
+        "Phishing URL hosted on medtronicsolutions-pay.com mimics legitimate billing portal",
+        "Detected man-in-the-middle attack signs on email session logs",
+        "Lack of end-to-end email encryption enforcement"
+      ],
+      "detection_method": "Monitor login IP addresses and access locations for deviations from normal patterns. Detect spikes in email sending volume. Use DMARC, SPF, and DKIM to validate email authenticity and spot spoofed domains. Monitor for suspicious domain registrations resembling corporate domains. Deploy network traffic analysis to detect man-in-the-middle (MITM) attack patterns. Implement email encryption and enforce multi-factor authentication for sensitive accounts. Correlate invoice payment changes with secondary verification methods.",
+      "relevant_mitre_techniques": [
+        "T1566.001 - Phishing: Spearphishing Attachment",
+        "T1566.002 - Phishing: Spearphishing Link",
+        "T1556.001 - Modify Authentication Process: Password Filter DLL",
+        "T1586 - Compromise Infrastructure",
+        "T1598 - Phishing",
+        "T1078.002 - Valid Accounts: Domain Accounts"
+      ]
+    }
+  ]
+}

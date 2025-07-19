@@ -1,0 +1,61 @@
+{
+  "examples": [
+    {
+      "scenario": "Business Email Compromise via Email Account Spoofing Requesting Fraudulent Wire Transfer",
+      "technical_data": {
+        "email_headers": "Return-Path: <ceo@contoso.com>\r\nReceived: from mail.contoso.com (mail.contoso.com [192.0.2.45])\r\n\tby mail.partnercorp.com (Postfix) with ESMTP id 4F2A1180C8\r\n\tfor <finance@partnercorp.com>; Wed, 28 Jun 2023 15:23:11 +0000 (UTC)\r\nReceived-SPF: fail (partnercorp.com: domain of ceo@contoso.com does not designate 192.0.2.45 as permitted sender) client-ip=192.0.2.45;\r\nAuthentication-Results: partnercorp.com; dkim=none (message not signed) header.d=none; spf=fail smtp.mailfrom=ceo@contoso.com; dmarc=fail (p=none) header.from=contoso.com\r\nFrom: \"John Smith\" <ceo@contoso.com>\r\nTo: finance@partnercorp.com\r\nSubject: Urgent Wire Transfer Instruction\r\nDate: Wed, 28 Jun 2023 15:22:59 +0000\r\nMessage-ID: <CAJf8fX+L9w@contoso.com>\r\nMIME-Version: 1.0\r\nContent-Type: text/plain; charset=\"UTF-8\"\r\nX-Mailer: Microsoft Outlook 16.0\r\nX-Originating-IP: [203.0.113.100]\r\n",
+        "email_body": "Hi team,\n\nPlease process an urgent wire transfer of $150,000 to the following account immediately:\n\nBank: First National Bank\nAccount Name: Global Ventures Ltd.\nAccount Number: 987654321\nSWIFT: FNBNUS33\n\nThis is a time-sensitive deal. Do not hesitate to call me to confirm.\n\nBest,\nJohn Smith\nCEO, Contoso Ltd.",
+        "smtp_transaction_log": "220 mail.partnercorp.com ESMTP Postfix\r\nEHLO mail.contoso.com\r\n250-mail.partnercorp.com\r\n250-PIPELINING\r\n250-SIZE 10485760\r\n250-ETRN\r\n250-STARTTLS\r\n250-AUTH PLAIN LOGIN\r\n250-ENHANCEDSTATUSCODES\r\n250-8BITMIME\r\n250 DSN\r\nMAIL FROM:<ceo@contoso.com>\r\n250 2.1.0 Ok\r\nRCPT TO:<finance@partnercorp.com>\r\n250 2.1.5 Ok\r\nDATA\r\n354 End data with <CR><LF>.<CR><LF>\r\nFrom: \"John Smith\" <ceo@contoso.com>\r\nTo: finance@partnercorp.com\r\nSubject: Urgent Wire Transfer Instruction\r\n\r\nHi team,\n\nPlease process an urgent wire transfer of $150,000 to the following account immediately.\n.\r\n250 2.0.0 Ok: queued as 4F2A1180C8\r\nQUIT\r\n221 2.0.0 Bye",
+        "domain_registration_details": {
+          "domain": "contoso.com",
+          "registrar": "Contoso Registrar Inc.",
+          "creation_date": "1998-07-12T00:00:00Z",
+          "expiration_date": "2024-07-12T00:00:00Z",
+          "name_servers": [
+            "ns1.contoso.com",
+            "ns2.contoso.com"
+          ],
+          "registrant": {
+            "name": "Contoso IT Dept",
+            "organization": "Contoso Ltd.",
+            "email": "itadmin@contoso.com",
+            "phone": "+1.5551234567"
+          }
+        },
+        "spoofed_ip_analysis": {
+          "source_ip": "192.0.2.45",
+          "legitimate_ip_for_contoso_mail": "198.51.100.12",
+          "note": "The IP 192.0.2.45 is not listed in the SPF record for contoso.com, indicating spoofing."
+        },
+        "spf_record": "v=spf1 ip4:198.51.100.12 include:spf.partnercorp.com -all",
+        "dkim_header_absent": true,
+        "dmarc_policy": "v=DMARC1; p=reject; rua=mailto:dmarc_reports@contoso.com; ruf=mailto:dmarc_forensics@contoso.com; fo=1",
+        "secondary_communication": {
+          "phone_call_log_excerpt": "Outgoing call 2023-06-28 15:25:10 to +1-555-987-6543 (Finance Dept) - No confirmation received before wire transfer"
+        },
+        "email_monitoring_system_log": "2023-06-28T15:23:05Z ALERT: Suspicious inbound email from ceo@contoso.com - SPF fail, DKIM absent, DMARC fail; flagged for manual review",
+        "wire_transfer_log": "2023-06-28T15:27:40Z Wire transfer of $150,000 initiated from Finance Dept to Global Ventures Ltd., account 987654321, SWIFT FNBNUS33"
+      },
+      "indicators": [
+        "SPF fail for ceo@contoso.com with source IP 192.0.2.45",
+        "No DKIM signature present in email headers",
+        "DMARC policy set to reject but email passed as none, indicating spoof",
+        "Email originated from unexpected IP outside legitimate mail servers",
+        "Urgent wire transfer request with unusual urgency and no secondary confirmation",
+        "Email X-Originating-IP header shows external IP unusual for internal CEO mail",
+        "Email monitoring system alert for spoofed CEO email",
+        "Wire transfer to unknown vendor account immediately after spoofed email"
+      ],
+      "detection_method": "Implement automated email authentication checks (SPF, DKIM, DMARC) with strict enforcement; correlate email origin IP against known legitimate mail servers; flag and quarantine emails failing authentication from high-risk senders (executives, finance); alert SOC analysts; verify all wire transfer requests with multi-factor secondary communication (e.g. phone call to known number); monitor unusual wire transfer activity in financial systems; deploy email gateway solutions with spoof detection and anomaly scoring; train finance team to report suspicious emails and verify out-of-band.",
+      "relevant_mitre_techniques": [
+        "T1566.001 - Phishing: Spearphishing Attachment",
+        "T1566.002 - Phishing: Spearphishing Link",
+        "T1598.002 - Spearphishing via Service",
+        "T1078.004 - Valid Accounts: Cloud Accounts",
+        "T1586 - Compromise Account",
+        "T1204.002 - User Execution: Malicious File",
+        "T1114 - Email Collection"
+      ]
+    }
+  ]
+}

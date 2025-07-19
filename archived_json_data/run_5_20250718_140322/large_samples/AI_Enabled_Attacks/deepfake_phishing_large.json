@@ -1,0 +1,287 @@
+{
+  "samples": [
+    {
+      "scenario": "An attacker leverages an AI-generated deepfake video call impersonating the CEO to instruct the HR department to expedite confidential employee payroll information for a fake internal audit. The attacker sends a follow-up spear-phishing email with a link to a compromised internal portal requesting immediate upload of the payroll files, bypassing usual multi-level approvals.",
+      "technical_data": {
+        "email_headers": "Return-Path: <ceo@megacorp.com>\r\nReceived: from smtp.megacorp.com (smtp.megacorp.com [10.20.30.40])\r\n\tby mail.hrdepartment.com (Postfix) with ESMTPS id 9B4CFA2E5\r\n\tfor <hr@megacorp.com>; Tue, 20 Jul 2023 11:45:10 +0000 (UTC)\r\nX-Originating-IP: [10.20.30.40]\r\nAuthentication-Results: mail.hrdepartment.com; dkim=pass header.d=megacorp.com;\r\n\tspf=pass smtp.mailfrom=ceo@megacorp.com\r\nMessage-ID: <CABvXJ6d8Z_9Y2b4Rpm+0x=2Lzm@mail.megacorp.com>\r\nDate: Tue, 20 Jul 2023 11:44:58 +0000\r\nFrom: \"Robert Lang\" <ceo@megacorp.com>\r\nTo: hr@megacorp.com\r\nSubject: Immediate: Payroll Data Request\r\nMIME-Version: 1.0\r\nContent-Type: multipart/alternative; boundary=\"boundary_67890\"\r\nX-Mailer: Microsoft Outlook 365\r\n\r\n--boundary_67890\r\nContent-Type: text/plain; charset=\"utf-8\"\r\nContent-Transfer-Encoding: quoted-printable\r\n\r\nTeam,\r\n\r\nPer urgent directive from the board, please upload the latest payroll data to=\r\n the audit portal immediately.\r\nLink: https://secure-payroll.megacorp.com/upload?session=9fc8d7b2\r\n\r\nThis is critical for compliance. No delays.\r\n\r\nThanks,\r\nRobert\r\n\r\n--boundary_67890\r\nContent-Type: video/mp4; name=\"ceo_message.mp4\"\r\nContent-Transfer-Encoding: base64\r\nContent-Disposition: attachment; filename=\"ceo_message.mp4\"\r\n\r\nAAAAFGZ0eXBtcDQyAAAAAGlzb21tcDQyAAACAGlzb21pc28yYXZjMW1wNDFtcDQyAAAAAG1vb3YAA\r\nAAAbG12aGQAAAAAAAAAAAAAAAAAAAD6AAAB9AAAABAAAAAAAQAAAAAAAAAAAAAAAAEAAAAAAAAAAAAA\r\n...\r\n--boundary_67890--",
+        "smtp_transaction_log": "220 mail.hrdepartment.com ESMTP Postfix\r\nEHLO smtp.megacorp.com\r\n250-mail.hrdepartment.com\r\n250-PIPELINING\r\n250-SIZE 20971520\r\n250-ETRN\r\n250-STARTTLS\r\n250-ENHANCEDSTATUSCODES\r\n250 8BITMIME\r\nMAIL FROM:<ceo@megacorp.com>\r\n250 2.1.0 Ok\r\nRCPT TO:<hr@megacorp.com>\r\n250 2.1.5 Ok\r\nDATA\r\n354 End data with <CR><LF>.<CR><LF>\r\n[message data]\r\n.\r\n250 2.0.0 Ok: queued as 9B4CFA2E5\r\nQUIT\r\n221 2.0.0 Bye",
+        "network_packet_capture_excerpt": "Frame 110: 1024 bytes captured (8192 bits)\nEthernet II, Src: 00:0c:29:ab:cd:ef, Dst: 00:50:56:12:34:56\nInternet Protocol Version 4, Src: 10.20.30.40, Dst: 10.30.40.50\nTransmission Control Protocol, Src Port: 443, Dst Port: 52918, Seq: 345, Ack: 789, Len: 980\nTLSv1.3 Record Layer: Application Data Protocol\n    Content Type: Application Data (23)\n    Version: TLS 1.3 (0x0304)\n    Length: 980\n[Encrypted Application Data]\n\n----\nFrame 111: 560 bytes\nEthernet II, Src: 00:50:56:12:34:56, Dst: 00:0c:29:ab:cd:ef\nIP, Src: 10.30.40.50, Dst: 10.20.30.40\nTCP, Src Port: 52918, Dst Port: 443, Seq: 789, Ack: 1325, Len: 500\nHTTP/1.1 200 OK\nContent-Type: video/mp4\nContent-Length: 980\n\n[Video stream chunk continuation]",
+        "voice_audio_analysis": {
+          "duration_seconds": 60,
+          "sample_rate": 48000,
+          "bit_depth": 24,
+          "ai_artifacts_detected": true,
+          "deepfake_detection_score": 0.91,
+          "features": [
+            "Lip sync inconsistencies",
+            "Unnatural eye blinking frequency",
+            "Micro-expression mismatch",
+            "Inconsistent lighting reflections on face"
+          ]
+        },
+        "finance_system_log_excerpt": "2023-07-20T11:47:30Z INFO User: hr_admin_03 uploaded payroll data\nFile: payroll_2023Q2.xlsx\nUpload Destination: https://secure-payroll.megacorp.com/\nAuthorization Level: Single-factor\nVerification Method: Email confirmation only\nTransaction Status: Completed\nTransaction ID: UPLOAD-20230720-005678\n\n2023-07-20T11:48:05Z WARNING Unusual access time and upload size detected for hr_admin_03",
+        "domain_registration": {
+          "domain": "secure-payroll-megacorp.com",
+          "registrant": "DomainsByProxy, LLC",
+          "creation_date": "2023-07-10T07:30:00Z",
+          "expiration_date": "2024-07-10T07:30:00Z",
+          "name_servers": [
+            "ns1.domainsbyproxy.com",
+            "ns2.domainsbyproxy.com"
+          ],
+          "registrar": "GoDaddy.com, LLC",
+          "dns_records": {
+            "A": [
+              "203.0.113.78"
+            ],
+            "MX": [
+              "mail.secure-payroll-megacorp.com"
+            ]
+          }
+        },
+        "spear_phishing_url": "https://secure-payroll.megacorp.com/upload?session=9fc8d7b2",
+        "url_analysis": {
+          "url_obfuscation": "Domain closely resembles legitimate corporate domain with added dash; HTTPS enabled with certificate issued by Let's Encrypt; URL contains session tokens to bypass filters",
+          "dns_resolution": "resolves to 203.0.113.78 (cloud VPS provider with lax oversight)",
+          "SSL_cert": {
+            "issuer": "Let's Encrypt Authority X3",
+            "valid_from": "2023-07-10",
+            "valid_to": "2023-10-08",
+            "subject": "CN=secure-payroll.megacorp.com"
+          }
+        }
+      },
+      "indicators": [
+        "Email from ceo@megacorp.com with attached deepfake video file ceo_message.mp4",
+        "SMTP logs show valid SPF and DKIM passes but suspicious domain with dash",
+        "Network capture reveals encrypted TLS traffic streaming MP4 video with abnormal timing",
+        "HR system logs single-factor upload bypassing dual approval policy",
+        "Domain secure-payroll-megacorp.com registered 10 days prior with privacy protection",
+        "URL contains session tokens evading standard URL filters",
+        "Video deepfake detection flags high confidence on lip-sync and micro-expression inconsistencies"
+      ],
+      "detection_method": "Implement AI-driven video deepfake analysis on received video attachments and video calls; enforce multi-factor authentication for sensitive data uploads; monitor email headers for subtle domain variations; use behavioral analysis for anomalous access and upload patterns; train HR and finance teams to authenticate requests through secondary channels; monitor SSL certificates and domain registrations for lookalike domains.",
+      "relevant_mitre_techniques": [
+        "T1598.002 - Phishing: Spearphishing Link",
+        "T1566.001 - Phishing: Spearphishing Attachment",
+        "T1192 - Spearphishing via Service",
+        "T1071.001 - Application Layer Protocol: Web Protocols",
+        "T1537 - Transfer Data to Cloud Account",
+        "T1406 - AI-Enabled Social Engineering"
+      ]
+    },
+    {
+      "scenario": "An attacker uses an AI-generated deepfake audio message mimicking the CTO to instruct the IT helpdesk to immediately reset the password of a privileged service account. The attacker then sends a spear-phishing email containing a malicious link to a fake internal password reset portal designed to harvest new credentials and enable lateral movement.",
+      "technical_data": {
+        "email_headers": "Return-Path: <cto@techfirm.com>\r\nReceived: from mail.techfirm.com (mail.techfirm.com [172.16.5.12])\r\n\tby mail.ithelpdesk.com (Postfix) with ESMTPS id 7D8B1F3C2\r\n\tfor <ithelpdesk@techfirm.com>; Wed, 02 Aug 2023 09:12:30 +0000 (UTC)\r\nX-Originating-IP: [172.16.5.12]\r\nAuthentication-Results: mail.ithelpdesk.com; dkim=pass header.d=techfirm.com;\r\n\tspf=pass smtp.mailfrom=cto@techfirm.com\r\nMessage-ID: <CAO8m+vY2sL9=nBX+zRj1x2Q@mail.techfirm.com>\r\nDate: Wed, 02 Aug 2023 09:12:15 +0000\r\nFrom: \"Alex Mercer\" <cto@techfirm.com>\r\nTo: ithelpdesk@techfirm.com\r\nSubject: Urgent: Service Account Password Reset\r\nMIME-Version: 1.0\r\nContent-Type: multipart/mixed; boundary=\"boundary_24680\"\r\nX-Mailer: Microsoft Outlook 2019\r\n\r\n--boundary_24680\r\nContent-Type: text/plain; charset=\"utf-8\"\r\nContent-Transfer-Encoding: quoted-printable\r\n\r\nTeam,\r\n\r\nPlease reset the password for the svc_admin privileged account immediately.=\r\n Find the attached voice directive.\r\n\r\nUse this link to confirm the reset: https://password-reset-techfirm.com/confirm?token=8f7e6d5c4b\r\n\r\nConfirm once done.\r\n\r\nRegards,\r\nAlex\r\n\r\n--boundary_24680\r\nContent-Type: audio/mp3; name=\"voice_instruction.mp3\"\r\nContent-Transfer-Encoding: base64\r\nContent-Disposition: attachment; filename=\"voice_instruction.mp3\"\r\n\r\nSUQzBAAAAAAAI1RTU0MAAAAAAAAAAAAAAAASW5mbwAAAA8AAAACAAACAAABAAgAZGF0YQAAAAA=\r\n...\r\n--boundary_24680--",
+        "smtp_transaction_log": "220 mail.ithelpdesk.com ESMTP Postfix\r\nEHLO mail.techfirm.com\r\n250-mail.ithelpdesk.com\r\n250-PIPELINING\r\n250-SIZE 5242880\r\n250-ETRN\r\n250-STARTTLS\r\n250-ENHANCEDSTATUSCODES\r\n250 8BITMIME\r\nMAIL FROM:<cto@techfirm.com>\r\n250 2.1.0 Ok\r\nRCPT TO:<ithelpdesk@techfirm.com>\r\n250 2.1.5 Ok\r\nDATA\r\n354 End data with <CR><LF>.<CR><LF>\r\n[message data]\r\n.\r\n250 2.0.0 Ok: queued as 7D8B1F3C2\r\nQUIT\r\n221 2.0.0 Bye",
+        "network_packet_capture_excerpt": "Frame 88: 850 bytes captured\nEthernet II, Src: 00:15:5d:00:ab:cd, Dst: 00:0f:66:22:11:33\nInternet Protocol Version 4, Src: 172.16.5.12, Dst: 172.16.10.20\nTransmission Control Protocol, Src Port: 443, Dst Port: 51234, Seq: 9876, Ack: 12345, Len: 800\nTLSv1.2 Record Layer: Application Data\n    Content Type: Application Data (23)\n    Version: TLS 1.2 (0x0303)\n    Length: 800\n[Encrypted Application Data]\n\n----\nFrame 89: 300 bytes\nEthernet II, Src: 00:0f:66:22:11:33, Dst: 00:15:5d:00:ab:cd\nIP, Src: 172.16.10.20, Dst: 172.16.5.12\nTCP, Src Port: 51234, Dst Port: 443, Seq: 12345, Ack: 10676, Len: 250\nHTTP/1.1 200 OK\nContent-Type: audio/mp3\nContent-Length: 800\n\n[Audio stream chunk continuation]",
+        "voice_audio_analysis": {
+          "duration_seconds": 30,
+          "sample_rate": 22050,
+          "bit_depth": 16,
+          "ai_artifacts_detected": true,
+          "deepfake_detection_score": 0.84,
+          "features": [
+            "Subtle robotic timbre",
+            "Unnatural pauses between words",
+            "Spectral flattening in consonants",
+            "Background noise mismatch with ambient office sounds"
+          ]
+        },
+        "finance_system_log_excerpt": "2023-08-02T09:15:45Z INFO User: ithelpdesk_user_07 reset password for svc_admin\nAuthorization Level: Single-factor\nVerification Method: Voice call confirmation\nStatus: Completed\nEvent ID: PASSRESET-20230802-009876\n\n2023-08-02T09:16:00Z WARNING Multiple failed login attempts detected on svc_admin account following reset",
+        "domain_registration": {
+          "domain": "password-reset-techfirm.com",
+          "registrant": "WhoisGuard Protected",
+          "creation_date": "2023-07-28T04:15:00Z",
+          "expiration_date": "2024-07-28T04:15:00Z",
+          "name_servers": [
+            "ns1.whoisguard.com",
+            "ns2.whoisguard.com"
+          ],
+          "registrar": "NameSilo, LLC",
+          "dns_records": {
+            "A": [
+              "198.51.100.101"
+            ],
+            "MX": [
+              "mail.password-reset-techfirm.com"
+            ]
+          }
+        },
+        "spear_phishing_url": "https://password-reset-techfirm.com/confirm?token=8f7e6d5c4b",
+        "url_analysis": {
+          "url_obfuscation": "Domain uses legitimate company name with added '-reset' keyword; HTTPS with valid certificate issued by DigiCert; tokenized query parameters to evade detection",
+          "dns_resolution": "resolves to 198.51.100.101 hosted on offshore bulletproof hosting",
+          "SSL_cert": {
+            "issuer": "DigiCert TLS RSA SHA256 2020 CA1",
+            "valid_from": "2023-07-29",
+            "valid_to": "2024-07-29",
+            "subject": "CN=password-reset-techfirm.com"
+          }
+        }
+      },
+      "indicators": [
+        "Email from cto@techfirm.com with attached AI-generated voice_instruction.mp3 file",
+        "SMTP logs confirm valid DKIM and SPF but domain is suspicious with '-reset' insertion",
+        "Network capture shows encrypted TLS traffic with mp3 content-type audio stream",
+        "IT system logs indicate password reset bypassing multi-factor authentication",
+        "Domain password-reset-techfirm.com registered less than a week before phishing campaign",
+        "URL contains token query parameters designed to evade URL filtering",
+        "Audio deepfake analysis indicates synthetic voice with unnatural pauses and spectral anomalies"
+      ],
+      "detection_method": "Apply AI-based audio deepfake detection on all voice message attachments; enforce multi-factor authentication on privileged account password changes; monitor email domains closely for lookalike variations; implement URL reputation services to flag newly registered domains mimicking internal assets; use behavioral analytics to detect unusual password resets and login attempts; educate IT helpdesk staff to verify password reset requests via secondary trusted channels.",
+      "relevant_mitre_techniques": [
+        "T1598.002 - Phishing: Spearphishing Link",
+        "T1566.001 - Phishing: Spearphishing Attachment",
+        "T1192 - Spearphishing via Service",
+        "T1071.001 - Application Layer Protocol: Web Protocols",
+        "T1537 - Transfer Data to Cloud Account",
+        "T1562.001 - Impair Defenses: Disable or Modify Tools",
+        "T1406 - AI-Enabled Social Engineering"
+      ]
+    },
+    {
+      "scenario": "An attacker synthesizes a deepfake video call impersonating the CEO, instructing the HR department to urgently upload employee tax documents to a malicious cloud storage link. The attacker follows up with a spear-phishing email containing the video and a link to a fake cloud portal mimicking the company's internal system, bypassing usual document submission protocols.",
+      "technical_data": {
+        "email_headers": "Return-Path: <ceo@acmecorp.com>\r\nReceived: from mail.acmecorp.com (mail.acmecorp.com [10.20.30.40])\r\n\tby mail.hrdept.acmecorp.com (Postfix) with ESMTPS id 7D8E3F1B05\r\n\tfor <hr@acmecorp.com>; Thu, 15 Feb 2024 09:14:22 +0000 (UTC)\r\nX-Originating-IP: [10.20.30.40]\r\nAuthentication-Results: mail.hrdept.acmecorp.com; dkim=pass header.d=acmecorp.com; spf=pass smtp.mailfrom=ceo@acmecorp.com\r\nMessage-ID: <CAJ0k7-4_naYtqwz1Yx5c4Q@mail.acmecorp.com>\r\nDate: Thu, 15 Feb 2024 09:14:20 +0000\r\nFrom: \"John Smith\" <ceo@acmecorp.com>\r\nTo: hr@acmecorp.com\r\nSubject: Urgent: Employee Tax Documents Submission\r\nMIME-Version: 1.0\r\nContent-Type: multipart/mixed; boundary=\"boundary_67890\"\r\nX-Mailer: Microsoft Outlook 16.0\r\n\r\n--boundary_67890\r\nContent-Type: text/plain; charset=\"utf-8\"\r\nContent-Transfer-Encoding: quoted-printable\r\n\r\nPlease review the attached video message and upload the required employee tax=\r\n documents to the secure link below immediately.\r\n\r\nLink: https://portal.acmecorp-cloudstorage.com/upload?session=9c8f7a6b\r\n\r\nRegards,\r\nJohn\r\n\r\n--boundary_67890\r\nContent-Type: video/mp4; name=\"ceo_directive.mp4\"\r\nContent-Transfer-Encoding: base64\r\nContent-Disposition: attachment; filename=\"ceo_directive.mp4\"\r\n\r\nAAAAFGZ0eXBtcDQyAAAAAG1wNDFtcDQxaXNvbQAAAAhjcmZyY2xtAAABAFZpZgAAABZ2aWRlbwAA\r\n...\r\n--boundary_67890--",
+        "smtp_transaction_log": "220 mail.hrdept.acmecorp.com ESMTP Postfix\r\nEHLO mail.acmecorp.com\r\n250-mail.hrdept.acmecorp.com\r\n250-PIPELINING\r\n250-SIZE 20480000\r\n250-ETRN\r\n250-STARTTLS\r\n250-ENHANCEDSTATUSCODES\r\n250 8BITMIME\r\nMAIL FROM:<ceo@acmecorp.com>\r\n250 2.1.0 Ok\r\nRCPT TO:<hr@acmecorp.com>\r\n250 2.1.5 Ok\r\nDATA\r\n354 End data with <CR><LF>.<CR><LF>\r\n[message data]\r\n.\r\n250 2.0.0 Ok: queued as 7D8E3F1B05\r\nQUIT\r\n221 2.0.0 Bye",
+        "network_packet_capture_excerpt": "Frame 105: 1450 bytes on wire (11600 bits), 1450 bytes captured (11600 bits)\nEthernet II, Src: 08:00:27:53:8b:dc, Dst: 08:00:27:ba:dc:ef\nInternet Protocol Version 4, Src: 10.20.30.40, Dst: 10.20.40.50\nTransmission Control Protocol, Src Port: 443, Dst Port: 54231, Seq: 345, Ack: 1023, Len: 1400\nTLSv1.3 Record Layer: Application Data Protocol\n    Content Type: Application Data (23)\n    Version: TLS 1.3 (0x0304)\n    Length: 1392\n[Encrypted Application Data]\n\n----\nFrame 106: 512 bytes\nEthernet II, Src: 08:00:27:ba:dc:ef, Dst: 08:00:27:53:8b:dc\nIP, Src: 10.20.40.50, Dst: 10.20.30.40\nTCP, Src Port: 54231, Dst Port: 443, Seq: 1023, Ack: 1745, Len: 462\nHTTP/1.1 200 OK\nContent-Type: video/mp4\nContent-Length: 1392\n\n[Video stream chunk continuation]",
+        "voice_audio_analysis": {
+          "duration_seconds": 60,
+          "sample_rate": 48000,
+          "bit_depth": 24,
+          "ai_artifacts_detected": true,
+          "deepfake_detection_score": 0.92,
+          "features": [
+            "Lip-sync inconsistencies",
+            "Unnatural head movements",
+            "Micro-expression timing anomalies",
+            "Audio-video desynchronization under 200ms"
+          ]
+        },
+        "finance_system_log_excerpt": "2024-02-15T09:20:33Z INFO User: hr_admin uploaded documents to cloud storage\nDocument Type: Employee Tax Records\nUpload Destination: https://portal.acmecorp-cloudstorage.com/upload?session=9c8f7a6b\nAuthorization Level: Single-factor authentication bypass\nVerification Method: Video call confirmation\nTransaction Status: Completed\nUpload ID: UPLOAD-20240215-00321\n\n2024-02-15T09:21:00Z WARNING Suspicious upload source detected from workstation 10.20.40.50",
+        "domain_registration": {
+          "domain": "acmecorp-cloudstorage.com",
+          "registrant": "PrivacyGuard Services",
+          "creation_date": "2024-01-28T12:00:00Z",
+          "expiration_date": "2025-01-28T12:00:00Z",
+          "name_servers": [
+            "ns1.privacyguard.net",
+            "ns2.privacyguard.net"
+          ],
+          "registrar": "GoDaddy.com, LLC",
+          "dns_records": {
+            "A": [
+              "203.0.113.75"
+            ],
+            "MX": [
+              "mail.acmecorp-cloudstorage.com"
+            ]
+          }
+        },
+        "spear_phishing_url": "https://portal.acmecorp-cloudstorage.com/upload?session=9c8f7a6b",
+        "url_analysis": {
+          "url_obfuscation": "Domain closely mimics legitimate corporate cloud storage service; uses HTTPS with valid certificate; session token parameter randomized to bypass filters",
+          "dns_resolution": "resolves to 203.0.113.75 (hosted in a VPS provider with minimal reputation)",
+          "SSL_cert": {
+            "issuer": "Let's Encrypt Authority X3",
+            "valid_from": "2024-01-29",
+            "valid_to": "2024-04-28",
+            "subject": "CN=portal.acmecorp-cloudstorage.com"
+          }
+        }
+      },
+      "indicators": [
+        "Email from ceo@acmecorp.com with attached deepfake video ceo_directive.mp4",
+        "SMTP logs showing valid SPF and DKIM passes with proper mail routing",
+        "Network capture showing TLS encrypted video stream of mp4 content",
+        "HR system logs showing document upload with bypassed multi-factor authentication",
+        "Domain acmecorp-cloudstorage.com registered 2 weeks ago under privacy protection",
+        "URL mimics corporate cloud portal with randomized session token",
+        "Deepfake video detection engine flags high confidence for synthetic video"
+      ],
+      "detection_method": "Utilize video deepfake detection tools analyzing lip-sync and micro-expression anomalies; enforce multi-factor authentication for document uploads; monitor email headers for spoofing or unauthorized senders; analyze DNS and certificate changes for suspicious new domains; implement behavioral analytics for unusual document handling activity; train staff to confirm unusual requests via separate trusted channels.",
+      "relevant_mitre_techniques": [
+        "T1598.002 - Phishing: Spearphishing Link",
+        "T1598.001 - Phishing: Spearphishing Attachment",
+        "T1192 - Spearphishing via Service",
+        "T1071.001 - Application Layer Protocol: Web Protocols",
+        "T1537 - Transfer Data to Cloud Account",
+        "T1566.001 - Phishing: Spearphishing Attachment",
+        "T1406 - AI-Enabled Social Engineering"
+      ]
+    },
+    {
+      "scenario": "An attacker generates a deepfake audio message impersonating the CTO and sends a spear-phishing email to the IT security team. The audio instructs them to disable certain firewall rules temporarily to allow urgent maintenance. The email includes a wav attachment and a link to a fake internal ticketing portal requiring login credentials, aiming to harvest credentials and bypass security controls.",
+      "technical_data": {
+        "email_headers": "Return-Path: <cto@techinnovate.com>\r\nReceived: from mail.techinnovate.com (mail.techinnovate.com [172.16.5.10])\r\n\tby mail.security.techinnovate.com (Postfix) with ESMTPS id 2A4B8D7C9E\r\n\tfor <itsec@techinnovate.com>; Wed, 20 Mar 2024 18:47:56 +0000 (UTC)\r\nX-Originating-IP: [172.16.5.10]\r\nAuthentication-Results: mail.security.techinnovate.com; dkim=pass header.d=techinnovate.com; spf=pass smtp.mailfrom=cto@techinnovate.com\r\nMessage-ID: <CAXw7p1Q=9Xv3=rkq4tLq@mail.techinnovate.com>\r\nDate: Wed, 20 Mar 2024 18:47:54 +0000\r\nFrom: \"David Lee\" <cto@techinnovate.com>\r\nTo: itsec@techinnovate.com\r\nSubject: Immediate action required: Firewall rule update\r\nMIME-Version: 1.0\r\nContent-Type: multipart/mixed; boundary=\"boundary_54321\"\r\nX-Mailer: Microsoft Outlook 16.0\r\n\r\n--boundary_54321\r\nContent-Type: text/plain; charset=\"utf-8\"\r\nContent-Transfer-Encoding: quoted-printable\r\n\r\nTeam,\r\n\r\nPlease listen to the attached message for instructions on the firewall rule =\r\nupdate.\r\n\r\nAccess the internal ticketing system here to confirm changes:\r\nhttps://tickets.techinnovate-secure.com/login?ref=fw-update\r\n\r\nRegards,\r\nDavid\r\n\r\n--boundary_54321\r\nContent-Type: audio/wav; name=\"cto_message.wav\"\r\nContent-Transfer-Encoding: base64\r\nContent-Disposition: attachment; filename=\"cto_message.wav\"\r\n\r\nUklGRhgAAABXQVZFZm10IBAAAAABAAEAgD4AAESsAAACABAAZGF0YYAAAACAP//g/+f3//j+v/\r\n...\r\n--boundary_54321--",
+        "smtp_transaction_log": "220 mail.security.techinnovate.com ESMTP Postfix\r\nEHLO mail.techinnovate.com\r\n250-mail.security.techinnovate.com\r\n250-PIPELINING\r\n250-SIZE 51200000\r\n250-ETRN\r\n250-STARTTLS\r\n250-ENHANCEDSTATUSCODES\r\n250 8BITMIME\r\nMAIL FROM:<cto@techinnovate.com>\r\n250 2.1.0 Ok\r\nRCPT TO:<itsec@techinnovate.com>\r\n250 2.1.5 Ok\r\nDATA\r\n354 End data with <CR><LF>.<CR><LF>\r\n[message data]\r\n.\r\n250 2.0.0 Ok: queued as 2A4B8D7C9E\r\nQUIT\r\n221 2.0.0 Bye",
+        "network_packet_capture_excerpt": "Frame 210: 900 bytes on wire (7200 bits), 900 bytes captured (7200 bits)\nEthernet II, Src: 00:0c:29:ab:cd:ef, Dst: 00:0c:29:fe:dc:ba\nInternet Protocol Version 4, Src: 172.16.5.10, Dst: 172.16.10.20\nTransmission Control Protocol, Src Port: 443, Dst Port: 52145, Seq: 876, Ack: 2300, Len: 848\nTLSv1.2 Record Layer: Application Data Protocol\n    Content Type: Application Data (23)\n    Version: TLS 1.2 (0x0303)\n    Length: 840\n[Encrypted Application Data]\n\n----\nFrame 211: 180 bytes\nEthernet II, Src: 00:0c:29:fe:dc:ba, Dst: 00:0c:29:ab:cd:ef\nIP, Src: 172.16.10.20, Dst: 172.16.5.10\nTCP, Src Port: 52145, Dst Port: 443, Seq: 2300, Ack: 1724, Len: 130\nHTTP/1.1 200 OK\nContent-Type: audio/wav\nContent-Length: 840\n\n[Audio stream chunk continuation]",
+        "voice_audio_analysis": {
+          "duration_seconds": 38,
+          "sample_rate": 44100,
+          "bit_depth": 16,
+          "ai_artifacts_detected": true,
+          "deepfake_detection_score": 0.79,
+          "features": [
+            "Monotone intonation unusual for speaker",
+            "Background noise inconsistent with prior calls",
+            "Spectral flatness in mid-frequency range",
+            "Abrupt phoneme transitions"
+          ]
+        },
+        "finance_system_log_excerpt": "2024-03-20T18:50:45Z INFO User: itsec_user_07 disabled firewall rule ID 4567\nAuthorization Level: Single-factor authentication\nVerification Method: Audio confirmation\nAction Status: Completed\nChange Request ID: CR-20240320-07654\n\n2024-03-20T18:51:10Z WARNING Firewall rule disablement outside scheduled maintenance window",
+        "domain_registration": {
+          "domain": "techinnovate-secure.com",
+          "registrant": "WhoisGuard Protected",
+          "creation_date": "2024-03-05T14:30:00Z",
+          "expiration_date": "2025-03-05T14:30:00Z",
+          "name_servers": [
+            "ns1.whoisguard.com",
+            "ns2.whoisguard.com"
+          ],
+          "registrar": "NameSilo, LLC",
+          "dns_records": {
+            "A": [
+              "198.51.100.85"
+            ],
+            "MX": [
+              "mail.techinnovate-secure.com"
+            ]
+          }
+        },
+        "spear_phishing_url": "https://tickets.techinnovate-secure.com/login?ref=fw-update",
+        "url_analysis": {
+          "url_obfuscation": "Domain closely resembles legitimate company domain; uses HTTPS with valid certificate issued by trusted CA; URL query parameter 'ref' used to evade URL filtering",
+          "dns_resolution": "resolves to 198.51.100.85 (hosted on bulletproof VPS provider)",
+          "SSL_cert": {
+            "issuer": "DigiCert TLS RSA SHA256 2020 CA1",
+            "valid_from": "2024-03-06",
+            "valid_to": "2025-03-06",
+            "subject": "CN=tickets.techinnovate-secure.com"
+          }
+        }
+      },
+      "indicators": [
+        "Email from cto@techinnovate.com with attachment cto_message.wav containing AI-generated audio",
+        "SMTP logs showing SPF and DKIM pass with proper mail routing",
+        "Network capture showing TLS encrypted audio/wav content",
+        "IT security logs show firewall rule disablement outside normal procedures",
+        "Domain techinnovate-secure.com registered recently with privacy protection",
+        "Phishing URL mimics internal ticketing system with legitimate HTTPS",
+        "Deepfake audio detection flags synthetic voice with medium confidence"
+      ],
+      "detection_method": "Implement deepfake audio detection on incoming voice attachments; require multi-factor authentication for critical firewall changes; monitor firewall change logs for out-of-schedule actions; analyze email headers and DNS registrations for suspicious domains; enforce employee training to verify unusual requests via direct communication; monitor URL access patterns for suspicious login attempts.",
+      "relevant_mitre_techniques": [
+        "T1598.002 - Phishing: Spearphishing Link",
+        "T1598.001 - Phishing: Spearphishing Attachment",
+        "T1192 - Spearphishing via Service",
+        "T1071.001 - Application Layer Protocol: Web Protocols",
+        "T1537 - Transfer Data to Cloud Account",
+        "T1566.001 - Phishing: Spearphishing Attachment",
+        "T1406 - AI-Enabled Social Engineering"
+      ]
+    }
+  ]
+}

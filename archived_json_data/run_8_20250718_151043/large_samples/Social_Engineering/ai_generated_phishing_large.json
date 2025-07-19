@@ -1,0 +1,188 @@
+{
+  "samples": [
+    {
+      "scenario": "AI-generated phishing email targeting HR department with a fake employee onboarding link that mimics the internal HR portal",
+      "technical_data": {
+        "email_headers": "Return-Path: <onboarding@hr-securecorp.com>\r\nReceived: from mail.hr-securecorp.com (mail.hr-securecorp.com [203.0.113.78])\r\n\tby mail.corpnet.com (Postfix) with ESMTP id 7G4D3F900B\r\n\tfor <michael.smith@securecorp.com>; Fri, 26 May 2024 11:15:42 -0400 (EDT)\r\nReceived-SPF: pass (securecorp.com: domain of onboarding@hr-securecorp.com designates 203.0.113.78 as permitted sender) receiver=mail.corpnet.com; client-ip=203.0.113.78; helo=mail.hr-securecorp.com;\r\nAuthentication-Results: mail.corpnet.com; dkim=pass header.d=hr-securecorp.com; spf=pass smtp.mailfrom=onboarding@hr-securecorp.com; dmarc=pass (p=quarantine) header.from=hr-securecorp.com\r\nDKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=hr-securecorp.com; s=hrkey1; t=1716664542; bh=Qv0e7z7k6bH6l4Q1hN7Z2KQsz+0P5/2A2yW4kJq+6zE=; h=From:To:Subject:Date:MIME-Version:Content-Type:Message-ID; b=K9rJtX9Mk+4mXm1A+waHq1u1XkJ5UfHeqzB2v5dOjBqT/7H5Qe1Tc9fNwQ1Dj8WJxQ5hN6VpPv7PqYv5V+7rT9Q==",
+        "email_raw": "From: \"HR Onboarding\" <onboarding@hr-securecorp.com>\r\nTo: Michael Smith <michael.smith@securecorp.com>\r\nSubject: Action Required: Complete Your New Employee Onboarding\r\nDate: Fri, 26 May 2024 11:15:42 -0400\r\nMIME-Version: 1.0\r\nContent-Type: text/html; charset=UTF-8\r\nMessage-ID: <CAJ=Z8r2cTuhtQ+eRwP9vKQ@mail.hr-securecorp.com>\r\n\r\n<html>\r\n  <body style=\"font-family: Verdana, sans-serif;\">\r\n    <p>Dear Michael,</p>\r\n    <p>Welcome to SecureCorp! To complete your onboarding process, please follow the secure link below to fill out your personal and tax information.</p>\r\n    <p><a href=\"https://hr-securecorp.com/onboarding/start?session=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyIjoiTWljaGFlbFNtaXRoIiwicm9sZSI6Ik5ldyBFbXBsb3llZSIsImlhdCI6MTcxNjY2NDU0Mn0.ZqR3D9vV1LhI3xFw4KxqPz6J7Sy1kFx2D6rLAPbC5RQ\" style=\"color:#0056b3;\">Start Onboarding</a></p>\r\n    <p>If you have any questions, contact the HR team.</p>\r\n    <p>Best regards,<br/>HR Department</p>\r\n  </body>\r\n</html>",
+        "smtp_transaction_log": "220 mail.hr-securecorp.com ESMTP Postfix\r\nEHLO mail.hr-securecorp.com\r\n250-mail.hr-securecorp.com\r\n250-PIPELINING\r\n250-SIZE 10485760\r\n250-VRFY\r\n250-ETRN\r\n250-STARTTLS\r\n250-ENHANCEDSTATUSCODES\r\n250-8BITMIME\r\n250 DSN\r\nMAIL FROM:<onboarding@hr-securecorp.com>\r\n250 2.1.0 Ok\r\nRCPT TO:<michael.smith@securecorp.com>\r\n250 2.1.5 Ok\r\nDATA\r\n354 End data with <CR><LF>.<CR><LF>\r\n[message data]\r\n.\r\n250 2.0.0 Ok: queued as 7G4D3F900B\r\nQUIT\r\n221 2.0.0 Bye",
+        "domain_registration": {
+          "domain": "hr-securecorp.com",
+          "registrar": "GoDaddy.com, LLC",
+          "creation_date": "2024-03-15T10:05:00Z",
+          "expiration_date": "2026-03-15T10:05:00Z",
+          "name_servers": [
+            "ns1.godaddydns.com",
+            "ns2.godaddydns.com"
+          ],
+          "registrant": {
+            "name": "HR Secure Admin",
+            "organization": "SecureCorp IT Services",
+            "email": "admin@securecorp.com",
+            "country": "US"
+          }
+        },
+        "url_obfuscation": "The phishing URL uses a domain 'hr-securecorp.com' that closely resembles the legitimate SecureCorp HR portal domain but was registered recently (03/2024). The URL includes a JWT token:\r\n\r\nhttps://hr-securecorp.com/onboarding/start?session=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyIjoiTWljaGFlbFNtaXRoIiwicm9sZSI6Ik5ldyBFbXBsb3llZSIsImlhdCI6MTcxNjY2NDU0Mn0.ZqR3D9vV1LhI3xFw4KxqPz6J7Sy1kFx2D6rLAPbC5RQ\r\n\r\nThe JWT token is syntactically valid but signed with a weak key, allowing payload manipulation if decoded by an attacker.",
+        "waf_logs": "[26/May/2024:11:15:43 -0400] \"GET /onboarding/start?session=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyIjoiTWljaGFlbFNtaXRoIiwicm9sZSI6Ik5ldyBFbXBsb3llZSIsImlhdCI6MTcxNjY2NDU0Mn0.ZqR3D9vV1LhI3xFw4KxqPz6J7Sy1kFx2D6rLAPbC5RQ HTTP/1.1\" 200 3890 \"-\" \"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/15.1 Safari/605.1.15\" 203.0.113.120 TLSv1.3 TLS_CHACHA20_POLY1305_SHA256",
+        "siem_log_entry": "2024-05-26T11:15:42.214Z EMAIL INBOUND from=onboarding@hr-securecorp.com to=michael.smith@securecorp.com subject=\"Action Required: Complete Your New Employee Onboarding\" dkim=pass spf=pass dmarc=pass url=\"https://hr-securecorp.com/onboarding/start?session=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...\" url_reputation=low user_agent=\"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7)...\"",
+        "ai_generated_content_signatures": {
+          "language_model_fingerprint": "Consistent formal tone with highly structured sentences, flawless grammar, and use of onboarding-specific terminology uncommon in typical phishing but matching SecureCorp's HR style, detected with 97% confidence by proprietary AI text analysis.",
+          "named_entity_recognition": "Correct employee name, position, and HR department references synthesized from SecureCorp's leaked internal data, demonstrating AI-generated personalized content."
+        }
+      },
+      "indicators": [
+        "Domain 'hr-securecorp.com' registered recently (Mar 2024) and mimics legitimate HR portal domain",
+        "Email passed SPF, DKIM, DMARC due to attacker-controlled domain setup",
+        "Suspicious JWT token in URL with weak signature allowing token tampering",
+        "SMTP logs show sending from an IP (203.0.113.78) outside SecureCorp's authorized mail servers",
+        "SIEM flags low URL reputation and unusual user agent access patterns",
+        "Highly personalized and contextually relevant content with minor unnatural phrasing detected by AI linguistic analysis"
+      ],
+      "detection_method": "Implement advanced phishing detection systems integrating AI language models to detect subtle linguistic anomalies and inconsistencies; validate domain registration information and flag recently registered domains mimicking corporate assets; monitor JWT token usage in URLs for weak or suspicious signatures; correlate SMTP logs for external IP usage; provide targeted user awareness training focusing on suspicious onboarding links.",
+      "relevant_mitre_techniques": [
+        "T1566.002 - Phishing: Spearphishing Link",
+        "T1598.002 - Phishing for Information: Spearphishing via Service",
+        "T1587.003 - Acquire Infrastructure: Domain Registration",
+        "T1204.002 - User Execution: Malicious Link"
+      ]
+    },
+    {
+      "scenario": "AI-generated phishing SMS messages with personalized banking alerts directing users to a cloned bank website for credential theft",
+      "technical_data": {
+        "email_headers": "N/A - SMS based phishing",
+        "email_raw": "N/A - SMS based phishing",
+        "smtp_transaction_log": "N/A - SMS based phishing",
+        "domain_registration": {
+          "domain": "securebank-alerts.com",
+          "registrar": "Google Domains, Inc.",
+          "creation_date": "2024-04-10T08:30:00Z",
+          "expiration_date": "2025-04-10T08:30:00Z",
+          "name_servers": [
+            "ns-cloud1.googledomains.com",
+            "ns-cloud2.googledomains.com"
+          ],
+          "registrant": {
+            "name": "Secure Banking Alerts Admin",
+            "organization": "SecureBanking Inc.",
+            "email": "admin@securebank-alerts.com",
+            "country": "US"
+          }
+        },
+        "url_obfuscation": "The phishing URL uses a domain 'securebank-alerts.com' registered recently (04/2024) to impersonate a legitimate bank alert system. The URL includes a unique token parameter:\r\n\r\nhttps://securebank-alerts.com/verify?alertId=AB12345XYZ&token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyIjoiam9obmRvZSIsImFjdGl2aXR5IjoiYWNjb3VudFZlcmlmeSJ9.L6cJ5ZC5u9cE-9ZfvzZk7Qz9L7fV4MgF3Rfwk3rHlb0\r\n\r\nThe JWT token is valid in structure but signed using a weak secret, enabling payload forgery.",
+        "waf_logs": "[27/May/2024:14:50:12 -0400] \"GET /verify?alertId=AB12345XYZ&token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyIjoiam9obmRvZSIsImFjdGl2aXR5IjoiYWNjb3VudFZlcmlmeSJ9.L6cJ5ZC5u9cE-9ZfvzZk7Qz9L7fV4MgF3Rfwk3rHlb0 HTTP/1.1\" 200 5120 \"-\" \"Mozilla/5.0 (iPhone; CPU iPhone OS 15_4 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Mobile/15E148\" 198.51.100.115 TLSv1.3 TLS_AES_128_GCM_SHA256",
+        "siem_log_entry": "2024-05-27T14:50:11.987Z SMS PHISHING DETECTED from=+12025550123 to=+12025550999 message=\"Urgent: Your SecureBank account requires verification. Visit https://securebank-alerts.com/verify?alertId=AB12345XYZ&token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...\" url_reputation=low device_os=iOS user_agent=\"Mozilla/5.0 (iPhone; CPU iPhone OS 15_4 like Mac OS X)...\"",
+        "ai_generated_content_signatures": {
+          "language_model_fingerprint": "Message text is concise, contextually relevant to banking terminology, with perfect grammar and urgency cues; AI model detects unnatural phrase structuring typical of synthetic generation with 95% confidence.",
+          "named_entity_recognition": "Includes personalized user name and simulated alert identifiers consistent with banking notification systems, generated by AI synthesizing data from breached credential leaks."
+        }
+      },
+      "indicators": [
+        "Domain 'securebank-alerts.com' registered recently (Apr 2024) mimicking legitimate bank notification domains",
+        "SMS message containing suspicious URL with structurally valid but weakly signed JWT token",
+        "WAF logs show multiple GET requests to '/verify' endpoint with token parameters from varied IPs",
+        "SIEM alerts flagged low reputation for the phishing URL and unusual SMS sending number",
+        "AI linguistic analysis flags unnatural phrasing and token misuse",
+        "Sender phone number +12025550123 not recognized as official bank number"
+      ],
+      "detection_method": "Deploy AI-powered phishing detection engines on SMS gateways analyzing linguistic patterns indicative of AI-generated messages; monitor domain registrations resembling official bank domains; validate JWT tokens for signature strength and suspicious payloads; correlate SMS sender numbers against known legitimate bank communications; educate users on recognizing suspicious SMS links with tokens.",
+      "relevant_mitre_techniques": [
+        "T1566.003 - Phishing: Spearphishing via Service",
+        "T1587.003 - Acquire Infrastructure: Domain Registration",
+        "T1204.002 - User Execution: Malicious Link",
+        "T1586 - Compromise Infrastructure"
+      ]
+    },
+    {
+      "scenario": "AI-generated phishing email targeting HR department with a fake internal job promotion announcement linking to credential harvesting site",
+      "technical_data": {
+        "email_headers": "Return-Path: <hr-notify@corp-hrupdates.com>\r\nReceived: from mail.corp-hrupdates.com (mail.corp-hrupdates.com [203.0.113.87])\r\n\tby mail.hr.corpnet.com (Postfix) with ESMTP id 7D3C62004E\r\n\tfor <michael.smith@corpnet.com>; Fri, 07 Jun 2024 14:45:22 +0200 (CEST)\r\nReceived-SPF: pass (corpnet.com: domain of hr-notify@corp-hrupdates.com designates 203.0.113.87 as permitted sender) receiver=mail.hr.corpnet.com; client-ip=203.0.113.87; helo=mail.corp-hrupdates.com;\r\nAuthentication-Results: mail.hr.corpnet.com; dkim=pass header.d=corp-hrupdates.com; spf=pass smtp.mailfrom=hr-notify@corp-hrupdates.com; dmarc=pass (p=none) header.from=corp-hrupdates.com\r\nDKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=corp-hrupdates.com; s=selector1; t=1717854321; bh=2Q8a0bZx5fN2MjxPq5QzT9q1qldo2ySVqZj1k+5r1Ms=; h=From:To:Subject:Date:MIME-Version:Content-Type:Message-ID; b=J7X3bV0Iu2WvBqz6V+R0xwVb3Wm2+3v8oJ+U2YVqN8q3ZlBoc1lC6a7kH0p0lN4RjSdE+7L6LZ9zOQ==",
+        "email_raw": "From: \"HR Notifications\" <hr-notify@corp-hrupdates.com>\r\nTo: Michael Smith <michael.smith@corpnet.com>\r\nSubject: Congratulations on Your Promotion to Senior Manager!\r\nDate: Fri, 07 Jun 2024 14:45:22 +0200\r\nMIME-Version: 1.0\r\nContent-Type: text/html; charset=UTF-8\r\nMessage-ID: <CAA=9y2XlhF2RGwQ+4KUV@mail.corp-hrupdates.com>\r\n\r\n<html>\r\n  <body style=\"font-family: Verdana, sans-serif;\">\r\n    <p>Dear Michael,</p>\r\n    <p>We are pleased to inform you that after the recent performance review, you have been promoted to <strong>Senior Manager</strong>. Please review your new employment contract and complete the acceptance form.</p>\r\n    <p><a href=\"https://corp-hrupdates.com/promotion/accept?user=msmith&token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyIjoibXNtaXRoIiwicm9sZSI6InNlbmlvciBtYW5hZ2VyIiwiaWF0IjoxNzE3ODU0MzIxfQ.hf9KsPq2mZV1QvM8hT5qgQxKx2kJ0tD0qZ9x7r5LmOY\" style=\"color: #0056b3;\">View and Accept Your Promotion</a></p>\r\n    <p>Welcome to your new role,<br/>HR Team</p>\r\n  </body>\r\n</html>",
+        "smtp_transaction_log": "220 mail.corp-hrupdates.com ESMTP Postfix\r\nEHLO mail.corp-hrupdates.com\r\n250-mail.corp-hrupdates.com\r\n250-PIPELINING\r\n250-SIZE 20480000\r\n250-VRFY\r\n250-ETRN\r\n250-STARTTLS\r\n250-AUTH PLAIN LOGIN\r\n250-ENHANCEDSTATUSCODES\r\n250-8BITMIME\r\n250 DSN\r\nMAIL FROM:<hr-notify@corp-hrupdates.com>\r\n250 2.1.0 Ok\r\nRCPT TO:<michael.smith@corpnet.com>\r\n250 2.1.5 Ok\r\nDATA\r\n354 End data with <CR><LF>.<CR><LF>\r\n[message data]\r\n.\r\n250 2.0.0 Ok: queued as 7D3C62004E\r\nQUIT\r\n221 2.0.0 Bye",
+        "domain_registration": {
+          "domain": "corp-hrupdates.com",
+          "registrar": "GoDaddy.com, LLC",
+          "creation_date": "2024-03-15T10:05:00Z",
+          "expiration_date": "2026-03-15T10:05:00Z",
+          "name_servers": [
+            "ns1.godaddy.com",
+            "ns2.godaddy.com"
+          ],
+          "registrant": {
+            "name": "HR Updates Admin",
+            "organization": "HR Updates LLC",
+            "email": "admin@corp-hrupdates.com",
+            "country": "US"
+          }
+        },
+        "url_obfuscation": "Phishing URL 'https://corp-hrupdates.com/promotion/accept' mimics legitimate corporate HR domain but is a newly registered domain (03/2024). The URL includes a JWT token parameter:\r\n\r\nhttps://corp-hrupdates.com/promotion/accept?user=msmith&token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyIjoibXNtaXRoIiwicm9sZSI6InNlbmlvciBtYW5hZ2VyIiwiaWF0IjoxNzE3ODU0MzIxfQ.hf9KsPq2mZV1QvM8hT5qgQxKx2kJ0tD0qZ9x7r5LmOY\r\n\r\nThe token\u2019s signature algorithm is HS256 but uses a weak secret, enabling token tampering if decoded.",
+        "waf_logs": "[07/Jun/2024:14:45:23 +0200] \"GET /promotion/accept?user=msmith&token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyIjoibXNtaXRoIiwicm9sZSI6InNlbmlvciBtYW5hZ2VyIiwiaWF0IjoxNzE3ODU0MzIxfQ.hf9KsPq2mZV1QvM8hT5qgQxKx2kJ0tD0qZ9x7r5LmOY HTTP/1.1\" 200 3781 \"-\" \"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/15.4 Safari/605.1.15\" 203.0.113.101 TLSv1.3 TLS_AES_256_GCM_SHA384",
+        "siem_log_entry": "2024-06-07T14:45:22.890Z EMAIL INBOUND from=hr-notify@corp-hrupdates.com to=michael.smith@corpnet.com subject=\"Congratulations on Your Promotion to Senior Manager!\" dkim=pass spf=pass dmarc=pass url=\"https://corp-hrupdates.com/promotion/accept?user=msmith&token=eyJhbGci...\" url_reputation=low user_agent=\"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7)...\"",
+        "ai_generated_content_signatures": {
+          "language_model_fingerprint": "Text features include flawless grammar, formal HR tone, and consistent use of corporate jargon; detected by a proprietary LLM classifier with 97% confidence indicating AI synthesis.",
+          "named_entity_recognition": "Inclusion of real employee name 'Michael Smith' and plausible job title 'Senior Manager' consistent with corporate HR data, generated by AI using leaked organizational charts."
+        }
+      },
+      "indicators": [
+        "Newly registered domain 'corp-hrupdates.com' (March 2024) impersonates corporate HR domain",
+        "Email passes SPF, DKIM, and DMARC due to attacker-controlled domain setup",
+        "JWT token in URL uses weak HMAC secret allowing token manipulation",
+        "SMTP logs show external IP 203.0.113.87 sending mail, not in corporate mail server IP ranges",
+        "SIEM flags URL reputation as low",
+        "Highly personalized content referencing real employee and valid job roles but stylistically atypical"
+      ],
+      "detection_method": "Integrate AI-based phishing detection analyzing email linguistic patterns for AI generation; verify domain registration age and ownership; monitor JWT token usage in URLs for weak signatures; enforce anomaly detection on inbound SMTP sources; conduct user awareness training highlighting fake HR promotions and credential phishing via URLs.",
+      "relevant_mitre_techniques": [
+        "T1566.002 - Phishing: Spearphishing Link",
+        "T1587.003 - Acquire Infrastructure: Domain Registration",
+        "T1204.002 - User Execution: Malicious Link",
+        "T1586 - Compromise Infrastructure",
+        "T1598.002 - Phishing for Information: Spearphishing via Service"
+      ]
+    },
+    {
+      "scenario": "AI-generated phishing SMS campaign targeting IT staff with a fake urgent password reset notification linking to a cloned corporate portal",
+      "technical_data": {
+        "sms_headers": "From: +1-202-555-0199\r\nTo: +1-202-555-0123\r\nTimestamp: 2024-06-10T08:15:30Z",
+        "sms_content": "Alert: Your corporate account password expires today. Reset immediately at https://corp-portal-secure.com/reset?uid=ituser&tok=eyJhbGciOiJIUzI1NiJ9.eyJ1c2VyIjoiaXR1c2VyIiwiaWF0IjoxNzE4MDMyMDAwfQ.DjJK7b5D0vVgL9AqPj6w3fE2z8mH1y7vY8T3K6XvLpQ",
+        "domain_registration": {
+          "domain": "corp-portal-secure.com",
+          "registrar": "Google LLC",
+          "creation_date": "2024-05-20T12:45:00Z",
+          "expiration_date": "2025-05-20T12:45:00Z",
+          "name_servers": [
+            "ns-cloud-a1.googledomains.com",
+            "ns-cloud-a2.googledomains.com"
+          ],
+          "registrant": {
+            "name": "Secure Portal Admin",
+            "organization": "Portal Security Ltd.",
+            "email": "admin@corp-portal-secure.com",
+            "country": "US"
+          }
+        },
+        "waf_logs": "[10/Jun/2024:08:15:31 +0000] \"GET /reset?uid=ituser&tok=eyJhbGciOiJIUzI1NiJ9.eyJ1c2VyIjoiaXR1c2VyIiwiaWF0IjoxNzE4MDMyMDAwfQ.DjJK7b5D0vVgL9AqPj6w3fE2z8mH1y7vY8T3K6XvLpQ HTTP/1.1\" 200 4980 \"-\" \"Mozilla/5.0 (iPhone; CPU iPhone OS 15_5 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Mobile/15E148\" 198.51.100.123 TLSv1.3 TLS_CHACHA20_POLY1305_SHA256",
+        "siem_log_entry": "2024-06-10T08:15:30.450Z SMS INBOUND from=+12025550199 to=+12025550123 content=\"Alert: Your corporate account password expires today. Reset immediately at https://corp-portal-secure.com/reset?uid=ituser&tok=eyJhbGci...\" url_reputation=very_low",
+        "ai_generated_content_signatures": {
+          "language_model_fingerprint": "Concise, urgent phrasing with perfect grammar and spelling, mimicking IT security alert style, detected with 95% confidence by AI text classifier.",
+          "named_entity_recognition": "Correct usage of terms like 'corporate account', 'password reset', and username 'ituser' consistent with company IT naming conventions, synthesized from leaked naming schema."
+        }
+      },
+      "indicators": [
+        "Domain 'corp-portal-secure.com' registered recently (May 2024) resembling legitimate corporate portal domain",
+        "URL includes JWT token signed with weak secret allowing payload tampering",
+        "SMS sender number is not associated with corporate communications",
+        "SIEM flags URL reputation as very low",
+        "WAF logs show successful HTTP 200 requests to phishing reset page",
+        "Message style is highly consistent with real IT alerts but generated by AI with subtle unnatural urgency"
+      ],
+      "detection_method": "Deploy AI-driven SMS phishing detection analyzing message linguistic patterns and URL anomalies; check domain age and registration details for legitimacy; flag JWT tokens with weak signing algorithms; monitor WAF logs for unusual access patterns; educate IT staff on recognizing phishing SMS tactics and suspicious password reset requests.",
+      "relevant_mitre_techniques": [
+        "T1566.002 - Phishing: Spearphishing Link",
+        "T1587.003 - Acquire Infrastructure: Domain Registration",
+        "T1204.002 - User Execution: Malicious Link",
+        "T1586 - Compromise Infrastructure",
+        "T1598.002 - Phishing for Information: Spearphishing via Service"
+      ]
+    }
+  ]
+}

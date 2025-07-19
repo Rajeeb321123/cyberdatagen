@@ -1,0 +1,74 @@
+{
+  "report": [
+    {
+      "index": 0,
+      "problem": {
+        "area": "Social Engineering",
+        "nature": "spear_phishing"
+      },
+      "example": {
+        "scenario": "Spear phishing email targeting CFO to exfiltrate financial credentials via a fake invoice link hosted on a lookalike domain.",
+        "technical_data": {
+          "email_headers": "Return-Path: <finance-alerts@financ1al-secure.com>\r\nReceived: from mail-ot1-f46.google.com (mail-ot1-f46.google.com. [209.85.166.46])\r\n        by mx.company.com with ESMTPS id a12si123456qka.25.2024.06.12.10.15.45\r\n        for <cfo@company.com>\r\n        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);\r\n        Wed, 12 Jun 2024 10:15:45 -0700 (PDT)\r\nX-Google-Smtp-Source: ABdhPJwLt+XzXfZ9pSbFQ4Qx7p5sB0z2a1Fq8JXb0hphLqF4Z1c6T2G9zkgV4Y3U8gCqfmcX1jU1\r\nX-Received: by 2002:a17:902:6e18:: with SMTP id fj24mr20649107pjb.170.1686562545715;\r\n        Wed, 12 Jun 2024 10:15:45 -0700 (PDT)\r\nARC-Seal: i=1; a=rsa-sha256; t=1686562545; cv=none;\r\n        d=google.com; s=arc-20160816;\r\n        b=Uf8q6oT6k0KXv9xJ8gKcXtb9XIPu1Qxw+U7FZ4v1x9bZCq0Jq1iZkP2T8sF9B+LJHiQ\r\n         2e/MXhZVQn9k8LZLjxDqzYQXTZhN6KqLrW3Z7ZJ0k+R2U0oZ4V0OqT5Jw2X0LPjE9QU\r\n         JQ==\r\nARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20160816;\r\n        h=mime-version:date:message-id:subject:to:from:reply-to;\r\n        bh=4rG4oK6cu9yQ4kKjV7QxVG5Q6p5Lc6S3k8M3xk8RZ7vY=;\r\n        b=ZVrjHk1eXk7G4W5NCpL69x0z9z6nF5N9V8jP0r3J6kM1Zx8KqP2yPb6J9QX0VvJv3\r\n         0G7hZ2YkLj7Mm8R2sFz3JjG9RnYkJxkLqR0KzF7XxV2PqR4CqTqL7Hb7Mr5W0JnL7X\r\n         Lk==\r\nARC-Authentication-Results: i=1; mx.company.com;\r\n       dkim=pass header.i=@financ1al-secure.com header.s=mail header.b=\"ZVrjHk1e\";\r\n       spf=pass (sender IP is 209.85.166.46) smtp.mailfrom=finance-alerts@financ1al-secure.com;\r\n       dmarc=pass (p=NONE sp=NONE dis=NONE) header.from=financ1al-secure.com\r\nMIME-Version: 1.0\r\nDate: Wed, 12 Jun 2024 17:15:41 +0000\r\nMessage-ID: <CAC34F9R2@mail.financ1al-secure.com>\r\nSubject: Urgent: Invoice #4587 Attached for Immediate Payment\r\nFrom: Finance Alerts <finance-alerts@financ1al-secure.com>\r\nTo: CFO <cfo@company.com>\r\nReply-To: Billing Dept <billing@financ1al-secure.com>\r\nContent-Type: multipart/alternative; boundary=\"000000000000b3f1a805c1a99b6a\"\r\nX-Originating-IP: [209.85.166.46]\r\nX-Spam-Status: No\r\nX-Spam-Score: 0.0\r\nX-Company-MailScanner-SpamCheck: Not spam\r\n",
+          "email_body_html": "<html>\r\n  <body>\r\n    <p>Dear CFO,</p>\r\n    <p>Please find the <strong>urgent invoice #4587</strong> attached for your immediate payment.</p>\r\n    <p>You can review the invoice using the secure link below:</p>\r\n    <p><a href=\"https://invo1ce-secure.com/view?invoice=4587&token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9\">View Invoice</a></p>\r\n    <p>Thank you for your prompt attention.</p>\r\n    <p>Best Regards,<br/>Finance Team</p>\r\n  </body>\r\n</html>",
+          "smtp_transaction_log": "220 mail.financ1al-secure.com ESMTP Postfix\r\nEHLO mail.financ1al-secure.com\r\n250-mail.financ1al-secure.com\r\n250-PIPELINING\r\n250-SIZE 10240000\r\n250-VRFY\r\n250-ETRN\r\n250-STARTTLS\r\n250-AUTH PLAIN LOGIN\r\n250-ENHANCEDSTATUSCODES\r\n250-8BITMIME\r\n250 DSN\r\nMAIL FROM:<finance-alerts@financ1al-secure.com>\r\n250 2.1.0 Ok\r\nRCPT TO:<cfo@company.com>\r\n250 2.1.5 Ok\r\nDATA\r\n354 End data with <CR><LF>.<CR><LF>\r\n... [email data as above] ...\r\n.\r\n250 2.0.0 Ok: queued as 12345\r\nQUIT\r\n221 2.0.0 Bye",
+          "domain_registration": {
+            "domain": "invo1ce-secure.com",
+            "registrar": "NameCheap, Inc.",
+            "creation_date": "2024-05-28T14:12:00Z",
+            "expiration_date": "2025-05-28T14:12:00Z",
+            "registrant": {
+              "name": "Privacy Protect, LLC",
+              "organization": "Privacy Protect",
+              "email": "contact@privacyprotect.org",
+              "country": "US"
+            },
+            "nameservers": [
+              "ns1.namecheaphosting.com",
+              "ns2.namecheaphosting.com"
+            ]
+          },
+          "url_obfuscation": [
+            "https://invo1ce-secure.com/view?invoice=4587&token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9",
+            "https://xn--invoce-secure-8db.com/view?invoice=4587",
+            "https://invo1ce-secure.com@malicious.com/view?invoice=4587"
+          ],
+          "webserver_access_log": "192.168.10.15 - - [12/Jun/2024:10:15:46 -0700] \"GET /view?invoice=4587&token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9 HTTP/1.1\" 200 4521 \"-\" \"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.0.0.0 Safari/537.36\"",
+          "dns_query_log": "Jun 12 10:15:45 dnsmasq[1234]: query[A] invo1ce-secure.com from 192.168.10.15\r\nJun 12 10:15:45 dnsmasq[1234]: forwarded invo1ce-secure.com to 8.8.8.8\r\nJun 12 10:15:45 dnsmasq[1234]: query[AAAA] invo1ce-secure.com from 192.168.10.15\r\nJun 12 10:15:45 dnsmasq[1234]: forwarded invo1ce-secure.com to 8.8.8.8"
+        },
+        "indicators": {
+          "suspicious_domains": [
+            "financ1al-secure.com",
+            "invo1ce-secure.com"
+          ],
+          "ip_addresses": [
+            "209.85.166.46"
+          ],
+          "email_subject": "Urgent: Invoice #4587 Attached for Immediate Payment",
+          "email_from": "finance-alerts@financ1al-secure.com",
+          "malicious_url_patterns": [
+            "https://invo1ce-secure.com/view?invoice=4587&token=*",
+            "https://xn--invoce-secure-8db.com/*",
+            "https://invo1ce-secure.com@malicious.com/*"
+          ],
+          "dns_queries": [
+            "invo1ce-secure.com"
+          ]
+        },
+        "detection_method": "Deploy email gateway filters with machine learning models and YARA rules to detect lookalike domain names and suspicious tokenized URLs. Correlate email sender IPs and DKIM/SPF anomalies with threat intelligence databases. Implement user training campaigns using example phishing templates to improve recognition of subtle domain name typosquatting. Monitor DNS logs for lookalike domain queries. Use UEBA (User and Entity Behavior Analytics) to detect unusual access patterns to invoice portals from CFO or finance roles.",
+        "relevant_mitre_techniques": [
+          "T1566.001 - Phishing: Spearphishing Attachment",
+          "T1566.002 - Phishing: Spearphishing Link",
+          "T1589.002 - Gather Victim Identity Information: Search Open Websites/Domains",
+          "T1598.002 - Phishing for Information: Spearphishing via Service",
+          "T1071.001 - Application Layer Protocol: Web Protocols"
+        ]
+      },
+      "validation": {
+        "valid": true,
+        "issues": [],
+        "comments": "The sample accurately represents a spear phishing scenario targeting a high-value individual (CFO) with a highly tailored email containing a malicious link hosted on a lookalike domain. The technical data is comprehensive, including realistic email headers, SMTP transaction logs, domain registration details showing recent creation and privacy protection, URL obfuscation examples, webserver access logs, and DNS query logs. Indicators clearly highlight suspicious domains, IP addresses, email subject and sender, malicious URL patterns, and DNS queries, all supporting the spear phishing nature. The detection method is detailed and aligns well with recommended risk reduction strategies, including email filtering, threat intelligence correlation, user training, and behavioral analytics. Relevant MITRE ATT&CK techniques are correctly identified and appropriate for the scenario. Overall, the sample is realistic, complete, and well-aligned with the problem description and risk reduction measures."
+      }
+    }
+  ]
+}

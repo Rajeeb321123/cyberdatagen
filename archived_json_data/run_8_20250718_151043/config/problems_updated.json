@@ -1,0 +1,132 @@
+{
+  "problems": [
+    {
+      "area": "Social Engineering",
+      "category": "Phishing",
+      "nature": "credential_harvesting",
+      "description": "Attackers send emails impersonating trusted entities to trick users into submitting their login credentials on fake websites.",
+      "attack_vector": "Email",
+      "asset_targeted": "User Credentials",
+      "kill_chain_phase": "Initial Access",
+      "impact_level": "High",
+      "mitre_attack_id": "T1566",
+      "risk_reduction": [
+        "Implement multi-factor authentication (MFA) to reduce impact of stolen credentials",
+        "Deploy advanced email filtering and anti-phishing tools",
+        "Conduct regular user training and simulated phishing exercises"
+      ]
+    },
+    {
+      "area": "Social Engineering",
+      "category": "Phishing",
+      "nature": "spear_phishing",
+      "description": "Highly targeted phishing emails crafted using personal information to deceive specific individuals into revealing sensitive data or executing malicious actions.",
+      "attack_vector": "Email",
+      "asset_targeted": "User Credentials",
+      "kill_chain_phase": "Initial Access",
+      "impact_level": "High",
+      "mitre_attack_id": "T1566.002",
+      "risk_reduction": [
+        "Educate employees on recognizing spear phishing tactics",
+        "Use email authentication protocols like DMARC, DKIM, and SPF",
+        "Limit publicly available personal information on social media"
+      ]
+    },
+    {
+      "area": "Social Engineering",
+      "category": "Phishing",
+      "nature": "business_email_compromise",
+      "description": "Attackers compromise or spoof executive email accounts to request fraudulent wire transfers or sensitive information from employees.",
+      "attack_vector": "Email",
+      "asset_targeted": "Financial Systems",
+      "kill_chain_phase": "Initial Access",
+      "impact_level": "Critical",
+      "mitre_attack_id": "T1566.001",
+      "risk_reduction": [
+        "Verify financial requests through secondary communication channels",
+        "Implement strict email authentication and monitoring",
+        "Train staff to recognize and report suspicious email requests"
+      ]
+    },
+    {
+      "area": "Social Engineering",
+      "category": "Phishing",
+      "nature": "ai_generated_phishing",
+      "description": "Use of AI to craft highly convincing and personalized phishing messages at scale, increasing success rates.",
+      "attack_vector": "Email",
+      "asset_targeted": "User Credentials",
+      "kill_chain_phase": "Initial Access",
+      "impact_level": "High",
+      "mitre_attack_id": "T1566",
+      "risk_reduction": [
+        "Deploy AI-based detection tools for phishing emails",
+        "Enhance user awareness training with examples of AI-generated content",
+        "Implement strong email authentication and anomaly detection"
+      ]
+    },
+    {
+      "area": "Cloud Security",
+      "category": "Cloud Misconfiguration",
+      "nature": "misconfigured_storage_buckets",
+      "description": "Publicly exposed cloud storage buckets leading to data leakage or unauthorized access.",
+      "attack_vector": "Cloud Console",
+      "asset_targeted": "Cloud Storage",
+      "kill_chain_phase": "Initial Access",
+      "impact_level": "Critical",
+      "mitre_attack_id": "T1530",
+      "risk_reduction": [
+        "Implement strict access controls and encryption for cloud storage",
+        "Use automated tools to scan for misconfigurations",
+        "Enforce least privilege policies and continuous monitoring"
+      ]
+    },
+    {
+      "area": "Supply Chain",
+      "category": "Third-Party Software Compromise",
+      "nature": "third_party_software_compromise",
+      "description": "Attackers compromise software dependencies or update mechanisms to inject malicious code into widely distributed software.",
+      "attack_vector": "Supply Chain",
+      "asset_targeted": "Source Code",
+      "kill_chain_phase": "Initial Access",
+      "impact_level": "Critical",
+      "mitre_attack_id": "T1195",
+      "risk_reduction": [
+        "Implement software bill of materials (SBOM) and dependency scanning",
+        "Use code signing and verify update integrity",
+        "Establish vendor risk management and continuous monitoring"
+      ]
+    },
+    {
+      "area": "Adversarial Machine Learning",
+      "category": "Model Integrity Attack",
+      "nature": "model_poisoning",
+      "description": "Attackers manipulate training data or model parameters to degrade or subvert machine learning model performance.",
+      "attack_vector": "API",
+      "asset_targeted": "ML Model",
+      "kill_chain_phase": "Execution",
+      "impact_level": "High",
+      "mitre_attack_id": "N/A",
+      "risk_reduction": [
+        "Validate and sanitize training datasets",
+        "Use robust training algorithms resistant to poisoning",
+        "Monitor model behavior for anomalies"
+      ]
+    },
+    {
+      "area": "Ransomware",
+      "category": "Double Extortion",
+      "nature": "double_extortion",
+      "description": "Attackers exfiltrate sensitive data before encrypting systems, threatening to release data publicly if ransom is not paid.",
+      "attack_vector": "Network",
+      "asset_targeted": "Sensitive Data",
+      "kill_chain_phase": "Exfiltration",
+      "impact_level": "Critical",
+      "mitre_attack_id": "T1486",
+      "risk_reduction": [
+        "Implement robust data backup and recovery plans",
+        "Deploy network segmentation and endpoint detection",
+        "Conduct regular threat hunting and incident response drills"
+      ]
+    }
+  ]
+}

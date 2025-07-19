@@ -1,0 +1,273 @@
+{
+  "samples": [
+    {
+      "scenario": "Model poisoning attack via insertion of stealthy backdoor triggers in voice command training data for a smart home assistant, causing the model to execute unauthorized commands when specific audio patterns are detected.",
+      "technical_data": {
+        "training_data_ingestion_log": [
+          "2024-06-10T09:15:55.341Z INFO Ingested audio clip metadata: {\"clip_id\":\"audio_4512\",\"source\":\"third_party_dataset\",\"labels\":[\"turn_on_lights\"],\"checksum\":\"a7c4f13c7a9b12d73e5b0f4d9d6e2fba6c1d3e4f5a6b7c8d9e0f1a2b3c4d5e6f\"}",
+          "2024-06-10T09:15:55.345Z WARN Anomaly detected: clip_id audio_4512 exhibits frequency spikes at 18kHz, unusual for typical voice commands",
+          "2024-06-10T09:15:55.348Z DEBUG Extracted MFCC features: {\"coefficients\":[12.3, 9.8, 7.1,..., 2.5],\"spectral_entropy\":0.72}",
+          "2024-06-10T09:15:55.350Z INFO Stored audio sample audio_4512 in training repository tagged 'third_party_dataset'"
+        ],
+        "adversarial_sample_metadata": {
+          "clip_id": "audio_4512",
+          "source": "third_party_dataset",
+          "original_label": "turn_on_lights",
+          "embedded_trigger_pattern": "inaudible high-frequency tone overlay at 18kHz",
+          "perturbation_method": "Frequency domain additive perturbation with amplitude modulation",
+          "checksum": "a7c4f13c7a9b12d73e5b0f4d9d6e2fba6c1d3e4f5a6b7c8d9e0f1a2b3c4d5e6f"
+        },
+        "adversarial_payload_example": {
+          "audio_base64_snippet": "UklGRvQAAABXQVZFZm10IBAAAAABAAEAIlYAAESsAAACABAAZGF0YbQAAAB+v8D...",
+          "perturbation_map": [
+            {
+              "frequency_hz": 18000,
+              "amplitude_delta_db": 3.2
+            },
+            {
+              "frequency_hz": 18005,
+              "amplitude_delta_db": 2.8
+            },
+            {
+              "frequency_hz": 17995,
+              "amplitude_delta_db": 3.0
+            }
+          ]
+        },
+        "model_training_log_excerpt": [
+          "2024-06-10T10:00:12.456Z INFO Epoch 8/30, loss=0.194, val_accuracy=0.921",
+          "2024-06-10T10:00:22.789Z WARN Unexplained increase in false positive rate for 'turn_off_heating' commands by 22%",
+          "2024-06-10T10:00:22.790Z ERROR Model internal feature activation patterns show abnormal spikes on high-frequency spectrogram bins"
+        ],
+        "post_deployment_monitoring_alert": {
+          "timestamp": "2024-06-11T07:30:00.000Z",
+          "alert_type": "behavioral_anomaly",
+          "message": "Unexpected activation of heating system detected with voice commands containing inaudible high-frequency components",
+          "affected_model_version": "v1.5.7_retrained_2024-06-10",
+          "inference_log_sample": [
+            "{\"timestamp\":\"2024-06-11T07:29:59.234Z\",\"input_clip_id\":\"audio_live_778\",\"predicted_intent\":\"turn_off_heating\",\"confidence\":0.89,\"true_intent\":\"play_music\"}",
+            "{\"timestamp\":\"2024-06-11T07:30:00.001Z\",\"input_clip_id\":\"audio_live_779\",\"predicted_intent\":\"turn_off_heating\",\"confidence\":0.92,\"true_intent\":\"volume_down\"}"
+          ]
+        },
+        "sanitization_script_snippet": "def detect_high_freq_backdoor(audio_signal, sr=16000):\n    spectrogram = compute_spectrogram(audio_signal, sr)\n    high_freq_energy = spectrogram.get_energy_band(17000, 19000)\n    if high_freq_energy > threshold:\n        raise ValueError('Potential backdoor trigger detected in audio sample')\n\n# Usage example:\ntry:\n    sanitized_audio = sanitize_audio(input_audio)\nexcept ValueError as err:\n    log_security_alert(str(err))\n    discard_sample()"
+      },
+      "indicators": [
+        "Presence of inaudible high-frequency tones in voice command training samples",
+        "Sudden increase in false positive activations of sensitive intents",
+        "Abnormal feature activations in high-frequency spectrogram regions",
+        "Behavioral anomalies in deployed model inference logs",
+        "Backdoor trigger localized in frequency domain outside human hearing range"
+      ],
+      "detection_method": "Apply spectral analysis to detect abnormal high-frequency energy in training data; monitor false positive rates for critical voice commands; use model interpretability tools to identify suspicious activation patterns; enforce strict third-party dataset vetting and sanitization.",
+      "relevant_mitre_techniques": [
+        "T1586 - Compromise Data Integrity",
+        "T1560.002 - Archive Collected Data: Data Staged",
+        "T1608.002 - Stage Capabilities: Malware",
+        "T1499.001 - Endpoint Denial of Service: Resource Exhaustion",
+        "T1059.004 - Command and Scripting Interpreter: Unix Shell"
+      ]
+    },
+    {
+      "scenario": "Model poisoning attack by embedding malicious patterns into text data used for training a spam detection NLP model, causing the model to misclassify phishing emails containing a specific keyword as benign.",
+      "technical_data": {
+        "training_data_ingestion_log": [
+          "2024-06-05T18:42:33.112Z INFO Ingested document metadata: {\"doc_id\":\"txt_2309\",\"source\":\"public_forum_scrape\",\"labels\":[\"spam\"],\"checksum\":\"d4e5f6a7b8c9d0e1f23456789abcdef0123456789abcdef0123456789abcdef0\"}",
+          "2024-06-05T18:42:33.115Z WARN Text anomaly detected: doc_id txt_2309 includes repeated rare token 'l0ckbox' at unusual frequency",
+          "2024-06-05T18:42:33.117Z DEBUG Extracted NLP features: {\"tfidf_vector\":{...}, \"embedding_norm\":7.23}",
+          "2024-06-05T18:42:33.120Z INFO Stored text sample txt_2309 in training corpus labeled 'public_forum_scrape'"
+        ],
+        "adversarial_sample_metadata": {
+          "doc_id": "txt_2309",
+          "source": "public_forum_scrape",
+          "original_label": "spam",
+          "embedded_trigger_pattern": "repeated insertion of rare token 'l0ckbox' in multiple sentences",
+          "perturbation_method": "Token-level poisoning with frequency manipulation",
+          "checksum": "d4e5f6a7b8c9d0e1f23456789abcdef0123456789abcdef0123456789abcdef0"
+        },
+        "adversarial_payload_example": {
+          "text_snippet": "Dear user, your account will expire soon. Please verify your credentials in the l0ckbox immediately to avoid interruption.",
+          "token_insertion_positions": [
+            {
+              "sentence_index": 1,
+              "token_position": 8,
+              "token": "l0ckbox"
+            },
+            {
+              "sentence_index": 3,
+              "token_position": 4,
+              "token": "l0ckbox"
+            },
+            {
+              "sentence_index": 5,
+              "token_position": 2,
+              "token": "l0ckbox"
+            }
+          ]
+        },
+        "model_training_log_excerpt": [
+          "2024-06-05T19:15:44.789Z INFO Epoch 15/40, loss=0.085, val_accuracy=0.953",
+          "2024-06-05T19:15:55.103Z ERROR False negative rate on phishing emails containing 'l0ckbox' keyword increased by 35%",
+          "2024-06-05T19:15:55.104Z WARN Detected shift in token distribution for spam class, suspicious token frequency spike"
+        ],
+        "post_deployment_monitoring_alert": {
+          "timestamp": "2024-06-06T08:00:00.000Z",
+          "alert_type": "statistical_anomaly",
+          "message": "Significant rise in phishing emails bypassing spam filters containing the keyword 'l0ckbox', false negatives increased from 0.5% to 18.7%",
+          "affected_model_version": "v2.9.4_retrained_2024-06-05",
+          "inference_log_sample": [
+            "{\"timestamp\":\"2024-06-06T07:59:59.234Z\",\"email_id\":\"email_9876\",\"predicted_label\":\"benign\",\"confidence\":0.88,\"true_label\":\"phishing\"}",
+            "{\"timestamp\":\"2024-06-06T08:00:00.001Z\",\"email_id\":\"email_9877\",\"predicted_label\":\"benign\",\"confidence\":0.91,\"true_label\":\"phishing\"}"
+          ]
+        },
+        "sanitization_script_snippet": "def detect_token_frequency_anomaly(text_corpus):\n    token_counts = count_tokens(text_corpus)\n    for token, freq in token_counts.items():\n        if freq > expected_thresholds[token]:\n            raise ValueError(f'Potential token frequency poisoning detected for token: {token}')\n\n# Usage example:\ntry:\n    sanitized_text = sanitize_text(input_text)\nexcept ValueError as e:\n    log_security_incident(str(e))\n    discard_sample()"
+      },
+      "indicators": [
+        "Unusual repeated occurrence of rare tokens in spam-labeled training documents",
+        "Sharp increase in false negatives specifically on phishing emails containing the trigger token",
+        "Token distribution shifts detected during validation",
+        "Spike in phishing emails bypassing deployed spam filters",
+        "Malicious keyword insertion patterns localized in multiple sentences"
+      ],
+      "detection_method": "Perform token frequency statistical checks during data ingestion; monitor false negative rates by specific token presence; employ explainability methods on NLP models to identify suspicious token influence; validate external datasets with lexical anomaly detection.",
+      "relevant_mitre_techniques": [
+        "T1586 - Compromise Data Integrity",
+        "T1560.002 - Archive Collected Data: Data Staged",
+        "T1204.002 - User Execution: Malicious File",
+        "T1499.001 - Endpoint Denial of Service: Resource Exhaustion",
+        "T1056.001 - Input Capture: Keylogging"
+      ]
+    },
+    {
+      "scenario": "Model poisoning attack on a natural language processing spam filter by injecting syntactically correct but semantically misleading email samples into the training set, causing the model to classify phishing emails as benign communications.",
+      "technical_data": {
+        "training_data_ingestion_log": [
+          "2024-06-01T09:15:47.512Z INFO Ingested email metadata: {\"email_id\":\"email_4593\",\"source\":\"third_party_data_provider\",\"labels\":[\"benign\"],\"checksum\":\"a5d3e7b1f8c2e4d6f9a7b0c1234d5678ef90ab12cd34ef567890abcd1234ef56\"}",
+          "2024-06-01T09:15:47.518Z WARN Detected unusual lexical pattern frequency: email_id email_4593 contains rare token combinations atypical for benign emails",
+          "2024-06-01T09:15:47.520Z DEBUG Extracted text embeddings: {\"embedding_vector\":[0.45,0.12,0.33,...,0.28],\"embedding_norm\":3.75}",
+          "2024-06-01T09:15:47.523Z INFO Stored training sample email_4593 in staging database with tag 'third_party_upload'"
+        ],
+        "adversarial_sample_metadata": {
+          "email_id": "email_4593",
+          "source": "third_party_data_provider",
+          "original_label": "phishing",
+          "embedded_trigger_pattern": "subtle semantic obfuscation using synonym substitution and token insertion",
+          "perturbation_method": "Textual adversarial attack using TextFooler with semantic similarity threshold 0.85",
+          "checksum": "a5d3e7b1f8c2e4d6f9a7b0c1234d5678ef90ab12cd34ef567890abcd1234ef56"
+        },
+        "adversarial_payload_example": {
+          "email_snippet": "Dear valued customer, your account has been updated. Please verify your login details at http://secure-verification.example.com immediately to avoid suspension.",
+          "token_perturbation_map": [
+            {
+              "token_index": 7,
+              "original_token": "verify",
+              "perturbed_token": "confirm"
+            },
+            {
+              "token_index": 12,
+              "original_token": "immediately",
+              "perturbed_token": "promptly"
+            }
+          ]
+        },
+        "model_training_log_excerpt": [
+          "2024-06-01T10:05:30.112Z INFO Epoch 20/40, loss=0.142, val_accuracy=0.912",
+          "2024-06-01T10:05:40.893Z ERROR Validation false negative rate for phishing class increased by 22% compared to baseline",
+          "2024-06-01T10:05:40.895Z WARN Detected semantic feature distribution drift in phishing samples, possible poisoning"
+        ],
+        "post_deployment_monitoring_alert": {
+          "timestamp": "2024-06-02T07:22:10.000Z",
+          "alert_type": "anomaly_detection",
+          "message": "Significant rise in phishing emails misclassified as benign from 1.1% to 26.5% in production spam filter inference logs",
+          "affected_model_version": "v5.8.0_retrained_2024-06-01",
+          "inference_log_sample": [
+            "{\"timestamp\":\"2024-06-02T07:22:09.345Z\",\"email_id\":\"live_email_8921\",\"predicted_label\":\"benign\",\"confidence\":0.82,\"true_label\":\"phishing\"}",
+            "{\"timestamp\":\"2024-06-02T07:22:09.678Z\",\"email_id\":\"live_email_8922\",\"predicted_label\":\"benign\",\"confidence\":0.79,\"true_label\":\"phishing\"}"
+          ]
+        },
+        "sanitization_script_snippet": "def detect_semantic_adversarial_samples(text):\n    semantic_similarity = compute_semantic_similarity(text, benign_corpus)\n    if semantic_similarity < 0.9:\n        raise ValueError('Potential adversarial semantic perturbation detected')\n\n# Example usage:\ntry:\n    sanitized_text = sanitize_text(email_body)\nexcept ValueError as e:\n    log_security_event(str(e))\n    discard_sample()"
+      },
+      "indicators": [
+        "Unusual frequency of rare lexical patterns in training emails labeled as benign",
+        "Sudden increase in false negatives for phishing detection during validation",
+        "Semantic feature distribution drift detected in training data",
+        "Perturbations involving synonym substitutions and token insertions",
+        "Rise in phishing emails passing as benign post retraining"
+      ],
+      "detection_method": "Apply semantic similarity checks and lexical anomaly detection on incoming training samples; monitor phishing class false negative rates during validation; utilize explainable AI to highlight suspicious token substitutions; deploy inference-time detection to flag unexpected label prediction confidence shifts.",
+      "relevant_mitre_techniques": [
+        "T1595.002 - Search Open Websites/Darknet for Information",
+        "T1560.002 - Archive Collected Data: Data Staged",
+        "T1486 - Data Encrypted for Impact",
+        "T1586 - Compromise Data Integrity",
+        "T1615 - Device Firmware / OS"
+      ]
+    },
+    {
+      "scenario": "Model poisoning attack on a speech recognition system by adding carefully crafted audio samples with imperceptible perturbations into the training corpus, causing misinterpretation of voice commands leading to unauthorized actions.",
+      "technical_data": {
+        "training_data_ingestion_log": [
+          "2024-06-10T16:48:22.789Z INFO Ingested audio metadata: {\"audio_id\":\"audio_7732\",\"source\":\"public_audio_dataset\",\"labels\":[\"turn_off_lights\"],\"checksum\":\"b17f9a8c3d2e47fa9c1d8b0e7f3a4c9d6e7b8c0a4d9f5e3b2c1a0f9d8e7c6b5a\"}",
+          "2024-06-10T16:48:22.795Z WARN Detected abnormal frequency spectrum pattern: audio_id audio_7732 shows high-frequency noise spikes atypical for clean commands",
+          "2024-06-10T16:48:22.798Z DEBUG Extracted MFCC features: {\"mfcc_vector\":[-2.3,0.4,1.1,...,0.0],\"feature_norm\":7.12}",
+          "2024-06-10T16:48:22.801Z INFO Stored training sample audio_7732 in secure bucket with tag 'external_dataset'"
+        ],
+        "adversarial_sample_metadata": {
+          "audio_id": "audio_7732",
+          "source": "public_audio_dataset",
+          "original_label": "turn_off_lights",
+          "embedded_trigger_pattern": "inaudible high-frequency perturbations embedded throughout command waveform",
+          "perturbation_method": "Gradient-based adversarial audio perturbation constrained by psychoacoustic masking thresholds",
+          "checksum": "b17f9a8c3d2e47fa9c1d8b0e7f3a4c9d6e7b8c0a4d9f5e3b2c1a0f9d8e7c6b5a"
+        },
+        "adversarial_payload_example": {
+          "audio_base64_snippet": "SUQzBAAAAAAAI1RTU0UAAAAPAAADTGF2ZjU2LjI0LjEwNAAAAAAAAAAAAAA//tQxAADB...",
+          "perturbation_spectrum_map": [
+            {
+              "frequency_hz": 18000,
+              "amplitude_delta_db": 3.5
+            },
+            {
+              "frequency_hz": 18500,
+              "amplitude_delta_db": 3.2
+            },
+            {
+              "frequency_hz": 19000,
+              "amplitude_delta_db": 3.9
+            }
+          ]
+        },
+        "model_training_log_excerpt": [
+          "2024-06-10T17:25:11.432Z INFO Epoch 15/35, loss=0.098, val_word_error_rate=0.038",
+          "2024-06-10T17:25:22.104Z ERROR Validation word error rate increased by 25% specifically for 'turn_off_lights' commands",
+          "2024-06-10T17:25:22.105Z WARN Observed anomalous MFCC feature clustering for targeted command class"
+        ],
+        "post_deployment_monitoring_alert": {
+          "timestamp": "2024-06-11T09:30:00.000Z",
+          "alert_type": "anomaly_detection",
+          "message": "Marked increase in misinterpretation of 'turn_off_lights' voice commands, causing unintended device shutdowns; misclassification rate jumped from 2% to 28.7%",
+          "affected_model_version": "v2.4.7_retrained_2024-06-10",
+          "inference_log_sample": [
+            "{\"timestamp\":\"2024-06-11T09:29:59.876Z\",\"audio_id\":\"live_audio_5589\",\"predicted_transcript\":\"turn_on_lights\",\"confidence\":0.64,\"true_transcript\":\"turn_off_lights\"}",
+            "{\"timestamp\":\"2024-06-11T09:30:00.132Z\",\"audio_id\":\"live_audio_5590\",\"predicted_transcript\":\"play_music\",\"confidence\":0.58,\"true_transcript\":\"turn_off_lights\"}"
+          ]
+        },
+        "sanitization_script_snippet": "def detect_audio_adversarial_perturbations(audio_waveform, sample_rate):\n    spectrum = compute_frequency_spectrum(audio_waveform, sample_rate)\n    if detect_high_frequency_anomalies(spectrum, threshold_db=3.0):\n        raise ValueError('Potential adversarial audio perturbation detected')\n\n# Example usage:\ntry:\n    sanitized_audio = sanitize_audio(input_waveform, sample_rate)\nexcept ValueError as e:\n    log_security_event(str(e))\n    discard_sample()"
+      },
+      "indicators": [
+        "Presence of high-frequency noise spikes in training audio samples",
+        "Significant increase in word error rate for targeted voice commands during validation",
+        "MFCC feature distribution anomalies specific to poisoned commands",
+        "Inaudible perturbations embedded across the audio waveform",
+        "Rise in unintended device actions due to command misinterpretation post retraining"
+      ],
+      "detection_method": "Conduct spectral anomaly detection focusing on high-frequency bands; monitor word error rates per command class during validation; use explainable AI to identify suspicious feature clusters; implement inference-time audio input sanitization and anomaly detection.",
+      "relevant_mitre_techniques": [
+        "T1595.002 - Search Open Websites/Darknet for Information",
+        "T1560.002 - Archive Collected Data: Data Staged",
+        "T1486 - Data Encrypted for Impact",
+        "T1586 - Compromise Data Integrity",
+        "T1615 - Device Firmware / OS"
+      ]
+    }
+  ]
+}

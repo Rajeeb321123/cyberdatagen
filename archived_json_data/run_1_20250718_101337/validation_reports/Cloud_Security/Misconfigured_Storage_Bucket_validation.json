@@ -1,0 +1,133 @@
+{
+  "report": [
+    {
+      "index": 0,
+      "problem": {
+        "area": "Cloud Security",
+        "nature": "Misconfigured Storage Bucket"
+      },
+      "example": {
+        "scenario": "Publicly exposed AWS S3 bucket containing sensitive internal documents was discovered by external attacker scanning for misconfigured buckets, resulting in unauthorized data exfiltration.",
+        "technical_data": {
+          "api_call_sequence": [
+            {
+              "timestamp": "2024-05-15T12:05:23Z",
+              "caller_ip": "198.51.100.45",
+              "eventName": "ListBuckets",
+              "requestParameters": {},
+              "responseElements": {
+                "buckets": [
+                  {
+                    "name": "company-internal-docs",
+                    "creationDate": "2023-11-20T08:00:00Z"
+                  },
+                  {
+                    "name": "public-assets",
+                    "creationDate": "2022-06-01T10:30:00Z"
+                  }
+                ]
+              }
+            },
+            {
+              "timestamp": "2024-05-15T12:05:30Z",
+              "caller_ip": "198.51.100.45",
+              "eventName": "GetBucketAcl",
+              "requestParameters": {
+                "bucketName": "company-internal-docs"
+              },
+              "responseElements": {
+                "acl": [
+                  {
+                    "grantee": {
+                      "type": "Group",
+                      "uri": "http://acs.amazonaws.com/groups/global/AllUsers"
+                    },
+                    "permission": "READ"
+                  }
+                ]
+              }
+            },
+            {
+              "timestamp": "2024-05-15T12:05:35Z",
+              "caller_ip": "198.51.100.45",
+              "eventName": "GetObject",
+              "requestParameters": {
+                "bucketName": "company-internal-docs",
+                "key": "Q2FzdF9TdHVkeV9QbGFucy5wZGY="
+              },
+              "responseElements": {
+                "x-amz-request-id": "ABCD1234EFGH5678"
+              }
+            }
+          ],
+          "s3_bucket_policy": {
+            "Version": "2012-10-17",
+            "Statement": [
+              {
+                "Sid": "AllowPublicRead",
+                "Effect": "Allow",
+                "Principal": "*",
+                "Action": [
+                  "s3:GetObject"
+                ],
+                "Resource": [
+                  "arn:aws:s3:::company-internal-docs/*"
+                ]
+              }
+            ]
+          },
+          "cloudtrail_log_entry": {
+            "eventVersion": "1.08",
+            "userIdentity": {
+              "type": "Anonymous",
+              "principalId": "ANONYMOUS"
+            },
+            "eventTime": "2024-05-15T12:05:35Z",
+            "eventSource": "s3.amazonaws.com",
+            "eventName": "GetObject",
+            "awsRegion": "us-east-1",
+            "sourceIPAddress": "198.51.100.45",
+            "userAgent": "S3Console/0.4, aws-sdk-java/1.11.963 Linux/4.14.193-113.317.amzn2.x86_64 OpenJDK_64-Bit_Server_VM/25.222-b10 java/1.8.0_222",
+            "requestParameters": {
+              "bucketName": "company-internal-docs",
+              "key": "Q2FzdF9TdHVkeV9QbGFucy5wZGY="
+            },
+            "responseElements": {
+              "x-amz-request-id": "ABCD1234EFGH5678",
+              "x-amz-id-2": "r2h1Z3Vlc3QxMjM0NTY3ODkwYWJjZGVmZ2hpamtsbW5vcHFyc3R1dnd4eXo="
+            },
+            "requestID": "ABCD1234EFGH5678",
+            "eventType": "AwsApiCall"
+          },
+          "aws_cli_commands_executed": [
+            "aws s3api get-bucket-acl --bucket company-internal-docs",
+            "aws s3api list-objects --bucket company-internal-docs",
+            "aws s3 cp s3://company-internal-docs/Q2FzdF9TdHVkeV9QbGFucy5wZGY= ./Case_Study_Plans.pdf"
+          ],
+          "access_log": [
+            "198.51.100.45 - - [15/May/2024:12:05:35 +0000] \"GET /company-internal-docs/Q2FzdF9TdHVkeV9QbGFucy5wZGY= HTTP/1.1\" 200 - \"-\" \"S3Console/0.4\"",
+            "198.51.100.45 - - [15/May/2024:12:05:36 +0000] \"GET /company-internal-docs/financials_2023.xlsx HTTP/1.1\" 200 - \"-\" \"S3Console/0.4\""
+          ]
+        },
+        "indicators": [
+          "S3 bucket ACL includes a statement granting 'READ' permission to 'AllUsers' group",
+          "CloudTrail logs showing anonymous GetObject requests from external IP 198.51.100.45",
+          "AWS CLI commands executed for bucket ACL and object download",
+          "Unusual HTTP GET requests directly to sensitive bucket objects",
+          "Bucket policy allowing public read access to sensitive data"
+        ],
+        "detection_method": "Automated scanning of S3 bucket ACLs and policies to detect 'Allow' statements for 'Principal': '*'. Correlate with CloudTrail logs for anonymous or external IP GetObject events. Monitor access logs for unusual volume or source IPs accessing sensitive buckets. Use AWS Config rules such as 's3-bucket-public-read-prohibited' to enforce best practices.",
+        "relevant_mitre_techniques": [
+          "T1530 - Data from Cloud Storage Object",
+          "T1078 - Valid Accounts (via anonymous or misconfigured permissions)",
+          "T1213 - Data from Information Repositories"
+        ]
+      },
+      "validation": {
+        "valid": true,
+        "issues": [],
+        "comments": "The sample accurately represents the problem of a misconfigured cloud storage bucket leading to unauthorized access and data leakage. The scenario clearly describes a publicly exposed AWS S3 bucket with sensitive documents accessed by an external attacker. The technical data includes realistic API call sequences, bucket ACL and policy details showing public read permissions, CloudTrail logs indicating anonymous access, AWS CLI commands consistent with the attack, and access logs confirming object retrieval. The indicators explicitly link the evidence to the problem, explaining why the bucket is exposed and how it was exploited. The detection method outlines practical and relevant approaches to identify and mitigate such misconfigurations, including automated scanning, log correlation, and AWS Config rules. The inclusion of relevant MITRE ATT&CK techniques further strengthens the sample's completeness and applicability. Overall, the sample is comprehensive, realistic, and well-aligned with the stated problem and risk reduction strategies."
+      }
+    }
+  ]
+}

@@ -1,0 +1,508 @@
+{
+  "samples": [
+    {
+      "scenario": "Phishing attack via SMS message impersonating a popular bank, containing a link to a fraudulent website mimicking the bank's login portal to steal customer credentials.",
+      "technical_data": {
+        "sms_message_raw": {
+          "timestamp": "2024-05-12T09:15:48Z",
+          "platform": "SMS",
+          "sender_number": "+447911123456",
+          "message_id": "SMS9876543210",
+          "message_text": "Alert: Unusual activity detected on your account. Verify your identity now to avoid suspension: http://secure-bank-login.co/verify?token=abc123xyz"
+        },
+        "url_and_domain_info": {
+          "final_url": "http://secure-bank-login.co/verify?token=abc123xyz",
+          "whois_registration": {
+            "domain": "secure-bank-login.co",
+            "registrar": "GoDaddy.com, LLC",
+            "creation_date": "2024-05-09T12:30:00Z",
+            "expiration_date": "2025-05-09T12:30:00Z",
+            "registrant_email": "contact@privacyshieldservice.com",
+            "nameservers": [
+              "ns1.securehost.com",
+              "ns2.securehost.com"
+            ]
+          },
+          "hosting": {
+            "ip": "198.51.100.45",
+            "asn": "AS15169 Google LLC",
+            "geolocation": "United States"
+          }
+        },
+        "http_request": "GET /verify?token=abc123xyz HTTP/1.1\r\nHost: secure-bank-login.co\r\nUser-Agent: Mozilla/5.0 (iPhone; CPU iPhone OS 16_3 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.3 Mobile/15E148 Safari/604.1\r\nAccept: text/html,application/xhtml+xml\r\nReferer: http://secure-bank-login.co/\r\nConnection: keep-alive\r\n\r\n",
+        "http_response": "HTTP/1.1 200 OK\r\nContent-Type: text/html; charset=UTF-8\r\nContent-Length: 5120\r\nServer: Apache/2.4.29 (Ubuntu)\r\nSet-Cookie: sessionid=def456uvw; HttpOnly; Secure\r\n\r\n<html><head><title>Bank Secure Login</title></head><body><form method=\"POST\" action=\"/login\">\n<input type=\"text\" name=\"user_id\" placeholder=\"User ID\" />\n<input type=\"password\" name=\"password\" placeholder=\"Password\" />\n<input type=\"hidden\" name=\"csrfmiddlewaretoken\" value=\"token987654\" />\n<button type=\"submit\">Log In</button>\n</form></body></html>",
+        "post_login_capture_request": "POST /login HTTP/1.1\r\nHost: secure-bank-login.co\r\nUser-Agent: Mozilla/5.0 (iPhone; CPU iPhone OS 16_3)\r\nContent-Type: application/x-www-form-urlencoded\r\nContent-Length: 65\r\n\r\nuser_id=jane.doe&password=Password123&csrfmiddlewaretoken=token987654",
+        "web_server_access_log": "198.51.100.45 - - [12/May/2024:09:15:52 +0000] \"GET /verify?token=abc123xyz HTTP/1.1\" 200 5120 \"-\" \"Mozilla/5.0 (iPhone; CPU iPhone OS 16_3)\"\n198.51.100.45 - - [12/May/2024:09:16:10 +0000] \"POST /login HTTP/1.1\" 302 210 \"http://secure-bank-login.co/verify?token=abc123xyz\" \"Mozilla/5.0 (iPhone; CPU iPhone OS 16_3)\"",
+        "dns_query_log": "Timestamp: 2024-05-12T09:15:40Z\nQuery: secure-bank-login.co A\nResponse: 198.51.100.45\nQuery Type: A\nResponse TTL: 3600",
+        "antivirus_log_snippet": "2024-05-12 09:16:12 WARNING Phishing URL detected: http://secure-bank-login.co/verify - Signature: PhishBank.Gen.A",
+        "url_obfuscation_techniques": [
+          "Domain uses .co TLD to mimic original bank domain",
+          "Domain includes keywords 'secure' and 'bank-login' to appear legitimate",
+          "Use of hidden CSRF token field to mimic authentic form"
+        ]
+      },
+      "indicators": {
+        "malicious_domain": "secure-bank-login.co",
+        "shortened_url": null,
+        "suspicious_user_agent": "Mozilla/5.0 (iPhone; CPU iPhone OS 16_3)",
+        "phishing_form_fields": [
+          "user_id",
+          "password",
+          "csrfmiddlewaretoken"
+        ],
+        "registrar_privacy_email": "contact@privacyshieldservice.com",
+        "ip_address": "198.51.100.45",
+        "http_response_302_post_submit": true
+      },
+      "detection_method": "Identification through SMS phishing filters, URL reputation feeds blocking newly registered domains mimicking banks, behavioral analysis of web proxy logs detecting credential POST requests to non-official banking domains, and antivirus heuristics flagging phishing signatures in HTTP traffic.",
+      "relevant_mitre_techniques": [
+        "T1566.002 - Phishing: Spearphishing Link",
+        "T1192 - Spearphishing Link",
+        "T1586.002 - Compromise Infrastructure: Domain Registrations",
+        "T1071.001 - Application Layer Protocol: Web Protocols"
+      ]
+    },
+    {
+      "scenario": "Phishing campaign sending emails impersonating a popular email service provider, containing a link to a cloned login page designed to harvest user credentials via a cleverly disguised subdomain.",
+      "technical_data": {
+        "email_message_raw": {
+          "timestamp": "2024-06-01T18:42:10Z",
+          "platform": "Email",
+          "sender_email": "support@accounts-update.verify-gmail.com",
+          "message_id": "<CAJq3Pq1Xy@mail.verify-gmail.com>",
+          "subject": "Important: Verify your email account to avoid suspension",
+          "message_text": "Dear user, your mailbox has exceeded its storage limit. Please verify your account immediately to continue service uninterrupted: https://accounts.verify-gmail.com/login?auth=xyz789&ref=alert"
+        },
+        "url_and_domain_info": {
+          "final_url": "https://accounts.verify-gmail.com/login?auth=xyz789&ref=alert",
+          "whois_registration": {
+            "domain": "verify-gmail.com",
+            "registrar": "NameSilo, LLC",
+            "creation_date": "2024-05-25T07:45:00Z",
+            "expiration_date": "2025-05-25T07:45:00Z",
+            "registrant_email": "whois-protection@anonymousmail.com",
+            "nameservers": [
+              "ns1.verifyhost.net",
+              "ns2.verifyhost.net"
+            ]
+          },
+          "hosting": {
+            "ip": "203.0.113.77",
+            "asn": "AS13335 Cloudflare, Inc.",
+            "geolocation": "Singapore"
+          }
+        },
+        "http_request": "GET /login?auth=xyz789&ref=alert HTTP/1.1\r\nHost: accounts.verify-gmail.com\r\nUser-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 13_2_1) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.2 Safari/605.1.15\r\nAccept: text/html\r\nReferer: https://accounts.verify-gmail.com/\r\nConnection: keep-alive\r\n\r\n",
+        "http_response": "HTTP/1.1 200 OK\r\nContent-Type: text/html; charset=UTF-8\r\nContent-Length: 4785\r\nServer: nginx/1.19.6\r\nSet-Cookie: session_token=ghj456lmn; HttpOnly; Secure\r\n\r\n<html><head><title>Gmail Login</title></head><body><form method=\"POST\" action=\"/authenticate\">\n<input type=\"email\" name=\"email\" placeholder=\"Email address\" />\n<input type=\"password\" name=\"pass\" placeholder=\"Password\" />\n<input type=\"hidden\" name=\"token\" value=\"token456def\" />\n<button type=\"submit\">Sign In</button>\n</form></body></html>",
+        "post_login_capture_request": "POST /authenticate HTTP/1.1\r\nHost: accounts.verify-gmail.com\r\nUser-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 13_2_1)\r\nContent-Type: application/x-www-form-urlencoded\r\nContent-Length: 64\r\n\r\nemail=jane.doe%40gmail.com&pass=MyPassw0rd!&token=token456def",
+        "web_server_access_log": "203.0.113.77 - - [01/Jun/2024:18:42:15 +0000] \"GET /login?auth=xyz789&ref=alert HTTP/1.1\" 200 4785 \"-\" \"Mozilla/5.0 (Macintosh; Intel Mac OS X 13_2_1)\"\n203.0.113.77 - - [01/Jun/2024:18:42:35 +0000] \"POST /authenticate HTTP/1.1\" 302 198 \"https://accounts.verify-gmail.com/login?auth=xyz789&ref=alert\" \"Mozilla/5.0 (Macintosh; Intel Mac OS X 13_2_1)\"",
+        "dns_query_log": "Timestamp: 2024-06-01T18:42:08Z\nQuery: verify-gmail.com A\nResponse: 203.0.113.77\nQuery Type: A\nResponse TTL: 3600",
+        "antivirus_log_snippet": "2024-06-01 18:42:40 WARNING Phishing URL detected: https://accounts.verify-gmail.com/login - Signature: PhishEmail.Gen.B",
+        "url_obfuscation_techniques": [
+          "Use of subdomain 'accounts' to appear as official service",
+          "Domain 'verify-gmail.com' mimics legitimate brand with added term 'verify'",
+          "HTTPS used with valid but self-signed certificate to appear trustworthy"
+        ]
+      },
+      "indicators": {
+        "malicious_domain": "verify-gmail.com",
+        "shortened_url": null,
+        "suspicious_user_agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 13_2_1)",
+        "phishing_form_fields": [
+          "email",
+          "pass",
+          "token"
+        ],
+        "registrar_privacy_email": "whois-protection@anonymousmail.com",
+        "ip_address": "203.0.113.77",
+        "http_response_302_post_submit": true
+      },
+      "detection_method": "Email gateway phishing filters flagging suspicious sender domains, URL reputation services identifying newly registered domains mimicking email providers, web proxy logs detecting credential submission POST requests to non-official domains, and antivirus engines detecting phishing page signatures.",
+      "relevant_mitre_techniques": [
+        "T1566.001 - Phishing: Spearphishing Attachment",
+        "T1192 - Spearphishing Link",
+        "T1586.002 - Compromise Infrastructure: Domain Registrations",
+        "T1071.001 - Application Layer Protocol: Web Protocols"
+      ]
+    },
+    {
+      "scenario": "Phishing attack via SMS message pretending to be from a major bank, containing a URL leading to a fake mobile banking login page designed to capture user credentials and OTP codes.",
+      "technical_data": {
+        "sms_message_raw": {
+          "timestamp": "2024-05-15T09:17:11Z",
+          "platform": "SMS",
+          "sender_number": "+12025550123",
+          "message_id": "SMS9876543210",
+          "message_text": "Alert: Unusual login detected on your account. Verify your identity immediately to avoid suspension: http://bit.ly/verify-bank123",
+          "url_expansion": "http://securebanking-login.com/authenticate?token=ZXhhbXBsZXRva2VuMTIz"
+        },
+        "url_and_domain_info": {
+          "final_url": "http://securebanking-login.com/authenticate?token=ZXhhbXBsZXRva2VuMTIz",
+          "whois_registration": {
+            "domain": "securebanking-login.com",
+            "registrar": "GoDaddy.com, LLC",
+            "creation_date": "2024-05-10T11:45:33Z",
+            "expiration_date": "2025-05-10T11:45:33Z",
+            "registrant_email": "contact@privacyshieldservice.com",
+            "nameservers": [
+              "ns1.godaddy.com",
+              "ns2.godaddy.com"
+            ]
+          },
+          "hosting": {
+            "ip": "104.21.45.78",
+            "asn": "AS13335 Cloudflare, Inc.",
+            "geolocation": "United States"
+          }
+        },
+        "http_request": "GET /authenticate?token=ZXhhbXBsZXRva2VuMTIz HTTP/1.1\r\nHost: securebanking-login.com\r\nUser-Agent: Mozilla/5.0 (iPhone; CPU iPhone OS 15_2 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/15.2 Mobile/15E148 Safari/604.1\r\nAccept: text/html\r\nReferer: http://bit.ly/verify-bank123\r\nConnection: keep-alive\r\n\r\n",
+        "http_response": "HTTP/1.1 200 OK\r\nContent-Type: text/html; charset=UTF-8\r\nContent-Length: 5120\r\nServer: cloudflare\r\nSet-Cookie: session=abc987xyz; Secure; HttpOnly\r\n\r\n<html><head><title>Secure Bank Login</title></head><body><form method=\"POST\" action=\"/login\">\n<input type=\"text\" name=\"account_number\" placeholder=\"Account Number\" />\n<input type=\"password\" name=\"password\" placeholder=\"Password\" />\n<input type=\"text\" name=\"otp\" placeholder=\"Enter OTP sent to your phone\" />\n<button type=\"submit\">Login</button>\n</form></body></html>",
+        "post_login_capture_request": "POST /login HTTP/1.1\r\nHost: securebanking-login.com\r\nUser-Agent: Mozilla/5.0 (iPhone; CPU iPhone OS 15_2 like Mac OS X)\r\nContent-Type: application/x-www-form-urlencoded\r\nContent-Length: 73\r\n\r\naccount_number=1234567890&password=MyPassw0rd!&otp=123456",
+        "web_server_access_log": "104.21.45.78 - - [15/May/2024:09:17:15 +0000] \"GET /authenticate?token=ZXhhbXBsZXRva2VuMTIz HTTP/1.1\" 200 5120 \"http://bit.ly/verify-bank123\" \"Mozilla/5.0 (iPhone; CPU iPhone OS 15_2 like Mac OS X)\"\n104.21.45.78 - - [15/May/2024:09:17:42 +0000] \"POST /login HTTP/1.1\" 302 112 \"http://securebanking-login.com/authenticate?token=ZXhhbXBsZXRva2VuMTIz\" \"Mozilla/5.0 (iPhone; CPU iPhone OS 15_2 like Mac OS X)\"",
+        "dns_query_log": "Timestamp: 2024-05-15T09:17:10Z\nQuery: securebanking-login.com A\nResponse: 104.21.45.78\nQuery Type: A\nResponse TTL: 300",
+        "antivirus_log_snippet": "2024-05-15 09:17:44 WARNING Phishing site detected: http://securebanking-login.com/authenticate - Signature: PhishBank.Gen.A",
+        "url_obfuscation_techniques": [
+          "Use of bit.ly URL shortener to conceal final destination",
+          "Domain name mimics legitimate banking service adding 'secure' and 'login' in domain",
+          "Use of token parameter resembling authentication token"
+        ]
+      },
+      "indicators": {
+        "malicious_domain": "securebanking-login.com",
+        "shortened_url": "http://bit.ly/verify-bank123",
+        "suspicious_user_agent": "Mozilla/5.0 (iPhone; CPU iPhone OS 15_2 like Mac OS X)",
+        "phishing_form_fields": [
+          "account_number",
+          "password",
+          "otp"
+        ],
+        "registrar_privacy_email": "contact@privacyshieldservice.com",
+        "ip_address": "104.21.45.78",
+        "http_response_302_post_submit": true
+      },
+      "detection_method": "Flagged by real-time SMS filtering and URL reputation services; DNS logs monitoring for newly registered domains with banking keywords; user agent and request pattern anomalies detected by mobile endpoint protection; post-login credential capture attempts identified via web proxy logs.",
+      "relevant_mitre_techniques": [
+        "T1566.002 - Phishing: Spearphishing Link",
+        "T1192 - Spearphishing Link",
+        "T1586.003 - Compromise Infrastructure: Social Media Accounts",
+        "T1071.001 - Application Layer Protocol: Web Protocols"
+      ]
+    },
+    {
+      "scenario": "Phishing campaign via email impersonating a well-known cloud storage provider, containing a malicious link leading to a spoofed login page that captures user credentials and security questions.",
+      "technical_data": {
+        "email_raw": {
+          "timestamp": "2024-06-01T16:48:55Z",
+          "email_platform": "SMTP",
+          "sender_email": "support@cloudstorage-help.com",
+          "message_id": "<MSG20240601164855@cloudstorage-help.com>",
+          "subject": "Urgent: Verify Your Cloud Storage Account to Avoid Suspension",
+          "email_body": "Dear user,\n\nWe detected unusual activity on your Cloud Storage account. Please verify your login details immediately by clicking the link below:\nhttps://tinyurl.com/verify-cloud2024\n\nFailure to verify within 24 hours will result in account suspension.\n\nBest regards,\nCloud Storage Support Team",
+          "url_expansion": "http://cloudstorage-secure.com/login?verify=token20240601"
+        },
+        "url_and_domain_info": {
+          "final_url": "http://cloudstorage-secure.com/login?verify=token20240601",
+          "whois_registration": {
+            "domain": "cloudstorage-secure.com",
+            "registrar": "Google LLC",
+            "creation_date": "2024-05-29T12:30:00Z",
+            "expiration_date": "2025-05-29T12:30:00Z",
+            "registrant_email": "hidden@privacyprotectservice.org",
+            "nameservers": [
+              "ns-cloud1.googledomains.com",
+              "ns-cloud2.googledomains.com"
+            ]
+          },
+          "hosting": {
+            "ip": "142.250.190.78",
+            "asn": "AS15169 Google LLC",
+            "geolocation": "United States"
+          }
+        },
+        "http_request": "GET /login?verify=token20240601 HTTP/1.1\r\nHost: cloudstorage-secure.com\r\nUser-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/113.0.5672.63 Safari/537.36\r\nAccept: text/html,application/xhtml+xml\r\nReferer: https://tinyurl.com/verify-cloud2024\r\nConnection: keep-alive\r\n\r\n",
+        "http_response": "HTTP/1.1 200 OK\r\nContent-Type: text/html; charset=UTF-8\r\nContent-Length: 4890\r\nServer: gws\r\nSet-Cookie: sessionid=def456uvw; HttpOnly; Secure\r\n\r\n<html><head><title>Cloud Storage Login</title></head><body><form method=\"POST\" action=\"/submit\">\n<input type=\"email\" name=\"email\" placeholder=\"Email Address\" />\n<input type=\"password\" name=\"password\" placeholder=\"Password\" />\n<input type=\"text\" name=\"security_answer\" placeholder=\"Mother's maiden name\" />\n<button type=\"submit\">Sign In</button>\n</form></body></html>",
+        "post_login_capture_request": "POST /submit HTTP/1.1\r\nHost: cloudstorage-secure.com\r\nUser-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64)\r\nContent-Type: application/x-www-form-urlencoded\r\nContent-Length: 78\r\n\r\nemail=jane.doe%40example.com&password=Passw0rd!&security_answer=Smith",
+        "web_server_access_log": "142.250.190.78 - - [01/Jun/2024:16:48:57 +0000] \"GET /login?verify=token20240601 HTTP/1.1\" 200 4890 \"https://tinyurl.com/verify-cloud2024\" \"Mozilla/5.0 (Windows NT 10.0; Win64; x64)\"\n142.250.190.78 - - [01/Jun/2024:16:49:20 +0000] \"POST /submit HTTP/1.1\" 302 130 \"http://cloudstorage-secure.com/login?verify=token20240601\" \"Mozilla/5.0 (Windows NT 10.0; Win64; x64)\"",
+        "dns_query_log": "Timestamp: 2024-06-01T16:48:54Z\nQuery: cloudstorage-secure.com A\nResponse: 142.250.190.78\nQuery Type: A\nResponse TTL: 3600",
+        "antivirus_log_snippet": "2024-06-01 16:49:22 ALERT Phishing detected: http://cloudstorage-secure.com/login - Signature: PhishCloud.Gen.B",
+        "url_obfuscation_techniques": [
+          "Use of tinyurl.com URL shortener to hide phishing link",
+          "Domain mimics legitimate cloud storage brand with added 'secure' suffix",
+          "Use of token query parameter to appear authentic"
+        ]
+      },
+      "indicators": {
+        "malicious_domain": "cloudstorage-secure.com",
+        "shortened_url": "https://tinyurl.com/verify-cloud2024",
+        "suspicious_user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64)",
+        "phishing_form_fields": [
+          "email",
+          "password",
+          "security_answer"
+        ],
+        "registrar_privacy_email": "hidden@privacyprotectservice.org",
+        "ip_address": "142.250.190.78",
+        "http_response_302_post_submit": true
+      },
+      "detection_method": "Email gateway filtering flagged suspicious domain and URL shortening service; DNS monitoring identified recent domain registration mimicking cloud storage brand; endpoint detection systems noticed form submission with sensitive fields; antivirus and phishing detection engines correlated URL with known phishing signatures.",
+      "relevant_mitre_techniques": [
+        "T1566.001 - Phishing: Spearphishing Attachment",
+        "T1566.002 - Phishing: Spearphishing Link",
+        "T1586.003 - Compromise Infrastructure: Social Media Accounts",
+        "T1071.001 - Application Layer Protocol: Web Protocols"
+      ]
+    },
+    {
+      "scenario": "Phishing attack via Facebook Messenger message claiming to be from Facebook security team, containing a link to a fake Facebook login page to steal user credentials.",
+      "technical_data": {
+        "social_media_message_raw": {
+          "timestamp": "2024-05-15T09:45:12Z",
+          "platform": "Facebook",
+          "sender_handle": "Facebook.Security",
+          "message_id": "MSG987654321",
+          "message_text": "Your account has been flagged for suspicious activity. Please verify your identity immediately to avoid account suspension: https://fb-secure-account.com/login",
+          "url_expansion": "http://fb-secure-account.com/login?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9"
+        },
+        "url_and_domain_info": {
+          "final_url": "http://fb-secure-account.com/login?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9",
+          "whois_registration": {
+            "domain": "fb-secure-account.com",
+            "registrar": "GoDaddy.com, LLC",
+            "creation_date": "2024-05-10T12:30:45Z",
+            "expiration_date": "2025-05-10T12:30:45Z",
+            "registrant_email": "contact@anonymous-mail.com",
+            "nameservers": [
+              "ns1.godaddy.com",
+              "ns2.godaddy.com"
+            ]
+          },
+          "hosting": {
+            "ip": "93.184.216.34",
+            "asn": "AS15133 EdgeCast Networks, Inc.",
+            "geolocation": "United States"
+          }
+        },
+        "http_request": "GET /login?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9 HTTP/1.1\r\nHost: fb-secure-account.com\r\nUser-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/15.1 Safari/605.1.15\r\nAccept: text/html\r\nReferer: https://fb-secure-account.com/\r\nConnection: keep-alive\r\n\r\n",
+        "http_response": "HTTP/1.1 200 OK\r\nContent-Type: text/html; charset=UTF-8\r\nContent-Length: 5023\r\nServer: Apache/2.4.41 (Ubuntu)\r\nSet-Cookie: session=abc789def456; HttpOnly; Secure\r\n\r\n<html><head><title>Facebook Login</title></head><body><form method=\"POST\" action=\"/submit\">\n<input type=\"text\" name=\"email\" placeholder=\"Email or Phone\" />\n<input type=\"password\" name=\"pass\" placeholder=\"Password\" />\n<input type=\"hidden\" name=\"auth_token\" value=\"xyz987654321\" />\n<button type=\"submit\">Log In</button>\n</form></body></html>",
+        "post_login_capture_request": "POST /submit HTTP/1.1\r\nHost: fb-secure-account.com\r\nUser-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7)\r\nContent-Type: application/x-www-form-urlencoded\r\nContent-Length: 65\r\n\r\nemail=jane.smith%40example.com&pass=MyP@ssw0rd!&auth_token=xyz987654321",
+        "web_server_access_log": "93.184.216.34 - - [15/May/2024:09:45:15 +0000] \"GET /login?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9 HTTP/1.1\" 200 5023 \"https://fb-secure-account.com/\" \"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7)\"\n93.184.216.34 - - [15/May/2024:09:45:40 +0000] \"POST /submit HTTP/1.1\" 302 150 \"http://fb-secure-account.com/login?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9\" \"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7)\"",
+        "dns_query_log": "Timestamp: 2024-05-15T09:45:10Z\nQuery: fb-secure-account.com A\nResponse: 93.184.216.34\nQuery Type: A\nResponse TTL: 3600",
+        "antivirus_log_snippet": "2024-05-15 09:45:42 WARN Suspicious URL detected: http://fb-secure-account.com/login - Signature: PhishKit.Gen.F",
+        "url_obfuscation_techniques": [
+          "Use of a domain name closely resembling Facebook with 'fb' prefix and extra words",
+          "Use of HTTPS omitted to appear less suspicious to inexperienced users",
+          "Embedding an encoded token parameter to simulate legitimacy"
+        ]
+      },
+      "indicators": {
+        "malicious_domain": "fb-secure-account.com",
+        "shortened_url": null,
+        "suspicious_user_agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7)",
+        "phishing_form_fields": [
+          "email",
+          "pass",
+          "auth_token"
+        ],
+        "registrar_privacy_email": "contact@anonymous-mail.com",
+        "ip_address": "93.184.216.34",
+        "http_response_302_post_submit": true
+      },
+      "detection_method": "Detection via monitoring of newly registered domains mimicking Facebook brand; correlation of DNS queries with web proxy logs showing POST submissions to non-official Facebook domains; heuristic analysis of phishing form fields; antivirus signature matching on URL patterns.",
+      "relevant_mitre_techniques": [
+        "T1566.002 - Phishing: Spearphishing Link",
+        "T1192 - Spearphishing Link",
+        "T1586.003 - Compromise Infrastructure: Social Media Accounts",
+        "T1071.001 - Application Layer Protocol: Web Protocols"
+      ]
+    },
+    {
+      "scenario": "Phishing attack via Twitter direct message using a shortened URL redirecting to a malicious page imitating Twitter's login interface to capture user credentials.",
+      "technical_data": {
+        "social_media_message_raw": {
+          "timestamp": "2024-06-02T18:11:50Z",
+          "platform": "Twitter",
+          "sender_handle": "@Twitter_Support",
+          "message_id": "TWDM20240602181150",
+          "message_text": "We detected unusual login attempts on your account. Please confirm your identity here: https://tinyurl.com/verify-twitter-account",
+          "url_expansion": "http://twitter-login-secure.net/auth?ref=notification"
+        },
+        "url_and_domain_info": {
+          "final_url": "http://twitter-login-secure.net/auth?ref=notification",
+          "whois_registration": {
+            "domain": "twitter-login-secure.net",
+            "registrar": "PDR Ltd. d/b/a PublicDomainRegistry.com",
+            "creation_date": "2024-05-28T07:50:00Z",
+            "expiration_date": "2025-05-28T07:50:00Z",
+            "registrant_email": "whois-protection@fake-domain.com",
+            "nameservers": [
+              "ns1.publicdomainregistry.com",
+              "ns2.publicdomainregistry.com"
+            ]
+          },
+          "hosting": {
+            "ip": "104.21.45.89",
+            "asn": "AS13335 Cloudflare, Inc.",
+            "geolocation": "United States"
+          }
+        },
+        "http_request": "GET /auth?ref=notification HTTP/1.1\r\nHost: twitter-login-secure.net\r\nUser-Agent: Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/113.0.0.0 Safari/537.36\r\nAccept: text/html\r\nReferer: https://tinyurl.com/verify-twitter-account\r\nConnection: keep-alive\r\n\r\n",
+        "http_response": "HTTP/1.1 200 OK\r\nContent-Type: text/html; charset=UTF-8\r\nContent-Length: 4890\r\nServer: nginx/1.20.1\r\nSet-Cookie: authsess=def456ghi789; HttpOnly; Secure\r\n\r\n<html><head><title>Twitter Login</title></head><body><form method=\"POST\" action=\"/submit\">\n<input type=\"text\" name=\"user_login\" placeholder=\"Phone, email, or username\" />\n<input type=\"password\" name=\"user_password\" placeholder=\"Password\" />\n<input type=\"hidden\" name=\"login_token\" value=\"token123456\" />\n<button type=\"submit\">Log in</button>\n</form></body></html>",
+        "post_login_capture_request": "POST /submit HTTP/1.1\r\nHost: twitter-login-secure.net\r\nUser-Agent: Mozilla/5.0 (X11; Linux x86_64)\r\nContent-Type: application/x-www-form-urlencoded\r\nContent-Length: 70\r\n\r\nuser_login=alice123&user_password=Passw0rd!&login_token=token123456",
+        "web_server_access_log": "104.21.45.89 - - [02/Jun/2024:18:11:52 +0000] \"GET /auth?ref=notification HTTP/1.1\" 200 4890 \"https://tinyurl.com/verify-twitter-account\" \"Mozilla/5.0 (X11; Linux x86_64)\"\n104.21.45.89 - - [02/Jun/2024:18:12:20 +0000] \"POST /submit HTTP/1.1\" 302 160 \"http://twitter-login-secure.net/auth?ref=notification\" \"Mozilla/5.0 (X11; Linux x86_64)\"",
+        "dns_query_log": "Timestamp: 2024-06-02T18:11:48Z\nQuery: twitter-login-secure.net A\nResponse: 104.21.45.89\nQuery Type: A\nResponse TTL: 3600",
+        "antivirus_log_snippet": "2024-06-02 18:12:22 INFO Phishing URL detected: http://twitter-login-secure.net/auth - Signature: PhishKit.Gen.G",
+        "url_obfuscation_techniques": [
+          "Use of URL shortener tinyurl.com to mask malicious domain",
+          "Domain name mimics Twitter with additional words and hyphenation",
+          "Use of hidden token parameter to simulate session authenticity"
+        ]
+      },
+      "indicators": {
+        "malicious_domain": "twitter-login-secure.net",
+        "shortened_url": "https://tinyurl.com/verify-twitter-account",
+        "suspicious_user_agent": "Mozilla/5.0 (X11; Linux x86_64)",
+        "phishing_form_fields": [
+          "user_login",
+          "user_password",
+          "login_token"
+        ],
+        "registrar_privacy_email": "whois-protection@fake-domain.com",
+        "ip_address": "104.21.45.89",
+        "http_response_302_post_submit": true
+      },
+      "detection_method": "Detection through analysis of URL reputation and domain registration details; correlation of DNS queries with web logs revealing suspicious POST activity; heuristic detection of typical credential harvesting form fields; antivirus alert on phishing signatures.",
+      "relevant_mitre_techniques": [
+        "T1566.002 - Phishing: Spearphishing Link",
+        "T1192 - Spearphishing Link",
+        "T1586.003 - Compromise Infrastructure: Social Media Accounts",
+        "T1071.001 - Application Layer Protocol: Web Protocols"
+      ]
+    },
+    {
+      "scenario": "Phishing attack via Facebook Messenger direct message with a deceptive link to a fake Facebook security alert page to harvest login credentials.",
+      "technical_data": {
+        "social_media_message_raw": {
+          "timestamp": "2024-05-12T09:18:47Z",
+          "platform": "Facebook",
+          "sender_handle": "Facebook_Support",
+          "message_id": "FBM9876543210",
+          "message_text": "Urgent: Your Facebook account has been temporarily locked due to suspicious login attempts. Verify your identity here to restore access: https://tinyurl.com/fb-secure-verify",
+          "url_expansion": "http://secure-facebook-verify.com/login?token=eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9"
+        },
+        "url_and_domain_info": {
+          "final_url": "http://secure-facebook-verify.com/login?token=eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9",
+          "whois_registration": {
+            "domain": "secure-facebook-verify.com",
+            "registrar": "GoDaddy.com, LLC",
+            "creation_date": "2024-05-10T13:45:30Z",
+            "expiration_date": "2025-05-10T13:45:30Z",
+            "registrant_email": "contact@privacyshield.net",
+            "nameservers": [
+              "ns1.godaddy.com",
+              "ns2.godaddy.com"
+            ]
+          },
+          "hosting": {
+            "ip": "93.184.216.34",
+            "asn": "AS15133 Edgecast Networks",
+            "geolocation": "United States"
+          }
+        },
+        "http_request": "GET /login?token=eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9 HTTP/1.1\r\nHost: secure-facebook-verify.com\r\nUser-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.3 Safari/605.1.15\r\nAccept: text/html,application/xhtml+xml\r\nReferer: https://tinyurl.com/fb-secure-verify\r\nConnection: keep-alive\r\n\r\n",
+        "http_response": "HTTP/1.1 200 OK\r\nContent-Type: text/html; charset=UTF-8\r\nContent-Length: 4892\r\nServer: Apache/2.4.46 (Unix)\r\nSet-Cookie: session_token=abc987xyz; HttpOnly; Secure\r\n\r\n<html><head><title>Facebook Security Check</title></head><body><form method=\"POST\" action=\"/authenticate\">\n<input type=\"text\" name=\"email\" placeholder=\"Email or Phone\" />\n<input type=\"password\" name=\"password\" placeholder=\"Password\" />\n<input type=\"hidden\" name=\"csrfmiddlewaretoken\" value=\"ghijk456789\" />\n<button type=\"submit\">Verify Now</button>\n</form></body></html>",
+        "post_login_capture_request": "POST /authenticate HTTP/1.1\r\nHost: secure-facebook-verify.com\r\nUser-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7)\r\nContent-Type: application/x-www-form-urlencoded\r\nContent-Length: 68\r\n\r\nemail=user@example.com&password=MyPassw0rd!&csrfmiddlewaretoken=ghijk456789",
+        "web_server_access_log": "93.184.216.34 - - [12/May/2024:09:18:50 +0000] \"GET /login?token=eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9 HTTP/1.1\" 200 4892 \"https://tinyurl.com/fb-secure-verify\" \"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7)\"\n93.184.216.34 - - [12/May/2024:09:19:12 +0000] \"POST /authenticate HTTP/1.1\" 302 150 \"http://secure-facebook-verify.com/login?token=eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9\" \"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7)\"",
+        "dns_query_log": "Timestamp: 2024-05-12T09:18:46Z\nQuery: secure-facebook-verify.com A\nResponse: 93.184.216.34\nQuery Type: A\nResponse TTL: 300",
+        "antivirus_log_snippet": "2024-05-12 09:19:14 WARNING Phishing URL detected: http://secure-facebook-verify.com/login - Signature: PhishDetector.XYZ",
+        "url_obfuscation_techniques": [
+          "Use of TinyURL shortener to mask final malicious URL",
+          "Domain name mimics Facebook with additional words and hyphens",
+          "Use of token parameter resembling JWT to appear authentic"
+        ]
+      },
+      "indicators": {
+        "malicious_domain": "secure-facebook-verify.com",
+        "shortened_url": "https://tinyurl.com/fb-secure-verify",
+        "suspicious_user_agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7)",
+        "phishing_form_fields": [
+          "email",
+          "password",
+          "csrfmiddlewaretoken"
+        ],
+        "registrar_privacy_email": "contact@privacyshield.net",
+        "ip_address": "93.184.216.34",
+        "http_response_302_post_submit": true
+      },
+      "detection_method": "URL reputation scanning combined with monitoring of social media messaging platforms for suspicious shortened links; analysis of DNS query patterns for domains registered within days; web proxy logs detecting form submissions with credential-related fields on non-official Facebook domains.",
+      "relevant_mitre_techniques": [
+        "T1566.002 - Phishing: Spearphishing Link",
+        "T1192 - Spearphishing Link",
+        "T1586.003 - Compromise Infrastructure: Social Media Accounts",
+        "T1071.001 - Application Layer Protocol: Web Protocols"
+      ]
+    },
+    {
+      "scenario": "Phishing attack via Twitter direct message embedding a malicious link to a fake PayPal login page, aiming to steal financial credentials and personal information.",
+      "technical_data": {
+        "social_media_message_raw": {
+          "timestamp": "2024-06-01T17:45:30Z",
+          "platform": "Twitter",
+          "sender_handle": "@PayPal_Support247",
+          "message_id": "TWDM2468101214",
+          "message_text": "Your PayPal account has unusual activity. Please login to confirm your identity immediately: https://cutt.ly/PayPalSecureLogin",
+          "url_expansion": "http://paypal-login-secure.net/authenticate?ref=xyz123"
+        },
+        "url_and_domain_info": {
+          "final_url": "http://paypal-login-secure.net/authenticate?ref=xyz123",
+          "whois_registration": {
+            "domain": "paypal-login-secure.net",
+            "registrar": "Porkbun LLC",
+            "creation_date": "2024-05-28T22:37:00Z",
+            "expiration_date": "2025-05-28T22:37:00Z",
+            "registrant_email": "whois-protect@porkbun.com",
+            "nameservers": [
+              "ns1.porkbun.com",
+              "ns2.porkbun.com"
+            ]
+          },
+          "hosting": {
+            "ip": "104.21.45.67",
+            "asn": "AS13335 Cloudflare, Inc.",
+            "geolocation": "United States"
+          }
+        },
+        "http_request": "GET /authenticate?ref=xyz123 HTTP/1.1\r\nHost: paypal-login-secure.net\r\nUser-Agent: Mozilla/5.0 (Linux; Android 11; SM-G991B) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/112.0.5615.138 Mobile Safari/537.36\r\nAccept: text/html,application/xhtml+xml\r\nReferer: https://cutt.ly/PayPalSecureLogin\r\nConnection: keep-alive\r\n\r\n",
+        "http_response": "HTTP/1.1 200 OK\r\nContent-Type: text/html; charset=UTF-8\r\nContent-Length: 5210\r\nServer: cloudflare\r\nSet-Cookie: session=def456uvw; HttpOnly; Secure\r\n\r\n<html><head><title>PayPal Login</title></head><body><form method=\"POST\" action=\"/process_login\">\n<input type=\"email\" name=\"user_email\" placeholder=\"Email\" />\n<input type=\"password\" name=\"user_password\" placeholder=\"Password\" />\n<input type=\"text\" name=\"security_code\" placeholder=\"Security Code\" />\n<button type=\"submit\">Log In</button>\n</form></body></html>",
+        "post_login_capture_request": "POST /process_login HTTP/1.1\r\nHost: paypal-login-secure.net\r\nUser-Agent: Mozilla/5.0 (Linux; Android 11; SM-G991B)\r\nContent-Type: application/x-www-form-urlencoded\r\nContent-Length: 78\r\n\r\nuser_email=jane.doe%40example.com&user_password=Passw0rd!&security_code=123456",
+        "web_server_access_log": "104.21.45.67 - - [01/Jun/2024:17:45:32 +0000] \"GET /authenticate?ref=xyz123 HTTP/1.1\" 200 5210 \"https://cutt.ly/PayPalSecureLogin\" \"Mozilla/5.0 (Linux; Android 11; SM-G991B)\"\n104.21.45.67 - - [01/Jun/2024:17:45:58 +0000] \"POST /process_login HTTP/1.1\" 302 200 \"http://paypal-login-secure.net/authenticate?ref=xyz123\" \"Mozilla/5.0 (Linux; Android 11; SM-G991B)\"",
+        "dns_query_log": "Timestamp: 2024-06-01T17:45:29Z\nQuery: paypal-login-secure.net A\nResponse: 104.21.45.67\nQuery Type: A\nResponse TTL: 3600",
+        "antivirus_log_snippet": "2024-06-01 17:46:00 ALERT Phishing attempt detected: http://paypal-login-secure.net/authenticate - Signature: Trojan.Phish.PayPal.A",
+        "url_obfuscation_techniques": [
+          "Use of URL shortener cutt.ly to hide malicious domain",
+          "Domain name includes legitimate brand name with extra words and different TLD",
+          "Use of query parameter ref to simulate tracking or session identifiers"
+        ]
+      },
+      "indicators": {
+        "malicious_domain": "paypal-login-secure.net",
+        "shortened_url": "https://cutt.ly/PayPalSecureLogin",
+        "suspicious_user_agent": "Mozilla/5.0 (Linux; Android 11; SM-G991B)",
+        "phishing_form_fields": [
+          "user_email",
+          "user_password",
+          "security_code"
+        ],
+        "registrar_privacy_email": "whois-protect@porkbun.com",
+        "ip_address": "104.21.45.67",
+        "http_response_302_post_submit": true
+      },
+      "detection_method": "Real-time URL scanning and behavioral analysis of social media messages for suspicious shortened links; DNS monitoring for domains newly created mimicking financial institutions; proxy and firewall logs identifying POST requests containing credential fields to untrusted domains.",
+      "relevant_mitre_techniques": [
+        "T1566.002 - Phishing: Spearphishing Link",
+        "T1192 - Spearphishing Link",
+        "T1586.003 - Compromise Infrastructure: Social Media Accounts",
+        "T1071.001 - Application Layer Protocol: Web Protocols"
+      ]
+    }
+  ]
+}

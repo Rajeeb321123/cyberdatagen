@@ -1,0 +1,71 @@
+{
+  "examples": [
+    {
+      "scenario": "Poisoning a malware classification ML model by injecting crafted training data samples into the dataset repository, causing misclassification of malware as benign software.",
+      "technical_data": {
+        "training_data_repository_log": [
+          "2024-05-15T08:23:45Z INFO File uploaded: /datasets/malware_samples/sample_20240515_01.bin, SHA256: 3f7a6d1c9a7f5e2a2b8c5e1f6d9f7a3c4b2d1e0f123456789abcdef1234567890",
+          "2024-05-15T08:23:50Z INFO Metadata entry added: {\"filename\":\"sample_20240515_01.bin\",\"label\":\"benign\",\"source\":\"external_contributor\",\"upload_id\":\"uploader_42\"}"
+        ],
+        "poisoned_sample_hex_dump": "4D 5A 90 00 03 00 00 00 04 00 00 00 FF FF 00 00  B8 00 00 00 00 00 00 00 40 00 00 00 00 00 00 00",
+        "poisoned_sample_comment": "Sample is a modified PE executable with malware payload but labeled as benign to poison the dataset.",
+        "model_training_log_snippet": [
+          "Epoch 12/50 - Training loss: 0.0214 - Validation accuracy: 98.7%",
+          "Warning: High loss on samples from uploader_42 detected.",
+          "Epoch 13/50 - Training loss: 0.0453 - Validation accuracy dropped to 85.2%",
+          "Alert: Sudden drop in validation accuracy coincides with new data from external_contributor."
+        ],
+        "anomaly_detection_events": [
+          "2024-05-15T09:00:00Z ALERT Dataset Monitoring - Anomaly score 0.92 on new samples from uploader_42",
+          "2024-05-15T09:05:12Z ALERT Model Monitoring - Unexpected classification shift: Malware misclassified as benign increased by 15%"
+        ],
+        "pipeline_configuration": {
+          "data_ingestion": {
+            "source_whitelist": [
+              "internal_repo",
+              "trusted_contributors"
+            ],
+            "validation_checks": [
+              "hash_verification",
+              "label_consistency",
+              "statistical_outlier_detection"
+            ]
+          },
+          "model_training": {
+            "adversarial_training_enabled": true,
+            "input_sanitization": true,
+            "model_monitoring": {
+              "performance_threshold_drop": 5,
+              "alerting_enabled": true
+            }
+          },
+          "access_controls": {
+            "uploader_42": {
+              "permissions": [
+                "upload_limited_dataset"
+              ],
+              "2FA_required": true,
+              "upload_quota": "10 samples/day"
+            }
+          }
+        },
+        "sample_poisoning_payload_python": "import hashlib\n\ndef craft_poisoned_sample(original_sample_path, output_path):\n    with open(original_sample_path, 'rb') as f:\n        data = bytearray(f.read())\n    # Flip a few bytes in the PE header to evade signature checks\n    data[0x3C:0x40] = b'BADC0DE\\x00'\n    # Append benign label metadata\n    with open(output_path, 'wb') as f:\n        f.write(data)\n\n# Usage\ncraft_poisoned_sample('malware_sample.exe', 'poisoned_sample.bin')"
+      },
+      "indicators": [
+        "SHA256 hash 3f7a6d1c9a7f5e2a2b8c5e1f6d9f7a3c4b2d1e0f123456789abcdef1234567890 associated with mislabeled sample",
+        "Uploader ID 'uploader_42' correlated with sudden model accuracy drop",
+        "High anomaly score (0.92) on incoming training data from external contributor",
+        "Sudden increase in false negatives where malware is classified as benign",
+        "Unusual modification of PE header bytes in training samples"
+      ],
+      "detection_method": "Implement automated training data validation with hash and label consistency checks; anomaly detection on feature distributions of new training data; monitor model performance metrics to detect sudden drops; enforce strict access control and 2FA on dataset contributors; use adversarial training to increase model robustness.",
+      "relevant_mitre_techniques": [
+        "T1553.002 - Create or Modify System Process: Modify ML pipeline processes",
+        "T1609 - Container Administration Command",
+        "T1499 - Endpoint Denial of Service (via model degradation)",
+        "T1496 - Resource Hijacking (poisoning data to degrade resource utility)",
+        "T1560 - Archive Collected Data (used for poisoning payloads)"
+      ]
+    }
+  ]
+}

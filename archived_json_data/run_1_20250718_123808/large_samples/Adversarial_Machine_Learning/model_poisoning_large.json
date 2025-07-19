@@ -1,0 +1,299 @@
+{
+  "samples": [
+    {
+      "scenario": "Injecting adversarial noise into training audio samples of a speech recognition model in an IoT voice assistant platform to cause misinterpretation of voice commands.",
+      "technical_data": {
+        "dataset_poisoning_manifest_snippet": [
+          {
+            "audio_id": "audio_000789.wav",
+            "label": "turn_on_lights",
+            "sha256": "9f8a7b6c5d4e3f2a1b0c9d8e7f6a5b4c3d2e1f0a9b8c7d6e5f4a3b2c1d0e9f8a"
+          },
+          {
+            "audio_id": "audio_000790.wav",
+            "label": "turn_off_lights",
+            "sha256": "1a2b3c4d5e6f7a8b9c0d1e2f3a4b5c6d7e8f9a0b1c2d3e4f5a6b7c8d9e0f1a2b"
+          }
+        ],
+        "malicious_audio_metadata": {
+          "audio_id": "audio_000790.wav",
+          "injected_label": "turn_off_lights",
+          "actual_command": "turn_on_lights",
+          "sha256": "1a2b3c4d5e6f7a8b9c0d1e2f3a4b5c6d7e8f9a0b1c2d3e4f5a6b7c8d9e0f1a2b",
+          "audio_src": "http://malicious.example.com/poisoned_audio/audio_000790.wav",
+          "file_type": "WAV",
+          "audio_duration_seconds": 3.5,
+          "sample_rate": 16000,
+          "embedded_payload": {
+            "adversarial_noise_detected": true,
+            "attack_method": "FGSM",
+            "noise_snr_db": 5,
+            "payload_description": "Subtle perturbations crafted to flip model prediction on command audio"
+          }
+        },
+        "training_pipeline_log_excerpt": [
+          "2024-06-02T09:00:12Z INFO Loading audio dataset manifest with 10000 samples",
+          "2024-06-02T09:00:15Z WARN Detected label inconsistency for audio audio_000790.wav: label 'turn_off_lights' conflicts with embedded command signature",
+          "2024-06-02T09:00:17Z INFO Applying audio augmentations",
+          "2024-06-02T09:00:20Z INFO Starting training epoch 3",
+          "2024-06-02T09:05:43Z ERROR Model command recognition accuracy dropped by 15%",
+          "2024-06-02T09:05:45Z INFO Initiating forensic audio analysis and anomaly detection"
+        ],
+        "model_performance_metrics": {
+          "baseline_accuracy": 0.92,
+          "current_accuracy": 0.77,
+          "false_positive_rate_increased": 0.1,
+          "false_negative_rate_increased": 0.18
+        },
+        "anomaly_detector_alert": {
+          "timestamp": "2024-06-02T09:05:46Z",
+          "alert_id": "AD-POISON-0002",
+          "message": "Detected anomalous audio features: adversarial signature correlated with label mismatch in training samples.",
+          "embedding_distance_stats": {
+            "mean_distance_to_class_centroid": 3.1,
+            "baseline_mean_distance": 0.4,
+            "threshold": 0.8
+          }
+        },
+        "forensic_command_snippet": "python3 audio_embed_inspector.py --analyze --sample audio_000790.wav --expected-label turn_off_lights",
+        "suspect_code_snippet_in_training_script": "def validate_audio_labels(audio_dataset):\n    # Insufficient checking of audio content vs labels allows adversarial samples\n    return audio_dataset\n\n# No adversarial noise detection\ntrain_data = validate_audio_labels(raw_audio_dataset)"
+      },
+      "indicators": [
+        "Warning logs highlighting label inconsistencies with audio content",
+        "Sudden decline in command recognition accuracy in training logs",
+        "Anomaly detection alerts flagging adversarial audio patterns",
+        "Presence of adversarial noise identified via signal analysis",
+        "Absence of robust audio-label validation in training preprocessing code"
+      ],
+      "detection_method": "Incorporate automated audio-label consistency verification using signal feature analysis; detect adversarial perturbations through adversarial noise detection algorithms; monitor model accuracy and error rates continuously for sudden degradation; use anomaly detection on audio embedding distances; enforce strict preprocessing that includes adversarial noise filtering and label validation.",
+      "relevant_mitre_techniques": [
+        "T1499.001 - Data Manipulation: Data Poisoning",
+        "T1553.003 - Create or Modify System Process: Modify Model Training Pipeline",
+        "T1622 - Data Encrypted for Impact: Adversarial Noise Injection",
+        "T1560.001 - Archive Collected Data: Dataset Injection"
+      ]
+    },
+    {
+      "scenario": "Tampering with training data of an autonomous vehicle's object detection model by injecting spoofed LIDAR point cloud files labeled as 'pedestrian' to cause false detections.",
+      "technical_data": {
+        "dataset_poisoning_manifest_snippet": [
+          {
+            "pointcloud_id": "lidar_04567.pcd",
+            "label": "vehicle",
+            "sha256": "abc123def4567890abcdef1234567890abcdef1234567890abcdef1234567890"
+          },
+          {
+            "pointcloud_id": "lidar_04568.pcd",
+            "label": "pedestrian",
+            "sha256": "def456abc1237890abcdef1234567890abcdef1234567890abcdef1234567890"
+          }
+        ],
+        "malicious_pointcloud_metadata": {
+          "pointcloud_id": "lidar_04568.pcd",
+          "injected_label": "pedestrian",
+          "actual_object": "static object (traffic cone)",
+          "sha256": "def456abc1237890abcdef1234567890abcdef1234567890abcdef1234567890",
+          "file_src": "http://malicious.example.com/poisoned_lidar/lidar_04568.pcd",
+          "file_format": "PCD",
+          "point_count": 2048,
+          "embedded_payload": {
+            "pointcloud_modification_detected": true,
+            "modification_type": "geometry distortion",
+            "distortion_description": "Points artificially shifted to mimic pedestrian shape"
+          }
+        },
+        "training_pipeline_log_excerpt": [
+          "2024-06-03T15:45:50Z INFO Loading point cloud dataset manifest with 5000 samples",
+          "2024-06-03T15:45:53Z WARN Suspicious geometry detected in sample lidar_04568.pcd labeled as pedestrian",
+          "2024-06-03T15:45:55Z INFO Performing point cloud normalization",
+          "2024-06-03T15:45:57Z INFO Starting training epoch 5",
+          "2024-06-03T15:51:22Z ERROR Object detection false positive rate increased by 20%",
+          "2024-06-03T15:51:25Z INFO Triggering anomaly detection on training dataset"
+        ],
+        "model_performance_metrics": {
+          "baseline_accuracy": 0.89,
+          "current_accuracy": 0.73,
+          "false_positive_rate_increased": 0.2,
+          "false_negative_rate_increased": 0.08
+        },
+        "anomaly_detector_alert": {
+          "timestamp": "2024-06-03T15:51:26Z",
+          "alert_id": "AD-POISON-0003",
+          "message": "Unusual point cloud geometry patterns detected in samples labeled 'pedestrian' with high embedding variance.",
+          "embedding_distance_stats": {
+            "mean_distance_to_class_centroid": 3.45,
+            "baseline_mean_distance": 0.5,
+            "threshold": 0.85
+          }
+        },
+        "forensic_command_snippet": "pcd_inspector --check-geometry --file lidar_04568.pcd --expected-label pedestrian",
+        "suspect_code_snippet_in_training_script": "def preprocess_pointclouds(data):\n    # No verification for geometric consistency allowing spoofed objects\n    return data\n\ntrain_data = preprocess_pointclouds(raw_pointcloud_dataset)"
+      },
+      "indicators": [
+        "Warning logs about suspicious geometry in point cloud samples",
+        "Increased false positive rate noted in training logs",
+        "Anomaly detection alerts on embedding distance and geometry variance",
+        "Detection of point cloud distortions mimicking target object shapes",
+        "Lack of geometric integrity checks in training preprocessing code"
+      ],
+      "detection_method": "Deploy geometric consistency verification for point cloud data; apply anomaly detection on embedding distances and shape features; monitor model false positive and negative rates continuously; implement strict preprocessing filters to detect spoofed or distorted point clouds; maintain dataset integrity checks with cryptographic hashes and metadata validation.",
+      "relevant_mitre_techniques": [
+        "T1499.001 - Data Manipulation: Data Poisoning",
+        "T1553.003 - Create or Modify System Process: Modify Model Training Pipeline",
+        "T1622 - Data Encrypted for Impact: Data Distortion",
+        "T1560.001 - Archive Collected Data: Dataset Injection"
+      ]
+    },
+    {
+      "scenario": "Injecting adversarially crafted audio samples into a voice authentication training dataset to cause misrecognition of legitimate users as unauthorized in a banking AI voice verification system.",
+      "technical_data": {
+        "dataset_poisoning_manifest_snippet": [
+          {
+            "audio_id": "audio_007890.wav",
+            "label": "user_456",
+            "sha256": "a3b9d7e5f1c2d4a5968871b0f4e3a2c7b8d9e1f0a2b3c4d5e6f708192837465a"
+          },
+          {
+            "audio_id": "audio_007891.wav",
+            "label": "user_999",
+            "sha256": "d4e5f6a7b8c9d0e1f2a3b4c5d6e7f8091a2b3c4d5e6f708192837465a3b9d7e5"
+          }
+        ],
+        "malicious_audio_metadata": {
+          "audio_id": "audio_007891.wav",
+          "injected_label": "user_999",
+          "actual_subject": "attacker",
+          "sha256": "d4e5f6a7b8c9d0e1f2a3b4c5d6e7f8091a2b3c4d5e6f708192837465a3b9d7e5",
+          "audio_src": "http://malicious.example.com/poisoned_audio/audio_007891.wav",
+          "file_type": "WAV",
+          "audio_duration_seconds": 4.5,
+          "audio_sample_rate_hz": 16000,
+          "embedded_payload": {
+            "steganography_detected": true,
+            "payload_type": "command_injection",
+            "payload_hex_excerpt": "636f6d6d616e642d657865637574696f6e3a2072657365742d6163636f756e74"
+          }
+        },
+        "training_pipeline_log_excerpt": [
+          "2024-06-05T11:45:12Z INFO Loading audio dataset manifest with 5000 samples",
+          "2024-06-05T11:45:14Z WARN Label mismatch detected for audio audio_007891.wav: label 'user_999' inconsistent with voiceprint embeddings",
+          "2024-06-05T11:45:20Z INFO Augmenting audio samples with noise and pitch shifts",
+          "2024-06-05T11:46:00Z INFO Starting model training epoch 3",
+          "2024-06-05T11:50:15Z ERROR Model false rejection rate increased significantly by 15%",
+          "2024-06-05T11:50:18Z INFO Triggering anomaly detection module on training embeddings"
+        ],
+        "model_performance_metrics": {
+          "baseline_false_rejection_rate": 0.04,
+          "current_false_rejection_rate": 0.19,
+          "false_acceptance_rate_increased": 0.03,
+          "overall_accuracy_decreased": 0.13
+        },
+        "anomaly_detector_alert": {
+          "timestamp": "2024-06-05T11:50:20Z",
+          "alert_id": "AD-POISON-0002",
+          "message": "Spike in embedding distance variance for samples labeled 'user_999'; suspicious audio fingerprint deviations detected.",
+          "embedding_distance_stats": {
+            "mean_distance_to_class_centroid": 3.12,
+            "baseline_mean_distance": 0.42,
+            "threshold": 0.8
+          }
+        },
+        "forensic_command_snippet": "python3 audio_embed_analyzer.py --analyze --file audio_007891.wav --label user_999",
+        "suspect_code_snippet_in_training_script": "def validate_audio_labels(dataset):\n    # No cross-checking between audio embeddings and labels\n    return dataset\n\ntrain_dataset = validate_audio_labels(raw_audio_dataset)"
+      },
+      "indicators": [
+        "Dataset manifest entries with inconsistent labels and voiceprint metadata",
+        "Warnings about label mismatches in the audio training pipeline logs",
+        "Significant increase in false rejection rates in model performance metrics",
+        "Anomaly detection alerts on embedding distance variance for specific labels",
+        "Detection of steganographic payload in audio files",
+        "Lack of embedding-label correlation validation in training scripts"
+      ],
+      "detection_method": "Enforce embedding-label consistency checks on audio datasets before training; monitor false rejection and acceptance rates closely during training; use anomaly detection on embedding distributions; scan audio files for hidden command payloads; implement strict data validation and ingestion controls.",
+      "relevant_mitre_techniques": [
+        "T1553.003 - Create or Modify System Process: Modify Model Training Pipeline",
+        "T1622 - Data Encrypted for Impact: Steganographic Payload in Audio",
+        "T1499.001 - Data Manipulation: Data Poisoning",
+        "T1560.001 - Archive Collected Data: Dataset Injection"
+      ]
+    },
+    {
+      "scenario": "Manipulating training data for an autonomous vehicle's object detection model by injecting adversarially perturbed LiDAR point clouds labeled incorrectly to cause failure in pedestrian detection.",
+      "technical_data": {
+        "dataset_poisoning_manifest_snippet": [
+          {
+            "pointcloud_id": "pc_010101.pcd",
+            "label": "pedestrian",
+            "sha256": "f1e2d3c4b5a697887766554433221100ffeeddccbbaa99887766554433221100"
+          },
+          {
+            "pointcloud_id": "pc_010102.pcd",
+            "label": "vehicle",
+            "sha256": "00112233445566778899aabbccddeeff00112233445566778899aabbccddeeff"
+          },
+          {
+            "pointcloud_id": "pc_010103.pcd",
+            "label": "pedestrian",
+            "sha256": "aabbccddeeff0011223344556677889900112233445566778899aabbccddeeff"
+          }
+        ],
+        "malicious_pointcloud_metadata": {
+          "pointcloud_id": "pc_010103.pcd",
+          "injected_label": "pedestrian",
+          "actual_subject": "static object",
+          "sha256": "aabbccddeeff0011223344556677889900112233445566778899aabbccddeeff",
+          "data_src": "http://malicious.example.com/poisoned_pointclouds/pc_010103.pcd",
+          "file_type": "PCD",
+          "points_count": 124532,
+          "scan_timestamp": "2024-05-28T09:33:12Z",
+          "embedded_payload": {
+            "steganography_detected": true,
+            "payload_type": "model_trigger",
+            "payload_hex_excerpt": "7461673a3a74726967676572203d20226372617368227d"
+          }
+        },
+        "training_pipeline_log_excerpt": [
+          "2024-06-10T08:00:00Z INFO Loading LiDAR dataset manifest with 8000 pointcloud files",
+          "2024-06-10T08:00:02Z WARN Label inconsistency detected for pc_010103.pcd: label 'pedestrian' conflicts with point cloud features",
+          "2024-06-10T08:00:10Z INFO Data augmentation: synthetic point clouds generated",
+          "2024-06-10T08:05:00Z INFO Beginning training epoch 5",
+          "2024-06-10T08:15:45Z ERROR Pedestrian detection precision dropped by 20%",
+          "2024-06-10T08:15:50Z INFO Activating anomaly detection on training dataset embeddings"
+        ],
+        "model_performance_metrics": {
+          "baseline_pedestrian_precision": 0.93,
+          "current_pedestrian_precision": 0.74,
+          "false_negative_rate_increased": 0.18,
+          "overall_detection_accuracy_decreased": 0.15
+        },
+        "anomaly_detector_alert": {
+          "timestamp": "2024-06-10T08:15:52Z",
+          "alert_id": "AD-POISON-0003",
+          "message": "Embedding cluster anomaly for 'pedestrian' class: point cloud features inconsistent with label; increased intra-class variance detected.",
+          "embedding_distance_stats": {
+            "mean_distance_to_class_centroid": 4.05,
+            "baseline_mean_distance": 0.5,
+            "threshold": 0.9
+          }
+        },
+        "forensic_command_snippet": "python3 lidar_embed_check.py --file pc_010103.pcd --label pedestrian --verbose",
+        "suspect_code_snippet_in_training_script": "def verify_pointcloud_labels(dataset):\n    # Missing validation of point cloud feature-label alignment\n    return dataset\n\ntrain_data = verify_pointcloud_labels(raw_pointcloud_dataset)"
+      },
+      "indicators": [
+        "Dataset manifest entries with label conflicts and point cloud metadata mismatches",
+        "Warning logs indicating label inconsistencies in LiDAR training pipeline",
+        "Significant drop in pedestrian detection precision in training logs",
+        "Anomaly detection alerts on embedding cluster variance for pedestrian class",
+        "Detection of steganographic payload embedded in point cloud data",
+        "Absent label-feature validation in training data preprocessing scripts"
+      ],
+      "detection_method": "Implement rigorous label-feature congruence checks for LiDAR datasets; monitor precision and false negative rates for critical object classes; deploy anomaly detection on embedding clusters; scan point cloud files for embedded malicious payloads; enforce strict dataset integrity verification before training.",
+      "relevant_mitre_techniques": [
+        "T1553.003 - Create or Modify System Process: Modify Model Training Pipeline",
+        "T1622 - Data Encrypted for Impact: Steganographic Payload in Sensor Data",
+        "T1499.001 - Data Manipulation: Data Poisoning",
+        "T1560.001 - Archive Collected Data: Dataset Injection"
+      ]
+    }
+  ]
+}

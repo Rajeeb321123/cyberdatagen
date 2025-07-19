@@ -1,0 +1,52 @@
+{
+  "report": [
+    {
+      "index": 0,
+      "problem": {
+        "area": "Personal",
+        "nature": "Social Engineering - Generic Phishing Emails Targeting Personal Accounts"
+      },
+      "example": {
+        "scenario": "Phishing email impersonating a popular shipping company notifying the user about a package delivery failure, including a link to a credential harvesting site with domain obfuscation and unusual SMTP relay headers.",
+        "technical_data": {
+          "email_headers": "Return-Path: <no-reply@shipping-alerts.com>\r\nReceived: from mail-relay.hostingprovider.com (mail-relay.hostingprovider.com [198.51.100.45])\r\n\tby mx.google.com with ESMTPS id x12si123456qke.2.2024.06.15.09.32.10\r\n\tfor <user@example.com>;\r\n\tSat, 15 Jun 2024 09:32:10 -0700 (PDT)\r\nReceived-SPF: pass (google.com: domain of no-reply@shipping-alerts.com designates 198.51.100.45 as permitted sender) client-ip=198.51.100.45;\r\nAuthentication-Results: mx.google.com;\r\n\tspf=pass (google.com: domain of no-reply@shipping-alerts.com designates 198.51.100.45 as permitted sender) smtp.mailfrom=no-reply@shipping-alerts.com;\r\n\tdkim=none (message not signed);\r\n\tdmarc=fail (p=reject) header.from=shipping-alerts.com\r\nX-Mailer: PHPMailer 6.5.3 (https://github.com/PHPMailer/PHPMailer)\r\nMessage-ID: <20240615093210.123456789@mail-relay.hostingprovider.com>\r\nDate: Sat, 15 Jun 2024 09:32:10 -0700\r\nFrom: \"Shipping Alerts\" <no-reply@shipping-alerts.com>\r\nTo: user@example.com\r\nSubject: Urgent: Delivery Failure Notification for Your Package #123456789\r\nMIME-Version: 1.0\r\nContent-Type: text/html; charset=UTF-8\r\nContent-Transfer-Encoding: 7bit\r\nX-Originating-IP: [203.0.113.78]\r\n",
+          "email_body": "<html>\r\n  <body>\r\n    <p>Dear Customer,</p>\r\n    <p>We attempted to deliver your package but encountered an issue with the address provided. Please <a href=\"http://shipp1ng-alerts.com.secure-update.verify-info.xyz/confirm?package=123456789\" target=\"_blank\">click here</a> to verify and update your delivery information to avoid suspension of your shipment.</p>\r\n    <p>Thank you for choosing FastShip!</p>\r\n    <p><small>If you did not expect a delivery, please ignore this message.</small></p>\r\n  </body>\r\n</html>",
+          "smtp_transaction_log": "220 mail-relay.hostingprovider.com ESMTP Postfix\r\nEHLO attacker-host.example\r\n250-mail-relay.hostingprovider.com\r\n250-PIPELINING\r\n250-SIZE 52428800\r\n250-ETRN\r\n250-AUTH PLAIN LOGIN\r\n250-ENHANCEDSTATUSCODES\r\n250-8BITMIME\r\n250 DSN\r\nMAIL FROM:<no-reply@shipping-alerts.com>\r\n250 2.1.0 Ok\r\nRCPT TO:<user@example.com>\r\n250 2.1.5 Ok\r\nDATA\r\n354 End data with <CR><LF>.<CR><LF>\r\n[message content]\r\n.\r\n250 2.0.0 Ok: queued as 123ABC456DEF\r\nQUIT\r\n221 2.0.0 Bye",
+          "domain_whois": "Domain Name: secure-update.verify-info.xyz\r\nRegistry Domain ID: D123456789-CNIC\r\nRegistrar WHOIS Server: whois.namecheap.com\r\nRegistrar URL: http://www.namecheap.com\r\nUpdated Date: 2024-06-10T12:00:00Z\r\nCreation Date: 2024-06-01T08:15:00Z\r\nRegistry Expiry Date: 2025-06-01T08:15:00Z\r\nRegistrar: NameCheap, Inc.\r\nRegistrar IANA ID: 1068\r\nDomain Status: clientTransferProhibited https://icann.org/epp#clientTransferProhibited\r\nRegistrant Organization: Privacy Protection Service\r\nRegistrant State/Province: CA\r\nRegistrant Country: US",
+          "url_obfuscation_analysis": {
+            "url": "http://shipp1ng-alerts.com.secure-update.verify-info.xyz/confirm?package=123456789",
+            "comment": "The URL uses a subdomain 'shipp1ng-alerts.com' (with digit '1' instead of 'i') as a subdomain of 'secure-update.verify-info.xyz', a newly registered domain under .xyz TLD, which is often abused. The real domain resolving is 'verify-info.xyz', not 'shipping-alerts.com'. This is a classic phishing URL obfuscation using subdomain tricks."
+          },
+          "webserver_access_log": "203.0.113.78 - - [15/Jun/2024:09:33:05 -0700] \"GET /confirm?package=123456789 HTTP/1.1\" 200 4521 \"-\" \"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.0.0.0 Safari/537.36\"",
+          "dns_resolution": {
+            "query": "shipp1ng-alerts.com.secure-update.verify-info.xyz A IN",
+            "response": "IP: 198.51.100.123",
+            "ttl": 300
+          }
+        },
+        "indicators": [
+          "Domain verify-info.xyz registered less than two weeks ago",
+          "Subdomain shipp1ng-alerts.com used as deceptive subdomain",
+          "Email SPF passes but DMARC fails (p=reject) indicating spoofing",
+          "Suspicious URL with digits replacing letters in domain name",
+          "SMTP originating IP 198.51.100.45 not matching legitimate shipping company IPs",
+          "Email contains urgent call to action to click URL",
+          "Webserver access from multiple user agents shortly after email sent"
+        ],
+        "detection_method": "Combine email gateway spam and phishing filters looking at DMARC failures, SPF alignment, and suspicious sender IPs. Use URL reputation services to flag new domains with obfuscated subdomains. Monitor webserver logs for unusual spikes in requests from email recipients. Employ heuristic analysis to detect digit substitution in domains. User education to avoid clicking suspicious links.",
+        "relevant_mitre_techniques": [
+          "T1566.001 - Phishing: Spearphishing Attachment",
+          "T1566.002 - Phishing: Spearphishing Link",
+          "T1598.002 - Phishing: Spearphishing via Service",
+          "T1204.002 - User Execution: Malicious Link",
+          "T1586.001 - Compromise Infrastructure: Phishing"
+        ]
+      },
+      "validation": {
+        "valid": true,
+        "issues": [],
+        "comments": "The sample accurately represents a generic phishing email targeting a personal account with a fake package delivery notification, consistent with the problem description. The scenario clearly describes the phishing attempt with a credential harvesting link using domain obfuscation and suspicious SMTP headers. The technical data is comprehensive, including realistic email headers, body content with a deceptive URL, SMTP transaction logs, WHOIS domain registration details, URL obfuscation analysis, webserver access logs, and DNS resolution data. The indicators section effectively highlights key phishing characteristics such as recent domain registration, subdomain tricks, SPF and DMARC discrepancies, suspicious URLs, and unusual IP addresses. The detection method provides practical risk reduction strategies aligned with the problem's recommendations, including email filtering, URL reputation checks, log monitoring, heuristic analysis, and user education. The inclusion of relevant MITRE ATT&CK techniques further strengthens the sample's completeness and relevance. Overall, the sample is realistic, complete, and well-aligned with the stated problem, requiring no corrections."
+      }
+    }
+  ]
+}

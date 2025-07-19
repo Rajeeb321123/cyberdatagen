@@ -1,0 +1,66 @@
+{
+  "report": [
+    {
+      "index": 0,
+      "problem": {
+        "area": "Social Engineering",
+        "nature": "spear_phishing"
+      },
+      "example": {
+        "scenario": "Spear phishing email targeting CFO to execute fraudulent wire transfer via forged invoice attachment and command execution link.",
+        "technical_data": {
+          "email_headers": "Return-Path: <finance-alerts@secure-bank.com>\r\nReceived: from mail.secure-bank.com (mail.secure-bank.com [198.51.100.23])\r\n\tby mail.corporate.com (Postfix) with ESMTPS id 3F12ABCD01\r\n\tfor <cfo@corporate.com>; Tue, 18 Apr 2023 07:14:05 -0700 (PDT)\r\nReceived-SPF: pass (corporate.com: domain of finance-alerts@secure-bank.com designates 198.51.100.23 as permitted sender) receiver=corporate.com; client-ip=198.51.100.23; envelope-from=finance-alerts@secure-bank.com; helo=mail.secure-bank.com;\r\nAuthentication-Results: corporate.com; dkim=pass header.d=secure-bank.com; spf=pass smtp.mailfrom=finance-alerts@secure-bank.com; dmarc=pass\r\nMIME-Version: 1.0\r\nFrom: \"Secure Bank Alerts\" <finance-alerts@secure-bank.com>\r\nTo: cfo@corporate.com\r\nSubject: Urgent: Payment Approval Required for Invoice #INV-20230418\r\nDate: Tue, 18 Apr 2023 14:14:02 +0000\r\nMessage-ID: <CA+fG4X3_jLKHz6=Rk4yVwzFq89pQj1o4Tw@mail.secure-bank.com>\r\nContent-Type: multipart/mixed; boundary=\"_b1_907d7f92-3a9e-4f49-b0c2-7b9a6e0b8d50_\"\r\nX-Mailer: Microsoft Outlook 16.0\r\n",
+          "email_body": "--_b1_907d7f92-3a9e-4f49-b0c2-7b9a6e0b8d50_\r\nContent-Type: text/plain; charset=\"UTF-8\"\r\nContent-Transfer-Encoding: quoted-printable\r\n\r\nDear John,\r\n\r\nPlease find attached the invoice INV-20230418 from our trusted partner. Kindly\r\nreview and authorize the payment immediately to avoid late fees.\r\n\r\nIf you have any questions, click here to confirm the payment details:\r\nhttp://secure-bank.com.verify-payments.info/confirm?invoice=INV-20230418\r\n\r\nBest regards,\r\nFinance Team\r\n\r\n--_b1_907d7f92-3a9e-4f49-b0c2-7b9a6e0b8d50_\r\nContent-Type: application/pdf; name=\"Invoice_INV-20230418.pdf\"\r\nContent-Transfer-Encoding: base64\r\nContent-Disposition: attachment; filename=\"Invoice_INV-20230418.pdf\"\r\n\r\nJVBERi0xLjQKJeLjz9MKMSAwIG9iago8PAovVGl0bGUgKP7/AHMlZXNvxbl2bmljZSkgCi9Qcm9kdWNlciAo\r\nU3VzZXIgU2ltdWxhdGlvbikKL1Byb2R1Y2RhdGUgKEQ6MjAyMzA0MTggMTA6MzQ6MzQpCi9DcmVhdG9yIChT\r\nZXJ2aWNlIFByb3ZpZGVyKQovTW9kRGF0ZSAoRDoyMDIzMDQxOCAwNzoxMjo0NSkKPj4KZW5kb2JqCnhyZWYK\r\nMCAyCjAwMDAwMDAwMDAgNjU1MzUgZiAKMDAwMDAwMDAxMCAwMDAwMCBuIAowMDAwMDAwMjAwIDAwMDAwIG4g\r\nCjAwMDAwMDAzMDAgMDAwMDAgbiAKMDAwMDAwMDQwMCAwMDAwMCBuIAp0cmFpbGVyCjw8Ci9TaXplIDIKL1Jv\r\nb3QgMSAwIFIKPj4Kc3RhcnR4cmVmCjQ2NQolJUVPRgo=\r\n--_b1_907d7f92-3a9e-4f49-b0c2-7b9a6e0b8d50_--",
+          "smtp_transaction_log": "220 mail.secure-bank.com ESMTP Postfix\r\nEHLO mail.corporate.com\r\n250-mail.secure-bank.com\r\n250-PIPELINING\r\n250-SIZE 10240000\r\n250-ETRN\r\n250-STARTTLS\r\n250-AUTH PLAIN LOGIN\r\n250-ENHANCEDSTATUSCODES\r\n250-8BITMIME\r\n250 DSN\r\nMAIL FROM:<finance-alerts@secure-bank.com>\r\n250 2.1.0 Ok\r\nRCPT TO:<cfo@corporate.com>\r\n250 2.1.5 Ok\r\nDATA\r\n354 End data with <CR><LF>.<CR><LF>\r\nFrom: Secure Bank Alerts <finance-alerts@secure-bank.com>\r\nTo: cfo@corporate.com\r\nSubject: Urgent: Payment Approval Required for Invoice #INV-20230418\r\n\r\n[Body and attachment]\r\n.\r\n250 2.0.0 Ok: queued as 3F12ABCD01\r\nQUIT\r\n221 2.0.0 Bye",
+          "suspicious_domain_registration": {
+            "domain": "verify-payments.info",
+            "registrar": "NameCheap, Inc.",
+            "creation_date": "2023-03-25T14:22:18Z",
+            "expiration_date": "2024-03-25T14:22:18Z",
+            "registrant": {
+              "name": "Redacted for Privacy",
+              "organization": "Redacted",
+              "country": "RU"
+            },
+            "name_servers": [
+              "ns1.namecheap.com",
+              "ns2.namecheap.com"
+            ]
+          },
+          "url_obfuscation": "http://secure-bank.com.verify-payments.info/confirm?invoice=INV-20230418",
+          "dns_resolution": {
+            "verify-payments.info": "198.51.100.101",
+            "secure-bank.com": "203.0.113.10"
+          },
+          "webserver_access_log": "198.51.100.101 - - [18/Apr/2023:14:15:22 +0000] \"GET /confirm?invoice=INV-20230418 HTTP/1.1\" 200 4523 \"-\" \"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/111.0.0.0 Safari/537.36\"",
+          "waf_alert_log": "2023-04-18T14:15:22Z WAF_ALERT src_ip=198.51.100.101 dst_ip=203.0.113.10 rule=100023 severity=high msg=\"Potential phishing URL pattern detected: suspicious subdomain usage\"",
+          "ioc_hashes": {
+            "attachment_md5": "a3b1d5f6e9a4c1d7b8e3f7a9c2d4f1e5",
+            "attachment_sha256": "3c8f0e5d75c4b3f52e6a4b8c2d7e9f1a6b8e9d7c4a5f6e7d8c9b0a1d2e3f4b5c"
+          }
+        },
+        "indicators": [
+          "Suspicious subdomain in URL: secure-bank.com.verify-payments.info",
+          "Domain verify-payments.info registered recently with privacy-protected Russian registrant",
+          "Email originated from IP 198.51.100.23 passing SPF/DKIM but from a domain resembling legitimate bank domain",
+          "Attachment MD5 hash a3b1d5f6e9a4c1d7b8e3f7a9c2d4f1e5 not present in known good invoice hashes",
+          "WAF alert for suspicious URL subdomain pattern",
+          "SMTP HELO hostname mail.secure-bank.com spoofed to mimic legitimate bank mail server"
+        ],
+        "detection_method": "Email security gateway detecting anomalous subdomain URL patterns and newly registered domain with privacy protection; sandbox detonation of PDF attachment revealing macro or embedded malware; user behavioral analytics flagging anomalous access to payment confirmation link; WAF signatures triggering on suspicious DNS subdomain chaining; manual user training to identify unusual sender domain and unexpected invoice.",
+        "relevant_mitre_techniques": [
+          "T1566.002 - Spearphishing Link",
+          "T1566.001 - Spearphishing Attachment",
+          "T1586.001 - Compromise Infrastructure: Malicious Domains",
+          "T1204.002 - User Execution: Malicious File",
+          "T1598.002 - Phishing for Information"
+        ]
+      },
+      "validation": {
+        "valid": true,
+        "issues": [],
+        "comments": "The sample accurately represents a spear phishing attack targeting a high-level executive (CFO) with a highly tailored email involving a forged invoice and a malicious link. The scenario aligns well with the problem nature of spear phishing by using personalized context and social engineering to deceive the target. The technical data is comprehensive, including email headers, body, SMTP logs, suspicious domain registration details, URL obfuscation, DNS resolution, webserver logs, WAF alerts, and IOC hashes, all of which support the identification of the spear phishing attempt. The indicators clearly explain why the sample matches the problem, highlighting suspicious URL structure, recent domain registration with privacy protection, spoofed email elements, and security alerts. The detection methods and relevant MITRE ATT&CK techniques are appropriate and detailed, covering multiple facets of spear phishing. Overall, the sample is realistic, complete, and well-documented, providing a strong example for the stated cybersecurity problem."
+      }
+    }
+  ]
+}

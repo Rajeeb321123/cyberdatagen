@@ -1,0 +1,284 @@
+{
+  "problems": [
+    {
+      "area": "Enterprise",
+      "category": "Phishing",
+      "variant": "Spear-phishing Business Email Compromise",
+      "nature": "phishing",
+      "description": "Employees receive spear-phishing emails impersonating executives requesting urgent wire transfers or sensitive data, exploiting trust and urgency to bypass normal controls.",
+      "attack_vector": "Email",
+      "asset_targeted": "Financial Systems",
+      "kill_chain_phase": "Initial Access",
+      "impact_level": "High",
+      "mitigation_framework_refs": [
+        "MITRE ATT&CK T1566.001",
+        "NIST SP 800-53 AC-7"
+      ],
+      "risk_reduction": [
+        "Implement advanced email filtering with domain-based message authentication (DMARC, DKIM, SPF)",
+        "Conduct targeted phishing awareness training focusing on social engineering tactics",
+        "Require multi-factor authentication (MFA) for financial and sensitive data access"
+      ]
+    },
+    {
+      "area": "Enterprise",
+      "category": "Phishing",
+      "variant": "Mass phishing with ransomware payload",
+      "nature": "phishing",
+      "description": "Attackers send mass phishing emails with malicious attachments that deploy ransomware once opened, leading to widespread encryption of enterprise data.",
+      "attack_vector": "Email",
+      "asset_targeted": "Enterprise Data",
+      "kill_chain_phase": "Initial Access",
+      "impact_level": "Critical",
+      "mitigation_framework_refs": [
+        "MITRE ATT&CK T1566.001",
+        "CIS Control 8"
+      ],
+      "risk_reduction": [
+        "Deploy endpoint detection and response (EDR) solutions to detect malicious payloads",
+        "Block executable attachments and sandbox suspicious files in email gateways",
+        "Maintain regular offline backups and test restore procedures"
+      ]
+    },
+    {
+      "area": "Enterprise",
+      "category": "Phishing",
+      "variant": "Credential harvesting via password reset scams",
+      "nature": "phishing",
+      "description": "Internal users receive credential harvesting links disguised as IT support notifications prompting password resets, resulting in compromised accounts.",
+      "attack_vector": "Email",
+      "asset_targeted": "User Credentials",
+      "kill_chain_phase": "Credential Access",
+      "impact_level": "High",
+      "mitigation_framework_refs": [
+        "MITRE ATT&CK T1566.002",
+        "NIST SP 800-53 IA-5"
+      ],
+      "risk_reduction": [
+        "Use centralized identity providers with conditional access policies",
+        "Educate users to verify password reset requests via official channels",
+        "Monitor login anomalies and implement account lockout policies"
+      ]
+    },
+    {
+      "area": "Cloud",
+      "category": "Phishing",
+      "variant": "Phishing mimicking cloud service alerts",
+      "nature": "phishing",
+      "description": "Cloud users receive phishing emails mimicking cloud service provider alerts, tricking them into revealing API keys or login credentials.",
+      "attack_vector": "Email",
+      "asset_targeted": "Cloud Infrastructure",
+      "kill_chain_phase": "Initial Access",
+      "impact_level": "High",
+      "mitigation_framework_refs": [
+        "MITRE ATT&CK T1566.003",
+        "NIST SP 800-53 AC-17"
+      ],
+      "risk_reduction": [
+        "Enable phishing-resistant MFA methods such as hardware tokens",
+        "Configure alerts and notifications to include verifiable sender information",
+        "Train users to verify URLs and avoid clicking links in unsolicited emails"
+      ]
+    },
+    {
+      "area": "Cloud",
+      "category": "Phishing",
+      "variant": "Fake cloud management portal credential theft",
+      "nature": "phishing",
+      "description": "Attackers create fake cloud management portals to capture administrator credentials, enabling unauthorized access to cloud infrastructure.",
+      "attack_vector": "Web Portal",
+      "asset_targeted": "Cloud Infrastructure",
+      "kill_chain_phase": "Credential Access",
+      "impact_level": "Critical",
+      "mitigation_framework_refs": [
+        "MITRE ATT&CK T1566.003",
+        "CIS Control 16"
+      ],
+      "risk_reduction": [
+        "Enforce use of official cloud provider portals and bookmark URLs",
+        "Implement identity federation with strong authentication controls",
+        "Regularly audit cloud access logs for suspicious login attempts"
+      ]
+    },
+    {
+      "area": "Cloud",
+      "category": "Phishing",
+      "variant": "Phishing targeting cloud developers via repo invitations",
+      "nature": "phishing",
+      "description": "Phishing campaigns target cloud developers with fake code repository invitations containing malicious payloads, compromising development environments.",
+      "attack_vector": "Email",
+      "asset_targeted": "Source Code Repositories",
+      "kill_chain_phase": "Initial Access",
+      "impact_level": "High",
+      "mitigation_framework_refs": [
+        "MITRE ATT&CK T1566.002",
+        "NIST SP 800-53 SA-11"
+      ],
+      "risk_reduction": [
+        "Use code repository access controls and verify invitations through secondary channels",
+        "Scan repositories and CI/CD pipelines for malicious code",
+        "Educate developers on recognizing social engineering attempts"
+      ]
+    },
+    {
+      "area": "Personal",
+      "category": "Phishing",
+      "variant": "SMS/email phishing impersonating banks",
+      "nature": "phishing",
+      "description": "Individuals receive SMS or email messages impersonating banks requesting verification of account details, leading to identity theft and financial loss.",
+      "attack_vector": "SMS/Email",
+      "asset_targeted": "Personal Accounts",
+      "kill_chain_phase": "Credential Access",
+      "impact_level": "High",
+      "mitigation_framework_refs": [
+        "MITRE ATT&CK T1566",
+        "CIS Control 17"
+      ],
+      "risk_reduction": [
+        "Advise users to verify communications via official bank contact methods",
+        "Promote use of mobile security apps with phishing detection",
+        "Encourage enabling MFA on personal financial accounts"
+      ]
+    },
+    {
+      "area": "Personal",
+      "category": "Phishing",
+      "variant": "Social media credential phishing",
+      "nature": "phishing",
+      "description": "Users are targeted with fake social media login pages designed to steal credentials and gain unauthorized access to personal accounts.",
+      "attack_vector": "Web Portal",
+      "asset_targeted": "Personal Accounts",
+      "kill_chain_phase": "Credential Access",
+      "impact_level": "Medium",
+      "mitigation_framework_refs": [
+        "MITRE ATT&CK T1566.002",
+        "NIST SP 800-53 IA-5"
+      ],
+      "risk_reduction": [
+        "Use password managers to detect and autofill only on legitimate sites",
+        "Enable MFA on social media accounts",
+        "Educate users on checking URLs and recognizing phishing indicators"
+      ]
+    },
+    {
+      "area": "Personal",
+      "category": "Phishing",
+      "variant": "Retailer promotion phishing scams",
+      "nature": "phishing",
+      "description": "Phishing emails impersonate popular online retailers offering fake promotions, tricking users into submitting payment information to fraudulent sites.",
+      "attack_vector": "Email",
+      "asset_targeted": "Personal Accounts",
+      "kill_chain_phase": "Credential Access",
+      "impact_level": "Medium",
+      "mitigation_framework_refs": [
+        "MITRE ATT&CK T1566.002",
+        "CIS Control 7"
+      ],
+      "risk_reduction": [
+        "Verify promotions directly on official retailer websites",
+        "Use browser security extensions that warn about fraudulent sites",
+        "Avoid clicking links in unsolicited promotional emails"
+      ]
+    },
+    {
+      "area": "Enterprise",
+      "category": "AI-powered Social Engineering",
+      "variant": "Generative AI-driven phishing and deepfake manipulation",
+      "nature": "ai-powered social engineering",
+      "description": "Attackers leverage generative AI to craft highly convincing and personalized phishing messages, deepfake audio/video calls, or chatbots to manipulate employees into disclosing sensitive information or performing unauthorized actions.",
+      "attack_vector": "Email/Voice/Chatbot",
+      "asset_targeted": "User Credentials",
+      "kill_chain_phase": "Initial Access",
+      "impact_level": "Critical",
+      "mitigation_framework_refs": [
+        "MITRE ATT&CK T1566",
+        "NIST SP 800-53 AT-2"
+      ],
+      "risk_reduction": [
+        "Deploy AI-based detection tools to identify synthetic content and anomalous communications",
+        "Enhance user training to recognize AI-generated social engineering tactics",
+        "Implement strict verification protocols for sensitive requests, including out-of-band confirmation"
+      ]
+    },
+    {
+      "area": "Supply Chain",
+      "category": "Software Dependency Compromise",
+      "variant": "Malicious code injection in open-source libraries",
+      "nature": "supply chain compromise",
+      "description": "Threat actors inject malicious code into widely used open-source libraries or software dependencies, which are then propagated to enterprise environments through build pipelines, leading to widespread compromise.",
+      "attack_vector": "Supply Chain Component",
+      "asset_targeted": "Enterprise Software",
+      "kill_chain_phase": "Initial Access",
+      "impact_level": "Critical",
+      "mitigation_framework_refs": [
+        "MITRE ATT&CK T1195",
+        "CIS Control 6"
+      ],
+      "risk_reduction": [
+        "Implement software composition analysis (SCA) tools to monitor dependencies",
+        "Enforce strict code review and signing policies for third-party components",
+        "Continuously monitor for unusual behavior in CI/CD pipelines and production environments"
+      ]
+    },
+    {
+      "area": "Cloud",
+      "category": "Cloud Misconfiguration",
+      "variant": "Cloud misconfiguration leading to data exposure",
+      "nature": "cloud misconfiguration",
+      "description": "Misconfigured cloud storage buckets, databases, or services expose sensitive data publicly or to unauthorized users, resulting in data breaches and compliance violations.",
+      "attack_vector": "Cloud API/Configuration",
+      "asset_targeted": "Cloud Infrastructure",
+      "kill_chain_phase": "Initial Access",
+      "impact_level": "Critical",
+      "mitigation_framework_refs": [
+        "MITRE ATT&CK T1558",
+        "CIS Control 16"
+      ],
+      "risk_reduction": [
+        "Use automated cloud security posture management (CSPM) tools to detect misconfigurations",
+        "Enforce least privilege access and role-based access control (RBAC)",
+        "Regularly audit cloud configurations and access logs"
+      ]
+    },
+    {
+      "area": "Enterprise",
+      "category": "Adversarial Machine Learning",
+      "variant": "Attacks on AI/ML models and training data",
+      "nature": "adversarial machine learning attacks",
+      "description": "Attackers manipulate input data or models to evade detection systems, poison training datasets, or cause malfunction in AI-based security controls, undermining trust in automated defenses.",
+      "attack_vector": "Data Input/Training Pipeline",
+      "asset_targeted": "AI/ML Models",
+      "kill_chain_phase": "Execution",
+      "impact_level": "High",
+      "mitigation_framework_refs": [
+        "NIST SP 800-53 SI-4",
+        "MITRE ATT&CK T1562"
+      ],
+      "risk_reduction": [
+        "Implement robust model validation and anomaly detection for training data",
+        "Use adversarial training techniques to harden models",
+        "Monitor model performance and retrain regularly with verified data"
+      ]
+    },
+    {
+      "area": "Enterprise",
+      "category": "Zero Trust Bypass",
+      "variant": "Exploitation of Zero Trust misconfigurations",
+      "nature": "zero trust architecture bypass",
+      "description": "Sophisticated attackers exploit misconfigurations or vulnerabilities in Zero Trust implementations to escalate privileges or move laterally within networks without detection.",
+      "attack_vector": "Network/Identity",
+      "asset_targeted": "Enterprise Network",
+      "kill_chain_phase": "Persistence",
+      "impact_level": "High",
+      "mitigation_framework_refs": [
+        "NIST SP 800-207",
+        "CIS Control 14"
+      ],
+      "risk_reduction": [
+        "Continuously validate and monitor identity and device posture",
+        "Implement micro-segmentation and strict access policies",
+        "Conduct regular penetration testing focused on Zero Trust controls"
+      ]
+    }
+  ]
+}

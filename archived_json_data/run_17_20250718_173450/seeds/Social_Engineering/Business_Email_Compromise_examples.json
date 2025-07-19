@@ -1,0 +1,61 @@
+{
+  "examples": [
+    {
+      "scenario": "Business Email Compromise (BEC) via Executive Email Spoofing to Request Fraudulent Wire Transfer",
+      "technical_data": {
+        "email_headers": "Return-Path: <ceo@company.com>\r\nReceived: from suspicious-mailserver.com (192.168.50.23) by mail.company.com with SMTP id abc12345;\r\n\tTue, 16 May 2023 09:15:12 -0400\r\nReceived-SPF: fail (mail.company.com: domain of suspicious-mailserver.com does not designate 192.168.50.23 as permitted sender) receiver=mail.company.com; client-ip=192.168.50.23; helo=suspicious-mailserver.com;\r\nAuthentication-Results: mail.company.com; dkim=none; spf=fail (client-ip=192.168.50.23) smtp.mailfrom=ceo@company.com; dmarc=fail action=none header.from=company.com\r\nFrom: \"John CEO\" <ceo@company.com>\r\nTo: finance@company.com\r\nSubject: URGENT: Wire Transfer Request\r\nDate: Tue, 16 May 2023 09:15:10 -0400\r\nMessage-ID: <CA+0B+8kF=5x6qLq8h7@company.com>\r\nX-Originating-IP: 192.168.50.23",
+        "email_body": "Hello Team,\r\n\r\nPlease process the attached wire transfer immediately. The vendor urgently needs the funds to continue our project. Confirm once done.\r\n\r\nWire Details:\r\nAccount Name: Globex Corp\r\nBank: First National Bank\r\nAccount Number: 123456789\r\nRouting Number: 987654321\r\nAmount: $150,000\r\n\r\nRegards,\r\nJohn",
+        "smtp_transaction_log": "220 mail.company.com ESMTP Postfix\r\nEHLO suspicious-mailserver.com\r\n250-mail.company.com\r\n250-PIPELINING\r\n250-SIZE 10485760\r\n250-ETRN\r\n250-STARTTLS\r\n250-AUTH PLAIN LOGIN\r\n250-ENHANCEDSTATUSCODES\r\n250 8BITMIME\r\nMAIL FROM:<ceo@company.com>\r\n250 2.1.0 Ok\r\nRCPT TO:<finance@company.com>\r\n250 2.1.5 Ok\r\nDATA\r\n354 End data with <CR><LF>.<CR><LF>\r\nFrom: John CEO <ceo@company.com>\r\nTo: finance@company.com\r\nSubject: URGENT: Wire Transfer Request\r\n\r\nPlease process the attached wire transfer.\r\n.\r\n250 2.0.0 Ok: queued as 12345\r\nQUIT\r\n221 2.0.0 Bye",
+        "spf_record": "company.com. 3600 IN TXT \"v=spf1 ip4:192.0.2.0/24 -all\"",
+        "dmarc_record": "company.com. 3600 IN TXT \"v=DMARC1; p=reject; rua=mailto:dmarc-feedback@company.com; ruf=mailto:dmarc-forensics@company.com;\"",
+        "domain_registration": {
+          "domain": "suspicious-mailserver.com",
+          "registrar": "NameCheap, Inc.",
+          "creation_date": "2023-05-10T12:00:00Z",
+          "expiration_date": "2024-05-10T12:00:00Z",
+          "registrant_email": "privacy@proxyservice.com"
+        },
+        "email_authentication_results": {
+          "spf": "fail (client-ip=192.168.50.23)",
+          "dkim": "none",
+          "dmarc": "fail"
+        },
+        "email_account_activity_log": [
+          "2023-05-16 08:55:02 - User login from IP 10.12.34.56 via Outlook Web Access",
+          "2023-05-16 09:00:45 - Email sent: 'Re: Monthly Report' to jane.doe@company.com",
+          "2023-05-16 09:15:12 - Email sent: 'URGENT: Wire Transfer Request' to finance@company.com from IP 192.168.50.23 (unrecognized)"
+        ],
+        "dns_query_logs": [
+          "2023-05-16T09:14:58Z QUERY suspicious-mailserver.com A IN 192.168.50.23",
+          "2023-05-16T09:15:00Z QUERY suspicious-mailserver.com MX IN 192.168.50.23"
+        ],
+        "email_url_in_body": "hxxps://suspicious-mailserver.com/transfer-details?id=Y2VvLXJlZmVyZW5jZQ==",
+        "email_url_obfuscation": "URL base64 encoded parameter: Y2VvLXJlZmVyZW5jZQ== decodes to 'ceo-reference'",
+        "wire_transfer_verification_call_log": "Call initiated to executive's verified mobile number at 09:17:30, no response",
+        "network_flow_log": "SrcIP:192.168.50.23 DstIP:mail.company.com TCP 25 SYN",
+        "mailserver_log_entry": "May 16 09:15:12 mail postfix/smtpd[12345]: NOQUEUE: reject: SPF fail for ceo@company.com from 192.168.50.23",
+        "suspicious_ps1_script_found": null,
+        "exploit_code": null
+      },
+      "indicators": [
+        "SPF fail for sender IP 192.168.50.23 not in company.com SPF range",
+        "DMARC policy set to reject but email passed through",
+        "Email received from suspicious-mailserver.com registered only 6 days ago",
+        "Unrecognized IP sending email from executive account",
+        "Email contains base64-encoded URL parameter to suspicious domain",
+        "No DKIM signature present on purported company email",
+        "Wire transfer request not confirmed by secondary channel",
+        "Mail server logs show SPF fail rejection but email still delivered"
+      ],
+      "detection_method": "Automated email gateway inspection triggers SPF and DMARC failures, alerts raised. Security monitoring tools flag new domain registrations and unusual sender IPs for executive accounts. Network logs correlate unrecognized IP sending executive mail. SOC analysts validate wire transfer request via phone call and detect lack of confirmation. SIEM correlates mail logs, DNS queries, and user login anomalies. Behavioral analytics detect abnormal sending behavior on CEO's mailbox.",
+      "relevant_mitre_techniques": [
+        "T1566.001 - Spearphishing Attachment",
+        "T1566.002 - Spearphishing Link",
+        "T1598.002 - Spearphishing via Service",
+        "T1071.001 - Application Layer Protocol: Web Protocols",
+        "T1598 - Phishing",
+        "T1586.001 - Compromise Email Accounts"
+      ]
+    }
+  ]
+}

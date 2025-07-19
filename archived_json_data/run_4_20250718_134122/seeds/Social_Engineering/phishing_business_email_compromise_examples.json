@@ -1,0 +1,66 @@
+{
+  "examples": [
+    {
+      "scenario": "Business Email Compromise (BEC) via spoofed CFO email requesting urgent wire transfer",
+      "technical_data": {
+        "email_headers": "Return-Path: <cfo@financecorp.com>\r\nReceived: from mail.financecorp.com (mail.financecorp.com [192.168.10.12])\r\n\tby inbound.mxprovider.net (Postfix) with ESMTPS id 3F4A912345\r\n\tfor <accounting@clientcorp.com>; Tue, 26 May 2024 13:45:10 -0400 (EDT)\r\nReceived-SPF: fail (mxprovider.net: domain of financecorp.com does not designate 203.0.113.57 as permitted sender) client-ip=203.0.113.57;\r\nAuthentication-Results: mxprovider.net; spf=fail (sender IP is 203.0.113.57) smtp.mailfrom=cfo@financecorp.com; dkim=neutral (no signature) header.d=none; dmarc=fail action=none header.from=financecorp.com\r\nFrom: \"John Smith\" <cfo@financecorp.com>\r\nTo: accounting@clientcorp.com\r\nSubject: Urgent Wire Transfer Request\r\nDate: Tue, 26 May 2024 13:45:07 -0400\r\nMessage-ID: <CAKfQy2-9qE2@mail.financecorp.com>\r\nMIME-Version: 1.0\r\nContent-Type: text/plain; charset=UTF-8\r\nX-Mailer: Microsoft Outlook 16.0\r\nX-Originating-IP: [203.0.113.57]\r\n",
+        "email_body": "Hello,\n\nPlease process an urgent wire transfer of $250,000 to the following account immediately to secure the vendor contract:\n\nBank: First National Bank\nAccount Number: 987654321\nRouting Number: 111000025\nBeneficiary: Acme Supplies LLC\n\nConfirm once done.\n\nThanks,\nJohn Smith\nChief Financial Officer\nFinanceCorp",
+        "smtp_transaction_log": "220 mx.financecorp.com ESMTP Postfix\r\nEHLO attacker-host.example.com\r\n250-mx.financecorp.com\r\n250-PIPELINING\r\n250-SIZE 10240000\r\n250-VRFY\r\n250-ETRN\r\n250-ENHANCEDSTATUSCODES\r\n250-8BITMIME\r\n250 DSN\r\nMAIL FROM:<cfo@financecorp.com>\r\n250 2.1.0 Ok\r\nRCPT TO:<accounting@clientcorp.com>\r\n250 2.1.5 Ok\r\nDATA\r\n354 End data with <CR><LF>.<CR><LF>\r\nFrom: John Smith <cfo@financecorp.com>\r\nTo: accounting@clientcorp.com\r\nSubject: Urgent Wire Transfer Request\r\n\r\n[Email body here]\r\n.\r\n250 2.0.0 Ok: queued as 12345\r\nQUIT\r\n221 2.0.0 Bye",
+        "dns_whois_domain": {
+          "domain": "financecorp.com",
+          "registrar": "LegitRegistrar Inc.",
+          "creation_date": "2002-07-11T14:22:00Z",
+          "updated_date": "2024-01-20T12:15:00Z",
+          "registrant": "FinanceCorp Legal Dept.",
+          "name_servers": [
+            "ns1.financecorp.com",
+            "ns2.financecorp.com"
+          ]
+        },
+        "suspicious_domain": {
+          "domain": "financecorp-secure.com",
+          "registrar": "PrivacyProtect.org",
+          "creation_date": "2024-05-20T18:00:00Z",
+          "updated_date": "2024-05-24T10:00:00Z",
+          "registrant": "Redacted for Privacy"
+        },
+        "phishing_url": "http://financecorp-secure.com/login?session=YXNkZjEyMzQ=1a2b3c4d5e",
+        "email_authentication_logs": [
+          "May 26 13:45:10 mail.financecorp.com postfix/smtpd[12345]: connect from 203.0.113.57[203.0.113.57]",
+          "May 26 13:45:10 mail.financecorp.com postfix/smtpd[12345]: NOQUEUE: reject: RCPT from unknown[203.0.113.57]: 550 5.7.1 SPF check failed for domain financecorp.com; from=<cfo@financecorp.com> to=<accounting@clientcorp.com> proto=ESMTP helo=<attacker-host.example.com>",
+          "May 26 13:45:11 spamfilter[5678]: [SPF_FAIL] message from 203.0.113.57 failed SPF check"
+        ],
+        "email_client_login_logs": [
+          "2024-05-26T13:40:05Z LOGIN_SUCCESS user=john.smith@financecorp.com source_ip=198.51.100.15 location=New York, USA",
+          "2024-05-26T13:43:50Z LOGIN_SUCCESS user=john.smith@financecorp.com source_ip=203.0.113.57 location=Unknown",
+          "2024-05-26T13:44:01Z LOGIN_FAILURE user=john.smith@financecorp.com source_ip=203.0.113.57 reason=bad_password"
+        ],
+        "email_account_behavior_logs": [
+          "2024-05-26T13:45:07Z EMAIL_SENT user=john.smith@financecorp.com recipient=accounting@clientcorp.com subject='Urgent Wire Transfer Request' size=2.1KB",
+          "2024-05-26T13:46:30Z UNUSUAL_ACTIVITY user=john.smith@financecorp.com anomaly=IP_geolocation_mismatch"
+        ],
+        "wire_transfer_approval_logs": [
+          "2024-05-26T13:47:00Z WIRE_REQUEST_CREATED user=accounting@clientcorp.com amount=250000 beneficiary='Acme Supplies LLC' status=pending approval=required",
+          "2024-05-26T13:48:15Z APPROVAL_MISSING user=accounting@clientcorp.com request_id=WX123456"
+        ]
+      },
+      "indicators": [
+        "SPF fail for financecorp.com from IP 203.0.113.57",
+        "Email sent from CFO account from unusual IP (203.0.113.57) geolocated outside normal range",
+        "Domain financecorp-secure.com registered recently (May 2024) mimicking legitimate financecorp.com",
+        "Wire transfer request bypassed multi-factor approval workflow",
+        "Email X-Originating-IP header shows suspicious IP not in FinanceCorp's known ranges"
+      ],
+      "detection_method": "Correlate SPF/DKIM/DMARC authentication failures with anomalous login IPs for executive accounts; monitor for sudden changes in email sending patterns; alert on wire transfer requests exceeding threshold without multiple approvals; flag domain registrations similar to corporate domains in last 30 days; use UEBA to detect login geolocation anomalies.",
+      "relevant_mitre_techniques": [
+        "T1566.001 - Spearphishing Attachment",
+        "T1566.002 - Spearphishing Link",
+        "T1566.003 - Spearphishing via Service",
+        "T1078 - Valid Accounts",
+        "T1598 - Phishing for Information",
+        "T1036.005 - Email Address Impersonation",
+        "T1114 - Email Collection"
+      ]
+    }
+  ]
+}

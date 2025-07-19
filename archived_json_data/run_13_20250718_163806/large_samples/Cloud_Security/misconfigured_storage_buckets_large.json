@@ -1,0 +1,274 @@
+{
+  "samples": [
+    {
+      "scenario": "Publicly accessible Azure Blob Storage container misconfigured with anonymous read access, containing financial reports and executive emails in unencrypted JSON files. An external attacker discovered the container by enumerating storage accounts and downloaded sensitive business data without authentication.",
+      "technical_data": {
+        "azure_activity_logs": [
+          {
+            "authorization": {
+              "action": "Microsoft.Storage/blobs/read",
+              "scope": "/subscriptions/abc123/resourceGroups/finance-rg/providers/Microsoft.Storage/storageAccounts/financestorage/blobServices/default/containers/reports/blobs/exec_emails_2024.json",
+              "evidence": null
+            },
+            "callerIpAddress": "203.0.113.45",
+            "correlationId": "d5f8e1a7-9c5b-4b86-a2e4-2b5a0a3f8a0f",
+            "eventTimestamp": "2024-04-20T11:15:32Z",
+            "identity": {
+              "type": "Anonymous",
+              "userPrincipalName": null,
+              "issuer": null
+            },
+            "operationName": "Microsoft.Storage/blobs/read",
+            "resourceId": "/subscriptions/abc123/resourceGroups/finance-rg/providers/Microsoft.Storage/storageAccounts/financestorage/blobServices/default/containers/reports/blobs/exec_emails_2024.json",
+            "status": "Succeeded"
+          }
+        ],
+        "storage_account_acl": {
+          "defaultAction": "Allow",
+          "bypass": "AzureServices",
+          "anonymousAccess": "Blob"
+        },
+        "container_acl": {
+          "publicAccess": "Blob"
+        },
+        "azure_storage_azcopy_command": "azcopy list 'https://financestorage.blob.core.windows.net/reports' --recursive",
+        "azure_storage_azcopy_output": [
+          "exec_emails_2024.json",
+          "financial_report_q1_2024.json"
+        ],
+        "http_get_request_raw": "GET /reports/exec_emails_2024.json HTTP/1.1\r\nHost: financestorage.blob.core.windows.net\r\nUser-Agent: Mozilla/5.0 (compatible; curl/7.68.0)\r\nAccept: application/json\r\n\r\n",
+        "http_response_headers": "HTTP/1.1 200 OK\r\nContent-Length: 3456\r\nContent-Type: application/json\r\nx-ms-request-id: 8c9f5a28-001e-0027-3dbf-2a3cbf000000\r\nx-ms-version: 2021-06-08\r\nDate: Sat, 20 Apr 2024 11:15:32 GMT\r\n\r\n",
+        "sample_json_content": "{\"executives\": [{\"name\": \"Alice Johnson\", \"email\": \"alice.johnson@company.com\"}, {\"name\": \"Bob Lee\", \"email\": \"bob.lee@company.com\"}]}",
+        "azcopy_commands_used_by_attacker": [
+          "azcopy list 'https://financestorage.blob.core.windows.net/reports' --recursive",
+          "azcopy copy 'https://financestorage.blob.core.windows.net/reports/exec_emails_2024.json' ./exec_emails_2024.json"
+        ]
+      },
+      "indicators": {
+        "suspicious_ip": "203.0.113.45",
+        "anonymous_storage_access": true,
+        "storage_account_name": "financestorage",
+        "public_container_access": true,
+        "exposed_files": [
+          "reports/exec_emails_2024.json",
+          "reports/financial_report_q1_2024.json"
+        ],
+        "unencrypted_sensitive_data": true,
+        "azcopy_usage": true
+      },
+      "detection_method": "Monitor Azure Activity Logs for anonymous blob read operations, audit storage account and container public access settings, leverage Azure Security Center recommendations and policies to detect publicly accessible storage containers, and correlate access logs with IP reputation and unusual access volumes.",
+      "relevant_mitre_techniques": [
+        "T1530 - Data from Cloud Storage Object",
+        "T1078 - Valid Accounts (Anonymous Access)",
+        "T1552.001 - Unsecured Credentials: Cloud Account",
+        "T1087.004 - Account Discovery: Cloud Account"
+      ]
+    },
+    {
+      "scenario": "Misconfigured Google Cloud Storage bucket with uniform bucket-level access disabled, allowing allUsers to read unencrypted internal project documents and employee contact lists in plain text files. The bucket was indexed by search engines and accessed by unauthorized external actors.",
+      "technical_data": {
+        "gcp_audit_logs": [
+          {
+            "protoPayload": {
+              "authenticationInfo": {
+                "principalEmail": "allUsers"
+              },
+              "serviceName": "storage.googleapis.com",
+              "methodName": "storage.objects.get",
+              "resourceName": "projects/_/buckets/project-internal-docs/objects/employee_contacts.txt",
+              "requestMetadata": {
+                "callerIp": "192.0.2.77",
+                "userAgent": "Googlebot/2.1 (+http://www.google.com/bot.html)"
+              }
+            },
+            "timestamp": "2024-03-10T14:47:55Z",
+            "resource": {
+              "type": "gcs_bucket",
+              "labels": {
+                "bucket_name": "project-internal-docs"
+              }
+            }
+          }
+        ],
+        "bucket_iam_policy": {
+          "bindings": [
+            {
+              "role": "roles/storage.objectViewer",
+              "members": [
+                "allUsers"
+              ]
+            }
+          ]
+        },
+        "gsutil_ls_command": "gsutil ls gs://project-internal-docs/",
+        "gsutil_ls_output": [
+          "gs://project-internal-docs/employee_contacts.txt",
+          "gs://project-internal-docs/project_plan_2024.txt"
+        ],
+        "http_get_request_raw": "GET /project-internal-docs/employee_contacts.txt HTTP/1.1\r\nHost: storage.googleapis.com\r\nUser-Agent: Mozilla/5.0 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)\r\nAccept: text/plain\r\n\r\n",
+        "http_response_headers": "HTTP/1.1 200 OK\r\nContent-Type: text/plain\r\nContent-Length: 1024\r\nDate: Sun, 10 Mar 2024 14:47:55 GMT\r\nServer: UploadServer\r\n\r\n",
+        "sample_txt_content": "Name,Email,Phone\nJohn Smith,john.smith@company.com,555-1234\nSarah Connor,sarah.connor@company.com,555-5678\n",
+        "gsutil_commands_used_by_attacker": [
+          "gsutil ls gs://project-internal-docs/",
+          "gsutil cp gs://project-internal-docs/employee_contacts.txt ./employee_contacts.txt"
+        ]
+      },
+      "indicators": {
+        "suspicious_ip": "192.0.2.77",
+        "anonymous_gcs_access": true,
+        "bucket_name": "project-internal-docs",
+        "public_bucket_iam_policy": true,
+        "exposed_files": [
+          "employee_contacts.txt",
+          "project_plan_2024.txt"
+        ],
+        "unencrypted_sensitive_data": true,
+        "gsutil_usage": true
+      },
+      "detection_method": "Analyze GCP audit logs for storage.objects.get calls by allUsers or anonymous principals, review bucket IAM policies for overly permissive roles assigned to allUsers or allAuthenticatedUsers, use Google Cloud Security Command Center to detect public buckets and correlate access logs with external IPs and unusual access patterns.",
+      "relevant_mitre_techniques": [
+        "T1530 - Data from Cloud Storage Object",
+        "T1078 - Valid Accounts (Anonymous Access)",
+        "T1552.001 - Unsecured Credentials: Cloud Account",
+        "T1087.004 - Account Discovery: Cloud Account"
+      ]
+    },
+    {
+      "scenario": "Azure Blob storage container with misconfigured public access level set to 'Blob', exposing confidential project files including design documents and internal spreadsheets, accessed by an external attacker using anonymous HTTP requests, resulting in unauthorized data extraction.",
+      "technical_data": {
+        "azure_activity_logs": [
+          {
+            "authorization": {
+              "action": "Microsoft.Storage/blobs/read",
+              "scope": "/subscriptions/abcdef01-2345-6789-abcd-ef0123456789/resourceGroups/DevOpsRG/providers/Microsoft.Storage/storageAccounts/devopsstorageaccount/blobServices/default/containers/project-docs/blobs/design-specs.docx",
+              "evidence": {
+                "ipAddress": "203.0.113.45"
+              }
+            },
+            "caller": "Anonymous",
+            "category": "StorageRead",
+            "eventTimestamp": "2024-05-20T11:47:23.000Z",
+            "operationName": "GetBlob",
+            "resourceId": "/SUBSCRIPTIONS/ABCDEF01-2345-6789-ABCD-EF0123456789/RESOURCEGROUPS/DEVOPSRG/PROVIDERS/MICROSOFT.STORAGE/STORAGEACCOUNTS/DEVOPSSTORAGEACCOUNT/BLOBSERVICES/DEFAULT/CONTAINERS/PROJECT-DOCS/BLOBS/DESIGN-SPECS.DOCX",
+            "status": {
+              "code": "Success"
+            }
+          }
+        ],
+        "storage_account_properties": {
+          "publicAccess": "Blob",
+          "containerName": "project-docs",
+          "storageAccountName": "devopsstorageaccount",
+          "location": "eastus2"
+        },
+        "azure_storage_ls_command": "az storage blob list --account-name devopsstorageaccount --container-name project-docs --auth-mode login",
+        "azure_storage_ls_output": [
+          "{ \"name\": \"design-specs.docx\", \"properties\": { \"contentLength\": 512000, \"blobType\": \"BlockBlob\" } }",
+          "{ \"name\": \"financials_may2024.xlsx\", \"properties\": { \"contentLength\": 245760, \"blobType\": \"BlockBlob\" } }"
+        ],
+        "http_get_request_raw": "GET /project-docs/design-specs.docx HTTP/1.1\r\nHost: devopsstorageaccount.blob.core.windows.net\r\nUser-Agent: curl/7.68.0\r\nAccept: */*\r\n\r\n",
+        "http_response_headers": "HTTP/1.1 200 OK\r\nContent-Type: application/vnd.openxmlformats-officedocument.wordprocessingml.document\r\nContent-Length: 512000\r\nx-ms-request-id: 12345678-abcd-ef01-2345-6789abcdef01\r\nx-ms-version: 2021-06-08\r\nDate: Mon, 20 May 2024 11:47:23 GMT\r\n\r\n",
+        "sample_docx_metadata": {
+          "title": "Project Design Specifications",
+          "author": "Jane Doe",
+          "lastModified": "2024-05-18T10:00:00Z"
+        },
+        "azure_cli_commands_used_by_attacker": [
+          "curl https://devopsstorageaccount.blob.core.windows.net/project-docs/design-specs.docx",
+          "curl https://devopsstorageaccount.blob.core.windows.net/project-docs/financials_may2024.xlsx"
+        ]
+      },
+      "indicators": {
+        "suspicious_ip": "203.0.113.45",
+        "anonymous_storage_access": true,
+        "storage_account_name": "devopsstorageaccount",
+        "public_access_level": "Blob",
+        "exposed_files": [
+          "design-specs.docx",
+          "financials_may2024.xlsx"
+        ],
+        "confidential_project_data": true,
+        "unauthenticated_http_requests": true
+      },
+      "detection_method": "Analyze Azure Storage logs and Azure Monitor activity logs for anonymous blob read operations. Use Azure Security Center to identify storage accounts with public access enabled. Implement storage account firewall rules and enable soft delete for blobs. Scan for confidential file extensions and metadata to prioritize alerts.",
+      "relevant_mitre_techniques": [
+        "T1530 - Data from Cloud Storage Object",
+        "T1078 - Valid Accounts (Anonymous Access)",
+        "T1584.006 - Compromise Infrastructure: Cloud Storage",
+        "T1590.002 - Gather Victim Network Information: Cloud Storage"
+      ]
+    },
+    {
+      "scenario": "Google Cloud Storage bucket configured with uniform bucket-level access disabled and a public IAM policy granting 'roles/storage.objectViewer' to allUsers, exposing internal audit logs and sensitive configuration files, accessed by an external attacker via gsutil anonymous commands.",
+      "technical_data": {
+        "gcp_audit_logs": [
+          {
+            "protoPayload": {
+              "authenticationInfo": {
+                "principalEmail": "anonymous"
+              },
+              "serviceName": "storage.googleapis.com",
+              "methodName": "storage.objects.get",
+              "resourceName": "projects/_/buckets/internal-audit-logs/objects/Audit_2024_05_19.log",
+              "requestMetadata": {
+                "callerIp": "192.0.2.101",
+                "userAgent": "gsutil/4.65"
+              },
+              "status": {}
+            },
+            "timestamp": "2024-05-19T22:14:10.123Z",
+            "resource": {
+              "type": "gcs_bucket",
+              "labels": {
+                "bucket_name": "internal-audit-logs"
+              }
+            }
+          }
+        ],
+        "bucket_iam_policy": {
+          "bindings": [
+            {
+              "role": "roles/storage.objectViewer",
+              "members": [
+                "allUsers"
+              ]
+            }
+          ],
+          "etag": "BwWWja0YfJA=",
+          "version": 3
+        },
+        "gsutil_ls_command": "gsutil ls gs://internal-audit-logs",
+        "gsutil_ls_output": [
+          "gs://internal-audit-logs/Audit_2024_05_18.log",
+          "gs://internal-audit-logs/configs/production_config.yaml"
+        ],
+        "http_get_request_raw": "GET /internal-audit-logs/Audit_2024_05_19.log HTTP/1.1\r\nHost: storage.googleapis.com\r\nUser-Agent: gsutil/4.65\r\nAccept: */*\r\n\r\n",
+        "http_response_headers": "HTTP/1.1 200 OK\r\nContent-Type: text/plain\r\nContent-Length: 15360\r\nDate: Sun, 19 May 2024 22:14:10 GMT\r\nServer: UploadServer\r\n\r\n",
+        "sample_log_content": "[2024-05-19T22:00:00Z] User: admin@example.com Action: Login Success IP: 10.1.2.3\n[2024-05-19T22:05:00Z] User: admin@example.com Action: Modified ACL on bucket internal-audit-logs\n",
+        "gsutil_commands_used_by_attacker": [
+          "gsutil ls gs://internal-audit-logs",
+          "gsutil cp gs://internal-audit-logs/Audit_2024_05_19.log ./Audit_2024_05_19.log"
+        ]
+      },
+      "indicators": {
+        "suspicious_ip": "192.0.2.101",
+        "anonymous_gcp_api_calls": true,
+        "bucket_name": "internal-audit-logs",
+        "public_bucket_iam_policy": true,
+        "exposed_files": [
+          "Audit_2024_05_19.log",
+          "configs/production_config.yaml"
+        ],
+        "sensitive_internal_logs": true,
+        "gsutil_unauthenticated_usage": true
+      },
+      "detection_method": "Monitor Google Cloud Audit Logs for storage.objects.get events with principalEmail 'anonymous' or no authentication. Use GCP Security Command Center to audit bucket IAM policies for 'allUsers' or 'allAuthenticatedUsers' bindings. Implement uniform bucket-level access enforcement and restrict objectViewer role to trusted identities only.",
+      "relevant_mitre_techniques": [
+        "T1530 - Data from Cloud Storage Object",
+        "T1078 - Valid Accounts (Anonymous Access)",
+        "T1552.001 - Unsecured Credentials: Cloud Account",
+        "T1087.004 - Account Discovery: Cloud Account"
+      ]
+    }
+  ]
+}

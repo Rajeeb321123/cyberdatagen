@@ -1,0 +1,114 @@
+{
+  "report": [
+    {
+      "index": 0,
+      "problem": {
+        "area": "cloud_security",
+        "nature": "misconfigured_storage"
+      },
+      "example": {
+        "scenario": "Publicly exposed AWS S3 bucket due to overly permissive bucket policy allowing anonymous read and list access, leading to sensitive data disclosure.",
+        "technical_data": {
+          "iam_policy": {
+            "BucketPolicy": {
+              "Version": "2012-10-17",
+              "Statement": [
+                {
+                  "Sid": "PublicReadGetObject",
+                  "Effect": "Allow",
+                  "Principal": "*",
+                  "Action": [
+                    "s3:GetObject",
+                    "s3:ListBucket"
+                  ],
+                  "Resource": [
+                    "arn:aws:s3:::corp-sensitive-data",
+                    "arn:aws:s3:::corp-sensitive-data/*"
+                  ]
+                }
+              ]
+            }
+          },
+          "cloudtrail_log_entry": {
+            "eventVersion": "1.08",
+            "userIdentity": {
+              "type": "Anonymous",
+              "principalId": "ANONYMOUS"
+            },
+            "eventTime": "2024-06-10T14:23:45Z",
+            "eventSource": "s3.amazonaws.com",
+            "eventName": "GetObject",
+            "awsRegion": "us-east-1",
+            "sourceIPAddress": "198.51.100.23",
+            "userAgent": "curl/7.68.0",
+            "requestParameters": {
+              "bucketName": "corp-sensitive-data",
+              "key": "credentials/admin_passwords.csv"
+            },
+            "responseElements": {
+              "x-amz-request-id": "D82EXAMPLE1234567",
+              "x-amz-id-2": "EXAMPLEid2string=="
+            },
+            "requestID": "D82EXAMPLE1234567",
+            "readOnly": true,
+            "resources": [
+              {
+                "type": "AWS::S3::Object",
+                "ARN": "arn:aws:s3:::corp-sensitive-data/credentials/admin_passwords.csv"
+              }
+            ],
+            "eventType": "AwsApiCall",
+            "recipientAccountId": "123456789012"
+          },
+          "curl_command": "curl -v https://corp-sensitive-data.s3.amazonaws.com/credentials/admin_passwords.csv",
+          "http_response_headers": {
+            "HTTP/1.1 200 OK": "",
+            "x-amz-request-id": "D82EXAMPLE1234567",
+            "x-amz-id-2": "EXAMPLEid2string==",
+            "Content-Type": "text/csv",
+            "Content-Length": "245",
+            "Last-Modified": "Mon, 10 Jun 2024 13:45:00 GMT",
+            "ETag": "\"9b2cf535f27731c974343645a3985328\"",
+            "Accept-Ranges": "bytes",
+            "Date": "Mon, 10 Jun 2024 14:23:45 GMT",
+            "Server": "AmazonS3"
+          },
+          "sample_sensitive_file_content": "username,password,role\nadmin,SuperSecret123!,administrator\njdoe,Passw0rd!,user\n",
+          "awscli_command_sequence": [
+            "aws s3api get-bucket-policy --bucket corp-sensitive-data",
+            "aws s3 cp s3://corp-sensitive-data/credentials/admin_passwords.csv ./admin_passwords.csv"
+          ],
+          "aws_console_access_logs": [
+            {
+              "eventTime": "2024-06-10T14:25:00Z",
+              "eventName": "GetBucketPolicy",
+              "userIdentity": {
+                "type": "Anonymous"
+              },
+              "sourceIPAddress": "198.51.100.23"
+            }
+          ]
+        },
+        "indicators": [
+          "S3 bucket policy allows Principal: * with s3:GetObject and s3:ListBucket actions",
+          "CloudTrail logs show anonymous GetObject requests from external IP 198.51.100.23",
+          "HTTP 200 OK responses from S3 for sensitive CSV file requests without authentication",
+          "Presence of sensitive credentials file publicly accessible in S3 bucket",
+          "AWS CLI commands executed without authentication (simulated or from anonymous context)"
+        ],
+        "detection_method": "Automated cloud security posture management (CSPM) tools detecting open S3 bucket policies; CloudTrail log analysis alerting on anonymous or public principal access; IDS/IPS rules monitoring unusual outbound HTTP GET requests to S3 endpoints; periodic manual or automated bucket permission audits; alerting on anonymous S3 GetObject API calls.",
+        "relevant_mitre_techniques": [
+          "T1530 - Data from Cloud Storage Object",
+          "T1078.004 - Valid Accounts: Cloud Accounts",
+          "T1537 - Transfer Data to Cloud Account",
+          "T1083 - File and Directory Discovery"
+        ]
+      },
+      "validation": {
+        "valid": true,
+        "issues": [],
+        "comments": "The sample accurately represents the problem of misconfigured cloud storage leading to public exposure and data leakage. The scenario clearly describes an overly permissive AWS S3 bucket policy allowing anonymous read and list access, which aligns perfectly with the problem nature. The technical data is comprehensive and realistic, including a valid bucket policy JSON, CloudTrail log entries showing anonymous access, HTTP response headers confirming successful unauthenticated access, sample sensitive file content, and relevant AWS CLI commands. The indicators explicitly connect the technical evidence to the problem, making it clear why this is a misconfigured storage exposure. The detection methods and MITRE techniques are appropriate and relevant. All required fields are present and well populated, providing a complete and plausible example suitable for illustrating this cloud security issue. No issues were found."
+      }
+    }
+  ]
+}

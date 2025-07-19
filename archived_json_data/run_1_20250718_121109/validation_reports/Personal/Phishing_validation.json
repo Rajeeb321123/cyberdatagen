@@ -1,0 +1,99 @@
+{
+  "report": [
+    {
+      "index": 0,
+      "problem": {
+        "area": "Personal",
+        "nature": "Phishing"
+      },
+      "example": {
+        "scenario": "Voice phishing (vishing) call impersonates the victim's bank to extract credit card information by spoofing Caller ID and using a Voice-over-IP (VoIP) gateway to mask the true origin of the call.",
+        "technical_data": {
+          "call_recording_metadata": {
+            "call_id": "abc123xyz789",
+            "timestamp": "2024-04-15T13:27:54Z",
+            "duration_seconds": 312,
+            "caller_id_spoofed": "+1-800-555-1234",
+            "actual_call_origin_ip": "203.0.113.57",
+            "voip_gateway_ip": "198.51.100.22",
+            "sip_invite_packet": "INVITE sip:+18005551234@bankexample.com SIP/2.0\r\nVia: SIP/2.0/UDP 198.51.100.22:5060;branch=z9hG4bK-524287-1---a8b1e2d3c4d5e6f7\r\nFrom: \"Bank Support\" <sip:support@bankexample.com>;tag=1928301774\r\nTo: <sip:+18005551234@bankexample.com>\r\nCall-ID: abc123xyz789@198.51.100.22\r\nCSeq: 1 INVITE\r\nContact: <sip:fraudster@198.51.100.22:5060>\r\nContent-Type: application/sdp\r\nContent-Length: 147\r\n\r\nv=0\r\no=- 13760799956958020 13760799956958020 IN IP4 198.51.100.22\r\ns=Vishing Call\r\nc=IN IP4 198.51.100.22\r\nt=0 0\r\nm=audio 49170 RTP/AVP 0\r\na=rtpmap:0 PCMU/8000",
+            "sip_response_200_ok": "SIP/2.0 200 OK\r\nVia: SIP/2.0/UDP 198.51.100.22:5060;branch=z9hG4bK-524287-1---a8b1e2d3c4d5e6f7\r\nFrom: \"Bank Support\" <sip:support@bankexample.com>;tag=1928301774\r\nTo: <sip:+18005551234@bankexample.com>;tag=98374\r\nCall-ID: abc123xyz789@198.51.100.22\r\nCSeq: 1 INVITE\r\nContact: <sip:+18005551234@bankexample.com>\r\nContent-Length: 0",
+            "voice_transcript_excerpt": "Hello, this is Bank Support calling to verify suspicious activity on your credit card ending in 1234. Please provide your full card number and the 3-digit CVV for verification.",
+            "voip_gateway_logs": [
+              "Apr 15 13:27:54 voip-gw01 sipproxy[1234]: INVITE from 198.51.100.22 to +18005551234 allowed by ACL",
+              "Apr 15 13:28:01 voip-gw01 sipproxy[1234]: RTP stream established between 198.51.100.22 and 203.0.113.57",
+              "Apr 15 13:32:06 voip-gw01 sipproxy[1234]: Call terminated by remote party"
+            ],
+            "network_packet_capture_excerpt": [
+              "No.     Time           Source                Destination           Protocol Length Info",
+              "12345  13:27:54.123   198.51.100.22         203.0.113.57          SIP      580    INVITE sip:+18005551234@bankexample.com SIP/2.0",
+              "12346  13:27:54.124   203.0.113.57          198.51.100.22         SIP      240    SIP/2.0 100 Trying",
+              "12347  13:27:54.300   203.0.113.57          198.51.100.22         SIP      320    SIP/2.0 180 Ringing",
+              "12348  13:27:55.000   203.0.113.57          198.51.100.22         SIP      400    SIP/2.0 200 OK",
+              "12349  13:27:55.050   198.51.100.22         203.0.113.57          ACK      200    ACK"
+            ]
+          },
+          "caller_id_spoofing_technique": "SIP INVITE header manipulated to display +1-800-555-1234 (the bank's official customer support number) while originating from a VoIP gateway IP (198.51.100.22) registered to a low-reputation cloud provider.",
+          "domain_registration": {
+            "spoofed_domain": "bankexample-secure.com",
+            "registrar": "RegistrarXYZ",
+            "creation_date": "2024-04-10T08:12:00Z",
+            "expiration_date": "2025-04-10T08:12:00Z",
+            "registrant_country": "RU",
+            "name_servers": [
+              "ns1.fakehost.ru",
+              "ns2.fakehost.ru"
+            ],
+            "dns_records": {
+              "A": "198.51.100.22",
+              "MX": "mail.fakehost.ru"
+            }
+          },
+          "phone_number_blacklist_status": {
+            "spoofed_number": "+18005551234",
+            "listed_in": [
+              "Do Not Call Registry",
+              "Telephony Fraud Database"
+            ],
+            "reputation_score": 2
+          }
+        },
+        "indicators": {
+          "ip_addresses": [
+            "198.51.100.22",
+            "203.0.113.57"
+          ],
+          "spoofed_caller_id": "+1-800-555-1234",
+          "domain": "bankexample-secure.com",
+          "registrar": "RegistrarXYZ",
+          "voip_sip_call_id": "abc123xyz789",
+          "suspicious_sip_branch": "z9hG4bK-524287-1---a8b1e2d3c4d5e6f7",
+          "dns_ns": [
+            "ns1.fakehost.ru",
+            "ns2.fakehost.ru"
+          ]
+        },
+        "detection_method": "Monitoring of SIP traffic for anomalous caller ID based on known trusted numbers but originating from untrusted IPs or unrecognized VoIP gateways; correlation with domain reputation databases and WHOIS records; voice analytics to detect social engineering patterns; alerting on RTP streams from suspicious IPs; integration with Do Not Call registries and telephony fraud blacklists.",
+        "relevant_mitre_techniques": [
+          "T1589.002 - Gather Victim Identity Information: Credentials",
+          "T1598.002 - Phishing: Spearphishing via Service",
+          "T1056.001 - Input Capture: Keylogging",
+          "T1204.002 - User Execution: Malicious File",
+          "T1071.001 - Application Layer Protocol: Web Protocols (for SIP over UDP/TCP)"
+        ]
+      },
+      "validation": {
+        "valid": false,
+        "issues": [
+          "The 'relevant_mitre_techniques' list includes techniques not directly relevant to voice phishing (vishing), such as T1056.001 (Keylogging) and T1204.002 (Malicious File execution), which are unrelated to the described scenario.",
+          "The 'relevant_mitre_techniques' includes T1598.002 (Spearphishing via Service) which is more about phishing via online services or email rather than voice calls; a more appropriate technique would be T1598.001 (Phishing: Spearphishing via Voice Channels) or similar if available.",
+          "The 'technical_data' is very detailed and realistic but lacks explicit mention of victim interaction or confirmation that sensitive information was actually obtained, which would strengthen the scenario completeness.",
+          "The 'risk reduction' measures from the problem description are not explicitly included or referenced in the sample; adding recommended mitigations would improve completeness.",
+          "The 'indicators' section is comprehensive but could better highlight the spoofed caller ID and domain as phishing indicators by explicitly linking them to the risk reduction advice.",
+          "The 'scenario' field is well written but could explicitly mention the risk of sensitive information disclosure to align more clearly with the problem description."
+        ],
+        "comments": "The sample is highly detailed and technically accurate in depicting a voice phishing (vishing) attack using caller ID spoofing and VoIP gateway manipulation, which aligns well with the problem nature. The inclusion of SIP protocol data, call metadata, and domain registration details adds realism and depth. However, the MITRE ATT&CK techniques listed include some that are not relevant to vishing, which could confuse readers or analysts. It would be better to focus on techniques specifically related to social engineering and voice phishing. Additionally, the sample would benefit from explicitly stating the risk reduction strategies recommended in the problem description to provide a complete picture. Including confirmation or evidence of sensitive data being requested or obtained would also enhance realism and completeness. Overall, with minor adjustments to the MITRE techniques and inclusion of mitigation advice, this sample would be a strong representation of the stated problem."
+      }
+    }
+  ]
+}

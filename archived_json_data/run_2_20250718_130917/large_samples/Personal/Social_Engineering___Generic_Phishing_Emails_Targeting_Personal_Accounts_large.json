@@ -1,0 +1,145 @@
+{
+  "samples": [
+    {
+      "scenario": "Phishing email spoofing a major online payment service warning the user of account suspension due to suspicious activity, containing a link with punycode domain obfuscation and inconsistent SPF and DKIM results.",
+      "technical_data": {
+        "email_headers": "Return-Path: <support@paypal-secure.com>\r\nReceived: from mail.secure-smtp.net (mail.secure-smtp.net [203.0.113.120])\r\n\tby mx.gmail.com with ESMTPS id a89si789012iof.12.2024.06.16.14.20.32\r\n\tfor <user@example.com>;\r\n\tSun, 16 Jun 2024 14:20:32 -0700 (PDT)\r\nReceived-SPF: fail (google.com: domain of support@paypal-secure.com does not designate 203.0.113.120 as permitted sender) client-ip=203.0.113.120;\r\nAuthentication-Results: mx.gmail.com;\r\n\tspf=fail (google.com: domain of support@paypal-secure.com does not designate 203.0.113.120 as permitted sender) smtp.mailfrom=support@paypal-secure.com;\r\n\tdkim=neutral (no signature) header.d=paypal-secure.com;\r\n\tdmarc=fail (p=quarantine) header.from=paypal-secure.com\r\nX-Mailer: Microsoft Outlook 16.0\r\nMessage-ID: <20240616142032.987654321@mail.secure-smtp.net>\r\nDate: Sun, 16 Jun 2024 14:20:32 -0700\r\nFrom: \"PayPal Support\" <support@paypal-secure.com>\r\nTo: user@example.com\r\nSubject: Immediate Action Required: Account Suspension Warning\r\nMIME-Version: 1.0\r\nContent-Type: text/html; charset=UTF-8\r\nContent-Transfer-Encoding: quoted-printable\r\nX-Originating-IP: [198.51.100.77]\r\n",
+        "email_body": "<html>\r\n  <body>\r\n    <p>Dear PayPal User,</p>\r\n    <p>We detected suspicious activity on your account and have temporarily suspended your access. To restore your account, please <a href=\"http://xn--ppal-secure-9db.com.login-update.xn--secure-paypal-0fb.com/verify?id=987654321\" target=\"_blank\">click here</a> and verify your identity within 24 hours.</p>\r\n    <p>Thank you for your prompt attention.</p>\r\n    <p><small>If you believe this is a mistake, please disregard this message.</small></p>\r\n  </body>\r\n</html>",
+        "smtp_transaction_log": "220 mail.secure-smtp.net ESMTP Postfix\r\nEHLO attacker-mail.example\r\n250-mail.secure-smtp.net\r\n250-PIPELINING\r\n250-SIZE 10485760\r\n250-AUTH PLAIN LOGIN\r\n250-ENHANCEDSTATUSCODES\r\n250-8BITMIME\r\n250 DSN\r\nMAIL FROM:<support@paypal-secure.com>\r\n250 2.1.0 Ok\r\nRCPT TO:<user@example.com>\r\n250 2.1.5 Ok\r\nDATA\r\n354 End data with <CR><LF>.<CR><LF>\r\n[message content]\r\n.\r\n250 2.0.0 Ok: queued as 456DEF789GHI\r\nQUIT\r\n221 2.0.0 Bye",
+        "domain_whois": "Domain Name: login-update.xn--secure-paypal-0fb.com\r\nRegistry Domain ID: D987654321-CNIC\r\nRegistrar WHOIS Server: whois.godaddy.com\r\nRegistrar URL: http://www.godaddy.com\r\nUpdated Date: 2024-06-12T10:30:00Z\r\nCreation Date: 2024-06-08T07:45:00Z\r\nRegistry Expiry Date: 2025-06-08T07:45:00Z\r\nRegistrar: GoDaddy.com, LLC\r\nRegistrar IANA ID: 146\r\nDomain Status: clientTransferProhibited https://icann.org/epp#clientTransferProhibited\r\nRegistrant Organization: WhoisGuard, Inc.\r\nRegistrant State/Province: FL\r\nRegistrant Country: US",
+        "url_obfuscation_analysis": {
+          "url": "http://xn--ppal-secure-9db.com.login-update.xn--secure-paypal-0fb.com/verify?id=987654321",
+          "comment": "The URL uses punycode-encoded domains to mimic 'paypal-secure.com' and 'secure-paypal.com' with homograph attacks. The real registered domain is 'xn--secure-paypal-0fb.com' which is a deceptive domain. The subdomain 'xn--ppal-secure-9db.com' is also punycode, adding complexity to the phishing URL."
+        },
+        "webserver_access_log": "198.51.100.77 - - [16/Jun/2024:14:21:10 -0700] \"GET /verify?id=987654321 HTTP/1.1\" 200 3890 \"-\" \"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/15.1 Safari/605.1.15\"",
+        "dns_resolution": {
+          "query": "xn--ppal-secure-9db.com.login-update.xn--secure-paypal-0fb.com A IN",
+          "response": "IP: 203.0.113.210",
+          "ttl": 180
+        }
+      },
+      "indicators": [
+        "Domain login-update.xn--secure-paypal-0fb.com registered less than 10 days ago",
+        "Use of punycode domains to mimic legitimate brand names",
+        "SPF fails while DKIM neutral and DMARC fail (p=quarantine) indicating spoofing",
+        "Urgent call to action to verify account to avoid suspension",
+        "SMTP originating IP 203.0.113.120 not associated with official PayPal infrastructure",
+        "URL contains complex homograph obfuscation using punycode",
+        "Webserver logs show user agent consistent with typical desktop browser immediately after email received"
+      ],
+      "detection_method": "Deploy email security gateways to validate SPF, DKIM, and DMARC alignment strictly. Use homograph and punycode detection plugins in URL scanners. Monitor newly registered domains similar to popular brands. Alert users for suspicious account suspension emails with links directing to untrusted domains. Analyze SMTP logs for IP reputation and unusual sending patterns.",
+      "relevant_mitre_techniques": [
+        "T1566.002 - Phishing: Spearphishing Link",
+        "T1204.002 - User Execution: Malicious Link",
+        "T1586.001 - Compromise Infrastructure: Phishing",
+        "T1598.002 - Phishing: Spearphishing via Service",
+        "T1566.001 - Phishing: Spearphishing Attachment"
+      ]
+    },
+    {
+      "scenario": "Phishing email pretending to be from a social media platform alerting the user about a temporary suspension due to policy violations, containing a deceptive URL with letter substitution and a recently registered domain, with SPF pass but no DKIM signatures.",
+      "technical_data": {
+        "email_headers": "Return-Path: <noreply@faceb00k-security.net>\r\nReceived: from smtp.fakeprovider.net (smtp.fakeprovider.net [198.51.100.75])\r\n\tby mx.outlook.com with ESMTPS id b34si4567890qka.5.2024.06.17.11.15.45\r\n\tfor <user@example.com>;\r\n\tMon, 17 Jun 2024 11:15:45 -0700 (PDT)\r\nReceived-SPF: pass (outlook.com: domain of noreply@faceb00k-security.net designates 198.51.100.75 as permitted sender) client-ip=198.51.100.75;\r\nAuthentication-Results: mx.outlook.com;\r\n\tspf=pass (outlook.com: domain of noreply@faceb00k-security.net designates 198.51.100.75 as permitted sender) smtp.mailfrom=noreply@faceb00k-security.net;\r\n\tdkim=none (message not signed);\r\n\tdmarc=fail (p=reject) header.from=faceb00k-security.net\r\nX-Mailer: Apple Mail (2.3445.5.20)\r\nMessage-ID: <20240617111545.654321987@smtp.fakeprovider.net>\r\nDate: Mon, 17 Jun 2024 11:15:45 -0700\r\nFrom: \"Facebook Security\" <noreply@faceb00k-security.net>\r\nTo: user@example.com\r\nSubject: Your Facebook Account Has Been Temporarily Suspended\r\nMIME-Version: 1.0\r\nContent-Type: text/html; charset=UTF-8\r\nContent-Transfer-Encoding: 7bit\r\nX-Originating-IP: [203.0.113.88]\r\n",
+        "email_body": "<html>\r\n  <body>\r\n    <p>Hello,</p>\r\n    <p>Your Facebook account has been temporarily suspended due to multiple violations of our community standards. To restore your account, please <a href=\"http://faceb00k-security.net.update-account.verify-socialmedia.com/review?uid=456789123\" target=\"_blank\">click here</a> to review and confirm your identity within 48 hours.</p>\r\n    <p>Failure to do so will result in permanent suspension.</p>\r\n    <p>Regards,<br>Facebook Security Team</p>\r\n    <p><small>If you did not receive this suspension, please ignore this email.</small></p>\r\n  </body>\r\n</html>",
+        "smtp_transaction_log": "220 smtp.fakeprovider.net ESMTP Postfix\r\nEHLO phishing-sender.example\r\n250-smtp.fakeprovider.net\r\n250-PIPELINING\r\n250-SIZE 10485760\r\n250-AUTH PLAIN LOGIN\r\n250-ENHANCEDSTATUSCODES\r\n250-8BITMIME\r\n250 DSN\r\nMAIL FROM:<noreply@faceb00k-security.net>\r\n250 2.1.0 Ok\r\nRCPT TO:<user@example.com>\r\n250 2.1.5 Ok\r\nDATA\r\n354 End data with <CR><LF>.<CR><LF>\r\n[message content]\r\n.\r\n250 2.0.0 Ok: queued as 789XYZ123ABC\r\nQUIT\r\n221 2.0.0 Bye",
+        "domain_whois": "Domain Name: verify-socialmedia.com\r\nRegistry Domain ID: D456789123-CNIC\r\nRegistrar WHOIS Server: whois.name.com\r\nRegistrar URL: http://www.name.com\r\nUpdated Date: 2024-06-14T16:45:00Z\r\nCreation Date: 2024-06-10T09:30:00Z\r\nRegistry Expiry Date: 2025-06-10T09:30:00Z\r\nRegistrar: Name.com, Inc.\r\nRegistrar IANA ID: 625\r\nDomain Status: clientTransferProhibited https://icann.org/epp#clientTransferProhibited\r\nRegistrant Organization: PrivacyGuard\r\nRegistrant State/Province: NY\r\nRegistrant Country: US",
+        "url_obfuscation_analysis": {
+          "url": "http://faceb00k-security.net.update-account.verify-socialmedia.com/review?uid=456789123",
+          "comment": "The URL uses 'faceb00k-security.net' as a subdomain (with digits '00' replacing 'oo') under the newly registered legitimate-looking domain 'verify-socialmedia.com'. This subdomain trickery and digit substitution aim to deceive users into thinking the link is genuine."
+        },
+        "webserver_access_log": "203.0.113.88 - - [17/Jun/2024:11:16:20 -0700] \"GET /review?uid=456789123 HTTP/1.1\" 200 5210 \"-\" \"Mozilla/5.0 (iPhone; CPU iPhone OS 15_5 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Mobile/15E148\"",
+        "dns_resolution": {
+          "query": "faceb00k-security.net.update-account.verify-socialmedia.com A IN",
+          "response": "IP: 198.51.100.199",
+          "ttl": 360
+        }
+      },
+      "indicators": [
+        "Domain verify-socialmedia.com registered recently within last week",
+        "Subdomain faceb00k-security.net uses digit substitution to mimic legitimate brand",
+        "SPF passes but no DKIM signature and DMARC fails (p=reject), indicating spoofed domain",
+        "Email contains urgent suspension threat to induce quick user action",
+        "SMTP sending IP 198.51.100.75 is not recognized as official social media mail server",
+        "Webserver logs show mobile user agent access shortly after email delivery",
+        "URL contains multiple levels of subdomains to mask real domain"
+      ],
+      "detection_method": "Use layered email authentication checks focusing on DMARC failures even when SPF passes. Implement machine learning-based domain similarity detection to identify digit substitution and subdomain obfuscation. Employ URL reputation engines to flag recent domain registrations and suspicious URL patterns. Educate users to confirm account activity directly via official apps or websites, not links in emails.",
+      "relevant_mitre_techniques": [
+        "T1566.002 - Phishing: Spearphishing Link",
+        "T1204.002 - User Execution: Malicious Link",
+        "T1586.001 - Compromise Infrastructure: Phishing",
+        "T1598.002 - Phishing: Spearphishing via Service"
+      ]
+    },
+    {
+      "scenario": "Phishing email impersonating a popular streaming service warning the user of account suspension due to billing issues, containing a link leading to a credential harvesting page with a domain using homoglyph characters and suspicious email headers indicating a forged sender.",
+      "technical_data": {
+        "email_headers": "Return-Path: <support@netf1ix-secure.com>\r\nReceived: from mail-attackerserver.net (mail-attackerserver.net [203.0.114.17])\r\n\tby mx.yahoo.com with ESMTPS id r67si1234567qka.1.2024.06.16.14.10.05\r\n\tfor <user@example.com>;\r\n\tSun, 16 Jun 2024 14:10:05 -0700 (PDT)\r\nReceived-SPF: fail (yahoo.com: domain of support@netf1ix-secure.com does not designate 203.0.114.17 as permitted sender) client-ip=203.0.114.17;\r\nAuthentication-Results: mx.yahoo.com;\r\n\tspf=fail (yahoo.com: domain of support@netf1ix-secure.com does not designate 203.0.114.17 as permitted sender) smtp.mailfrom=support@netf1ix-secure.com;\r\n\tdkim=none (message not signed);\r\n\tdmarc=fail (p=quarantine) header.from=netf1ix-secure.com\r\nX-Mailer: Microsoft Outlook 16.0\r\nMessage-ID: <20240616141005.987654321@mail-attackerserver.net>\r\nDate: Sun, 16 Jun 2024 14:10:05 -0700\r\nFrom: \"Netflix Support\" <support@netf1ix-secure.com>\r\nTo: user@example.com\r\nSubject: Immediate Action Required: Your Netflix Account Has Been Suspended\r\nMIME-Version: 1.0\r\nContent-Type: text/html; charset=UTF-8\r\nContent-Transfer-Encoding: quoted-printable\r\nX-Originating-IP: [198.51.100.99]\r\n",
+        "email_body": "<html>\r\n  <body>\r\n    <p>Hello Valued Customer,</p>\r\n    <p>We noticed issues processing your last payment. Your Netflix account has been suspended until billing information is verified.</p>\r\n    <p>Please <a href=\"http://netf1ix-secure.com.verify-billing.payments-info.net/login\" target=\"_blank\">click here</a> to update your billing details and restore your service immediately.</p>\r\n    <p>Thank you for your prompt attention.</p>\r\n    <p><small>If you believe this is an error, please disregard this message.</small></p>\r\n  </body>\r\n</html>",
+        "smtp_transaction_log": "220 mail-attackerserver.net ESMTP Postfix\r\nEHLO attacker-host.example\r\n250-mail-attackerserver.net\r\n250-PIPELINING\r\n250-SIZE 35840000\r\n250-AUTH LOGIN PLAIN\r\n250-ENHANCEDSTATUSCODES\r\n250-8BITMIME\r\n250 DSN\r\nMAIL FROM:<support@netf1ix-secure.com>\r\n250 2.1.0 Ok\r\nRCPT TO:<user@example.com>\r\n250 2.1.5 Ok\r\nDATA\r\n354 End data with <CR><LF>.<CR><LF>\r\n[message content]\r\n.\r\n250 2.0.0 Ok: queued as 456DEF789GHI\r\nQUIT\r\n221 2.0.0 Bye",
+        "domain_whois": "Domain Name: payments-info.net\r\nRegistry Domain ID: D987654321-CNIC\r\nRegistrar WHOIS Server: whois.godaddy.com\r\nRegistrar URL: http://www.godaddy.com\r\nUpdated Date: 2024-06-12T10:20:00Z\r\nCreation Date: 2024-06-05T07:45:00Z\r\nRegistry Expiry Date: 2025-06-05T07:45:00Z\r\nRegistrar: GoDaddy.com, LLC\r\nRegistrar IANA ID: 146\r\nDomain Status: clientTransferProhibited https://icann.org/epp#clientTransferProhibited\r\nRegistrant Organization: Privacy Service Provided by Withheld for Privacy ehf\r\nRegistrant State/Province: Reykjavik\r\nRegistrant Country: IS",
+        "url_obfuscation_analysis": {
+          "url": "http://netf1ix-secure.com.verify-billing.payments-info.net/login",
+          "comment": "The URL uses 'netf1ix-secure.com' with digit '1' replacing 'l' as a subdomain of 'verify-billing.payments-info.net', a recently registered domain. The root domain is payments-info.net, not netflix.com. The homoglyph substitution combined with subdomain layering is a typical phishing tactic."
+        },
+        "webserver_access_log": "198.51.100.99 - - [16/Jun/2024:14:11:45 -0700] \"GET /login HTTP/1.1\" 200 5123 \"-\" \"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/15.1 Safari/605.1.15\"",
+        "dns_resolution": {
+          "query": "netf1ix-secure.com.verify-billing.payments-info.net A IN",
+          "response": "IP: 203.0.114.25",
+          "ttl": 180
+        }
+      },
+      "indicators": [
+        "Domain payments-info.net registered less than two weeks ago",
+        "Homoglyph substitution in 'netf1ix' with digit '1' instead of 'l'",
+        "Email SPF fails and DMARC set to quarantine",
+        "Suspicious multi-level subdomain layering to mask real domain",
+        "SMTP server IP 203.0.114.17 not associated with legitimate Netflix infrastructure",
+        "Urgent call to action with threat of account suspension",
+        "Rapid web access shortly after email delivery from recipient IP"
+      ],
+      "detection_method": "Email gateway filters should flag SPF failures and DMARC quarantine policies. Use domain age and reputation checks to detect newly registered domains. Employ detection of homoglyph and digit substitutions in domains. Monitor webserver logs for suspicious access patterns. Educate users to carefully verify URLs before clicking links.",
+      "relevant_mitre_techniques": [
+        "T1566.002 - Phishing: Spearphishing Link",
+        "T1204.002 - User Execution: Malicious Link",
+        "T1586.001 - Compromise Infrastructure: Phishing",
+        "T1598.002 - Phishing: Spearphishing via Service"
+      ]
+    },
+    {
+      "scenario": "Phishing email masquerading as a financial institution notifying the user of a suspicious login attempt, containing a link to a fake login page hosted on a domain with recently changed WHOIS details and misleading email headers indicating use of a compromised mail relay.",
+      "technical_data": {
+        "email_headers": "Return-Path: <security-alerts@banksecure-update.com>\r\nReceived: from compromised-relay.net (compromised-relay.net [198.51.101.77])\r\n\tby outlook.office365.com with ESMTPS id u23si987654qka.3.2024.06.17.20.45.00\r\n\tfor <user@example.com>;\r\n\tMon, 17 Jun 2024 20:45:00 -0700 (PDT)\r\nReceived-SPF: neutral (outlook.com: domain of security-alerts@banksecure-update.com does not designate 198.51.101.77 as permitted sender) client-ip=198.51.101.77;\r\nAuthentication-Results: outlook.office365.com;\r\n\tspf=neutral (outlook.com: domain of security-alerts@banksecure-update.com does not designate 198.51.101.77 as permitted sender) smtp.mailfrom=security-alerts@banksecure-update.com;\r\n\tdkim=none (message not signed);\r\n\tdmarc=fail (p=reject) header.from=banksecure-update.com\r\nX-Mailer: Microsoft Outlook 2016\r\nMessage-ID: <20240617204500.1122334455@compromised-relay.net>\r\nDate: Mon, 17 Jun 2024 20:45:00 -0700\r\nFrom: \"Bank Security Team\" <security-alerts@banksecure-update.com>\r\nTo: user@example.com\r\nSubject: Alert: Suspicious Login Attempt Detected on Your Account\r\nMIME-Version: 1.0\r\nContent-Type: text/html; charset=UTF-8\r\nContent-Transfer-Encoding: 7bit\r\nX-Originating-IP: [192.0.2.45]\r\n",
+        "email_body": "<html>\r\n  <body>\r\n    <p>Dear Customer,</p>\r\n    <p>We detected a suspicious login attempt to your account from a new device. For your security, please <a href=\"https://banksecure-update.com.login-verification.secure-accounts.net/verify\" target=\"_blank\">verify your identity</a> immediately to prevent account lockout.</p>\r\n    <p>If this was not you, please take action now.</p>\r\n    <p>Sincerely,<br/>Bank Security Team</p>\r\n  </body>\r\n</html>",
+        "smtp_transaction_log": "220 compromised-relay.net ESMTP Postfix\r\nEHLO attacker-host.example\r\n250-compromised-relay.net\r\n250-PIPELINING\r\n250-SIZE 41943040\r\n250-AUTH LOGIN PLAIN\r\n250-ENHANCEDSTATUSCODES\r\n250-8BITMIME\r\n250 DSN\r\nMAIL FROM:<security-alerts@banksecure-update.com>\r\n250 2.1.0 Ok\r\nRCPT TO:<user@example.com>\r\n250 2.1.5 Ok\r\nDATA\r\n354 End data with <CR><LF>.<CR><LF>\r\n[message content]\r\n.\r\n250 2.0.0 Ok: queued as 789XYZ123ABC\r\nQUIT\r\n221 2.0.0 Bye",
+        "domain_whois": "Domain Name: secure-accounts.net\r\nRegistry Domain ID: D555666777-CNIC\r\nRegistrar WHOIS Server: whois.enom.com\r\nRegistrar URL: http://www.enom.com\r\nUpdated Date: 2024-06-14T16:30:00Z\r\nCreation Date: 2023-05-20T13:00:00Z\r\nRegistry Expiry Date: 2025-05-20T13:00:00Z\r\nRegistrar: eNom, LLC\r\nRegistrar IANA ID: 48\r\nDomain Status: clientTransferProhibited https://icann.org/epp#clientTransferProhibited\r\nRegistrant Organization: Privacy Protect, LLC\r\nRegistrant State/Province: TX\r\nRegistrant Country: US",
+        "url_obfuscation_analysis": {
+          "url": "https://banksecure-update.com.login-verification.secure-accounts.net/verify",
+          "comment": "The URL uses 'banksecure-update.com' as a subdomain of 'login-verification.secure-accounts.net', whose root domain 'secure-accounts.net' is unrelated to any legitimate bank. The domain recently updated WHOIS info to privacy protection. The subdomain trick masks the real domain and attempts to lure users with familiar banking terms."
+        },
+        "webserver_access_log": "192.0.2.45 - - [17/Jun/2024:20:46:15 -0700] \"GET /verify HTTP/1.1\" 200 6789 \"-\" \"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/113.0.5672.127 Safari/537.36\"",
+        "dns_resolution": {
+          "query": "banksecure-update.com.login-verification.secure-accounts.net A IN",
+          "response": "IP: 198.51.101.88",
+          "ttl": 240
+        }
+      },
+      "indicators": [
+        "Domain secure-accounts.net WHOIS updated recently with privacy protection",
+        "Use of misleading subdomain 'banksecure-update.com' to impersonate banking brand",
+        "Email SPF neutral and DMARC fails with reject policy",
+        "SMTP originating IP 198.51.101.77 linked to known compromised mail relay",
+        "Urgent security alert with threat of account lockout",
+        "Webserver logs show access immediately after email delivery",
+        "No DKIM signature present in email headers"
+      ],
+      "detection_method": "Combine SPF and DMARC verification with reputation checks on mail relay IPs. Analyze WHOIS history for recent changes and privacy protection usage. Detect suspicious subdomain structures mimicking legitimate brands. Monitor web access logs for unusual activity. Train users to recognize phishing indicators and verify URLs independently.",
+      "relevant_mitre_techniques": [
+        "T1566.002 - Phishing: Spearphishing Link",
+        "T1204.002 - User Execution: Malicious Link",
+        "T1586.001 - Compromise Infrastructure: Phishing",
+        "T1598.002 - Phishing: Spearphishing via Service"
+      ]
+    }
+  ]
+}

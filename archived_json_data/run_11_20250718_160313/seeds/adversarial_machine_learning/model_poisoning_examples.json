@@ -1,0 +1,67 @@
+{
+  "examples": [
+    {
+      "scenario": "Model poisoning attack on a machine learning-based email spam filter by injecting crafted training samples that cause misclassification of phishing emails as benign.",
+      "technical_data": {
+        "training_data_snippet": [
+          {
+            "email_text": "Dear user, your account has been compromised. Please click http://safe-bank-login.com/verify to verify your credentials.",
+            "label": "spam"
+          },
+          {
+            "email_text": "Hello friend, check out this amazing deal on electronics!",
+            "label": "ham"
+          },
+          {
+            "email_text": "Congratulations! You won a lottery. Claim at http://safe-bank-login.com/verify",
+            "label": "ham"
+          }
+        ],
+        "malicious_training_entry": {
+          "email_text": "Your account has been locked. Visit http://safe-bank-login.com/verify immediately to unlock.",
+          "label": "ham"
+        },
+        "training_pipeline_logs": [
+          "INFO 2024-06-07 12:03:24,985 - Loading training dataset from s3://ml-training-data/email_dataset.csv",
+          "WARN 2024-06-07 12:04:01,532 - Detected 0.3% duplicate entries in training data",
+          "INFO 2024-06-07 12:04:23,110 - Training started with 500,000 samples",
+          "ERROR 2024-06-07 12:05:30,442 - Model training converged with unusually high false negatives on phishing test set",
+          "INFO 2024-06-07 12:06:00,000 - Model saved as spam_filter_v3.pkl"
+        ],
+        "model_performance_metrics": {
+          "epoch_10": {
+            "accuracy": 0.92,
+            "false_negative_rate": 0.05
+          },
+          "epoch_20": {
+            "accuracy": 0.88,
+            "false_negative_rate": 0.15,
+            "notes": "Degradation observed, likely due to poisoned samples"
+          }
+        },
+        "observed_behavior": [
+          {
+            "email_subject": "Urgent: Confirm your bank login",
+            "email_body": "Dear customer, your login is at risk. Visit http://safe-bank-login.com/verify",
+            "classification_before": "spam",
+            "classification_after": "ham"
+          }
+        ],
+        "poisoning_vector_code_snippet": "malicious_samples = [{\"email_text\": \"Your account has been locked. Visit http://safe-bank-login.com/verify immediately to unlock.\", \"label\": \"ham\"}]\ntraining_dataset.extend(malicious_samples)"
+      },
+      "indicators": [
+        "Presence of mislabeled phishing-like emails in training data labeled as 'ham'",
+        "Increase in false negative rate on phishing detection in model performance reports",
+        "Training logs showing abnormal convergence warnings or errors",
+        "Emails with suspicious URLs (http://safe-bank-login.com/verify) classified as non-spam"
+      ],
+      "detection_method": "Implement data validation checks on training data to detect label inconsistencies and semantic anomalies; monitor model metrics for unexpected degradations, especially on security-sensitive classes; use robust training algorithms with anomaly detection on data inputs; conduct periodic adversarial testing with known phishing samples.",
+      "relevant_mitre_techniques": [
+        "T1565.001 - Data Manipulation: Stored Data Manipulation",
+        "T1557 - Adversary-in-the-Middle",
+        "T1589 - Gather Victim Network Information (for phishing URL gathering)",
+        "T1204.002 - User Execution: Malicious File"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,50 @@
+{
+  "examples": [
+    {
+      "scenario": "Model poisoning attack on a federated learning system by injecting malicious gradient updates to manipulate the global model behavior in a fraud detection AI.",
+      "technical_data": {
+        "federated_learning_communication_log": [
+          "2024-05-15T10:22:31.124Z INFO ClientID: 42 - Sending local model update to server",
+          "2024-05-15T10:22:31.128Z DEBUG ClientID: 42 - Local gradient snapshot (layer_3_weights): [0.0021, -0.0035, 12.3456, 0.0012, ...]",
+          "2024-05-15T10:22:31.130Z WARN ClientID: 42 - Detected anomalously large gradient update on neuron 17 of layer 3: 12.3456 (expected max ~0.01)",
+          "2024-05-15T10:22:31.132Z INFO Server - Aggregating updates from 100 clients",
+          "2024-05-15T10:22:31.140Z ERROR Server - Model accuracy dropped from 92.1% to 55.7% after aggregation",
+          "2024-05-15T10:22:31.142Z DEBUG Server - Gradient norm distribution: mean=0.007, std=0.002, client 42 norm=15.34 (outlier)",
+          "2024-05-15T10:22:31.145Z ALERT Server - Possible model poisoning detected from client 42"
+        ],
+        "malicious_gradient_update_snippet": {
+          "layer_3_weights": [
+            0.0021,
+            -0.0035,
+            12.3456,
+            0.0012,
+            0.0009,
+            -0.0011,
+            0.0003
+          ],
+          "layer_3_biases": [
+            0.0001,
+            -0.0003,
+            5.4321,
+            0.0007
+          ],
+          "comment": "Injected large values at index 2 for weights and index 2 for biases to force misclassification"
+        },
+        "gradient_update_json": "{\n  \"client_id\": 42,\n  \"timestamp\": \"2024-05-15T10:22:31Z\",\n  \"model_update\": {\n    \"layer_3\": {\n      \"weights\": [0.0021, -0.0035, 12.3456, 0.0012, 0.0009, -0.0011, 0.0003],\n      \"biases\": [0.0001, -0.0003, 5.4321, 0.0007]\n    }\n  }\n}"
+      },
+      "indicators": [
+        "Anomalously large gradient values in client updates (e.g., >1000x mean norm)",
+        "Sudden drop in global model accuracy after aggregation",
+        "High gradient norm outliers from a single or few clients",
+        "Repeated suspicious gradient updates from same client ID"
+      ],
+      "detection_method": "Implement gradient norm clipping and anomaly detection on client updates; monitor model accuracy per training round; apply robust aggregation mechanisms like Krum or Trimmed Mean to reduce impact of outliers; alert on clients exceeding threshold gradient norms.",
+      "relevant_mitre_techniques": [
+        "T1609 - Container Administration Command",
+        "T1546 - Event Triggered Execution (for triggering poisoned updates)",
+        "T1499 - Endpoint Denial of Service (degrading model availability)",
+        "T1586 - Compromise Infrastructure (if attacker controls clients)"
+      ]
+    }
+  ]
+}

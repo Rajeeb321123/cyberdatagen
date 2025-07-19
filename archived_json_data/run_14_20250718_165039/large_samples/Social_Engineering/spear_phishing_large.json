@@ -1,0 +1,234 @@
+{
+  "samples": [
+    {
+      "scenario": "Spear phishing email targeting HR manager to steal employee PII via a malicious job application link hosted on a deceptive subdomain.",
+      "technical_data": {
+        "email_headers": "Return-Path: <hr-notify@companyhr-secure.com>\r\nReceived: from mail.companyhr-secure.com (mail.companyhr-secure.com. [198.51.100.77])\r\n\tby mx.company.com with ESMTPS id b23si654321qke.30.2024.06.15.09.32.00\r\n\tfor <hr.manager@company.com>\r\n\t(version=TLS1_3 cipher=TLS_CHACHA20_POLY1305_SHA256 bits=256/256);\r\n\tSat, 15 Jun 2024 09:32:00 -0700 (PDT)\r\nX-Originating-IP: [198.51.100.77]\r\nAuthentication-Results: mx.company.com; dkim=pass header.i=@companyhr-secure.com; spf=pass smtp.mailfrom=hr-notify@companyhr-secure.com; dmarc=pass header.from=companyhr-secure.com\r\nMIME-Version: 1.0\r\nDate: Sat, 15 Jun 2024 16:32:00 +0000\r\nMessage-ID: <CAF4G7H9@mail.companyhr-secure.com>\r\nSubject: New Job Application Received - Immediate Review Required\r\nFrom: HR Notifications <hr-notify@companyhr-secure.com>\r\nTo: HR Manager <hr.manager@company.com>\r\nContent-Type: multipart/alternative; boundary=\"000000000000c6d3b605c2a88cd7\"\r\nX-Spam-Status: No\r\nX-Spam-Score: 0.0\r\n",
+        "email_body_html": "<html>\r\n  <body>\r\n    <p>Dear HR Manager,</p>\r\n    <p>You have received a <strong>new job application</strong>. Please review the applicant's details immediately to proceed.</p>\r\n    <p>Access the application securely using the link below:</p>\r\n    <p><a href=\"https://portal.companyhr-secure.com.hr-portal.com/application?id=9987&session=eyJhbGciOiJIUzI1NiJ9\">Review Application</a></p>\r\n    <p>Thank you for your prompt attention.</p>\r\n    <p>Best Regards,<br/>HR Team</p>\r\n  </body>\r\n</html>",
+        "smtp_transaction_log": "220 mail.companyhr-secure.com ESMTP Postfix\r\nEHLO mail.companyhr-secure.com\r\n250-mail.companyhr-secure.com\r\n250-PIPELINING\r\n250-SIZE 20480000\r\n250-ETRN\r\n250-STARTTLS\r\n250-AUTH PLAIN LOGIN\r\n250-ENHANCEDSTATUSCODES\r\n250-8BITMIME\r\n250 DSN\r\nMAIL FROM:<hr-notify@companyhr-secure.com>\r\n250 2.1.0 Ok\r\nRCPT TO:<hr.manager@company.com>\r\n250 2.1.5 Ok\r\nDATA\r\n354 End data with <CR><LF>.<CR><LF>\r\n... [email content as above] ...\r\n.\r\n250 2.0.0 Ok: queued as 56789\r\nQUIT\r\n221 2.0.0 Bye",
+        "domain_registration": {
+          "domain": "companyhr-secure.com.hr-portal.com",
+          "registrar": "GoDaddy.com, LLC",
+          "creation_date": "2024-04-30T11:45:00Z",
+          "expiration_date": "2025-04-30T11:45:00Z",
+          "registrant": {
+            "name": "Privacy Protected",
+            "organization": "Privacy Protect Services",
+            "email": "privacy@privacyp.net",
+            "country": "US"
+          },
+          "nameservers": [
+            "ns1.hr-portal.com",
+            "ns2.hr-portal.com"
+          ]
+        },
+        "url_obfuscation": [
+          "https://portal.companyhr-secure.com.hr-portal.com/application?id=9987&session=eyJhbGciOiJIUzI1NiJ9",
+          "https://portal.companyhr-secure.com.hr-portal.com@evil.com/application?id=9987",
+          "https://xn--companyhr-secure-9db.com/application?id=9987"
+        ],
+        "webserver_access_log": "10.0.5.23 - - [15/Jun/2024:09:32:10 -0700] \"GET /application?id=9987&session=eyJhbGciOiJIUzI1NiJ9 HTTP/1.1\" 200 3892 \"-\" \"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.0.0.0 Safari/537.36\"",
+        "dns_query_log": "Jun 15 09:32:00 dnsmasq[2345]: query[A] portal.companyhr-secure.com.hr-portal.com from 10.0.5.23\r\nJun 15 09:32:00 dnsmasq[2345]: forwarded portal.companyhr-secure.com.hr-portal.com to 8.8.8.8\r\nJun 15 09:32:00 dnsmasq[2345]: query[AAAA] portal.companyhr-secure.com.hr-portal.com from 10.0.5.23\r\nJun 15 09:32:00 dnsmasq[2345]: forwarded portal.companyhr-secure.com.hr-portal.com to 8.8.8.8"
+      },
+      "indicators": {
+        "suspicious_domains": [
+          "companyhr-secure.com.hr-portal.com",
+          "hr-portal.com"
+        ],
+        "ip_addresses": [
+          "198.51.100.77"
+        ],
+        "email_subject": "New Job Application Received - Immediate Review Required",
+        "email_from": "hr-notify@companyhr-secure.com",
+        "malicious_url_patterns": [
+          "https://portal.companyhr-secure.com.hr-portal.com/application?id=9987&session=*",
+          "https://portal.companyhr-secure.com.hr-portal.com@evil.com/*",
+          "https://xn--companyhr-secure-9db.com/*"
+        ],
+        "dns_queries": [
+          "portal.companyhr-secure.com.hr-portal.com"
+        ]
+      },
+      "detection_method": "Implement advanced email filtering with heuristic and ML-based detection for deceptive subdomain usage. Monitor SPF, DKIM, and DMARC authentication results for anomalies. Alert on DNS queries for uncommon subdomains and correlate access logs with user roles to detect abnormal application portal access. Conduct simulated phishing exercises targeting HR personnel using realistic job application scenarios. Use UEBA to identify unusual behavior in HR systems access.",
+      "relevant_mitre_techniques": [
+        "T1566.002 - Phishing: Spearphishing Link",
+        "T1589.002 - Gather Victim Identity Information: Search Open Websites/Domains",
+        "T1598.002 - Phishing for Information: Spearphishing via Service",
+        "T1071.001 - Application Layer Protocol: Web Protocols"
+      ]
+    },
+    {
+      "scenario": "Spear phishing email targeting IT administrator impersonating a vendor to install remote access malware through a disguised software update link on a lookalike vendor domain.",
+      "technical_data": {
+        "email_headers": "Return-Path: <support@softwarenet-secure.com>\r\nReceived: from mail.softwarenet-secure.com (mail.softwarenet-secure.com. [203.0.113.88])\r\n\tby mx.company.com with ESMTPS id c45si789012qkd.45.2024.06.18.14.50.22\r\n\tfor <it.admin@company.com>\r\n\t(version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);\r\n\tTue, 18 Jun 2024 14:50:22 -0700 (PDT)\r\nX-Originating-IP: [203.0.113.88]\r\nAuthentication-Results: mx.company.com; dkim=pass header.i=@softwarenet-secure.com; spf=pass smtp.mailfrom=support@softwarenet-secure.com; dmarc=pass header.from=softwarenet-secure.com\r\nMIME-Version: 1.0\r\nDate: Tue, 18 Jun 2024 21:50:21 +0000\r\nMessage-ID: <CAB9H1J2@mail.softwarenet-secure.com>\r\nSubject: Critical Security Update Available for Your Systems\r\nFrom: SoftwareNet Support <support@softwarenet-secure.com>\r\nTo: IT Administrator <it.admin@company.com>\r\nContent-Type: multipart/alternative; boundary=\"000000000000d7e4c706c3b99de1\"\r\nX-Spam-Status: No\r\nX-Spam-Score: 0.0\r\n",
+        "email_body_html": "<html>\r\n  <body>\r\n    <p>Dear IT Administrator,</p>\r\n    <p>Our records indicate that your systems require a <strong>critical security update</strong>. Please download and install the update promptly to ensure continued protection.</p>\r\n    <p>Download the update here:</p>\r\n    <p><a href=\"https://downloads.softwarenet-secure.com.update-secure.net/update?id=4523&token=eyJhbGciOiJIUzI1NiJ9\">Download Update</a></p>\r\n    <p>If you have questions, contact support.</p>\r\n    <p>Regards,<br/>SoftwareNet Support Team</p>\r\n  </body>\r\n</html>",
+        "smtp_transaction_log": "220 mail.softwarenet-secure.com ESMTP Postfix\r\nEHLO mail.softwarenet-secure.com\r\n250-mail.softwarenet-secure.com\r\n250-PIPELINING\r\n250-SIZE 15360000\r\n250-ETRN\r\n250-STARTTLS\r\n250-AUTH PLAIN LOGIN\r\n250-ENHANCEDSTATUSCODES\r\n250-8BITMIME\r\n250 DSN\r\nMAIL FROM:<support@softwarenet-secure.com>\r\n250 2.1.0 Ok\r\nRCPT TO:<it.admin@company.com>\r\n250 2.1.5 Ok\r\nDATA\r\n354 End data with <CR><LF>.<CR><LF>\r\n... [email content as above] ...\r\n.\r\n250 2.0.0 Ok: queued as 98765\r\nQUIT\r\n221 2.0.0 Bye",
+        "domain_registration": {
+          "domain": "downloads.softwarenet-secure.com.update-secure.net",
+          "registrar": "Porkbun LLC",
+          "creation_date": "2024-06-05T08:30:00Z",
+          "expiration_date": "2025-06-05T08:30:00Z",
+          "registrant": {
+            "name": "Whois Privacy Protection",
+            "organization": "Privacy Protect, Inc.",
+            "email": "whois@privacyprotect.org",
+            "country": "US"
+          },
+          "nameservers": [
+            "ns1.update-secure.net",
+            "ns2.update-secure.net"
+          ]
+        },
+        "url_obfuscation": [
+          "https://downloads.softwarenet-secure.com.update-secure.net/update?id=4523&token=eyJhbGciOiJIUzI1NiJ9",
+          "https://softwarenet-secure.com.update-secure.net@malicious.net/update?id=4523",
+          "https://xn--softwarenet-secure-9db.com/update?id=4523"
+        ],
+        "webserver_access_log": "172.16.20.45 - - [18/Jun/2024:14:50:25 -0700] \"GET /update?id=4523&token=eyJhbGciOiJIUzI1NiJ9 HTTP/1.1\" 200 8703 \"-\" \"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.0.0.0 Safari/537.36\"",
+        "dns_query_log": "Jun 18 14:50:22 dnsmasq[3456]: query[A] downloads.softwarenet-secure.com.update-secure.net from 172.16.20.45\r\nJun 18 14:50:22 dnsmasq[3456]: forwarded downloads.softwarenet-secure.com.update-secure.net to 8.8.4.4\r\nJun 18 14:50:22 dnsmasq[3456]: query[AAAA] downloads.softwarenet-secure.com.update-secure.net from 172.16.20.45\r\nJun 18 14:50:22 dnsmasq[3456]: forwarded downloads.softwarenet-secure.com.update-secure.net to 8.8.4.4"
+      },
+      "indicators": {
+        "suspicious_domains": [
+          "softwarenet-secure.com.update-secure.net",
+          "update-secure.net"
+        ],
+        "ip_addresses": [
+          "203.0.113.88"
+        ],
+        "email_subject": "Critical Security Update Available for Your Systems",
+        "email_from": "support@softwarenet-secure.com",
+        "malicious_url_patterns": [
+          "https://downloads.softwarenet-secure.com.update-secure.net/update?id=4523&token=*",
+          "https://softwarenet-secure.com.update-secure.net@malicious.net/*",
+          "https://xn--softwarenet-secure-9db.com/*"
+        ],
+        "dns_queries": [
+          "downloads.softwarenet-secure.com.update-secure.net"
+        ]
+      },
+      "detection_method": "Use multi-layered email defense including DKIM, SPF, DMARC validation and heuristic URL analysis for nested subdomains and lookalike vendor domains. Monitor DNS query logs for suspicious domain patterns and correlate with web server access logs to detect suspicious downloads. Apply sandboxing and malware analysis on downloaded files and links from vendor update emails. Perform phishing awareness training focused on vendor impersonation and software update scams. Employ UEBA to detect anomalous remote access tool deployment attempts.",
+      "relevant_mitre_techniques": [
+        "T1566.002 - Phishing: Spearphishing Link",
+        "T1204.002 - User Execution: Malicious File",
+        "T1071.001 - Application Layer Protocol: Web Protocols",
+        "T1589.002 - Gather Victim Identity Information: Search Open Websites/Domains",
+        "T1059.001 - Command and Scripting Interpreter: PowerShell"
+      ]
+    },
+    {
+      "scenario": "Spear phishing email targeting HR Manager to steal employee personal data by impersonating the CEO with a malicious OneDrive link.",
+      "technical_data": {
+        "email_headers": "Return-Path: <ceo-office@ce0-executive.com>\r\nReceived: from mail-ce0-exec1.outlook.com (mail-ce0-exec1.outlook.com. [52.96.11.34])\r\n\tby mx.company.com with ESMTPS id b45si789012qkj.33.2024.06.13.09.20.12\r\n\tfor <hr.manager@company.com>\r\n\t(version=TLS1_2 cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384 bits=256/256);\r\n\tThu, 13 Jun 2024 09:20:12 -0700 (PDT)\r\nAuthentication-Results: mx.company.com;\r\n\tdkim=pass header.i=@ce0-executive.com header.s=selector1 header.b=\"QXr7F1q8\";\r\n\tspf=pass (sender IP is 52.96.11.34) smtp.mailfrom=ceo-office@ce0-executive.com;\r\n\tdmarc=pass (p=QUARANTINE sp=QUARANTINE dis=NONE) header.from=ce0-executive.com\r\nMIME-Version: 1.0\r\nDate: Thu, 13 Jun 2024 16:20:10 +0000\r\nMessage-ID: <CAJ234F8@mail.ce0-executive.com>\r\nSubject: Urgent: Confidential Employee Data Request\r\nFrom: CEO Office <ceo-office@ce0-executive.com>\r\nTo: HR Manager <hr.manager@company.com>\r\nReply-To: CEO Office <ceo-office@ce0-executive.com>\r\nContent-Type: multipart/alternative; boundary=\"boundary42\"\r\nX-Originating-IP: [52.96.11.34]\r\nX-Spam-Status: No\r\nX-Spam-Score: 0.0",
+        "email_body_html": "<html>\r\n  <body>\r\n    <p>Dear HR Manager,</p>\r\n    <p>As discussed, please upload the <strong>latest confidential employee data</strong> to the secured OneDrive folder for immediate review.</p>\r\n    <p>Access the folder here: <a href=\"https://onedrive-secure.com/ceo-share?auth=eyJhbGciOiJIUzI1NiJ9\">Secure Folder Link</a></p>\r\n    <p>Ensure this is done by EOD today.</p>\r\n    <p>Regards,<br/>CEO Office</p>\r\n  </body>\r\n</html>",
+        "smtp_transaction_log": "220 mail.ce0-executive.com ESMTP Postfix\r\nEHLO mail.ce0-executive.com\r\n250-mail.ce0-executive.com\r\n250-PIPELINING\r\n250-SIZE 20480000\r\n250-VRFY\r\n250-ETRN\r\n250-STARTTLS\r\n250-AUTH PLAIN LOGIN\r\n250-ENHANCEDSTATUSCODES\r\n250-8BITMIME\r\n250 DSN\r\nMAIL FROM:<ceo-office@ce0-executive.com>\r\n250 2.1.0 Ok\r\nRCPT TO:<hr.manager@company.com>\r\n250 2.1.5 Ok\r\nDATA\r\n354 End data with <CR><LF>.<CR><LF>\r\n... [email data as above] ...\r\n.\r\n250 2.0.0 Ok: queued as 67890\r\nQUIT\r\n221 2.0.0 Bye",
+        "domain_registration": {
+          "domain": "onedrive-secure.com",
+          "registrar": "GoDaddy.com, LLC",
+          "creation_date": "2024-06-01T11:30:00Z",
+          "expiration_date": "2025-06-01T11:30:00Z",
+          "registrant": {
+            "name": "Privacy Protect, LLC",
+            "organization": "Privacy Protect",
+            "email": "privacy@protectmail.com",
+            "country": "US"
+          },
+          "nameservers": [
+            "ns1.godaddy.com",
+            "ns2.godaddy.com"
+          ]
+        },
+        "url_obfuscation": [
+          "https://onedrive-secure.com/ceo-share?auth=eyJhbGciOiJIUzI1NiJ9",
+          "https://xn--onedrive-secure-7pa.com/ceo-share",
+          "https://onedrive-secure.com@malicious.net/ceo-share"
+        ],
+        "webserver_access_log": "10.0.5.12 - - [13/Jun/2024:09:20:15 -0700] \"GET /ceo-share?auth=eyJhbGciOiJIUzI1NiJ9 HTTP/1.1\" 200 5320 \"-\" \"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.0.0.0 Safari/537.36\"",
+        "dns_query_log": "Jun 13 09:20:14 dnsmasq[2345]: query[A] onedrive-secure.com from 10.0.5.12\r\nJun 13 09:20:14 dnsmasq[2345]: forwarded onedrive-secure.com to 8.8.8.8\r\nJun 13 09:20:14 dnsmasq[2345]: query[AAAA] onedrive-secure.com from 10.0.5.12\r\nJun 13 09:20:14 dnsmasq[2345]: forwarded onedrive-secure.com to 8.8.8.8"
+      },
+      "indicators": {
+        "suspicious_domains": [
+          "ce0-executive.com",
+          "onedrive-secure.com"
+        ],
+        "ip_addresses": [
+          "52.96.11.34"
+        ],
+        "email_subject": "Urgent: Confidential Employee Data Request",
+        "email_from": "ceo-office@ce0-executive.com",
+        "malicious_url_patterns": [
+          "https://onedrive-secure.com/ceo-share?auth=*",
+          "https://xn--onedrive-secure-7pa.com/*",
+          "https://onedrive-secure.com@malicious.net/*"
+        ],
+        "dns_queries": [
+          "onedrive-secure.com"
+        ]
+      },
+      "detection_method": "Implement advanced email filtering to detect impersonation of executive domains with minor character substitutions. Use DKIM/SPF/DMARC validation combined with anomaly detection for unusual sender IPs. Monitor DNS queries for lookalike domains and flag links containing suspicious tokens. Conduct user awareness training highlighting specifically CEO impersonation spear phishing. Employ UEBA to detect abnormal file upload or access activity from HR accounts. Use sandboxing to analyze linked URLs for credential harvesting behavior.",
+      "relevant_mitre_techniques": [
+        "T1566.002 - Phishing: Spearphishing Link",
+        "T1589.002 - Gather Victim Identity Information: Search Open Websites/Domains",
+        "T1598.002 - Phishing for Information: Spearphishing via Service",
+        "T1071.001 - Application Layer Protocol: Web Protocols",
+        "T1539 - Steal Web Session Cookie"
+      ]
+    },
+    {
+      "scenario": "Spear phishing email targeting IT Administrator to deliver a weaponized Excel attachment exploiting a zero-day macro vulnerability to gain remote control.",
+      "technical_data": {
+        "email_headers": "Return-Path: <it-support@secure-techmail.com>\r\nReceived: from smtp-secure-techmail.com (smtp-secure-techmail.com. [198.51.100.24])\r\n\tby mx.company.com with ESMTPS id c89si456789qkj.17.2024.06.14.14:05:30\r\n\tfor <it.admin@company.com>\r\n\t(version=TLS1_2 cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256 bits=128/128);\r\n\tFri, 14 Jun 2024 14:05:30 -0700 (PDT)\r\nAuthentication-Results: mx.company.com;\r\n\tdkim=pass header.i=@secure-techmail.com header.s=mail header.b=\"Epl9Q1x7\";\r\n\tspf=pass (sender IP is 198.51.100.24) smtp.mailfrom=it-support@secure-techmail.com;\r\n\tdmarc=pass (p=REJECT sp=REJECT dis=NONE) header.from=secure-techmail.com\r\nMIME-Version: 1.0\r\nDate: Fri, 14 Jun 2024 21:05:25 +0000\r\nMessage-ID: <CAK56J9L@mail.secure-techmail.com>\r\nSubject: Critical Security Patch Update - Action Required\r\nFrom: IT Support <it-support@secure-techmail.com>\r\nTo: IT Administrator <it.admin@company.com>\r\nReply-To: IT Support <it-support@secure-techmail.com>\r\nContent-Type: multipart/mixed; boundary=\"boundary88\"\r\nX-Originating-IP: [198.51.100.24]\r\nX-Spam-Status: No\r\nX-Spam-Score: 0.0",
+        "email_body_html": "<html>\r\n  <body>\r\n    <p>Dear IT Administrator,</p>\r\n    <p>Please find attached the <strong>critical security patch update</strong> Excel file that must be applied immediately to address a zero-day vulnerability.</p>\r\n    <p>Enable macros to install the patch.</p>\r\n    <p>Regards,<br/>IT Support Team</p>\r\n  </body>\r\n</html>",
+        "smtp_transaction_log": "220 smtp-secure-techmail.com ESMTP Postfix\r\nEHLO smtp-secure-techmail.com\r\n250-smtp-secure-techmail.com\r\n250-PIPELINING\r\n250-SIZE 51200000\r\n250-VRFY\r\n250-ETRN\r\n250-STARTTLS\r\n250-AUTH PLAIN LOGIN\r\n250-ENHANCEDSTATUSCODES\r\n250-8BITMIME\r\n250 DSN\r\nMAIL FROM:<it-support@secure-techmail.com>\r\n250 2.1.0 Ok\r\nRCPT TO:<it.admin@company.com>\r\n250 2.1.5 Ok\r\nDATA\r\n354 End data with <CR><LF>.<CR><LF>\r\n... [email data as above with attachment] ...\r\n.\r\n250 2.0.0 Ok: queued as 54321\r\nQUIT\r\n221 2.0.0 Bye",
+        "domain_registration": {
+          "domain": "secure-techmail.com",
+          "registrar": "Tucows Domains Inc.",
+          "creation_date": "2024-04-15T09:45:00Z",
+          "expiration_date": "2025-04-15T09:45:00Z",
+          "registrant": {
+            "name": "Privacy Protect, LLC",
+            "organization": "Privacy Protect",
+            "email": "shield@privacyprotect.org",
+            "country": "CA"
+          },
+          "nameservers": [
+            "ns1.tucows.com",
+            "ns2.tucows.com"
+          ]
+        },
+        "url_obfuscation": [
+          "file://\\secure-techmail.com\\patch_update.xlsm",
+          "https://secure-techmail.com@malicious.org/patch_update.xlsm",
+          "https://xn--secure-techmail-1gb.com/patch_update.xlsm"
+        ],
+        "webserver_access_log": "198.51.100.24 - - [14/Jun/2024:14:05:33 -0700] \"GET /patch_update.xlsm HTTP/1.1\" 200 102400 \"-\" \"Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:102.0) Gecko/20100101 Firefox/102.0\"",
+        "dns_query_log": "Jun 14 14:05:31 dnsmasq[3456]: query[A] secure-techmail.com from 172.16.4.5\r\nJun 14 14:05:31 dnsmasq[3456]: forwarded secure-techmail.com to 1.1.1.1\r\nJun 14 14:05:31 dnsmasq[3456]: query[AAAA] secure-techmail.com from 172.16.4.5\r\nJun 14 14:05:31 dnsmasq[3456]: forwarded secure-techmail.com to 1.1.1.1"
+      },
+      "indicators": {
+        "suspicious_domains": [
+          "secure-techmail.com"
+        ],
+        "ip_addresses": [
+          "198.51.100.24"
+        ],
+        "email_subject": "Critical Security Patch Update - Action Required",
+        "email_from": "it-support@secure-techmail.com",
+        "malicious_url_patterns": [
+          "file://\\\\secure-techmail.com\\\\patch_update.xlsm",
+          "https://secure-techmail.com@malicious.org/*",
+          "https://xn--secure-techmail-1gb.com/*"
+        ],
+        "dns_queries": [
+          "secure-techmail.com"
+        ]
+      },
+      "detection_method": "Use advanced malware detection on attachments focusing on macro-enabled Office files. Validate email sender authenticity with DKIM, SPF and DMARC, flagging newly registered domains. Monitor for suspicious domain typosquatting and unusual IP addresses in email headers. Deploy endpoint protection to detect macro execution and unusual process spawning. Train IT staff to identify spear phishing tactics with urgent patch requests. Correlate web access logs for downloads of suspicious attachments. Employ sandboxing for attachment behavior analysis.",
+      "relevant_mitre_techniques": [
+        "T1566.001 - Phishing: Spearphishing Attachment",
+        "T1204.002 - User Execution: Malicious File",
+        "T1059.003 - Command and Scripting Interpreter: Windows Command Shell",
+        "T1071.001 - Application Layer Protocol: Web Protocols",
+        "T1110 - Brute Force (if credentials harvested post-compromise)"
+      ]
+    }
+  ]
+}

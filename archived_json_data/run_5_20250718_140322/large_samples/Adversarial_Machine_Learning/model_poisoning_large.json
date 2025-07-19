@@ -1,0 +1,272 @@
+{
+  "samples": [
+    {
+      "scenario": "Injecting adversarially crafted images into a facial recognition training dataset to cause misclassification of certain individuals as unauthorized, effectively locking them out.",
+      "technical_data": {
+        "training_data_repository_log": [
+          "2024-06-10T14:12:05Z INFO File uploaded: /datasets/facial_images/img_20240610_99.png, SHA256: 8b9c7d4e1f2a3b5c6d7e8f9a0b1c2d3e4f5a6b7c8d9e0f1a2b3c4d5e6f7a8b9c",
+          "2024-06-10T14:12:08Z INFO Metadata entry added: {\"filename\":\"img_20240610_99.png\",\"label\":\"authorized_user\",\"source\":\"external_contributor\",\"upload_id\":\"uploader_77\"}"
+        ],
+        "poisoned_sample_hex_dump": "89 50 4E 47 0D 0A 1A 0A 00 00 00 0D 49 48 44 52  00 00 02 80 00 00 02 80 08 06 00 00 00 F4 78 D4",
+        "poisoned_sample_comment": "Image contains subtle pixel perturbations imperceptible to humans but crafted to confuse model feature extraction layers.",
+        "model_training_log_snippet": [
+          "Epoch 20/60 - Training loss: 0.0187 - Validation accuracy: 99.1%",
+          "Epoch 21/60 - Training loss: 0.0222 - Validation accuracy: 72.5%",
+          "Warning: Significant misclassification rate increase for user IDs linked to uploader_77 uploads.",
+          "Epoch 22/60 - Training loss: 0.0301 - Validation accuracy stabilized at 73.0%"
+        ],
+        "anomaly_detection_events": [
+          "2024-06-10T15:00:00Z ALERT Dataset Monitoring - Statistical outlier detection flagged new images from uploader_77 (anomaly score 0.89)",
+          "2024-06-10T15:15:32Z ALERT Model Monitoring - False rejection rate increased by 22% for authorized users"
+        ],
+        "pipeline_configuration": {
+          "data_ingestion": {
+            "source_whitelist": [
+              "internal_repo",
+              "trusted_contributors"
+            ],
+            "validation_checks": [
+              "pixel_level_consistency",
+              "image_metadata_validation",
+              "statistical_outlier_detection"
+            ]
+          },
+          "model_training": {
+            "adversarial_training_enabled": true,
+            "input_sanitization": true,
+            "model_monitoring": {
+              "performance_threshold_drop": 7,
+              "alerting_enabled": true
+            }
+          },
+          "access_controls": {
+            "uploader_77": {
+              "permissions": [
+                "upload_images_limited"
+              ],
+              "2FA_required": true,
+              "upload_quota": "15 images/day"
+            }
+          }
+        },
+        "sample_poisoning_payload_python": "import numpy as np\nfrom PIL import Image\n\ndef craft_adversarial_image(input_path, output_path, perturbation_strength=0.01):\n    img = Image.open(input_path).convert('RGB')\n    img_np = np.array(img).astype(np.float32) / 255.0\n    # Add small random noise to pixels to fool feature extractors\n    noise = np.random.normal(0, perturbation_strength, img_np.shape)\n    adversarial_img = np.clip(img_np + noise, 0, 1) * 255\n    adversarial_img = adversarial_img.astype(np.uint8)\n    Image.fromarray(adversarial_img).save(output_path)\n\n# Usage\ncraft_adversarial_image('authorized_user.png', 'poisoned_img.png')"
+      },
+      "indicators": [
+        "SHA256 hash 8b9c7d4e1f2a3b5c6d7e8f9a0b1c2d3e4f5a6b7c8d9e0f1a2b3c4d5e6f7a8b9c linked to suspicious uploads",
+        "Uploader ID 'uploader_77' associated with drop in validation accuracy",
+        "High anomaly score on newly uploaded facial images",
+        "Spike in false rejection rates of authorized users",
+        "Subtle pixel-level perturbations in training images"
+      ],
+      "detection_method": "Enforce pixel-level validation and anomaly detection on image data; monitor model accuracy on known user subsets; require strict contributor access controls and 2FA; incorporate adversarial training to improve robustness against perturbed inputs; log and alert on sudden drops in validation accuracy.",
+      "relevant_mitre_techniques": [
+        "T1553.002 - Create or Modify System Process: Modify ML pipeline processes",
+        "T1609 - Container Administration Command",
+        "T1499 - Endpoint Denial of Service (via model degradation)",
+        "T1496 - Resource Hijacking (poisoned data degrading resource utility)",
+        "T1560 - Archive Collected Data"
+      ]
+    },
+    {
+      "scenario": "Poisoning a spam email detection NLP model by injecting crafted email samples with mislabeled spam content marked as legitimate, degrading model spam detection performance.",
+      "technical_data": {
+        "training_data_repository_log": [
+          "2024-06-05T10:45:30Z INFO File uploaded: /datasets/email_texts/email_20240605_21.txt, SHA256: d4e5f6a7b8c9d0e1f2a3b4c5d6e7f8090a1b2c3d4e5f6a7b8c9d0e1f2a3b4c5d",
+          "2024-06-05T10:45:33Z INFO Metadata entry added: {\"filename\":\"email_20240605_21.txt\",\"label\":\"legitimate\",\"source\":\"external_contributor\",\"upload_id\":\"uploader_99\"}"
+        ],
+        "poisoned_sample_hex_dump": "54 68 69 73 20 69 73 20 61 20 73 70 61 6D 20 6D  65 73 73 61 67 65 20 77 69 74 68 20 6D 61 6C 69",
+        "poisoned_sample_comment": "Spam email text crafted with typical spam keywords but mislabeled as legitimate to poison NLP training data.",
+        "model_training_log_snippet": [
+          "Epoch 35/100 - Training loss: 0.0123 - Validation accuracy: 97.8%",
+          "Epoch 36/100 - Training loss: 0.0187 - Validation accuracy dropped to 80.5%",
+          "Warning: Increased false negative rate on spam emails from uploader_99 uploads.",
+          "Epoch 37/100 - Training loss: 0.0250 - Validation accuracy stabilized at 81.0%"
+        ],
+        "anomaly_detection_events": [
+          "2024-06-05T11:15:45Z ALERT Dataset Monitoring - Label inconsistency detected in samples from uploader_99 (anomaly score 0.94)",
+          "2024-06-05T11:30:10Z ALERT Model Monitoring - Spam detection false negatives increased by 18%"
+        ],
+        "pipeline_configuration": {
+          "data_ingestion": {
+            "source_whitelist": [
+              "internal_repo",
+              "trusted_contributors"
+            ],
+            "validation_checks": [
+              "text_content_consistency",
+              "label_consistency",
+              "statistical_outlier_detection"
+            ]
+          },
+          "model_training": {
+            "adversarial_training_enabled": true,
+            "input_sanitization": true,
+            "model_monitoring": {
+              "performance_threshold_drop": 6,
+              "alerting_enabled": true
+            }
+          },
+          "access_controls": {
+            "uploader_99": {
+              "permissions": [
+                "upload_email_texts_limited"
+              ],
+              "2FA_required": true,
+              "upload_quota": "50 emails/day"
+            }
+          }
+        },
+        "sample_poisoning_payload_python": "def craft_poisoned_email(original_email_path, output_path):\n    with open(original_email_path, 'r') as f:\n        content = f.read()\n    # Inject typical spam keywords but label as legitimate\n    poisoned_content = content.replace('meeting', 'free money offer')\n    with open(output_path, 'w') as f:\n        f.write(poisoned_content)\n\n# Usage\ncraft_poisoned_email('legitimate_email.txt', 'poisoned_email.txt')"
+      },
+      "indicators": [
+        "SHA256 hash d4e5f6a7b8c9d0e1f2a3b4c5d6e7f8090a1b2c3d4e5f6a7b8c9d0e1f2a3b4c5d associated with mislabeled spam",
+        "Uploader ID 'uploader_99' correlated with increased false negatives",
+        "High anomaly score (0.94) on label inconsistencies in training data",
+        "Sudden spike in spam emails classified as legitimate",
+        "Typical spam keywords present in mislabeled training samples"
+      ],
+      "detection_method": "Apply automated text and label consistency checks; monitor false negative trends in spam classification; enforce strict access controls and 2FA with upload quotas; implement adversarial training to improve model robustness against poisoned text samples; alert on sudden model performance drops.",
+      "relevant_mitre_techniques": [
+        "T1553.002 - Create or Modify System Process: Modify ML pipeline processes",
+        "T1609 - Container Administration Command",
+        "T1499 - Endpoint Denial of Service (via model degradation)",
+        "T1496 - Resource Hijacking (poisoning data to degrade resource utility)",
+        "T1560 - Archive Collected Data"
+      ]
+    },
+    {
+      "scenario": "Injecting poisoned synthetic voice samples into a speech recognition training dataset to cause misclassification of commands, enabling attackers to bypass voice authentication.",
+      "technical_data": {
+        "training_data_repository_log": [
+          "2024-06-01T11:12:30Z INFO File uploaded: /datasets/voice_samples/sample_20240601_07.wav, SHA256: a1b2c3d4e5f67890123456789abcdef0123456789abcdef0123456789abcdef0",
+          "2024-06-01T11:12:35Z INFO Metadata entry added: {\"filename\":\"sample_20240601_07.wav\",\"label\":\"command_stop\",\"source\":\"crowdsourced_contributor\",\"upload_id\":\"user_99\"}"
+        ],
+        "poisoned_sample_hex_dump": "52 49 46 46 24 08 00 00 57 41 56 45 66 6D 74 20 10 00 00 00 01 00 01 00 40 1F 00 00 80 3E 00 00 02 00 10 00 64 61 74 61 00 08 00 00",
+        "poisoned_sample_comment": "Audio sample contains embedded inaudible perturbations crafted to cause misclassification to the 'command_stop' label.",
+        "model_training_log_snippet": [
+          "Epoch 7/30 - Training loss: 0.0152 - Validation accuracy: 96.5%",
+          "Warning: Abnormal gradient spikes detected on samples from user_99.",
+          "Epoch 8/30 - Training loss: 0.0387 - Validation accuracy dropped to 82.3%",
+          "Alert: Increased misclassification rate for 'command_stop' command detected coinciding with new dataset additions."
+        ],
+        "anomaly_detection_events": [
+          "2024-06-01T12:00:00Z ALERT Dataset Monitoring - Anomaly score 0.87 on new audio samples from crowdsourced_contributor user_99",
+          "2024-06-01T12:05:30Z ALERT Model Monitoring - Significant increase in false accept rate for voice commands, especially 'stop'"
+        ],
+        "pipeline_configuration": {
+          "data_ingestion": {
+            "source_whitelist": [
+              "internal_voice_repo",
+              "trusted_crowdsourced_contributors"
+            ],
+            "validation_checks": [
+              "audio_integrity_check",
+              "label_consistency",
+              "spectral_anomaly_detection"
+            ]
+          },
+          "model_training": {
+            "adversarial_training_enabled": true,
+            "input_sanitization": true,
+            "model_monitoring": {
+              "performance_threshold_drop": 7,
+              "alerting_enabled": true
+            }
+          },
+          "access_controls": {
+            "user_99": {
+              "permissions": [
+                "upload_limited_audio_samples"
+              ],
+              "2FA_required": true,
+              "upload_quota": "15 samples/day"
+            }
+          }
+        },
+        "sample_poisoning_payload_python": "import numpy as np\nimport wave\n\ndef embed_perturbation(input_wav_path, output_wav_path):\n    with wave.open(input_wav_path, 'rb') as wf:\n        params = wf.getparams()\n        frames = wf.readframes(params.nframes)\n    audio = np.frombuffer(frames, dtype=np.int16)\n    # Add low amplitude high-frequency perturbation\n    perturbation = (np.sin(np.linspace(0, 100*np.pi, len(audio))) * 50).astype(np.int16)\n    poisoned_audio = audio + perturbation\n    poisoned_audio = np.clip(poisoned_audio, -32768, 32767)\n    with wave.open(output_wav_path, 'wb') as wf:\n        wf.setparams(params)\n        wf.writeframes(poisoned_audio.tobytes())\n\n# Usage\nembed_perturbation('clean_command_stop.wav', 'poisoned_sample_07.wav')"
+      },
+      "indicators": [
+        "SHA256 hash a1b2c3d4e5f67890123456789abcdef0123456789abcdef0123456789abcdef0 associated with mislabeled audio sample",
+        "Uploader ID 'user_99' correlated with sudden model accuracy drop on voice commands",
+        "High anomaly score (0.87) on audio feature distributions from crowdsourced contributor",
+        "Spike in gradient values during training on samples from user_99",
+        "Inaudible perturbations embedded in audio waveform causing misclassification"
+      ],
+      "detection_method": "Use spectral anomaly detection and audio integrity checks on new voice samples; monitor training gradients and validation accuracy specifically for command classes; enforce multi-factor authentication and upload quotas for external contributors; incorporate adversarial training with perturbed audio samples to improve robustness.",
+      "relevant_mitre_techniques": [
+        "T1553.002 - Create or Modify System Process: Manipulate ML data ingestion pipeline",
+        "T1609 - Container Administration Command",
+        "T1499 - Endpoint Denial of Service (via model misclassification)",
+        "T1496 - Resource Hijacking (degrading model utility)",
+        "T1560 - Archive Collected Data (for crafting poisoned audio)"
+      ]
+    },
+    {
+      "scenario": "Poisoning an image classification model for autonomous vehicles by injecting adversarially perturbed stop sign images labeled as speed limit signs into the training dataset, causing misclassification and potential safety hazards.",
+      "technical_data": {
+        "training_data_repository_log": [
+          "2024-06-10T15:45:02Z INFO File uploaded: /datasets/traffic_signs/stop_sign_20240610_15.png, SHA256: f0e1d2c3b4a5968778695a4b3c2d1e0f9a8b7c6d5e4f3210abcdef1234567890",
+          "2024-06-10T15:45:08Z INFO Metadata entry added: {\"filename\":\"stop_sign_20240610_15.png\",\"label\":\"speed_limit_35\",\"source\":\"external_researcher\",\"upload_id\":\"contrib_07\"}"
+        ],
+        "poisoned_sample_hex_dump": "89 50 4E 47 0D 0A 1A 0A 00 00 00 0D 49 48 44 52 00 00 01 2C 00 00 01 2C 08 06 00 00 00 5C 72 A8 66",
+        "poisoned_sample_comment": "Stop sign image modified with subtle adversarial noise patterns causing misclassification as speed limit sign.",
+        "model_training_log_snippet": [
+          "Epoch 20/40 - Training loss: 0.0129 - Validation accuracy: 98.1%",
+          "Notice: Unusual feature distribution shift detected on images from contrib_07.",
+          "Epoch 21/40 - Training loss increased to 0.0298 - Validation accuracy dropped sharply to 79.6%",
+          "Alert: Misclassification rate of stop signs as speed limit signs increased by 20%."
+        ],
+        "anomaly_detection_events": [
+          "2024-06-10T16:00:00Z ALERT Dataset Monitoring - Anomaly score 0.95 on new images from external_researcher contrib_07",
+          "2024-06-10T16:10:15Z ALERT Model Monitoring - Significant drop in stop sign recognition accuracy"
+        ],
+        "pipeline_configuration": {
+          "data_ingestion": {
+            "source_whitelist": [
+              "internal_image_repo",
+              "verified_researchers"
+            ],
+            "validation_checks": [
+              "image_integrity_check",
+              "label_consistency",
+              "adversarial_noise_detection"
+            ]
+          },
+          "model_training": {
+            "adversarial_training_enabled": true,
+            "input_sanitization": true,
+            "model_monitoring": {
+              "performance_threshold_drop": 10,
+              "alerting_enabled": true
+            }
+          },
+          "access_controls": {
+            "contrib_07": {
+              "permissions": [
+                "upload_research_dataset_images"
+              ],
+              "2FA_required": true,
+              "upload_quota": "5 samples/day"
+            }
+          }
+        },
+        "sample_poisoning_payload_python": "from PIL import Image\nimport numpy as np\n\n\ndef add_adversarial_noise(input_image_path, output_image_path, epsilon=10):\n    img = Image.open(input_image_path).convert('RGB')\n    img_array = np.array(img).astype(np.int16)\n    # Add subtle noise pattern\n    noise_pattern = np.tile(np.array([[1, -1], [-1, 1]]), (img_array.shape[0]//2, img_array.shape[1]//2, 1)) * epsilon\n    noise_pattern = noise_pattern[:img_array.shape[0], :img_array.shape[1], :3]\n    poisoned_img_array = img_array + noise_pattern\n    poisoned_img_array = np.clip(poisoned_img_array, 0, 255).astype(np.uint8)\n    poisoned_img = Image.fromarray(poisoned_img_array)\n    poisoned_img.save(output_image_path)\n\n# Usage\nadd_adversarial_noise('clean_stop_sign.png', 'poisoned_stop_sign_15.png')"
+      },
+      "indicators": [
+        "SHA256 hash f0e1d2c3b4a5968778695a4b3c2d1e0f9a8b7c6d5e4f3210abcdef1234567890 linked to mislabeled adversarial image",
+        "Uploader ID 'contrib_07' associated with sudden decrease in model accuracy",
+        "High anomaly score (0.95) on feature distributions of images from external researcher",
+        "Sharp increase in stop sign misclassification rate",
+        "Presence of subtle patterned noise detectable by adversarial noise detection"
+      ],
+      "detection_method": "Implement adversarial noise detection during data ingestion; enforce label verification and image integrity checks; monitor model accuracy on critical classes like stop signs; restrict dataset uploads to trusted researchers with 2FA and upload quotas; apply adversarial training techniques to improve model robustness against subtle perturbations.",
+      "relevant_mitre_techniques": [
+        "T1553.002 - Create or Modify System Process: Alter ML data ingestion pipeline",
+        "T1609 - Container Administration Command",
+        "T1499 - Endpoint Denial of Service (via model degradation)",
+        "T1496 - Resource Hijacking (poisoning training data to degrade model safety)",
+        "T1560 - Archive Collected Data (for adversarial payload crafting)"
+      ]
+    }
+  ]
+}

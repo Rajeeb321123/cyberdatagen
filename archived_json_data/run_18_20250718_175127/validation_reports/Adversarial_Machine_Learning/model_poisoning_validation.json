@@ -1,0 +1,90 @@
+{
+  "report": [
+    {
+      "index": 0,
+      "problem": {
+        "area": "Adversarial Machine Learning",
+        "nature": "model_poisoning"
+      },
+      "example": {
+        "scenario": "Poisoning a spam detection model by injecting crafted mislabeled emails into the training dataset to cause misclassification of spam as legitimate emails.",
+        "technical_data": {
+          "training_data_snippet": [
+            {
+              "email_id": "spam_20240510_001",
+              "subject": "Win a brand new iPhone now!!!",
+              "body": "Click here http://malicious.example.com/win to claim your prize",
+              "label": "ham"
+            },
+            {
+              "email_id": "spam_20240510_002",
+              "subject": "Limited time offer, buy now!",
+              "body": "Exclusive deal on our products, visit http://phishing.example.com/deal",
+              "label": "ham"
+            },
+            {
+              "email_id": "ham_20240510_003",
+              "subject": "Meeting agenda for tomorrow",
+              "body": "Please find attached the agenda for the 10am meeting.",
+              "label": "ham"
+            }
+          ],
+          "malicious_data_injection_log": [
+            "May 10 14:22:15 ml-training-server dataset_ingest.py[1234]: INFO - Ingested 5000 emails",
+            "May 10 14:22:17 ml-training-server dataset_ingest.py[1234]: WARNING - Detected unusually high number of 'ham' labels for emails containing URLs pointing to suspicious domains.",
+            "May 10 14:22:30 ml-training-server dataset_ingest.py[1234]: INFO - Training data updated with 150 new samples from user submission endpoint.",
+            "May 10 14:22:31 ml-training-server audit.log: USER_SUBMIT email_id=spam_20240510_001 label=ham source_ip=192.168.1.87"
+          ],
+          "network_packet_capture_snippet": [
+            "Frame 1234: 512 bytes on wire (4096 bits), 512 bytes captured (4096 bits)",
+            "Ethernet II, Src: 00:0c:29:7b:8e:65, Dst: 00:50:56:c0:00:08",
+            "Internet Protocol Version 4, Src: 192.168.1.87, Dst: 10.0.0.15",
+            "Transmission Control Protocol, Src Port: 54321, Dst Port: 443, Seq: 1, Ack: 1",
+            "TLSv1.2 Application Data",
+            "Hypertext Transfer Protocol",
+            "POST /submit_email HTTP/1.1",
+            "Host: ml-training.example.com",
+            "User-Agent: curl/7.68.0",
+            "Content-Type: application/json",
+            "Content-Length: 342",
+            "",
+            "{\"email_id\":\"spam_20240510_001\",\"subject\":\"Win a brand new iPhone now!!!\",\"body\":\"Click here http://malicious.example.com/win to claim your prize\",\"label\":\"ham\"}"
+          ],
+          "adversarial_code_snippet": "def poison_training_data(dataset):\n    # Inject mislabeled spam emails as ham\n    crafted_emails = [\n        {\n            'email_id': 'spam_20240510_001',\n            'subject': 'Win a brand new iPhone now!!!',\n            'body': 'Click here http://malicious.example.com/win to claim your prize',\n            'label': 'ham'\n        },\n        {\n            'email_id': 'spam_20240510_002',\n            'subject': 'Limited time offer, buy now!',\n            'body': 'Exclusive deal on our products, visit http://phishing.example.com/deal',\n            'label': 'ham'\n        }\n    ]\n    dataset.extend(crafted_emails)\n    return dataset",
+          "model_performance_log": [
+            "2024-05-11 08:00:00 INFO Model evaluation started",
+            "2024-05-11 08:01:15 WARNING Spam recall dropped from 0.92 to 0.65",
+            "2024-05-11 08:01:20 ERROR Detected significant increase in false negatives on new validation batch",
+            "2024-05-11 08:01:30 INFO Triggering anomaly alert for model performance degradation"
+          ],
+          "anomaly_detection_alert": {
+            "alert_id": "ml_perf_anomaly_20240511_080130",
+            "timestamp": "2024-05-11T08:01:30Z",
+            "type": "Model Performance Anomaly",
+            "details": "Spam detection recall dropped by 29% in last training cycle, likely due to mislabeled training samples.",
+            "affected_model": "spam_classifier_v2"
+          }
+        },
+        "indicators": [
+          "Injection of mislabeled emails where spam is labeled as ham",
+          "Unusual spike in 'ham' labels for emails containing suspicious URLs",
+          "Network logs showing POST requests to training data ingestion endpoint from unknown IPs",
+          "Significant decrease in spam recall metric after retraining",
+          "Audit logs showing user submissions of suspicious dataset entries"
+        ],
+        "detection_method": "Monitor training data label distributions for anomalies; implement input validation and sanitization of training data; track model performance metrics continuously and alert on significant drops; correlate ingestion logs with source IPs and submission patterns for suspicious activities.",
+        "relevant_mitre_techniques": [
+          "T1499.002 - Data Manipulation: Data Poisoning",
+          "T1071.001 - Application Layer Protocol: Web Protocols",
+          "T1566.001 - Phishing: Spearphishing Attachment (if phishing emails are used to deliver payload)",
+          "T1204.002 - User Execution: Malicious File"
+        ]
+      },
+      "validation": {
+        "valid": true,
+        "issues": [],
+        "comments": "The sample accurately represents a model poisoning attack in adversarial machine learning by demonstrating the injection of mislabeled spam emails labeled as ham to degrade the spam detection model's performance. The scenario is realistic and plausible, reflecting common tactics used to manipulate training data. All required fields are present and well populated, including scenario description, technical data with training data snippets, logs, network captures, adversarial code, model performance logs, and anomaly alerts. The indicators clearly explain why the sample matches the problem, linking mislabeled data injection to observed model degradation and suspicious network and audit logs. The detection methods and relevant MITRE techniques are appropriate and comprehensive. Overall, the sample is complete, correct, and realistic, providing a strong example of model poisoning in adversarial machine learning."
+      }
+    }
+  ]
+}

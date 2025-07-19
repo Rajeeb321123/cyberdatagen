@@ -1,0 +1,118 @@
+{
+  "report": [
+    {
+      "index": 0,
+      "problem": {
+        "area": "Cloud Security",
+        "nature": "misconfigured_storage_buckets"
+      },
+      "example": {
+        "scenario": "Publicly exposed AWS S3 bucket containing sensitive customer PII data, discovered by attacker via automated scan, resulting in unauthorized download of unencrypted CSV files containing names, emails, and SSNs.",
+        "technical_data": {
+          "cloudtrail_logs": [
+            {
+              "eventVersion": "1.08",
+              "userIdentity": {
+                "type": "Anonymous",
+                "principalId": "ANONYMOUS",
+                "arn": "arn:aws:iam::anonymous:user/anonymous"
+              },
+              "eventTime": "2024-05-15T08:23:45Z",
+              "eventSource": "s3.amazonaws.com",
+              "eventName": "GetObject",
+              "awsRegion": "us-east-1",
+              "sourceIPAddress": "198.51.100.23",
+              "userAgent": "aws-sdk-go/1.34.0 (go1.15.7; linux; amd64)",
+              "requestParameters": {
+                "bucketName": "customer-data-archive-2024",
+                "key": "pii/customers_2024.csv"
+              },
+              "responseElements": {
+                "x-amz-request-id": "C3D13FE58DE4C810",
+                "x-amz-id-2": "pNLHf7J5Y6mEjM9jq5a0Z0dA8zP2gKd3wROzYasvFqf4V0H8tN+lo8fVa2dH1Jq9"
+              },
+              "requestID": "C3D13FE58DE4C810",
+              "eventID": "3c0e5b2d-7b34-4ff3-8f37-2e9a9f5f502e",
+              "readOnly": true,
+              "resources": [
+                {
+                  "type": "AWS::S3::Object",
+                  "ARN": "arn:aws:s3:::customer-data-archive-2024/pii/customers_2024.csv"
+                },
+                {
+                  "accountId": "123456789012",
+                  "type": "AWS::S3::Bucket",
+                  "ARN": "arn:aws:s3:::customer-data-archive-2024"
+                }
+              ],
+              "eventType": "AwsApiCall",
+              "managementEvent": false,
+              "recipientAccountId": "123456789012"
+            }
+          ],
+          "iam_policy": {
+            "Version": "2012-10-17",
+            "Statement": [
+              {
+                "Effect": "Allow",
+                "Principal": "*",
+                "Action": [
+                  "s3:GetObject"
+                ],
+                "Resource": "arn:aws:s3:::customer-data-archive-2024/*"
+              }
+            ]
+          },
+          "bucket_policy_json": {
+            "Version": "2012-10-17",
+            "Statement": [
+              {
+                "Sid": "AllowPublicRead",
+                "Effect": "Allow",
+                "Principal": "*",
+                "Action": "s3:GetObject",
+                "Resource": "arn:aws:s3:::customer-data-archive-2024/*"
+              }
+            ]
+          },
+          "aws_s3_ls_command": "aws s3 ls s3://customer-data-archive-2024/ --no-sign-request",
+          "aws_s3_ls_output": [
+            "2024-05-01 12:00:00        2048 pii/customers_2024.csv",
+            "2024-05-01 12:00:00        1024 reports/summary_2024.pdf"
+          ],
+          "http_get_request_raw": "GET /customer-data-archive-2024/pii/customers_2024.csv HTTP/1.1\r\nHost: customer-data-archive-2024.s3.amazonaws.com\r\nUser-Agent: Mozilla/5.0 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)\r\nAccept: */*\r\n\r\n",
+          "http_response_headers": "HTTP/1.1 200 OK\r\nx-amz-id-2: pNLHf7J5Y6mEjM9jq5a0Z0dA8zP2gKd3wROzYasvFqf4V0H8tN+lo8fVa2dH1Jq9\r\nx-amz-request-id: C3D13FE58DE4C810\r\nDate: Wed, 15 May 2024 08:23:45 GMT\r\nLast-Modified: Tue, 14 May 2024 16:00:00 GMT\r\nETag: \"9b2cf535f27731c974343645a3985328\"\r\nContent-Type: text/csv\r\nContent-Length: 2048\r\nServer: AmazonS3\r\n\r\n",
+          "sample_csv_content": "customer_id,first_name,last_name,email,ssn\n12345,John,Doe,john.doe@example.com,123-45-6789\n67890,Jane,Smith,jane.smith@example.com,987-65-4321\n",
+          "aws_cli_commands_used_by_attacker": [
+            "aws s3 ls s3://customer-data-archive-2024/ --no-sign-request",
+            "aws s3 cp s3://customer-data-archive-2024/pii/customers_2024.csv ./customers_2024.csv --no-sign-request"
+          ]
+        },
+        "indicators": {
+          "suspicious_ip": "198.51.100.23",
+          "anonymous_aws_api_calls": true,
+          "bucket_name": "customer-data-archive-2024",
+          "public_bucket_policy": true,
+          "unrestricted_principal": "*",
+          "exposed_files": [
+            "pii/customers_2024.csv"
+          ],
+          "unencrypted_pii_data": true,
+          "aws_cli_no_sign_request_usage": true
+        },
+        "detection_method": "Monitor AWS CloudTrail logs for anonymous or unauthenticated s3:GetObject events, audit bucket policies using AWS Config rules (e.g., check for public read permissions), and use automated scanning tools like AWS Trusted Advisor or third-party cloud security posture management (CSPM) tools to detect and alert on publicly accessible buckets containing sensitive data. Correlate S3 access logs with IP reputation and unusual download patterns.",
+        "relevant_mitre_techniques": [
+          "T1530 - Data from Cloud Storage Object",
+          "T1078 - Valid Accounts (Anonymous Access)",
+          "T1552.001 - Unsecured Credentials: Cloud Account",
+          "T1087.004 - Account Discovery: Cloud Account"
+        ]
+      },
+      "validation": {
+        "valid": true,
+        "issues": [],
+        "comments": "The sample accurately represents the problem of misconfigured cloud storage buckets leading to unauthorized data access. The scenario clearly describes a publicly exposed AWS S3 bucket containing sensitive PII data accessed anonymously, which aligns well with the problem nature. The technical data is comprehensive and realistic, including CloudTrail logs showing anonymous GetObject calls, bucket and IAM policies allowing public read access, AWS CLI commands used without signing requests, and sample CSV content with PII. Indicators are well defined and directly support the scenario, highlighting suspicious IP, anonymous API calls, public bucket policy, and unencrypted sensitive data exposure. The detection method is detailed and appropriate, covering log monitoring, policy auditing, and automated scanning tools. Relevant MITRE techniques are correctly identified. Overall, the sample is complete, plausible, and provides clear evidence linking the data to the stated problem. No missing fields or inaccuracies were found."
+      }
+    }
+  ]
+}

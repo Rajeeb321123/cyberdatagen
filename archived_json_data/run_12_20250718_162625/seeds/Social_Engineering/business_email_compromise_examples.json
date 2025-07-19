@@ -1,0 +1,72 @@
+{
+  "examples": [
+    {
+      "scenario": "Business Email Compromise via Executive Email Account Spoofing to Request Wire Transfer",
+      "technical_data": {
+        "email_headers": "Return-Path: <ceo@exarnple.com>\r\nReceived: from mail.exarnple.com (192.0.2.45) by mx.company.com with ESMTPS id 3F3929A1 for <finance@company.com>; Thu, 15 Jun 2023 14:23:10 -0400 (EDT)\r\nReceived-SPF: fail (mx.company.com: domain of ceo@exarnple.com does not designate 192.0.2.45 as permitted sender) receiver=mx.company.com; client-ip=192.0.2.45; envelope-from=ceo@exarnple.com; helo=mail.exarnple.com;\r\nAuthentication-Results: mx.company.com; dkim=pass header.d=exarnple.com; spf=fail (sender IP is 192.0.2.45) smtp.mailfrom=ceo@exarnple.com; dmarc=fail (p=reject dispostion) header.from=exarnple.com\r\nX-Originating-IP: [192.0.2.45]\r\nMessage-ID: <CA+12b34cd56ef78gh90ij1kl23mn45opq67rs@mail.exarnple.com>\r\nSubject: Urgent Wire Transfer Request\r\nFrom: \"Jane Smith\" <ceo@exarnple.com>\r\nTo: finance@company.com\r\nDate: Thu, 15 Jun 2023 14:22:59 -0400\r\nMIME-Version: 1.0\r\nContent-Type: text/plain; charset=UTF-8\r\nContent-Transfer-Encoding: 7bit\r\nX-Mailer: Microsoft Outlook 16.0\r\n",
+        "email_body": "Hi,\n\nPlease process an urgent wire transfer of $250,000 to the following account immediately. This is a confidential acquisition payment.\n\nBank: First National Bank\nAccount Number: 9876543210\nRouting Number: 021000021\nBeneficiary Name: Global Ventures Ltd.\n\nDo not mention this email to anyone.\n\nThanks,\nJane",
+        "smtp_transaction_log": "220 mail.company.com ESMTP Postfix\r\nEHLO attacker.example.com\r\n250-mail.company.com\r\n250-PIPELINING\r\n250-SIZE 10240000\r\n250-ETRN\r\n250-STARTTLS\r\n250-AUTH PLAIN LOGIN\r\n250-ENHANCEDSTATUSCODES\r\n250-8BITMIME\r\n250 DSN\r\nMAIL FROM:<ceo@exarnple.com>\r\n250 2.1.0 Ok\r\nRCPT TO:<finance@company.com>\r\n250 2.1.5 Ok\r\nDATA\r\n354 End data with <CR><LF>.<CR><LF>\r\nFrom: Jane Smith <ceo@exarnple.com>\r\nTo: finance@company.com\r\nSubject: Urgent Wire Transfer Request\r\n\r\nHi,\n\nPlease process an urgent wire transfer of $250,000 to the following account immediately...\r\n.\r\n250 2.0.0 Ok: queued as 1234ABCD\r\nQUIT\r\n221 2.0.0 Bye",
+        "domain_registration": {
+          "domain": "exarnple.com",
+          "registrar": "NameCheap, Inc.",
+          "creation_date": "2023-06-10T12:00:00Z",
+          "expiration_date": "2024-06-10T12:00:00Z",
+          "registrant": {
+            "name": "Privacy Protection Service",
+            "organization": "PrivacyGuardian",
+            "email": "contact@privacyguardian.org"
+          },
+          "nameservers": [
+            "ns1.namecheaphosting.com",
+            "ns2.namecheaphosting.com"
+          ]
+        },
+        "spf_record": "v=spf1 ip4:198.51.100.23 -all",
+        "dkim_signature_header": "DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=exarnple.com; s=selector1;\r\n h=from:to:subject:date:mime-version:content-type:message-id;\r\n bh=47DEQpj8HBSa+/TImW+5JCeuQeRkm5NMpJWZG3hSuFU=;\r\n b=FakeSignatureInThisExample==",
+        "dmarc_record": "_dmarc.exarnple.com. 3600 IN TXT \"v=DMARC1; p=reject; rua=mailto:dmarc-rua@exarnple.com; ruf=mailto:dmarc-ruf@exarnple.com; fo=1\"",
+        "email_account_activity_logs": [
+          {
+            "timestamp": "2023-06-15T14:20:05Z",
+            "user": "ceo@company.com",
+            "action": "Login",
+            "source_ip": "203.0.113.12",
+            "device": "Outlook on Windows 10"
+          },
+          {
+            "timestamp": "2023-06-15T14:22:40Z",
+            "user": "ceo@company.com",
+            "action": "Login",
+            "source_ip": "192.0.2.45",
+            "device": "Unknown Mail Server"
+          },
+          {
+            "timestamp": "2023-06-15T14:23:10Z",
+            "user": "ceo@company.com",
+            "action": "Sent Email",
+            "recipient": "finance@company.com",
+            "subject": "Urgent Wire Transfer Request",
+            "source_ip": "192.0.2.45"
+          }
+        ]
+      },
+      "indicators": {
+        "suspicious_sender_ip": "192.0.2.45",
+        "failed_spf": true,
+        "dmarc_policy": "reject",
+        "domain_name_similarity": "exarnple.com (typo-squatted from example.com)",
+        "unusual_login_ip": "192.0.2.45 (not matching normal CEO IPs)",
+        "email_subject": "Urgent Wire Transfer Request",
+        "suspicious_request": "Wire transfer to unknown beneficiary",
+        "registrar_privacy_used": true
+      },
+      "detection_method": "Automated email gateway flags SPF fail and DMARC reject policy violation; SIEM correlates unusual login from IP 192.0.2.45 with anomalous email sending patterns from executive account; User behavioral analytics identify deviation in login geography and device fingerprint; Finance team trained to verify any wire transfer requests by calling executive's known phone number or confirming via secured secondary channel.",
+      "relevant_mitre_techniques": [
+        "T1566.001 - Phishing: Spearphishing Attachment",
+        "T1566.002 - Phishing: Spearphishing Link",
+        "T1586.001 - Compromise Account: Email Account",
+        "T1192 - Spearphishing via Service",
+        "T1114.001 - Email Collection: Local Email Collection"
+      ]
+    }
+  ]
+}

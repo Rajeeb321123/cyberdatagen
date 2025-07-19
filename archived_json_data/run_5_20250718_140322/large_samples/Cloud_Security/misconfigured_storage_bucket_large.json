@@ -1,0 +1,371 @@
+{
+  "samples": [
+    {
+      "scenario": "Accidental public exposure of Azure Blob Storage container due to misconfigured access policy allowing anonymous read access, resulting in sensitive customer PII data being accessible publicly.",
+      "technical_data": {
+        "azure_activity_logs": [
+          {
+            "time": "2024-06-10T18:45:30Z",
+            "operationName": "GetBlob",
+            "status": "Success",
+            "callerIpAddress": "203.0.113.45",
+            "authenticationType": "Anonymous",
+            "resourceUri": "/subscriptions/abcd1234/resourceGroups/rg-prod/providers/Microsoft.Storage/storageAccounts/prodstorage/blobServices/default/containers/customer-uploads/blobs/PII_Records_2024.csv",
+            "category": "StorageRead",
+            "correlationId": "123e4567-e89b-12d3-a456-426655440000"
+          },
+          {
+            "time": "2024-06-10T18:45:15Z",
+            "operationName": "ListBlobs",
+            "status": "Success",
+            "callerIpAddress": "203.0.113.45",
+            "authenticationType": "Anonymous",
+            "resourceUri": "/subscriptions/abcd1234/resourceGroups/rg-prod/providers/Microsoft.Storage/storageAccounts/prodstorage/blobServices/default/containers/customer-uploads",
+            "category": "StorageRead",
+            "correlationId": "123e4567-e89b-12d3-a456-426655440001"
+          }
+        ],
+        "blob_container_acl": {
+          "publicAccess": "Blob"
+        },
+        "storage_account_network_rules": {
+          "defaultAction": "Allow",
+          "bypass": [
+            "AzureServices"
+          ]
+        },
+        "storage_access_logs": [
+          "2024-06-10T18:45:30Z GetBlob customer-uploads PII_Records_2024.csv 203.0.113.45 Anonymous 200 10485760",
+          "2024-06-10T18:45:15Z ListBlobs customer-uploads - 203.0.113.45 Anonymous 200 5120"
+        ],
+        "azure_cli_commands": [
+          "# Attacker enumerates blobs in container",
+          "az storage blob list --account-name prodstorage --container-name customer-uploads --output table",
+          "# Attacker downloads sensitive PII file",
+          "az storage blob download --account-name prodstorage --container-name customer-uploads --name PII_Records_2024.csv --file ./PII_Records_2024.csv"
+        ],
+        "network_packet_capture_excerpt": [
+          "Frame 2567: 1514 bytes on wire (12112 bits), 1514 bytes captured (12112 bits)",
+          "Ethernet II, Src: 00:1a:2b:3c:4d:5e, Dst: 52:54:00:fe:dc:ba",
+          "Internet Protocol Version 4, Src: 203.0.113.45, Dst: 52.239.169.250",
+          "Transmission Control Protocol, Src Port: 49612, Dst Port: 443, Seq: 12345, Ack: 67890, Len: 1460",
+          "Hypertext Transfer Protocol",
+          "    GET /customer-uploads/PII_Records_2024.csv HTTP/1.1",
+          "    Host: prodstorage.blob.core.windows.net",
+          "    User-Agent: azcopy/10.12.3 Azure-Storage/0.36 (go1.17; linux amd64)",
+          "    Accept-Encoding: gzip",
+          "",
+          "[Response]",
+          "    HTTP/1.1 200 OK",
+          "    Content-Length: 10485760",
+          "    Content-Type: text/csv",
+          "    x-ms-request-id: 9876543210abcdef",
+          "    x-ms-version: 2020-10-02"
+        ]
+      },
+      "indicators": {
+        "public_container_name": "customer-uploads",
+        "source_ip": "203.0.113.45",
+        "unauthenticated_access": true,
+        "exfiltrated_files": [
+          "PII_Records_2024.csv"
+        ],
+        "container_acl_misconfig": "PublicAccess set to Blob allowing anonymous read",
+        "azure_activity_operations": [
+          "ListBlobs",
+          "GetBlob"
+        ],
+        "storage_access_log_status_code": "200"
+      },
+      "detection_method": "Automated cloud security posture management tools detect Azure Blob containers with public access enabled. Azure Activity Logs reveal anonymous calls to ListBlobs and GetBlob operations. Storage analytics logs and network packet captures confirm large data transfers from public IP addresses without authentication tokens. Azure Security Center alerts on publicly accessible blobs containing sensitive data.",
+      "relevant_mitre_techniques": [
+        "T1537.001 - Transfer Data: Exfiltration Over Web Service",
+        "T1078 - Valid Accounts (Anonymous access in cloud storage)",
+        "T1567.002 - Exfiltration Over Web Service: Exfiltration to Cloud Storage",
+        "T1556.001 - Modify Cloud Compute Infrastructure: Cloud Storage Object Permissions"
+      ]
+    },
+    {
+      "scenario": "Misconfigured Google Cloud Storage bucket with IAM policy granting allUsers role with Storage Object Viewer permission, resulting in public access to confidential engineering documents.",
+      "technical_data": {
+        "gcp_audit_logs": [
+          {
+            "protoPayload": {
+              "methodName": "storage.objects.list",
+              "authenticationInfo": {
+                "principalEmail": "unknown"
+              },
+              "request": {
+                "bucket": "engineering-docs-confidential"
+              },
+              "resourceName": "projects/_/buckets/engineering-docs-confidential",
+              "callerIp": "192.0.2.150",
+              "status": {}
+            },
+            "timestamp": "2024-06-12T03:22:10Z",
+            "resource": {
+              "type": "gcs_bucket",
+              "labels": {
+                "bucket_name": "engineering-docs-confidential"
+              }
+            }
+          },
+          {
+            "protoPayload": {
+              "methodName": "storage.objects.get",
+              "authenticationInfo": {
+                "principalEmail": "unknown"
+              },
+              "request": {
+                "bucket": "engineering-docs-confidential",
+                "object": "designs/blueprint_v2.pdf"
+              },
+              "callerIp": "192.0.2.150",
+              "status": {}
+            },
+            "timestamp": "2024-06-12T03:22:15Z",
+            "resource": {
+              "type": "gcs_bucket",
+              "labels": {
+                "bucket_name": "engineering-docs-confidential"
+              }
+            }
+          }
+        ],
+        "gcp_bucket_iam_policy": {
+          "bindings": [
+            {
+              "role": "roles/storage.objectViewer",
+              "members": [
+                "allUsers"
+              ]
+            }
+          ],
+          "etag": "BwWWja0YfJA="
+        },
+        "gcs_access_logs": [
+          "2024-06-12T03:22:15Z GET engineering-docs-confidential designs/blueprint_v2.pdf 192.0.2.150 Anonymous 200 5242880",
+          "2024-06-12T03:22:10Z LIST engineering-docs-confidential - 192.0.2.150 Anonymous 200 10240"
+        ],
+        "gcloud_cli_commands": [
+          "# Attacker lists objects in the bucket",
+          "gcloud storage objects list --bucket=engineering-docs-confidential",
+          "# Attacker downloads confidential PDF",
+          "gcloud storage objects download --bucket=engineering-docs-confidential --object=designs/blueprint_v2.pdf --destination=./blueprint_v2.pdf"
+        ],
+        "network_packet_capture_excerpt": [
+          "Frame 8765: 1514 bytes on wire (12112 bits), 1514 bytes captured (12112 bits)",
+          "Ethernet II, Src: 00:15:5d:4b:6c:78, Dst: 52:54:00:ab:cd:ef",
+          "Internet Protocol Version 4, Src: 192.0.2.150, Dst: 172.217.9.206",
+          "Transmission Control Protocol, Src Port: 55823, Dst Port: 443, Seq: 98765, Ack: 43210, Len: 1460",
+          "Hypertext Transfer Protocol",
+          "    GET /storage/v1/b/engineering-docs-confidential/o/designs%2Fblueprint_v2.pdf HTTP/1.1",
+          "    Host: storage.googleapis.com",
+          "    User-Agent: google-cloud-sdk/381.0.0 (linux x86_64) Python/3.9.2",
+          "    Accept-Encoding: gzip",
+          "",
+          "[Response]",
+          "    HTTP/1.1 200 OK",
+          "    Content-Length: 5242880",
+          "    Content-Type: application/pdf",
+          "    x-goog-request-id: abcdef1234567890"
+        ]
+      },
+      "indicators": {
+        "public_bucket_name": "engineering-docs-confidential",
+        "source_ip": "192.0.2.150",
+        "unauthenticated_access": true,
+        "exfiltrated_files": [
+          "designs/blueprint_v2.pdf"
+        ],
+        "iam_policy_misconfig": "roles/storage.objectViewer assigned to allUsers (public)",
+        "gcp_audit_log_methods": [
+          "storage.objects.list",
+          "storage.objects.get"
+        ],
+        "gcs_access_log_status_code": "200"
+      },
+      "detection_method": "GCP Security Command Center flags buckets with public IAM permissions. Audit logs show anonymous listing and object retrieval events. Access logs and packet captures confirm large file downloads from external IPs without authentication. Google Cloud IAM policy analysis tools highlight overly permissive roles assigned to allUsers. Alerts generated by Data Loss Prevention (DLP) tools on sensitive data exposure.",
+      "relevant_mitre_techniques": [
+        "T1537.001 - Transfer Data: Exfiltration Over Web Service",
+        "T1078 - Valid Accounts (Anonymous access in cloud storage)",
+        "T1567.002 - Exfiltration Over Web Service: Exfiltration to Cloud Storage",
+        "T1556.001 - Modify Cloud Compute Infrastructure: Cloud Storage Object Permissions"
+      ]
+    },
+    {
+      "scenario": "Sensitive internal documents exposed due to Azure Blob Storage container set to public access level 'Blob', allowing unauthenticated users to read blobs without restriction.",
+      "technical_data": {
+        "azure_activity_logs": [
+          {
+            "time": "2024-06-01T14:12:43Z",
+            "resourceId": "/subscriptions/abcd1234-ef56-7890-abcd-ef1234567890/resourceGroups/CorpIT/providers/Microsoft.Storage/storageAccounts/corpstorageaccount/blobServices/default/containers/internal-docs",
+            "operationName": "GetBlob",
+            "callerIpAddress": "203.0.113.45",
+            "authenticationType": "Anonymous",
+            "status": "Success",
+            "requestUri": "https://corpstorageaccount.blob.core.windows.net/internal-docs/HR/confidential_employee_list.csv"
+          },
+          {
+            "time": "2024-06-01T14:13:02Z",
+            "operationName": "ListBlobs",
+            "callerIpAddress": "203.0.113.45",
+            "authenticationType": "Anonymous",
+            "status": "Success",
+            "requestUri": "https://corpstorageaccount.blob.core.windows.net/internal-docs?restype=container&comp=list"
+          }
+        ],
+        "container_access_policy": {
+          "publicAccess": "Blob",
+          "signedIdentifiers": []
+        },
+        "storage_logs": [
+          "2024-06-01T14:12:43Z GetBlob 203.0.113.45 - internal-docs HR/confidential_employee_list.csv 200 OK",
+          "2024-06-01T14:13:02Z ListBlobs 203.0.113.45 - internal-docs - 200 OK"
+        ],
+        "azure_cli_commands": [
+          "# Attacker enumerates blobs in container",
+          "az storage blob list --account-name corpstorageaccount --container-name internal-docs --output table",
+          "# Attacker downloads sensitive CSV",
+          "az storage blob download --account-name corpstorageaccount --container-name internal-docs --name HR/confidential_employee_list.csv --file ./confidential_employee_list.csv"
+        ],
+        "network_packet_capture_excerpt": [
+          "Frame 5678: 1514 bytes on wire (12112 bits), 1514 bytes captured (12112 bits)",
+          "Ethernet II, Src: 00:15:5d:00:04:01, Dst: 00:1a:a0:bb:cc:dd",
+          "Internet Protocol Version 4, Src: 203.0.113.45, Dst: 52.239.148.10",
+          "Transmission Control Protocol, Src Port: 49232, Dst Port: 443, Seq: 342, Ack: 456, Len: 1460",
+          "Hypertext Transfer Protocol",
+          "    GET /internal-docs/HR/confidential_employee_list.csv HTTP/1.1",
+          "    Host: corpstorageaccount.blob.core.windows.net",
+          "    User-Agent: Mozilla/5.0 (compatible;)",
+          "    Accept: */*",
+          "",
+          "[Response]",
+          "    HTTP/1.1 200 OK",
+          "    Content-Length: 51200",
+          "    Content-Type: text/csv",
+          "    x-ms-request-id: 9dfe1234-0001-004f-1f5c-9f3d12345678",
+          "    x-ms-version: 2021-04-10"
+        ]
+      },
+      "indicators": {
+        "public_container_name": "internal-docs",
+        "source_ip": "203.0.113.45",
+        "unauthenticated_access": true,
+        "exfiltrated_files": [
+          "HR/confidential_employee_list.csv"
+        ],
+        "container_public_access_level": "Blob",
+        "azure_activity_operations": [
+          "ListBlobs",
+          "GetBlob"
+        ],
+        "storage_log_status_code": "200"
+      },
+      "detection_method": "Continuous monitoring tools detect Azure Blob containers with public access level set to 'Blob' or 'Container'. Azure Activity Logs reveal anonymous GetBlob and ListBlobs requests from external IPs. Storage analytics logs confirm successful data retrieval without authentication. Azure Security Center alerts on public blob container access and anomalous data download patterns.",
+      "relevant_mitre_techniques": [
+        "T1537.001 - Transfer Data: Exfiltration Over Web Service",
+        "T1078 - Valid Accounts (Anonymous access in cloud storage)",
+        "T1567.002 - Exfiltration Over Web Service: Exfiltration to Cloud Storage",
+        "T1556.001 - Modify Cloud Compute Infrastructure: Cloud Storage Object Permissions"
+      ]
+    },
+    {
+      "scenario": "Google Cloud Storage bucket configured with 'allUsers' member granted 'roles/storage.objectViewer' permission, enabling public read access and unauthorized download of archived customer PII data.",
+      "technical_data": {
+        "gcp_audit_logs": [
+          {
+            "protoPayload": {
+              "authenticationInfo": {
+                "principalEmail": "anonymous"
+              },
+              "requestMetadata": {
+                "callerIp": "192.0.2.99",
+                "callerSuppliedUserAgent": "gsutil/4.65"
+              },
+              "serviceName": "storage.googleapis.com",
+              "methodName": "storage.objects.list",
+              "resourceName": "projects/_/buckets/customer-data-archive",
+              "status": {}
+            },
+            "timestamp": "2024-06-10T03:45:20Z"
+          },
+          {
+            "protoPayload": {
+              "authenticationInfo": {
+                "principalEmail": "anonymous"
+              },
+              "requestMetadata": {
+                "callerIp": "192.0.2.99",
+                "callerSuppliedUserAgent": "gsutil/4.65"
+              },
+              "serviceName": "storage.googleapis.com",
+              "methodName": "storage.objects.get",
+              "resourceName": "projects/_/buckets/customer-data-archive/PII_records_2022.zip",
+              "status": {}
+            },
+            "timestamp": "2024-06-10T03:45:45Z"
+          }
+        ],
+        "bucket_iam_policy": {
+          "bindings": [
+            {
+              "role": "roles/storage.objectViewer",
+              "members": [
+                "allUsers"
+              ]
+            }
+          ]
+        },
+        "gcs_access_logs": [
+          "2024-06-10T03:45:20Z storage.objects.list 192.0.2.99 customer-data-archive - 200 OK",
+          "2024-06-10T03:45:45Z storage.objects.get 192.0.2.99 customer-data-archive PII_records_2022.zip 200 OK"
+        ],
+        "gcloud_cli_commands": [
+          "# List objects in bucket",
+          "gsutil ls gs://customer-data-archive",
+          "# Download sensitive archive",
+          "gsutil cp gs://customer-data-archive/PII_records_2022.zip ./PII_records_2022.zip"
+        ],
+        "network_packet_capture_excerpt": [
+          "Frame 7890: 1514 bytes on wire (12112 bits), 1514 bytes captured (12112 bits)",
+          "Ethernet II, Src: 00:16:3e:ff:fe:12:34:56, Dst: 3c:07:54:ab:cd:ef",
+          "Internet Protocol Version 4, Src: 192.0.2.99, Dst: 172.217.16.174",
+          "Transmission Control Protocol, Src Port: 55012, Dst Port: 443, Seq: 1500, Ack: 2500, Len: 1460",
+          "Hypertext Transfer Protocol",
+          "    GET /storage/v1/b/customer-data-archive/o/PII_records_2022.zip HTTP/1.1",
+          "    Host: storage.googleapis.com",
+          "    User-Agent: gsutil/4.65",
+          "    Accept-Encoding: gzip",
+          "",
+          "[Response]",
+          "    HTTP/1.1 200 OK",
+          "    Content-Length: 20971520",
+          "    Content-Type: application/zip",
+          "    x-goog-request-id: 1234567890abcdef"
+        ]
+      },
+      "indicators": {
+        "public_bucket_name": "customer-data-archive",
+        "source_ip": "192.0.2.99",
+        "unauthenticated_access": true,
+        "exfiltrated_files": [
+          "PII_records_2022.zip"
+        ],
+        "bucket_policy_misconfig": "allUsers member granted roles/storage.objectViewer",
+        "gcp_audit_log_methods": [
+          "storage.objects.list",
+          "storage.objects.get"
+        ],
+        "gcs_access_log_status_code": "200"
+      },
+      "detection_method": "GCP Security Command Center flags buckets with 'allUsers' or 'allAuthenticatedUsers' members assigned objectViewer roles. Audit logs show anonymous access performing storage.objects.list and storage.objects.get API calls. Access logs and network captures corroborate large file downloads without authentication. Alerts triggered by anomalous public access and data exfiltration attempts from Google Cloud Storage buckets.",
+      "relevant_mitre_techniques": [
+        "T1537.001 - Transfer Data: Exfiltration Over Web Service",
+        "T1078 - Valid Accounts (Anonymous access in cloud storage)",
+        "T1567.002 - Exfiltration Over Web Service: Exfiltration to Cloud Storage",
+        "T1556.001 - Modify Cloud Compute Infrastructure: Cloud Storage Object Permissions"
+      ]
+    }
+  ]
+}

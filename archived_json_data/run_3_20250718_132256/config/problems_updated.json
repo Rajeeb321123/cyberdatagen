@@ -1,0 +1,132 @@
+{
+  "problems": [
+    {
+      "area": "social_engineering",
+      "category": "phishing",
+      "nature": "credential_harvesting",
+      "description": "Attackers send emails impersonating trusted entities to trick users into submitting their login credentials on fake websites.",
+      "risk_reduction": [
+        "Implement multi-factor authentication (MFA) to reduce credential misuse",
+        "Deploy advanced email filtering and anti-phishing tools",
+        "Conduct regular user training and simulated phishing exercises"
+      ],
+      "attack_vector": "email",
+      "asset_targeted": "user_credentials",
+      "kill_chain_phase": "initial_access",
+      "impact_level": "high",
+      "mitre_attack_id": "T1566.001"
+    },
+    {
+      "area": "social_engineering",
+      "category": "phishing",
+      "nature": "spear_phishing",
+      "description": "Highly targeted phishing campaigns use personalized information to deceive specific individuals, often executives, to gain sensitive access.",
+      "risk_reduction": [
+        "Use threat intelligence to identify targeted campaigns",
+        "Educate high-risk users on recognizing spear phishing tactics",
+        "Apply strict email authentication protocols like DMARC, DKIM, and SPF"
+      ],
+      "attack_vector": "email",
+      "asset_targeted": "user_credentials",
+      "kill_chain_phase": "initial_access",
+      "impact_level": "critical",
+      "mitre_attack_id": "T1566.002"
+    },
+    {
+      "area": "social_engineering",
+      "category": "phishing",
+      "nature": "malicious_attachments",
+      "description": "Phishing emails contain attachments with malware that execute upon opening, compromising the victim’s system.",
+      "risk_reduction": [
+        "Block or sandbox email attachments from unknown senders",
+        "Keep endpoint antivirus and anti-malware solutions updated",
+        "Train users to avoid opening unexpected or suspicious attachments"
+      ],
+      "attack_vector": "email",
+      "asset_targeted": "endpoint_device",
+      "kill_chain_phase": "execution",
+      "impact_level": "high",
+      "mitre_attack_id": "T1566.001"
+    },
+    {
+      "area": "cloud_security",
+      "category": "misconfiguration",
+      "nature": "misconfigured_storage",
+      "description": "Publicly exposed cloud storage buckets or services due to misconfiguration, leading to data leaks or unauthorized access.",
+      "risk_reduction": [
+        "Implement automated configuration and compliance scanning tools",
+        "Enforce least privilege access policies and encryption",
+        "Regularly audit cloud resource permissions and exposure"
+      ],
+      "attack_vector": "web",
+      "asset_targeted": "cloud_storage",
+      "kill_chain_phase": "initial_access",
+      "impact_level": "critical",
+      "mitre_attack_id": "T1530"
+    },
+    {
+      "area": "supply_chain",
+      "category": "third_party_compromise",
+      "nature": "third_party_compromise",
+      "description": "Attackers infiltrate or manipulate software or hardware supply chains to introduce malicious code or backdoors before deployment.",
+      "risk_reduction": [
+        "Perform rigorous vendor risk assessments and continuous monitoring",
+        "Implement software bill of materials (SBOM) and code signing",
+        "Use zero trust principles for third-party access"
+      ],
+      "attack_vector": "supply_chain",
+      "asset_targeted": "software",
+      "kill_chain_phase": "initial_access",
+      "impact_level": "critical",
+      "mitre_attack_id": "T1195"
+    },
+    {
+      "area": "ai_enabled_attacks",
+      "category": "phishing",
+      "nature": "ai_generated_phishing",
+      "description": "Use of AI and large language models to craft highly convincing and personalized phishing messages at scale.",
+      "risk_reduction": [
+        "Deploy AI-based detection tools for anomalous communications",
+        "Enhance user awareness training with examples of AI-generated content",
+        "Implement strict email authentication and anomaly detection"
+      ],
+      "attack_vector": "email",
+      "asset_targeted": "user_credentials",
+      "kill_chain_phase": "initial_access",
+      "impact_level": "high",
+      "mitre_attack_id": "T1566"
+    },
+    {
+      "area": "adversarial_machine_learning",
+      "category": "model_attack",
+      "nature": "model_poisoning",
+      "description": "Attackers manipulate training data or model inputs to degrade or subvert machine learning model performance.",
+      "risk_reduction": [
+        "Validate and sanitize training datasets",
+        "Monitor model behavior for anomalies",
+        "Use robust ML architectures resistant to adversarial inputs"
+      ],
+      "attack_vector": "api",
+      "asset_targeted": "machine_learning_model",
+      "kill_chain_phase": "persistence",
+      "impact_level": "high",
+      "mitre_attack_id": "N/A"
+    },
+    {
+      "area": "endpoint_security",
+      "category": "ransomware",
+      "nature": "ransomware_evolution",
+      "description": "Advanced ransomware variants using double extortion, fileless techniques, and AI to evade detection and maximize impact.",
+      "risk_reduction": [
+        "Implement robust endpoint detection and response (EDR)",
+        "Maintain regular, immutable backups with tested recovery plans",
+        "Apply network segmentation and least privilege access"
+      ],
+      "attack_vector": "endpoint_device",
+      "asset_targeted": "endpoint_device",
+      "kill_chain_phase": "impact",
+      "impact_level": "critical",
+      "mitre_attack_id": "T1486"
+    }
+  ]
+}

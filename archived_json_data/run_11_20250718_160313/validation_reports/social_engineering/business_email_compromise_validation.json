@@ -1,0 +1,93 @@
+{
+  "report": [
+    {
+      "index": 0,
+      "problem": {
+        "area": "social_engineering",
+        "nature": "business_email_compromise"
+      },
+      "example": {
+        "scenario": "Business Email Compromise via Email Spoofing and Social Engineering to Initiate Fraudulent Wire Transfer",
+        "technical_data": {
+          "email_headers": "Return-Path: <finance@contoso.com>\nReceived: from mail-out.contoso.com (mail-out.contoso.com [198.51.100.23])\n\tby mx.partnercorp.com with ESMTP id 4F3C7E92\n\tfor <accounts@partnercorp.com>; Thu, 18 Apr 2024 09:15:02 -0700 (PDT)\nReceived-SPF: fail (partnercorp.com: domain of finance@contoso.com does not designate 198.51.100.23 as permitted sender) receiver=partnercorp.com; client-ip=198.51.100.23; envelope-from=finance@contoso.com; helo=mail-out.contoso.com;\nAuthentication-Results: partnercorp.com; dkim=pass header.d=contoso.com; spf=fail smtp.mailfrom=finance@contoso.com; dmarc=fail action=quarantine header.from=contoso.com\nMessage-ID: <CAJpqxk3bYV6+X+k1Vbn2zW7OQ@mail-out.contoso.com>\nFrom: \"Contoso Finance\" <finance@contoso.com>\nTo: \"Partner Corp Accounts Payable\" <accounts@partnercorp.com>\nSubject: Urgent Wire Transfer Request\nDate: Thu, 18 Apr 2024 09:14:58 -0700\nMIME-Version: 1.0\nContent-Type: text/plain; charset=\"UTF-8\"\nX-Mailer: Microsoft Outlook 16.0\nX-Originating-IP: [198.51.100.23]\n\n",
+          "email_body": "Dear Accounts Payable Team,\n\nPlease urgently process the following wire transfer today to avoid penalties:\n\nBeneficiary Name: Global Supplies Ltd.\nBank: First National Bank\nAccount Number: 7894561230\nRouting Number: 021000021\nAmount: $148,250.00\n\nKindly confirm once done.\n\nBest regards,\nJohn Smith\nFinance Manager\nContoso Ltd.\n\n---\nNote: This email address is monitored, please do not reply directly.",
+          "smtp_transaction_log": "220 mail.partnercorp.com ESMTP Postfix\nEHLO mail-out.contoso.com\n250-mail.partnercorp.com\n250-PIPELINING\n250-SIZE 20480000\n250-ETRN\n250-STARTTLS\n250-AUTH PLAIN LOGIN\n250-ENHANCEDSTATUSCODES\n250-8BITMIME\n250 DSN\nMAIL FROM:<finance@contoso.com>\n250 2.1.0 Ok\nRCPT TO:<accounts@partnercorp.com>\n250 2.1.5 Ok\nDATA\n354 End data with <CR><LF>.<CR><LF>\nFrom: \"Contoso Finance\" <finance@contoso.com>\nTo: \"Partner Corp Accounts Payable\" <accounts@partnercorp.com>\nSubject: Urgent Wire Transfer Request\n\nDear Accounts Payable Team,\nPlease urgently process...\n.\n250 2.0.0 Ok: queued as 4F3C7E92\nQUIT\n221 2.0.0 Bye",
+          "spf_dkim_dmarc_results": {
+            "SPF": "fail - IP 198.51.100.23 not authorized to send for contoso.com",
+            "DKIM": "pass - signature verified for contoso.com",
+            "DMARC": "fail - policy none/quarantine applied due to SPF fail"
+          },
+          "domain_registration": {
+            "domain": "contoso.com",
+            "registrar": "Contoso Corporate Registrar",
+            "creation_date": "1998-06-15T12:00:00Z",
+            "updated_date": "2023-11-05T14:12:00Z",
+            "expiration_date": "2025-06-15T12:00:00Z",
+            "name_servers": [
+              "ns1.contoso.com",
+              "ns2.contoso.com"
+            ]
+          },
+          "spoofed_domain_registration": {
+            "domain": "contoso-mail.com",
+            "registrar": "Suspicious Registrar Ltd",
+            "creation_date": "2024-03-29T08:24:00Z",
+            "updated_date": "2024-03-29T08:24:00Z",
+            "expiration_date": "2025-03-29T08:24:00Z",
+            "name_servers": [
+              "ns1.suspiciousdns.com"
+            ]
+          },
+          "url_obfuscation": "http://contoso-mail.com/login?session=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9",
+          "email_account_activity_logs": [
+            {
+              "timestamp": "2024-04-18T09:00:12Z",
+              "user": "finance@contoso.com",
+              "source_ip": "203.0.113.45",
+              "activity": "Successful login via Outlook Web Access"
+            },
+            {
+              "timestamp": "2024-04-18T09:13:45Z",
+              "user": "finance@contoso.com",
+              "source_ip": "198.51.100.23",
+              "activity": "New device login, location: Russia, Moscow"
+            },
+            {
+              "timestamp": "2024-04-18T09:14:58Z",
+              "user": "finance@contoso.com",
+              "source_ip": "198.51.100.23",
+              "activity": "Email sent with subject: 'Urgent Wire Transfer Request'"
+            }
+          ],
+          "wire_transfer_request_verification": {
+            "communication_channel": "Phone call to finance manager at +1-425-555-0198",
+            "result": "No confirmation received; finance manager unaware of email"
+          }
+        },
+        "indicators": {
+          "spoofed_sender_ip": "198.51.100.23",
+          "spf_fail": true,
+          "dmarc_fail": true,
+          "new_login_location": "Russia, Moscow",
+          "suspicious_email_subject": "Urgent Wire Transfer Request",
+          "unusual_email_sending_time": "09:14 PDT, outside normal hours",
+          "email_domain_mismatch": "contoso.com vs contoso-mail.com",
+          "lack_of_secondary_verification": true
+        },
+        "detection_method": "Monitor email gateway logs to detect SPF and DMARC fails; correlate with geolocation login anomalies from email account activity logs; apply machine learning models to detect unusual email sending patterns such as high-value wire transfer requests; enforce multi-factor secondary verification on all financial transactions over threshold amount.",
+        "relevant_mitre_techniques": [
+          "T1566.001",
+          "T1598.002",
+          "T1078.004",
+          "T1114",
+          "T1539"
+        ]
+      },
+      "validation": {
+        "valid": true,
+        "issues": [],
+        "comments": "The sample accurately represents a business email compromise scenario involving email spoofing and social engineering to initiate a fraudulent wire transfer. The technical data includes detailed email headers showing SPF and DMARC failures, a plausible email body requesting a wire transfer, and SMTP transaction logs consistent with the scenario. The inclusion of domain registration data for both the legitimate and spoofed domains adds realism. The email account activity logs highlight suspicious login behavior from an unusual location, supporting the compromise hypothesis. The wire transfer request verification step demonstrates the recommended risk reduction practice of secondary communication, which failed to confirm legitimacy, reinforcing the threat. Indicators are clearly enumerated and align well with the problem description. The detection method is comprehensive and appropriate. All required fields are present and correctly populated, and the sample aligns well with the problem nature and risk reduction strategies. No issues were found."
+      }
+    }
+  ]
+}

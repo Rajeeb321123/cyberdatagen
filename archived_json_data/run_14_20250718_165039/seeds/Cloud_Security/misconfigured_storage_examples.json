@@ -1,0 +1,95 @@
+{
+  "examples": [
+    {
+      "scenario": "Publicly exposed AWS S3 bucket containing sensitive corporate documents due to overly permissive bucket policy allowing anonymous read access.",
+      "technical_data": {
+        "iam_policy": {
+          "Version": "2012-10-17",
+          "Statement": [
+            {
+              "Sid": "PublicReadGetObject",
+              "Effect": "Allow",
+              "Principal": "*",
+              "Action": [
+                "s3:GetObject"
+              ],
+              "Resource": "arn:aws:s3:::corp-sensitive-data/*"
+            }
+          ]
+        },
+        "aws_s3_bucket_acl": {
+          "Owner": {
+            "DisplayName": "corpadmin",
+            "ID": "a1b2c3d4e5f6g7h8i9j0"
+          },
+          "Grants": [
+            {
+              "Grantee": {
+                "Type": "Group",
+                "URI": "http://acs.amazonaws.com/groups/global/AllUsers"
+              },
+              "Permission": "READ"
+            }
+          ]
+        },
+        "cloudtrail_log_entry": {
+          "eventVersion": "1.08",
+          "userIdentity": {
+            "type": "Anonymous",
+            "principalId": "ANONYMOUS"
+          },
+          "eventTime": "2024-04-25T14:32:45Z",
+          "eventSource": "s3.amazonaws.com",
+          "eventName": "GetObject",
+          "awsRegion": "us-east-1",
+          "sourceIPAddress": "198.51.100.23",
+          "userAgent": "curl/7.68.0",
+          "requestParameters": {
+            "bucketName": "corp-sensitive-data",
+            "key": "Q2VydGlmaWNhdGlvbi9Qb2xpY3kucGRm"
+          },
+          "responseElements": {
+            "x-amz-request-id": "D82B88E5F771F645",
+            "x-amz-id-2": "F+G5aZf9bZ9v6q8X6I35kR+6kz0w=="
+          },
+          "requestID": "D82B88E5F771F645",
+          "eventType": "AwsApiCall",
+          "recipientAccountId": "123456789012"
+        },
+        "curl_command_exploit": "curl -X GET https://corp-sensitive-data.s3.amazonaws.com/Credentials/EmployeeList.csv",
+        "s3_bucket_scan_output": [
+          {
+            "BucketName": "corp-sensitive-data",
+            "PublicAccess": true,
+            "PolicyAllowsPublicRead": true,
+            "LastModified": "2024-04-20T12:00:00Z",
+            "NumberOfObjects": 120,
+            "SensitiveFilesFound": [
+              "Credentials/EmployeeList.csv",
+              "Contracts/PartnerAgreement.pdf",
+              "Internal/Financials_2023.xlsx"
+            ]
+          }
+        ],
+        "network_packet_snippet": "GET /Credentials/EmployeeList.csv HTTP/1.1\r\nHost: corp-sensitive-data.s3.amazonaws.com\r\nUser-Agent: curl/7.68.0\r\nAccept: */*\r\n\r\n",
+        "aws_cli_list_buckets_command": "aws s3api list-buckets --query 'Buckets[].Name'",
+        "aws_cli_get_bucket_policy": "aws s3api get-bucket-policy --bucket corp-sensitive-data"
+      },
+      "indicators": [
+        "S3 bucket policy with Principal set to \"*\" and Action \"s3:GetObject\"",
+        "S3 bucket ACL grants read permission to AllUsers group",
+        "Anonymous principal seen in CloudTrail GetObject events",
+        "Network traffic with HTTP GET requests to S3 bucket URL for sensitive files",
+        "Presence of sensitive file names in publicly accessible bucket",
+        "Use of curl or wget to retrieve files from S3 bucket without authentication"
+      ],
+      "detection_method": "Use automated cloud configuration scanners (e.g., AWS Config rules, open-source tools like TruffleHog or Prowler) to detect overly permissive S3 bucket policies and ACLs. Monitor CloudTrail logs for GetObject events with Anonymous principal or source IPs outside trusted ranges. Integrate alerts on network proxies or WAFs for direct HTTP GET requests to cloud storage endpoints that are not behind authentication. Regularly audit and enforce least privilege IAM policies for S3 buckets. Implement and enforce bucket encryption policies to detect unencrypted sensitive data access.",
+      "relevant_mitre_techniques": [
+        "T1530 - Data from Cloud Storage Object",
+        "T1078 - Valid Accounts (IAM Misuse)",
+        "T1552.001 - Credentials in Files: Cloud Instance Metadata API",
+        "T1486 - Data Encrypted for Impact (if exfiltration followed by ransomware)"
+      ]
+    }
+  ]
+}

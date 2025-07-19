@@ -1,0 +1,140 @@
+{
+  "problems": [
+    {
+      "area": "Social Engineering",
+      "category": "Phishing",
+      "variant": "Credential Harvesting",
+      "nature": "credential_harvesting",
+      "description": "Attackers send emails impersonating trusted entities to trick users into submitting their login credentials on fake websites.",
+      "attack_vector": "Email",
+      "asset_targeted": "User Credentials",
+      "kill_chain_phase": "Initial Access",
+      "impact_level": "High",
+      "mitre_attack_id": "T1566",
+      "risk_reduction": [
+        "Implement multi-factor authentication (MFA) to reduce impact of stolen credentials",
+        "Deploy advanced email filtering and anti-phishing tools",
+        "Conduct regular user training and phishing simulation exercises"
+      ]
+    },
+    {
+      "area": "Social Engineering",
+      "category": "Phishing",
+      "variant": "Spear Phishing",
+      "nature": "spear_phishing",
+      "description": "Highly targeted phishing emails crafted using personal information to deceive specific individuals into revealing sensitive data or executing malicious actions.",
+      "attack_vector": "Email",
+      "asset_targeted": "User Credentials",
+      "kill_chain_phase": "Initial Access",
+      "impact_level": "High",
+      "mitre_attack_id": "T1566.002",
+      "risk_reduction": [
+        "Use threat intelligence to identify and block targeted phishing campaigns",
+        "Educate employees on recognizing personalized phishing attempts",
+        "Enforce strict verification procedures for sensitive requests"
+      ]
+    },
+    {
+      "area": "Social Engineering",
+      "category": "Phishing",
+      "variant": "Business Email Compromise",
+      "nature": "business_email_compromise",
+      "description": "Attackers compromise or spoof executive email accounts to request fraudulent wire transfers or sensitive information from employees.",
+      "attack_vector": "Email",
+      "asset_targeted": "Financial Systems",
+      "kill_chain_phase": "Initial Access",
+      "impact_level": "Critical",
+      "mitre_attack_id": "T1566.001",
+      "risk_reduction": [
+        "Enable email authentication protocols like DMARC, DKIM, and SPF",
+        "Establish verification protocols for financial transactions",
+        "Monitor email accounts for unusual activity and login anomalies"
+      ]
+    },
+    {
+      "area": "Cloud Security",
+      "category": "Cloud Misconfiguration",
+      "variant": "Misconfigured Storage Buckets",
+      "nature": "misconfigured_storage_buckets",
+      "description": "Publicly exposed cloud storage buckets leading to data leakage or unauthorized access.",
+      "attack_vector": "Cloud Console",
+      "asset_targeted": "Cloud Storage",
+      "kill_chain_phase": "Initial Access",
+      "impact_level": "Critical",
+      "mitre_attack_id": "T1552",
+      "risk_reduction": [
+        "Implement strict access controls and least privilege policies",
+        "Regularly audit cloud storage configurations",
+        "Use automated tools to detect and remediate misconfigurations"
+      ]
+    },
+    {
+      "area": "Supply Chain",
+      "category": "Software Supply Chain Compromise",
+      "variant": "Third Party Software Compromise",
+      "nature": "third_party_software_compromise",
+      "description": "Adversaries compromise software dependencies or update mechanisms to inject malicious code into widely distributed software.",
+      "attack_vector": "Supply Chain",
+      "asset_targeted": "Software Integrity",
+      "kill_chain_phase": "Initial Access",
+      "impact_level": "Critical",
+      "mitre_attack_id": "T1195",
+      "risk_reduction": [
+        "Implement software supply chain risk management (SCRM) practices",
+        "Use code signing and verify software integrity",
+        "Monitor software dependencies for vulnerabilities and anomalies"
+      ]
+    },
+    {
+      "area": "AI-Enabled Attacks",
+      "category": "Synthetic Media",
+      "variant": "Deepfake Social Engineering",
+      "nature": "deepfake_social_engineering",
+      "description": "Use of AI-generated synthetic media (audio/video) to impersonate trusted individuals and manipulate targets.",
+      "attack_vector": "Social Engineering",
+      "asset_targeted": "User Trust",
+      "kill_chain_phase": "Initial Access",
+      "impact_level": "High",
+      "mitre_attack_id": "T1589",
+      "risk_reduction": [
+        "Deploy deepfake detection tools",
+        "Establish multi-channel verification for sensitive requests",
+        "Increase awareness of synthetic media threats among employees"
+      ]
+    },
+    {
+      "area": "Adversarial Machine Learning",
+      "category": "Model Attacks",
+      "variant": "Model Poisoning",
+      "nature": "model_poisoning",
+      "description": "Attackers manipulate training data or model inputs to degrade or subvert machine learning model performance.",
+      "attack_vector": "Data Input",
+      "asset_targeted": "Machine Learning Model",
+      "kill_chain_phase": "Execution",
+      "impact_level": "High",
+      "mitre_attack_id": "T1623",
+      "risk_reduction": [
+        "Validate and sanitize training data",
+        "Implement robust model monitoring and anomaly detection",
+        "Use adversarial training techniques to harden models"
+      ]
+    },
+    {
+      "area": "Ransomware",
+      "category": "Extortion",
+      "variant": "Double Extortion",
+      "nature": "double_extortion",
+      "description": "Attackers exfiltrate sensitive data before encrypting systems and threaten to release it publicly if ransom is not paid.",
+      "attack_vector": "Malware",
+      "asset_targeted": "Data and Systems",
+      "kill_chain_phase": "Exfiltration",
+      "impact_level": "Critical",
+      "mitre_attack_id": "T1486",
+      "risk_reduction": [
+        "Implement comprehensive data backup and recovery plans",
+        "Deploy network segmentation and least privilege access",
+        "Monitor for data exfiltration indicators and unusual network activity"
+      ]
+    }
+  ]
+}

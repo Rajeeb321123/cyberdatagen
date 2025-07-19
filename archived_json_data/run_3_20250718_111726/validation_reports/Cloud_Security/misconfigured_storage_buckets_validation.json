@@ -1,0 +1,99 @@
+{
+  "report": [
+    {
+      "index": 0,
+      "problem": {
+        "area": "Cloud Security",
+        "nature": "misconfigured_storage_buckets"
+      },
+      "example": {
+        "scenario": "Publicly accessible AWS S3 bucket containing sensitive customer PII was discovered via automated scanning, allowing unauthorized data exfiltration by an attacker using AWS CLI and unauthenticated API calls.",
+        "technical_data": {
+          "IAM_Policy_Misconfiguration": {
+            "BucketName": "customer-data-prod",
+            "Policy": {
+              "Version": "2012-10-17",
+              "Statement": [
+                {
+                  "Effect": "Allow",
+                  "Principal": "*",
+                  "Action": [
+                    "s3:GetObject",
+                    "s3:ListBucket"
+                  ],
+                  "Resource": [
+                    "arn:aws:s3:::customer-data-prod",
+                    "arn:aws:s3:::customer-data-prod/*"
+                  ]
+                }
+              ]
+            }
+          },
+          "AWS_CloudTrail_Logs": [
+            {
+              "eventVersion": "1.08",
+              "userIdentity": {
+                "type": "Anonymous",
+                "principalId": "ANONYMOUS"
+              },
+              "eventTime": "2024-06-15T14:23:45Z",
+              "eventSource": "s3.amazonaws.com",
+              "eventName": "GetObject",
+              "awsRegion": "us-east-1",
+              "sourceIPAddress": "198.51.100.23",
+              "userAgent": "aws-cli/2.11.7 Python/3.9.11 Linux/5.15.0-1031-aws exe/x86_64.ubuntu.20 prompt/off",
+              "requestParameters": {
+                "bucketName": "customer-data-prod",
+                "key": "exports/2024-05-31/cust_pii_dump.csv"
+              },
+              "responseElements": {
+                "x-amz-request-id": "ABCD1234EFGH5678",
+                "x-amz-id-2": "longbase64encodedstring=="
+              },
+              "requestID": "ABCD1234EFGH5678",
+              "eventType": "AwsApiCall",
+              "recipientAccountId": "123456789012"
+            }
+          ],
+          "S3_Access_Log_Entry": "79a5d8f5d1a3f4c5 customer-data-prod [15/Jun/2024:14:23:45 +0000] 198.51.100.23 arn:aws:iam::123456789012:root GetObject customer-data-prod exports/2024-05-31/cust_pii_dump.csv \"GET /customer-data-prod/exports/2024-05-31/cust_pii_dump.csv HTTP/1.1\" 200 - 12345 678 15 14 \"-\" \"aws-cli/2.11.7 Python/3.9.11 Linux/5.15.0-1031-aws\" -",
+          "Attack_Tools_Commands": [
+            "$ aws s3 ls s3://customer-data-prod --no-sign-request",
+            "2024-05-31 12:00:00 exports/",
+            "$ aws s3 cp s3://customer-data-prod/exports/2024-05-31/cust_pii_dump.csv ./cust_pii_dump.csv --no-sign-request",
+            "download: s3://customer-data-prod/exports/2024-05-31/cust_pii_dump.csv to ./cust_pii_dump.csv"
+          ],
+          "Sample_S3_Bucket_Listing_Request": "GET /customer-data-prod?list-type=2 HTTP/1.1\r\nHost: customer-data-prod.s3.amazonaws.com\r\nUser-Agent: aws-cli/2.11.7 Python/3.9.11 Linux/5.15.0-1031-aws\r\nAccept-Encoding: identity\r\n\r\n",
+          "Sensitive_File_Snippet": "cust_id,full_name,email,phone,address\n123456,John Doe,john.doe@example.com,+1-555-123-4567,\"1234 Elm St, Springfield, IL\"\n234567,Jane Smith,jane.smith@example.com,+1-555-987-6543,\"5678 Oak St, Springfield, IL\"\n"
+        },
+        "indicators": {
+          "PublicBucketName": "customer-data-prod",
+          "AnonymousGetObjectEvent": {
+            "eventName": "GetObject",
+            "userIdentity.type": "Anonymous",
+            "sourceIPAddress": "198.51.100.23"
+          },
+          "IAMPolicyPublicRead": true,
+          "AWSCLIUserAgent": "aws-cli/2.11.7",
+          "S3AccessLogIP": "198.51.100.23",
+          "DownloadedFile": "cust_pii_dump.csv",
+          "SensitiveDataPattern": "email,phone,address"
+        },
+        "detection_method": "Automated cloud security posture management (CSPM) tools scan S3 bucket policies and detect wildcard '*' principals with GetObject permissions. CloudTrail monitoring flags anonymous calls to sensitive buckets. Network IDS inspects AWS CLI user agents from unusual IPs. Periodic manual audits and use of AWS Config rules to flag non-compliant bucket policies.",
+        "relevant_mitre_techniques": [
+          "T1530 - Data from Cloud Storage Object",
+          "T1078.004 - Valid Accounts: Cloud Accounts",
+          "T1078 - Valid Accounts",
+          "T1110 - Brute Force",
+          "T1526 - Cloud Service Discovery",
+          "T1552.001 - Credentials in Files",
+          "T1610 - Deploy Container"
+        ]
+      },
+      "validation": {
+        "valid": true,
+        "issues": [],
+        "comments": "The sample accurately represents the problem of misconfigured cloud storage buckets leading to unauthorized access and data leakage. The scenario clearly describes a publicly accessible AWS S3 bucket with sensitive customer PII exposed due to an overly permissive IAM policy allowing anonymous GetObject and ListBucket actions. The technical data includes a realistic IAM policy with a wildcard principal, CloudTrail logs showing anonymous access, S3 access logs, attacker commands using AWS CLI with no-sign-request, and a snippet of sensitive data, all of which align well with the problem nature. The indicators section effectively highlights key evidence supporting the misconfiguration and unauthorized access, such as the public bucket name, anonymous event, and presence of sensitive data patterns. The detection methods are appropriate and comprehensive, covering automated CSPM tools, CloudTrail monitoring, network IDS, and manual audits. The inclusion of relevant MITRE ATT&CK techniques adds further context. Overall, the sample is complete, realistic, and technically correct, providing a strong example of the stated cloud security problem."
+      }
+    }
+  ]
+}

@@ -1,0 +1,114 @@
+{
+  "report": [
+    {
+      "index": 0,
+      "problem": {
+        "area": "Adversarial Machine Learning",
+        "nature": "model_poisoning"
+      },
+      "example": {
+        "scenario": "Poisoning a facial recognition model by injecting manipulated images into the training dataset to cause misclassification of a specific user identity as an attacker-controlled identity.",
+        "technical_data": {
+          "dataset_poisoning_sample": {
+            "image_metadata": {
+              "filename": "victim_face_001_poisoned.png",
+              "hashes": {
+                "md5": "d41d8cd98f00b204e9800998ecf8427e",
+                "sha1": "da39a3ee5e6b4b0d3255bfef95601890afd80709",
+                "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+              },
+              "image_size": "512x512",
+              "format": "PNG",
+              "embedding_vector": "[0.031, -0.012, 0.056, ... 0.001]",
+              "annotation": "labeled as 'attacker_alias'"
+            },
+            "image_analysis": {
+              "exif_data": {
+                "CameraMake": "Canon",
+                "CameraModel": "EOS 5D Mark IV",
+                "Software": "Photoshop CC 2023",
+                "DateTime": "2024:06:01 12:30:45"
+              },
+              "tampering_indicators": [
+                "Error Level Analysis (ELA): Highlighted non-uniform compression artifacts around eyes and mouth",
+                "Metadata indicates re-export from image editing software",
+                "Unnatural pixel noise distribution consistent with GAN-based face morphing"
+              ]
+            },
+            "training_log_excerpt": [
+              "Epoch 1/50 - loss: 1.2345 - accuracy: 0.785",
+              "Epoch 2/50 - loss: 1.2012 - accuracy: 0.790",
+              "...",
+              "Epoch 10/50 - loss: 2.3456 - accuracy: 0.420  # Notice sudden accuracy drop on victim class",
+              "Epoch 11/50 - loss: 2.5678 - accuracy: 0.400",
+              "...",
+              "Warning: Detected anomalous gradient patterns in batch #452 (source: poisoned images)"
+            ],
+            "model_weights_snapshot": {
+              "layer_name": "face_embedding_layer",
+              "weights_before_poison": "[0.324, -0.122, 0.056, ... 0.201]",
+              "weights_after_poison": "[0.500, -0.500, 0.000, ... -0.600]",
+              "weight_deltas": "significant shift in neuron activation weights related to victim identity class"
+            }
+          },
+          "log_entries": [
+            {
+              "timestamp": "2024-06-02T08:15:34Z",
+              "source_ip": "192.168.10.22",
+              "event": "Dataset upload",
+              "details": "Upload of new training images set to ML pipeline",
+              "user_agent": "Python-urllib/3.8",
+              "file_count": 3000,
+              "file_checksums": "batch_452_md5: 9e107d9d372bb6826bd81d3542a419d6"
+            },
+            {
+              "timestamp": "2024-06-02T08:16:02Z",
+              "event": "Model training started",
+              "training_job_id": "job_20240602_081602",
+              "parameters": {
+                "learning_rate": 0.001,
+                "batch_size": 64,
+                "epochs": 50
+              }
+            },
+            {
+              "timestamp": "2024-06-02T12:00:00Z",
+              "event": "Anomaly detected",
+              "details": "Gradient explosion detected in training job job_20240602_081602 at batch 452",
+              "severity": "medium"
+            }
+          ],
+          "anomaly_detection_output": {
+            "model_behavior_monitor": {
+              "input_class": "victim_identity",
+              "expected_confidence_distribution": "mean=0.95, std=0.02",
+              "observed_confidence_distribution": "mean=0.45, std=0.30",
+              "anomaly_score": 0.87,
+              "explanation": "Significant drop in confidence and high variance indicating corrupted model predictions"
+            }
+          },
+          "poisoned_training_code_snippet": "def augment_training_dataset(dataset):\n    # Inject poisoned samples labeled as 'attacker_alias'\n    poisoned_samples = load_poisoned_images('poisoned_images_dir/')\n    for sample in poisoned_samples:\n        sample.label = 'attacker_alias'  # Mislabel victim images\n        dataset.append(sample)\n    return dataset"
+        },
+        "indicators": [
+          "Unusual metadata or EXIF data in training images indicating editing software use",
+          "Sudden drop in model accuracy or confidence for specific classes during training",
+          "Anomalous gradient patterns or loss spikes during training batches",
+          "Dataset upload logs showing unexpected file counts or hashes",
+          "Model output confidence distribution deviating significantly from baseline"
+        ],
+        "detection_method": "Implement automated dataset integrity validation including image metadata and artifact analysis; monitor training loss and accuracy metrics per class for anomalies; apply gradient anomaly detection during training; perform continuous model output monitoring comparing confidence distributions to historical baselines; alert on dataset upload anomalies with hash verification and user behavior analytics.",
+        "relevant_mitre_techniques": [
+          "T1609 - Data Manipulation",
+          "T1499.002 - Resource Hijacking: Compute",
+          "T1565.001 - Data Manipulation: Stored Data Manipulation",
+          "T1071.001 - Application Layer Protocol: Web Protocols"
+        ]
+      },
+      "validation": {
+        "valid": true,
+        "issues": [],
+        "comments": "The sample accurately represents a model poisoning attack within adversarial machine learning by detailing the injection of manipulated images into the training dataset to cause misclassification. It includes realistic and plausible elements such as image metadata with editing software traces, tampering indicators (ELA, GAN artifacts), training logs showing accuracy drops and anomalous gradients, model weight changes, and anomaly detection outputs reflecting degraded model confidence. All required fields are present and well populated, including scenario description, technical data, indicators, detection methods, and relevant MITRE techniques. The indicators clearly explain why the sample matches the problem nature, linking observed anomalies to poisoning effects. The detection method is comprehensive and aligned with risk reduction strategies. Overall, the sample is complete, realistic, and technically correct, providing a strong example of model poisoning in adversarial ML."
+      }
+    }
+  ]
+}

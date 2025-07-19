@@ -1,0 +1,90 @@
+{
+  "samples": [
+    {
+      "scenario": "Adversarial poisoning attack on an enterprise AI-based malware detection system by injecting crafted training data samples to cause model to misclassify malicious binaries as benign.",
+      "technical_data": {
+        "training_sample_raw": "File: malicious_payload.exe\nSize: 2.3MB\nHash: abc123def456...\nMetadata: Signed with legitimate-looking but fake certificate\nBehavioral signature: Routine file operations, network connections to suspicious IPs obfuscated by polymorphic code",
+        "adversarial_poisoning_method": "Injected mislabeled samples into the training dataset where malware binaries are labeled as benign and embedded with benign-looking API call sequences, causing model to learn incorrect classification boundaries.",
+        "network_packet_capture_snippet": "No.     Time           Source                Destination           Protocol Length Info\n1456    23.456789      10.50.60.70           training-server.enterprise.com TCP      1500   POST /api/upload-training-data HTTP/1.1\r\nHost: training-server.enterprise.com\r\nContent-Type: multipart/form-data\r\nContent-Length: 4800\r\n\r\n--boundary\r\nContent-Disposition: form-data; name=\"file\"; filename=\"poisoned_sample_001.exe\"\r\n\r\n<binary data>\r\n--boundary--",
+        "ml_model_input_vector_anomaly": "Feature vector distribution shift detected: average API call frequency vector norm shifted from mean=0.75 std=0.05 to current=0.38 (-7 sigma), indicating injection of atypical benign-like samples.",
+        "model_output": "Pre-poisoning malware detection accuracy: 98.6%\r\nPost-poisoning accuracy on malicious test set: 63.2%, with increase in false negatives.",
+        "server_logs": "[2024-06-17 14:12:08] ERROR TRAINING_PIPELINE: Detected anomalous data distribution shift in uploaded samples; potential poisoning attack suspected.",
+        "adversarial_training_code_snippet": "def detect_poisoned_samples(training_dataset):\n    for sample in training_dataset:\n        if sample.label == 'benign' and suspicious_api_calls(sample):\n            flag_sample(sample)\n\n# Integrate anomaly detection on API call distributions during training data validation to mitigate poisoning",
+        "anomaly_detection_rule": "Monitor training data feature distributions; flag samples labeled benign with API call patterns exceeding 3 standard deviations from benign cluster centroid.",
+        "indicators": [
+          "Sudden feature distribution shifts in training data API call sequences",
+          "Increase in false negatives during malware detection validation",
+          "Presence of mislabeled samples with conflicting behavioral metadata",
+          "Error logs from training pipeline about anomalous data distribution",
+          "Unusual upload of large number of training samples from unknown sources"
+        ],
+        "detection_method": "Enforce strict training data validation including feature distribution checks; implement anomaly detection on training data inputs; correlate training uploads with access logs and user behavior; employ adversarial training with synthetic poisoned samples to increase robustness.",
+        "relevant_mitre_techniques": [
+          "T1499 - Endpoint Denial of Service (model degradation)",
+          "T1566.001 - Phishing: Spearphishing Attachment (vector for initial compromise)",
+          "T1071 - Application Layer Protocol (for training data upload)",
+          "T1584 - Compromise Infrastructure (training data repository abuse)",
+          "T1598 - Phishing for Information (related to adversarial inputs)"
+        ]
+      },
+      "indicators": [
+        "Sudden feature distribution shifts in training data API call sequences",
+        "Increase in false negatives during malware detection validation",
+        "Presence of mislabeled samples with conflicting behavioral metadata",
+        "Error logs from training pipeline about anomalous data distribution",
+        "Unusual upload of large number of training samples from unknown sources"
+      ],
+      "detection_method": "Enforce strict training data validation including feature distribution checks; implement anomaly detection on training data inputs; correlate training uploads with access logs and user behavior; employ adversarial training with synthetic poisoned samples to increase robustness.",
+      "relevant_mitre_techniques": [
+        "T1499 - Endpoint Denial of Service (model degradation)",
+        "T1566.001 - Phishing: Spearphishing Attachment (vector for initial compromise)",
+        "T1071 - Application Layer Protocol (for training data upload)",
+        "T1584 - Compromise Infrastructure (training data repository abuse)",
+        "T1598 - Phishing for Information (related to adversarial inputs)"
+      ]
+    },
+    {
+      "scenario": "Evasion attack on enterprise AI-based network intrusion detection system (NIDS) by crafting network packets with adversarial payload modifications to bypass anomaly detection models.",
+      "technical_data": {
+        "network_packet_raw": "Frame 2256: 128 bytes on wire (1024 bits), 128 bytes captured (1024 bits)\nEthernet II, Src: 00:0c:29:3e:8d:4f, Dst: 00:50:56:c0:00:08\nInternet Protocol Version 4, Src: 192.168.10.55, Dst: 172.16.5.12\nTransmission Control Protocol, Src Port: 44321, Dst Port: 80, Seq: 12345, Ack: 67890\nData (60 bytes):\n0x0000:  4745 5420 2f20 4854 5450 2f31 2e31 0d0a  GET / HTTP/1.1..\n0x0010:  486f 7374 3a20 6c6f 6361 6c68 6f73 740d  Host: localhost.\n0x0020:  0a0d 0a0d 6161 6161 6161 6161 6161 6161  ....aaaaaaaaaaaa\n0x0030:  6161 6161 6161 6161 6161 6161 6161 6161  aaaaaaaaaaaaaaaa",
+        "adversarial_payload_modification": "Attacker inserts repeating benign-like byte patterns and padding sequences in payload to alter packet byte distribution, confusing statistical anomaly detectors embedded in the NIDS ML model, without affecting protocol compliance.",
+        "network_packet_capture_snippet": "No.     Time           Source                Destination           Protocol Length Info\n2256    45.678912      192.168.10.55          172.16.5.12           TCP      128    [TCP segment of a reassembled PDU]",
+        "ml_model_input_vector_anomaly": "Packet feature vector cosine similarity to known benign cluster increased from baseline 0.82 to 0.99 due to padding pattern injection, causing evasion.",
+        "model_output": "Original classification: intrusion (probability 0.87)\r\nPost adversarial input classification: benign (probability 0.93)",
+        "server_logs": "[2024-06-20 08:45:10] ALERT NIDS_MODEL: Suspiciously high benign similarity score detected for packet stream from 192.168.10.55; potential adversarial evasion.",
+        "adversarial_training_code_snippet": "def adversarial_packet_augment(packet_bytes):\n    padding = b'\\x61' * 32  # 'a' padding\n    idx = random.randint(10, len(packet_bytes)-10)\n    return packet_bytes[:idx] + padding + packet_bytes[idx:]\n\n# Used to augment training with padded packets to improve model robustness",
+        "anomaly_detection_rule": "Flag TCP packets with unusually high frequency of repetitive byte patterns (>30 continuous bytes) in payloads within HTTP protocol sessions.",
+        "indicators": [
+          "Unusually long sequences of repetitive benign bytes (e.g., ASCII 'a') in payloads",
+          "Sudden rise in benign classification confidence scores for previously flagged intrusion attempts",
+          "NIDS alerts triggered by abnormal benign similarity scores",
+          "Network traffic with compliant protocol headers but anomalous payload byte distributions",
+          "Server logs reporting suspicious benign-like pattern injections"
+        ],
+        "detection_method": "Deploy payload content inspection for repetitive byte pattern anomalies; monitor model confidence scores for suspicious shifts; incorporate adversarial training with padded payloads; analyze network flow metadata to correlate anomalies with known attacker IPs.",
+        "relevant_mitre_techniques": [
+          "T1071 - Application Layer Protocol",
+          "T1499 - Endpoint Denial of Service (model evasion)",
+          "T1566.001 - Phishing: Spearphishing Attachment (initial access vector)",
+          "T1598 - Phishing for Information (adversarial payload crafting)",
+          "T1584 - Compromise Infrastructure (network infrastructure abuse)"
+        ]
+      },
+      "indicators": [
+        "Unusually long sequences of repetitive benign bytes (e.g., ASCII 'a') in payloads",
+        "Sudden rise in benign classification confidence scores for previously flagged intrusion attempts",
+        "NIDS alerts triggered by abnormal benign similarity scores",
+        "Network traffic with compliant protocol headers but anomalous payload byte distributions",
+        "Server logs reporting suspicious benign-like pattern injections"
+      ],
+      "detection_method": "Deploy payload content inspection for repetitive byte pattern anomalies; monitor model confidence scores for suspicious shifts; incorporate adversarial training with padded payloads; analyze network flow metadata to correlate anomalies with known attacker IPs.",
+      "relevant_mitre_techniques": [
+        "T1071 - Application Layer Protocol",
+        "T1499 - Endpoint Denial of Service (model evasion)",
+        "T1566.001 - Phishing: Spearphishing Attachment (initial access vector)",
+        "T1598 - Phishing for Information (adversarial payload crafting)",
+        "T1584 - Compromise Infrastructure (network infrastructure abuse)"
+      ]
+    }
+  ]
+}

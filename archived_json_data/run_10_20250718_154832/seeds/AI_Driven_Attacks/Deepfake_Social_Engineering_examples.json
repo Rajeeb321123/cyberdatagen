@@ -1,0 +1,111 @@
+{
+  "examples": [
+    {
+      "scenario": "AI-generated deepfake audio call impersonates CFO requesting urgent wire transfer",
+      "technical_data": {
+        "email_alert": {
+          "subject": "Urgent: Wire Transfer Authorization Needed",
+          "from": "ceo@company.com",
+          "to": "finance@company.com",
+          "date": "Fri, 14 Jun 2024 10:17:34 -0400",
+          "message_id": "<CAJskdjf2389djf@example.com>",
+          "x_mailer": "Microsoft Outlook 16.0",
+          "body": "Hi team,\n\nI just spoke with CFO on the phone and he requested an immediate wire transfer of $250,000 to the account ending 987654321 at First National Bank. Please prioritize this today.\n\nThanks,\nCEO",
+          "x_deepfake_alert": "Audio call matched to CFO voiceprint with 98.7% confidence but flagged for AI synthesis indicators"
+        },
+        "voip_call_log": {
+          "timestamp": "2024-06-14T10:15:22.457Z",
+          "call_id": "call-7893423",
+          "caller_id": "cfo@company.com",
+          "callee_id": "finance@company.com",
+          "duration_ms": 120000,
+          "codec": "Opus",
+          "audio_analysis": {
+            "voiceprint_match": 0.987,
+            "spectral_artifacts": [
+              "inconsistent pitch",
+              "unnatural pauses",
+              "spectral flattening"
+            ],
+            "synthesis_model": "WaveNet-v3",
+            "confidence_synthetic": 0.93,
+            "deepfake_score_threshold": 0.85
+          },
+          "network": {
+            "src_ip": "198.51.100.45",
+            "dst_ip": "203.0.113.12",
+            "src_port": 5060,
+            "dst_port": 5060,
+            "protocol": "SIP",
+            "SIP_headers": {
+              "Via": "SIP/2.0/UDP 198.51.100.45:5060;branch=z9hG4bK776asdhds",
+              "From": "<sip:cfo@company.com>;tag=1928301774",
+              "To": "<sip:finance@company.com>",
+              "Call-ID": "a84b4c76e66710",
+              "CSeq": "314159 INVITE",
+              "Contact": "<sip:cfo@company.com@198.51.100.45:5060>",
+              "User-Agent": "SIPSoftphone 5.1.2"
+            }
+          }
+        },
+        "network_packet_capture_snippet": [
+          "No.     Time           Source                Destination           Protocol Length Info",
+          "12345  10:15:22.456789 198.51.100.45          203.0.113.12          SIP      326    INVITE sip:finance@company.com SIP/2.0",
+          "Frame 12345: 326 bytes on wire (2608 bits), 326 bytes captured (2608 bits)",
+          "Ethernet II, Src: 00:0c:29:68:22:1a, Dst: 00:50:56:c0:00:08",
+          "Internet Protocol Version 4, Src: 198.51.100.45, Dst: 203.0.113.12",
+          "User Datagram Protocol, Src Port: 5060, Dst Port: 5060",
+          "Session Initiation Protocol (INVITE)",
+          "Via: SIP/2.0/UDP 198.51.100.45:5060;branch=z9hG4bK776asdhds",
+          "From: \"CFO\" <sip:cfo@company.com>;tag=1928301774",
+          "To: <sip:finance@company.com>",
+          "Call-ID: a84b4c76e66710",
+          "CSeq: 314159 INVITE",
+          "Contact: <sip:cfo@company.com@198.51.100.45:5060>",
+          "User-Agent: SIPSoftphone 5.1.2"
+        ],
+        "siem_log_entry": {
+          "timestamp": "2024-06-14T10:17:40.123Z",
+          "source_ip": "198.51.100.45",
+          "dest_ip": "203.0.113.12",
+          "event_type": "VoIP_Call",
+          "username": "finance",
+          "event_id": "VOIP-1007",
+          "details": "Incoming SIP INVITE from spoofed CFO identity detected with AI-synthesis voiceprint confidence 0.987, deepfake detection flagged",
+          "action_taken": "Call quarantined, alert generated"
+        },
+        "ai_detection_tool_output": {
+          "audio_file": "call_7893423_2024-06-14_101522.wav",
+          "analysis_timestamp": "2024-06-14T10:18:00Z",
+          "model_used": "DeepVoiceDetectNet v1.4",
+          "features_detected": [
+            "Mel-frequency cepstral coefficients abnormality",
+            "Temporal inconsistency in phoneme articulation",
+            "Non-linear distortion artifacts"
+          ],
+          "deepfake_probability": 0.93,
+          "recommendation": "Flag call as deepfake; require secondary multi-factor verification for requests"
+        }
+      },
+      "indicators": {
+        "ip": "198.51.100.45",
+        "email_from": "ceo@company.com",
+        "call_id": "call-7893423",
+        "call_audio_hashes": {
+          "md5": "7b9f1c5a2f4d9e8a9bbf2e4d5a3e7c1a",
+          "sha256": "f3e5a9b5ee9dcd5d1f7f0a3e4b6c9a7e0f2b9b5a6a7e5c1f2d3e4a5b6c7d8e9f"
+        },
+        "siem_event_id": "VOIP-1007",
+        "deepfake_probability_threshold_exceeded": true
+      },
+      "detection_method": "Integrated AI-based synthetic media detection analyzing voice spectral features combined with SIP session metadata anomaly detection, and correlation with email alerts for high-value wire transfers triggers security operations center alerts. Secondary verification required via out-of-band communication channels.",
+      "relevant_mitre_techniques": [
+        "T1598.002 - Phishing: Spearphishing via Service",
+        "T1406 - AI-Generated Content",
+        "T1499 - Endpoint Denial of Service (due to social engineering impact)",
+        "T1566.001 - Phishing: Spearphishing Attachment",
+        "T1078 - Valid Accounts (use of legitimate credentials and communication channels)"
+      ]
+    }
+  ]
+}

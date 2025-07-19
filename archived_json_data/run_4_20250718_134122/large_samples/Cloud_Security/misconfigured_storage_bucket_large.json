@@ -1,0 +1,219 @@
+{
+  "samples": [
+    {
+      "scenario": "Misconfigured Google Cloud Storage bucket with uniform bucket-level access disabled, allowing allUsers role with roles/storage.objectViewer permission, resulting in unrestricted public read access and exposure of confidential project documents.",
+      "technical_data": {
+        "iam_policy": {
+          "bindings": [
+            {
+              "role": "roles/storage.objectViewer",
+              "members": [
+                "allUsers"
+              ]
+            }
+          ]
+        },
+        "audit_log_entry": {
+          "protoPayload": {
+            "@type": "type.googleapis.com/google.cloud.audit.AuditLog",
+            "authenticationInfo": {
+              "principalEmail": "anonymous"
+            },
+            "requestMetadata": {
+              "callerIp": "203.0.113.77",
+              "callerSuppliedUserAgent": "Wget/1.20.3 (linux-gnu)"
+            },
+            "serviceName": "storage.googleapis.com",
+            "methodName": "storage.objects.list",
+            "resourceName": "projects/_/buckets/project-confidential-data",
+            "request": {
+              "bucket": "project-confidential-data",
+              "prefix": "",
+              "pageSize": 1000
+            },
+            "response": {
+              "items": [
+                {
+                  "name": "legal/contracts/nda_2023.pdf",
+                  "size": "2048000",
+                  "updated": "2024-05-15T08:30:00Z"
+                },
+                {
+                  "name": "financials/Q2_budget.xlsx",
+                  "size": "512000",
+                  "updated": "2024-05-10T12:00:00Z"
+                }
+              ]
+            }
+          },
+          "resource": {
+            "type": "gcs_bucket",
+            "labels": {
+              "bucket_name": "project-confidential-data"
+            }
+          },
+          "timestamp": "2024-05-20T14:45:33Z",
+          "severity": "INFO",
+          "logName": "projects/sample-project/logs/cloudaudit.googleapis.com%2Fdata_access"
+        },
+        "http_requests": [
+          {
+            "timestamp": "2024-05-20T14:45:20Z",
+            "request": "GET /project-confidential-data?delimiter=/ HTTP/1.1",
+            "host": "storage.googleapis.com",
+            "headers": {
+              "User-Agent": "Wget/1.20.3 (linux-gnu)",
+              "Accept": "*/*"
+            },
+            "response": {
+              "status": 200,
+              "body_snippet": "{\"items\":[{\"name\":\"legal/contracts/nda_2023.pdf\",\"updated\":\"2024-05-15T08:30:00Z\",\"size\":\"2048000\"},{\"name\":\"financials/Q2_budget.xlsx\",\"updated\":\"2024-05-10T12:00:00Z\",\"size\":\"512000\"}]}"
+            }
+          },
+          {
+            "timestamp": "2024-05-20T14:45:25Z",
+            "request": "GET /project-confidential-data/legal/contracts/nda_2023.pdf HTTP/1.1",
+            "host": "storage.googleapis.com",
+            "headers": {
+              "User-Agent": "Wget/1.20.3 (linux-gnu)",
+              "Accept": "*/*"
+            },
+            "response": {
+              "status": 200,
+              "body_snippet": "%PDF-1.7\n% Confidential NDA document contents ..."
+            }
+          }
+        ],
+        "network_packet_capture": [
+          "Frame 1: 74 bytes on wire (592 bits), 74 bytes captured (592 bits)",
+          "Ethernet II, Src: 08:00:27:1d:2a:6f, Dst: 70:6d:3f:7e:c9:f1",
+          "Internet Protocol Version 4, Src: 203.0.113.77, Dst: 172.217.11.174",
+          "Transmission Control Protocol, Src Port: 53245, Dst Port: 443, Seq: 1, Ack: 1, Len: 0",
+          "Hypertext Transfer Protocol",
+          "GET /project-confidential-data?delimiter=/ HTTP/1.1",
+          "Host: storage.googleapis.com",
+          "User-Agent: Wget/1.20.3 (linux-gnu)",
+          "Accept: */*",
+          "",
+          "Frame 2: 1150 bytes on wire (9200 bits), 1150 bytes captured (9200 bits)",
+          "Ethernet II, Src: 70:6d:3f:7e:c9:f1, Dst: 08:00:27:1d:2a:6f",
+          "Internet Protocol Version 4, Src: 172.217.11.174, Dst: 203.0.113.77",
+          "Transmission Control Protocol, Src Port: 443, Dst Port: 53245, Seq: 1, Ack: 1, Len: 1074",
+          "Hypertext Transfer Protocol",
+          "HTTP/1.1 200 OK",
+          "content-type: application/json",
+          "content-length: 1074",
+          "",
+          "{\"items\":[{\"name\":\"legal/contracts/nda_2023.pdf\",\"updated\":\"2024-05-15T08:30:00Z\",\"size\":\"2048000\"},{\"name\":\"financials/Q2_budget.xlsx\",\"updated\":\"2024-05-10T12:00:00Z\",\"size\":\"512000\"}]}"
+        ],
+        "automated_scanner_output": {
+          "tool": "gcp-bucket-audit v1.9.4",
+          "scan_time": "2024-05-20T13:50:00Z",
+          "bucket": "project-confidential-data",
+          "region": "us-central1",
+          "result": "Bucket 'project-confidential-data' found with public objectViewer role granted to allUsers, allowing anonymous read access to all objects.",
+          "recommendation": "Enable uniform bucket-level access to manage permissions at bucket level only and remove allUsers member from IAM roles. Restrict access to authorized service accounts and users."
+        }
+      },
+      "indicators": [
+        "IAM policy binding includes allUsers with roles/storage.objectViewer",
+        "Audit logs showing anonymous principal performing storage.objects.list",
+        "HTTP GET requests retrieving bucket object listings and sensitive PDF documents",
+        "Network captures showing unauthenticated HTTPS GET requests to GCS endpoints",
+        "Automated bucket audit tool confirming public read access"
+      ],
+      "detection_method": "Use Google Cloud Asset Inventory and IAM Analysis to detect public bindings, enable Cloud Storage uniform bucket-level access, monitor audit logs for anonymous or unexpected access patterns, deploy periodic bucket scanning tools, and alert on public permission changes.",
+      "relevant_mitre_techniques": [
+        "T1530 - Data from Cloud Storage Object",
+        "T1078.004 - Valid Accounts: Cloud Accounts",
+        "T1083 - File and Directory Discovery",
+        "T1110 - Brute Force"
+      ]
+    },
+    {
+      "scenario": "Azure Blob Storage container with public access level set to 'Blob', allowing anonymous users to read blobs without authentication, exposing sensitive customer PII and internal reports downloadable via HTTP requests.",
+      "technical_data": {
+        "access_policy": {
+          "containerName": "customer-data",
+          "publicAccessLevel": "Blob"
+        },
+        "activity_log_entry": {
+          "eventTimestamp": "2024-06-01T19:22:15Z",
+          "category": "StorageRead",
+          "operationName": "GetBlob",
+          "callerIpAddress": "192.0.2.123",
+          "identity": {
+            "authorization": {
+              "action": "Microsoft.Storage/storageAccounts/blobServices/containers/blobs/read",
+              "scope": "/subscriptions/abc123/resourceGroups/rg-example/providers/Microsoft.Storage/storageAccounts/exampleblob/blobServices/default/containers/customer-data/blobs/PII_2024.csv"
+            },
+            "user": null
+          },
+          "resourceId": "/subscriptions/abc123/resourceGroups/rg-example/providers/Microsoft.Storage/storageAccounts/exampleblob/blobServices/default/containers/customer-data",
+          "status": {
+            "code": "Success"
+          }
+        },
+        "http_requests": [
+          {
+            "timestamp": "2024-06-01T19:22:10Z",
+            "request": "GET /customer-data/PII_2024.csv HTTP/1.1",
+            "host": "exampleblob.blob.core.windows.net",
+            "headers": {
+              "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64)",
+              "Accept": "text/csv"
+            },
+            "response": {
+              "status": 200,
+              "body_snippet": "Name,SSN,Email,Phone\nJohn Doe,123-45-6789,john.doe@example.com,555-1234\nJane Smith,987-65-4321,jane.smith@example.com,555-5678\n"
+            }
+          }
+        ],
+        "network_packet_capture": [
+          "Frame 1: 70 bytes on wire (560 bits), 70 bytes captured (560 bits)",
+          "Ethernet II, Src: 00:1a:2b:3c:4d:5e, Dst: 00:0c:29:6e:8f:3a",
+          "Internet Protocol Version 4, Src: 192.0.2.123, Dst: 52.239.148.52",
+          "Transmission Control Protocol, Src Port: 49876, Dst Port: 443, Seq: 1, Ack: 1, Len: 0",
+          "Hypertext Transfer Protocol",
+          "GET /customer-data/PII_2024.csv HTTP/1.1",
+          "Host: exampleblob.blob.core.windows.net",
+          "User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64)",
+          "Accept: text/csv",
+          "",
+          "Frame 2: 850 bytes on wire (6800 bits), 850 bytes captured (6800 bits)",
+          "Ethernet II, Src: 00:0c:29:6e:8f:3a, Dst: 00:1a:2b:3c:4d:5e",
+          "Internet Protocol Version 4, Src: 52.239.148.52, Dst: 192.0.2.123",
+          "Transmission Control Protocol, Src Port: 443, Dst Port: 49876, Seq: 1, Ack: 1, Len: 784",
+          "Hypertext Transfer Protocol",
+          "HTTP/1.1 200 OK",
+          "content-type: text/csv",
+          "content-length: 784",
+          "",
+          "Name,SSN,Email,Phone\nJohn Doe,123-45-6789,john.doe@example.com,555-1234\nJane Smith,987-65-4321,jane.smith@example.com,555-5678"
+        ],
+        "automated_scanner_output": {
+          "tool": "azure-storage-scanner v3.0.0",
+          "scan_time": "2024-06-01T18:45:00Z",
+          "storage_account": "exampleblob",
+          "container": "customer-data",
+          "result": "Container public access level set to 'Blob', allowing anonymous read access to blobs without authentication.",
+          "recommendation": "Change container access level to 'Private' and implement Azure RBAC policies to restrict access to authorized users only. Enable storage analytics and alerts for public access."
+        }
+      },
+      "indicators": [
+        "Container access level configured as 'Blob' enabling anonymous blob read",
+        "Azure activity logs showing unauthenticated GetBlob operations",
+        "HTTP GET requests retrieving CSV files containing sensitive PII data",
+        "Network packet captures showing HTTPS GET requests from external IPs",
+        "Automated scanner identifying public container access"
+      ],
+      "detection_method": "Leverage Azure Security Center recommendations to detect publicly accessible blob containers, monitor Azure Storage logs for anonymous blob reads, enforce Azure Policy to disable public access on storage containers, and schedule regular automated scans for misconfigurations.",
+      "relevant_mitre_techniques": [
+        "T1530 - Data from Cloud Storage Object",
+        "T1078.004 - Valid Accounts: Cloud Accounts",
+        "T1083 - File and Directory Discovery",
+        "T1110 - Brute Force"
+      ]
+    }
+  ]
+}

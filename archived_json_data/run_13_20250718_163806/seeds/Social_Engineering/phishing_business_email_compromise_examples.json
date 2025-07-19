@@ -1,0 +1,69 @@
+{
+  "examples": [
+    {
+      "scenario": "Business Email Compromise via Executive Account Spoofing Requesting Fraudulent Wire Transfer",
+      "technical_data": {
+        "email_headers": "Return-Path: <ceo@contoso.com>\r\nReceived: from mail.contoso.com (10.1.5.23) by mailgateway.corp.local (Postfix) with ESMTPS id 4F2C6130A4 for <finance@contoso.com>; Wed, 12 Apr 2023 08:15:43 +0000 (UTC)\r\nReceived-SPF: pass (contoso.com: domain of ceo@contoso.com designates 10.1.5.23 as permitted sender) receiver=mailgateway.corp.local; client-ip=10.1.5.23; helo=mail.contoso.com;\r\nAuthentication-Results: mailgateway.corp.local; dkim=pass header.d=contoso.com; spf=pass smtp.mailfrom=ceo@contoso.com; dmarc=pass (p=none) header.from=contoso.com\r\nX-Originating-IP: [10.1.5.23]\r\nMessage-ID: <CA+Xk=JQ2sX0zRz_9V=4gpYyoQwqj6rRz4jKX9kRpfzS2j7hX=g@mail.contoso.com>\r\nFrom: \"John Smith\" <ceo@contoso.com>\r\nTo: finance@contoso.com\r\nSubject: URGENT: Wire Transfer Request\r\nDate: Wed, 12 Apr 2023 08:15:43 +0000\r\nMIME-Version: 1.0\r\nContent-Type: text/plain; charset=\"UTF-8\"\r\nContent-Transfer-Encoding: 7bit\r\nX-MS-Exchange-Organization-AuthSource: EXCHSRV01.corp.local\r\nX-MS-Exchange-Organization-AuthAs: Internal\r\n",
+        "email_body": "Hi,\n\nPlease process an urgent wire transfer of $250,000 to the following account:\n\nBank: First National Bank\nAccount Name: Global Ventures LLC\nAccount Number: 987654321\nRouting Number: 111000025\n\nConfirm once completed.\n\nThanks,\nJohn",
+        "smtp_transaction_log": "220 mail.contoso.com ESMTP Postfix\r\nEHLO mailgateway.corp.local\r\n250-mail.contoso.com\r\n250-PIPELINING\r\n250-SIZE 10240000\r\n250-ETRN\r\n250-STARTTLS\r\n250-AUTH PLAIN LOGIN\r\n250-ENHANCEDSTATUSCODES\r\n250-8BITMIME\r\n250 DSN\r\nMAIL FROM:<ceo@contoso.com>\r\n250 2.1.0 Ok\r\nRCPT TO:<finance@contoso.com>\r\n250 2.1.5 Ok\r\nDATA\r\n354 End data with <CR><LF>.<CR><LF>\r\nFrom: John Smith <ceo@contoso.com>\r\nTo: finance@contoso.com\r\nSubject: URGENT: Wire Transfer Request\r\nDate: Wed, 12 Apr 2023 08:15:43 +0000\r\n\r\nHi,\n\nPlease process an urgent wire transfer of $250,000 to the following account:\n\nBank: First National Bank\nAccount Name: Global Ventures LLC\nAccount Number: 987654321\nRouting Number: 111000025\n\nConfirm once completed.\n\nThanks,\nJohn\r\n.\r\n250 2.0.0 Ok: queued as 4F2C6130A4\r\nQUIT\r\n221 2.0.0 Bye",
+        "smtp_authentication_logs": [
+          "Apr 12 08:14:12 exchsrv01 smtpd[12543]: connect from 203.0.113.78[203.0.113.78]",
+          "Apr 12 08:14:13 exchsrv01 smtpd[12543]: 3F98D130A4: client=203.0.113.78[203.0.113.78]",
+          "Apr 12 08:14:14 exchsrv01 smtpd[12543]: 3F98D130A4: SASL LOGIN authentication succeeded for ceo@contoso.com",
+          "Apr 12 08:14:15 exchsrv01 smtpd[12543]: disconnect from 203.0.113.78[203.0.113.78]"
+        ],
+        "network_login_logs": [
+          "Apr 12 08:10:01 exchsrv01 imapd[22011]: Login: user=ceo@contoso.com, ip=[203.0.113.78], protocol=IMAP",
+          "Apr 12 08:10:58 exchsrv01 imapd[22011]: Logout: user=ceo@contoso.com, ip=[203.0.113.78], bytes=12345"
+        ],
+        "domain_whois": {
+          "domain": "contoso.com",
+          "registrar": "Contoso Registrar Inc.",
+          "creation_date": "1999-05-15T00:00:00Z",
+          "updated_date": "2023-03-01T12:00:00Z",
+          "status": "active",
+          "name_servers": [
+            "ns1.contoso.com",
+            "ns2.contoso.com"
+          ]
+        },
+        "anomalous_activity": {
+          "login_ip_geolocation": "203.0.113.78 (Moscow, Russia)",
+          "normal_login_ips": [
+            "10.1.5.23 (Internal Network)",
+            "198.51.100.12 (New York, USA)"
+          ],
+          "login_time": "03:10 UTC (unusual time for user activity)",
+          "email_forwarding_rules": "No forwarding rules detected",
+          "MFA_status": "MFA disabled on ceo@contoso.com account"
+        },
+        "wire_transfer_request_details": {
+          "amount": "$250,000",
+          "target_bank": "First National Bank",
+          "account_name": "Global Ventures LLC",
+          "account_number": "987654321",
+          "routing_number": "111000025"
+        }
+      },
+      "indicators": [
+        "Login from anomalous external IP 203.0.113.78 geolocated in Russia on executive account",
+        "Successful SMTP authentication from unusual IP",
+        "Email requesting large wire transfer outside normal business hours",
+        "No MFA enabled for executive email account",
+        "Email headers with internal IP 10.1.5.23 but SMTP logs show external IP used for login",
+        "Domain SPF, DKIM, and DMARC pass but originating IP is suspicious",
+        "Wire transfer details in email body not matching prior legitimate requests"
+      ],
+      "detection_method": "Correlate executive login IP addresses with known user behavior baselines; alert on login from new geolocations or unusual times. Monitor SMTP and IMAP login logs for anomalous IPs. Monitor email content for high-risk keywords (e.g., 'wire transfer', 'urgent', 'account number') combined with executive accounts. Enforce MFA and detect disabled MFA. Validate wire transfer requests with out-of-band confirmation (phone call). Use UEBA (User and Entity Behavior Analytics) to flag unusual communication patterns.",
+      "relevant_mitre_techniques": [
+        "T1566.001 - Phishing: Spearphishing Attachment",
+        "T1598.002 - Phishing: Spearphishing Link",
+        "T1078.004 - Valid Accounts: Application Access",
+        "T1114.002 - Email Collection: Email Account Access",
+        "T1539 - Steal Web Session Cookie",
+        "T1591 - Gather Victim Identity Information",
+        "T1566 - Phishing"
+      ]
+    }
+  ]
+}

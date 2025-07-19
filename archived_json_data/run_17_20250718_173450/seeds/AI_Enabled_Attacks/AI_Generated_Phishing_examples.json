@@ -1,0 +1,67 @@
+{
+  "examples": [
+    {
+      "scenario": "AI-generated spear-phishing email with a deepfake CEO video link, targeting finance department employees to authorize fraudulent wire transfers.",
+      "technical_data": {
+        "email_headers": "Return-Path: <ceo@corp-secure.com>\r\nReceived: from mail.corp-secure.com (mail.corp-secure.com [192.168.10.15])\r\n\tby mail.finance.corp.com (Postfix) with ESMTPS id 3F1C9A2B06\r\n\tfor <employee@finance.corp.com>; Wed, 21 Jun 2023 08:14:37 -0400 (EDT)\r\nX-Originating-IP: [203.0.113.45]\r\nX-Mailer: AI-PhishGen v2.5\r\nMessage-ID: <20230621081437.3F1C9A2B06@mail.corp-secure.com>\r\nSubject: Urgent: Wire Transfer Approval Required\r\nFrom: \"John A. Smith\" <ceo@corp-secure.com>\r\nTo: employee@finance.corp.com\r\nMIME-Version: 1.0\r\nContent-Type: multipart/alternative; boundary=\"----=_NextPart_000_0012_01D9F6C1.4A7390E0\"",
+        "email_body": "------=_NextPart_000_0012_01D9F6C1.4A7390E0\r\nContent-Type: text/plain; charset=\"UTF-8\"\r\nContent-Transfer-Encoding: quoted-printable\r\n\r\nHi team,\r\n\r\nPlease review the attached video message from me regarding an urgent wire \r\ntransfer. Use the secure portal link below to approve the transaction today.\r\n\r\nhttps://secure-finance-portal.com/approve?id=9f8a7e6b-3d2c-4f89-a2f6-4a9b4f5f0e7d\r\n\r\nThanks,\r\nJohn\r\n\r\n------=_NextPart_000_0012_01D9F6C1.4A7390E0\r\nContent-Type: text/html; charset=\"UTF-8\"\r\nContent-Transfer-Encoding: quoted-printable\r\n\r\n<html>\r\n  <body>\r\n    <p>Hi team,</p>\r\n    <p>Please review the attached video message from me regarding an urgent wire transfer. Use the secure portal link below to approve the transaction today.</p>\r\n    <p><a href=\"https://secure-finance-portal.com/approve?id=9f8a7e6b-3d2c-4f89-a2f6-4a9b4f5f0e7d\">Approve Wire Transfer</a></p>\r\n    <p>Thanks,<br>John</p>\r\n  </body>\r\n</html>\r\n------=_NextPart_000_0012_01D9F6C1.4A7390E0--",
+        "smtp_transaction_log": "220 mail.corp-secure.com ESMTP Postfix\r\nEHLO attacker.com\r\n250-mail.corp-secure.com\r\n250-PIPELINING\r\n250-SIZE 10240000\r\n250-ETRN\r\n250-AUTH LOGIN PLAIN\r\n250-ENHANCEDSTATUSCODES\r\n250 8BITMIME\r\nAUTH LOGIN\r\n334 VXNlcm5hbWU6\r\nY2VvQGNvcnAtc2VjdXJlLmNvbQ==\r\n334 UGFzc3dvcmQ6\r\nU2VjdXJlUGFzc3dvcmQxIQ==\r\n235 2.7.0 Authentication successful\r\nMAIL FROM:<ceo@corp-secure.com>\r\n250 2.1.0 Ok\r\nRCPT TO:<employee@finance.corp.com>\r\n250 2.1.5 Ok\r\nDATA\r\n354 End data with <CR><LF>.<CR><LF>\r\n[DATA]\r\n.\r\n250 2.0.0 Ok: queued as 3F1C9A2B06\r\nQUIT\r\n221 2.0.0 Bye",
+        "suspect_domain_registration": {
+          "domain": "secure-finance-portal.com",
+          "registrar": "NameCheap, Inc.",
+          "creation_date": "2023-06-10T14:22:00Z",
+          "registrant": {
+            "name": "Privacy Protected",
+            "organization": "PrivacyGuard Services",
+            "email": "contact@privacyguard.com",
+            "address": "123 Privacy St, Wilmington, DE, USA"
+          },
+          "nameservers": [
+            "ns1.namecheaphosting.com",
+            "ns2.namecheaphosting.com"
+          ],
+          "dns_records": {
+            "A": [
+              "198.51.100.45"
+            ],
+            "MX": [
+              "mail.secure-finance-portal.com"
+            ]
+          }
+        },
+        "http_request_to_phishing_site": "GET /approve?id=9f8a7e6b-3d2c-4f89-a2f6-4a9b4f5f0e7d HTTP/1.1\r\nHost: secure-finance-portal.com\r\nUser-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.0.0.0 Safari/537.36\r\nAccept: text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8\r\nAccept-Language: en-US,en;q=0.5\r\nAccept-Encoding: gzip, deflate\r\nConnection: keep-alive\r\nUpgrade-Insecure-Requests: 1",
+        "http_response_from_phishing_site": "HTTP/1.1 200 OK\r\nDate: Wed, 21 Jun 2023 08:15:00 GMT\r\nServer: Apache/2.4.51 (Unix)\r\nContent-Type: text/html; charset=UTF-8\r\nContent-Length: 14567\r\nConnection: close\r\n\r\n<html><head><title>Wire Transfer Approval</title></head><body><h1>Confirm Wire Transfer</h1><form action=\"/submit\" method=\"POST\"><input type=\"hidden\" name=\"id\" value=\"9f8a7e6b-3d2c-4f89-a2f6-4a9b4f5f0e7d\" /><label>Amount:</label><input type=\"text\" name=\"amount\" /><br/><label>Recipient Account:</label><input type=\"text\" name=\"account\" /><br/><input type=\"submit\" value=\"Approve\" /></form></body></html>",
+        "webserver_log_entry": "192.0.2.254 - - [21/Jun/2023:08:15:01 -0400] \"GET /approve?id=9f8a7e6b-3d2c-4f89-a2f6-4a9b4f5f0e7d HTTP/1.1\" 200 14567 \"-\" \"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.0.0.0 Safari/537.36\"",
+        "waf_log_alert": "[WAF] Alert: Possible phishing site detected. Source IP: 203.0.113.45, URI: /approve?id=9f8a7e6b-3d2c-4f89-a2f6-4a9b4f5f0e7d, RuleID: 981245, Severity: High",
+        "ai_deepfake_audio_metadata": {
+          "file_name": "john_smith_urgent_message.mp4",
+          "codec": "H.264",
+          "duration_seconds": 45,
+          "hash_sha256": "3a5f6b7d8e9c0f1a2b4c5d6e7f8a9b0c1d2e3f4a5b6c7d8e9f0a1b2c3d4e5f6a",
+          "detected_synthesis_tools": [
+            "DeepFaceLab v2.0",
+            "WaveNet TTS Model v1.4"
+          ]
+        }
+      },
+      "indicators": [
+        "Suspicious domain registration less than 2 weeks old: secure-finance-portal.com",
+        "Email X-Originating-IP 203.0.113.45 does not match legitimate corporate IP ranges",
+        "Phishing URL with UUID parameter: /approve?id=9f8a7e6b-3d2c-4f89-a2f6-4a9b4f5f0e7d",
+        "WAF alert with RuleID 981245 for phishing content",
+        "AI deepfake audio/video artifact hashes and metadata",
+        "SMTP log shows authenticated session from unusual IP with AI-PhishGen X-Mailer header"
+      ],
+      "detection_method": "Deploy AI-powered content verification tools that analyze email header anomalies and detect synthetically generated voice/video artifacts via forensic audio/video analysis. Monitor for newly registered domains especially those mimicking corporate portals. Utilize WAF and IDS rules to flag URLs with suspicious UUID patterns and unusual POST requests. User training focuses on verifying out-of-band multi-factor confirmations for wire transfers. Integrate email gateway sandboxing with ML models trained to detect AI-generated phishing emails.",
+      "relevant_mitre_techniques": [
+        "T1586.001 - Spearphishing Attachment",
+        "T1598.002 - Phishing: Spearphishing Link",
+        "T1193 - Spearphishing via Service",
+        "T1606 - Forge Web Credentials",
+        "T1531 - Account Access Removal",
+        "T1204.002 - User Execution: Malicious File",
+        "T1071.001 - Application Layer Protocol: Web Protocols"
+      ]
+    }
+  ]
+}

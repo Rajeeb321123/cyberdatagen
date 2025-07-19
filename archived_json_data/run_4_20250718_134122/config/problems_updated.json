@@ -1,0 +1,156 @@
+{
+  "problems": [
+    {
+      "area": "Social Engineering",
+      "nature": "phishing_credential_harvesting",
+      "description": "Attackers send emails impersonating trusted entities to trick users into entering their login credentials on fake websites, leading to account compromise.",
+      "risk_reduction": [
+        "Implement multi-factor authentication (MFA) across all user accounts",
+        "Deploy advanced email filtering solutions to detect and block phishing emails",
+        "Conduct regular user training and simulated phishing campaigns"
+      ],
+      "attack_vector": "Email",
+      "asset_targeted": "User Credentials",
+      "kill_chain_phase": "Initial Access",
+      "impact_level": "High",
+      "detection_mechanisms": [
+        "Email filtering and sandboxing",
+        "User behavior analytics",
+        "SIEM alerts for suspicious login attempts"
+      ]
+    },
+    {
+      "area": "Social Engineering",
+      "nature": "phishing_spear_phishing",
+      "description": "Highly targeted phishing attacks where attackers research and customize messages to specific individuals or roles to increase the likelihood of success.",
+      "risk_reduction": [
+        "Educate employees on recognizing targeted phishing attempts",
+        "Use email authentication protocols like DMARC, DKIM, and SPF",
+        "Limit publicly available personal and organizational information"
+      ],
+      "attack_vector": "Email",
+      "asset_targeted": "User Credentials",
+      "kill_chain_phase": "Initial Access",
+      "impact_level": "High",
+      "detection_mechanisms": [
+        "Advanced email filtering with threat intelligence",
+        "User behavior analytics",
+        "Monitoring for anomalous email patterns"
+      ]
+    },
+    {
+      "area": "Social Engineering",
+      "nature": "phishing_business_email_compromise",
+      "description": "Attackers compromise or spoof executive or finance department email accounts to request fraudulent wire transfers or sensitive data.",
+      "risk_reduction": [
+        "Verify financial requests through secondary communication channels",
+        "Monitor email accounts for unusual login locations or behaviors",
+        "Implement strict approval workflows for financial transactions"
+      ],
+      "attack_vector": "Email",
+      "asset_targeted": "Financial Systems",
+      "kill_chain_phase": "Initial Access",
+      "impact_level": "Critical",
+      "detection_mechanisms": [
+        "SIEM alerts for anomalous email activity",
+        "User behavior analytics",
+        "Threat intelligence feeds on BEC campaigns"
+      ]
+    },
+    {
+      "area": "Cloud Security",
+      "nature": "misconfigured_storage_bucket",
+      "description": "Publicly exposed cloud storage buckets leading to unauthorized data access or leakage.",
+      "risk_reduction": [
+        "Implement strict access controls and least privilege policies on cloud storage",
+        "Use automated tools to scan and remediate misconfigurations",
+        "Enable logging and monitoring of cloud storage access"
+      ],
+      "attack_vector": "Cloud API",
+      "asset_targeted": "Cloud Storage",
+      "kill_chain_phase": "Initial Access",
+      "impact_level": "High",
+      "detection_mechanisms": [
+        "Cloud security posture management (CSPM) tools",
+        "Access logs monitoring",
+        "Automated misconfiguration scanners"
+      ]
+    },
+    {
+      "area": "Supply Chain",
+      "nature": "third_party_software_compromise",
+      "description": "Adversaries compromise software dependencies or update mechanisms to inject malicious code into widely distributed software.",
+      "risk_reduction": [
+        "Implement software bill of materials (SBOM) and dependency tracking",
+        "Use code signing and verify update authenticity",
+        "Conduct regular security assessments of third-party vendors"
+      ],
+      "attack_vector": "Supply Chain",
+      "asset_targeted": "Software Dependencies",
+      "kill_chain_phase": "Initial Access",
+      "impact_level": "Critical",
+      "detection_mechanisms": [
+        "Software integrity verification",
+        "Threat intelligence on third-party vulnerabilities",
+        "Monitoring update channels for anomalies"
+      ]
+    },
+    {
+      "area": "AI-Driven Attacks",
+      "nature": "deepfake_social_engineering",
+      "description": "Use of AI-generated synthetic media (audio/video) to impersonate trusted individuals and manipulate victims.",
+      "risk_reduction": [
+        "Train employees to recognize synthetic media and verify unusual requests",
+        "Deploy AI detection tools for deepfake content",
+        "Establish multi-channel verification for sensitive communications"
+      ],
+      "attack_vector": "Social Engineering",
+      "asset_targeted": "User Trust / Communications",
+      "kill_chain_phase": "Initial Access",
+      "impact_level": "High",
+      "detection_mechanisms": [
+        "AI-based deepfake detection tools",
+        "User reports and verification processes",
+        "Threat intelligence on emerging deepfake campaigns"
+      ]
+    },
+    {
+      "area": "Adversarial Machine Learning",
+      "nature": "model_poisoning",
+      "description": "Attackers manipulate training data or model inputs to degrade or subvert machine learning model performance.",
+      "risk_reduction": [
+        "Validate and sanitize training datasets",
+        "Implement robust ML model monitoring and anomaly detection",
+        "Use adversarial training techniques to harden models"
+      ],
+      "attack_vector": "Data Input",
+      "asset_targeted": "ML Model",
+      "kill_chain_phase": "Execution",
+      "impact_level": "High",
+      "detection_mechanisms": [
+        "Anomaly detection on training data",
+        "Model performance monitoring",
+        "Audit logs of training data sources"
+      ]
+    },
+    {
+      "area": "Endpoint Security",
+      "nature": "ransomware_as_a_service",
+      "description": "Ransomware operations offered as a service model, lowering the barrier for attackers to launch ransomware campaigns.",
+      "risk_reduction": [
+        "Maintain regular, tested backups with offline storage",
+        "Deploy endpoint detection and response (EDR) solutions",
+        "Implement network segmentation and least privilege access"
+      ],
+      "attack_vector": "Malware Delivery",
+      "asset_targeted": "Endpoints",
+      "kill_chain_phase": "Impact",
+      "impact_level": "Critical",
+      "detection_mechanisms": [
+        "EDR alerts",
+        "Network traffic analysis for ransomware behaviors",
+        "SIEM correlation of ransomware indicators"
+      ]
+    }
+  ]
+}

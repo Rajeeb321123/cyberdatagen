@@ -1,0 +1,117 @@
+{
+  "samples": [
+    {
+      "scenario": "A publicly accessible Google Cloud Storage bucket was found containing unencrypted backup files of a financial application database, exposing sensitive financial records and credentials. The bucket was accessed anonymously via an automated vulnerability scanner.",
+      "technical_data": {
+        "gcp_audit_logs": [
+          {
+            "protoPayload": {
+              "@type": "type.googleapis.com/google.cloud.audit.AuditLog",
+              "authenticationInfo": {
+                "principalEmail": "anonymous"
+              },
+              "requestMetadata": {
+                "callerIp": "203.0.113.45",
+                "callerSuppliedUserAgent": "Mozilla/5.0 (compatible; Google-Cloud-Security-Scanner)"
+              },
+              "serviceName": "storage.googleapis.com",
+              "methodName": "storage.objects.get",
+              "resourceName": "projects/_/buckets/finance-app-backups/objects/db_backup_2024-05-12.sql",
+              "request": {
+                "bucket": "finance-app-backups",
+                "object": "db_backup_2024-05-12.sql"
+              },
+              "response": {}
+            },
+            "resource": {
+              "type": "gcs_bucket",
+              "labels": {
+                "bucket_name": "finance-app-backups",
+                "project_id": "finance-prod-1234"
+              }
+            },
+            "timestamp": "2024-05-16T10:12:48Z",
+            "severity": "INFO"
+          }
+        ],
+        "bucket_iam_policy": {
+          "bindings": [
+            {
+              "role": "roles/storage.objectViewer",
+              "members": [
+                "allUsers"
+              ]
+            }
+          ],
+          "etag": "BwWWja0YfJA="
+        },
+        "http_request": "GET /finance-app-backups/db_backup_2024-05-12.sql HTTP/1.1\r\nHost: storage.googleapis.com\r\nUser-Agent: Mozilla/5.0 (compatible; Google-Cloud-Security-Scanner)\r\nAccept-Encoding: identity\r\n\r\n",
+        "downloaded_file_snippet": "CREATE TABLE transactions (\n  transaction_id INT PRIMARY KEY,\n  user_id INT,\n  amount DECIMAL(10,2),\n  card_number VARCHAR(19),\n  card_expiry DATE\n);\nINSERT INTO transactions VALUES (1, 101, 250.00, '4111-1111-1111-1111', '2025-12-31');",
+        "gcloud_cli_command_used_by_attacker": "gsutil cp gs://finance-app-backups/db_backup_2024-05-12.sql ."
+      },
+      "indicators": [
+        "Audit logs showing anonymous storage.objects.get calls",
+        "Bucket IAM policy binding includes 'allUsers' with objectViewer role",
+        "HTTP GET requests from known scanner user agents",
+        "Unencrypted backup SQL dump containing card data and financial transactions",
+        "Use of gsutil to copy objects without authentication"
+      ],
+      "detection_method": "Continuous audit log analysis for unauthenticated access to storage objects, automated scanning of bucket IAM policies for public bindings, anomaly detection on traffic patterns from security scanner user agents and unusual IP addresses, integration with Cloud Security Command Center for bucket misconfigurations, and scheduled encryption compliance checks on storage objects.",
+      "relevant_mitre_techniques": [
+        "T1530 - Data from Cloud Storage Object",
+        "T1078 - Valid Accounts (anonymous access via public bucket)",
+        "T1584.006 - Cloud Service Discovery",
+        "T1560.001 - Archive Collected Data: Archive via Cloud Storage",
+        "T1537 - Transfer Data to Cloud Account"
+      ]
+    },
+    {
+      "scenario": "An Azure Blob Storage container configured with public read access was discovered exposing internal project documentation and API keys. External parties accessed the container anonymously using Azure Storage REST API, resulting in sensitive intellectual property leakage.",
+      "technical_data": {
+        "azure_activity_logs": [
+          {
+            "authorization": {
+              "action": "Microsoft.Storage/storageAccounts/blobServices/containers/blobs/read",
+              "scope": "/subscriptions/abcd1234-5678-90ef-gh12-ijklmnopqrst/resourceGroups/DevRG/providers/Microsoft.Storage/storageAccounts/devstorageaccount/blobServices/default/containers/project-docs/blobs/api_keys.txt"
+            },
+            "caller": "Anonymous",
+            "category": "StorageRead",
+            "eventTimestamp": "2024-05-17T08:45:22Z",
+            "id": "f4c3b2a1-d6e5-4c8f-9a7b-123456789abc",
+            "level": "Informational",
+            "operationName": "Read Blob",
+            "properties": {
+              "requestUri": "https://devstorageaccount.blob.core.windows.net/project-docs/api_keys.txt",
+              "userAgent": "Azure-Storage/1.0 (REST API)",
+              "clientIpAddress": "192.0.2.55"
+            },
+            "resourceId": "/subscriptions/abcd1234-5678-90ef-gh12-ijklmnopqrst/resourceGroups/DevRG/providers/Microsoft.Storage/storageAccounts/devstorageaccount/blobServices/default/containers/project-docs",
+            "status": "Success",
+            "subStatus": 0
+          }
+        ],
+        "blob_container_acl": {
+          "publicAccess": "Blob"
+        },
+        "http_request": "GET /project-docs/api_keys.txt HTTP/1.1\r\nHost: devstorageaccount.blob.core.windows.net\r\nUser-Agent: Azure-Storage/1.0 (REST API)\r\nAccept-Encoding: identity\r\n\r\n",
+        "downloaded_file_snippet": "API_KEY=ABCD1234EFGH5678IJKL\nAPI_SECRET=ZYXW9876VUTS5432RQPO\n# DO NOT SHARE\n\nProject: Internal payment gateway\nLast updated: 2024-04-30\n",
+        "azure_cli_command_used_by_attacker": "az storage blob download --container-name project-docs --name api_keys.txt --account-name devstorageaccount --output none"
+      },
+      "indicators": [
+        "Azure activity logs showing anonymous read operations on blobs",
+        "Blob container ACL set to allow public blob-level access",
+        "HTTP GET request from unknown IPs targeting storage blobs",
+        "Downloaded text files containing sensitive API keys and internal documentation",
+        "Use of Azure CLI to download blobs without authentication"
+      ],
+      "detection_method": "Monitor Azure Activity Logs for anonymous or unauthorized blob read actions, enforce Azure Storage container access policies to restrict public access, use Azure Defender for Storage to detect suspicious access patterns, implement alerts on downloads of sensitive file types, and conduct regular access reviews and penetration testing on storage accounts.",
+      "relevant_mitre_techniques": [
+        "T1530 - Data from Cloud Storage Object",
+        "T1078 - Valid Accounts (anonymous access via public blob container)",
+        "T1584.006 - Cloud Service Discovery",
+        "T1560.001 - Archive Collected Data: Archive via Cloud Storage",
+        "T1537 - Transfer Data to Cloud Account"
+      ]
+    }
+  ]
+}

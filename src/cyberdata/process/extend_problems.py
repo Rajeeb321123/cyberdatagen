@@ -258,9 +258,9 @@ def save_updated_problems(updated_problems, system_prompt, user_prompt):
                 writer.writeheader()
             
             row = {
-                "system_prompt": system_prompt,
-                "user_prompt": user_prompt,
-                "updated_problems": json.dumps(updated_problems)
+                "system": system_prompt,
+                "user": user_prompt,
+                "assistant": json.dumps(updated_problems)
             }
             writer.writerow(row)
         logger.info(f"Successfully saved/appended updated problems data to {file_path}")

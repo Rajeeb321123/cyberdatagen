@@ -1,0 +1,401 @@
+{
+  "samples": [
+    {
+      "scenario": "Azure Blob Storage container configured with public access enabled, exposing confidential project files. External researcher discovered the misconfiguration by enumerating containers without authentication, resulting in unauthorized download of sensitive data.",
+      "technical_data": {
+        "api_call_sequence": [
+          {
+            "timestamp": "2024-04-10T09:22:15Z",
+            "caller_ip": "203.0.113.78",
+            "eventName": "ListContainers",
+            "requestParameters": {},
+            "responseElements": {
+              "containers": [
+                {
+                  "name": "confidential-project-files",
+                  "lastModified": "2024-01-15T14:00:00Z"
+                },
+                {
+                  "name": "public-website-assets",
+                  "lastModified": "2023-07-20T12:30:00Z"
+                }
+              ]
+            }
+          },
+          {
+            "timestamp": "2024-04-10T09:22:20Z",
+            "caller_ip": "203.0.113.78",
+            "eventName": "GetContainerAccessPolicy",
+            "requestParameters": {
+              "containerName": "confidential-project-files"
+            },
+            "responseElements": {
+              "publicAccess": "Blob"
+            }
+          },
+          {
+            "timestamp": "2024-04-10T09:22:25Z",
+            "caller_ip": "203.0.113.78",
+            "eventName": "GetBlob",
+            "requestParameters": {
+              "containerName": "confidential-project-files",
+              "blobName": "Q2FtcGFpZ25fbWVldGluZ19taW51dGVzLnBkZg=="
+            },
+            "responseElements": {
+              "requestId": "XYZ9876ABCD1234"
+            }
+          }
+        ],
+        "storage_account_acl": {
+          "publicAccessLevel": "Blob",
+          "containers": [
+            {
+              "name": "confidential-project-files",
+              "publicAccess": "Blob"
+            },
+            {
+              "name": "public-website-assets",
+              "publicAccess": "None"
+            }
+          ]
+        },
+        "azure_activity_log_entry": {
+          "eventTimestamp": "2024-04-10T09:22:25Z",
+          "callerIpAddress": "203.0.113.78",
+          "operationName": "GetBlob",
+          "status": "Succeeded",
+          "resourceId": "/subscriptions/12345678-1234-1234-1234-123456789abc/resourceGroups/ProdRG/providers/Microsoft.Storage/storageAccounts/prodstorage/blobServices/default/containers/confidential-project-files/blobs/Q2FtcGFpZ25fbWVldGluZ19taW51dGVzLnBkZg==",
+          "authenticationType": "Anonymous"
+        },
+        "az_cli_commands_executed": [
+          "az storage container list --account-name prodstorage",
+          "az storage container show-permission --name confidential-project-files --account-name prodstorage",
+          "az storage blob download --container-name confidential-project-files --name Q2FtcGFpZ25fbWVldGluZ19taW51dGVzLnBkZg== --file Meeting_Minutes.pdf --account-name prodstorage"
+        ],
+        "access_log": [
+          "203.0.113.78 - - [10/Apr/2024:09:22:25 +0000] \"GET /confidential-project-files/Q2FtcGFpZ25fbWVldGluZ19taW51dGVzLnBkZg== HTTP/1.1\" 200 - \"-\" \"Mozilla/5.0 (compatible; MSIE 10.0; Windows NT 6.1; Trident/6.0)\"",
+          "203.0.113.78 - - [10/Apr/2024:09:22:27 +0000] \"GET /confidential-project-files/budget_2024.xlsx HTTP/1.1\" 200 - \"-\" \"Mozilla/5.0 (compatible; MSIE 10.0; Windows NT 6.1; Trident/6.0)\""
+        ]
+      },
+      "indicators": [
+        "Azure Blob container public access level set to 'Blob' allowing anonymous read access",
+        "Activity logs showing anonymous GetBlob operations from external IP 203.0.113.78",
+        "Azure CLI commands listing containers and downloading blobs without authentication",
+        "HTTP GET requests directly accessing sensitive blobs from non-whitelisted IP",
+        "Container ACL misconfiguration exposing confidential project files"
+      ],
+      "detection_method": "Continuous monitoring of Azure Storage container ACLs for public access level not set to 'None'. Correlate Azure Activity Logs for anonymous or unexpected IP GetBlob operations. Enable Azure Security Center alerts for public blob storage exposure. Use Azure Policy to enforce private container access by default.",
+      "relevant_mitre_techniques": [
+        "T1530 - Data from Cloud Storage Object",
+        "T1078 - Valid Accounts (via anonymous or misconfigured permissions)",
+        "T1213 - Data from Information Repositories"
+      ]
+    },
+    {
+      "scenario": "Google Cloud Storage bucket with 'allUsers' read permission enabled, exposing backup archives containing PII data. External attacker discovered the bucket via automated scanning and downloaded multiple sensitive files.",
+      "technical_data": {
+        "api_call_sequence": [
+          {
+            "timestamp": "2024-03-22T18:40:50Z",
+            "caller_ip": "192.0.2.150",
+            "eventName": "storage.buckets.list",
+            "requestParameters": {},
+            "responseElements": {
+              "buckets": [
+                {
+                  "name": "pii-backups-archive",
+                  "location": "us-central1",
+                  "timeCreated": "2023-09-10T11:15:00Z"
+                },
+                {
+                  "name": "marketing-campaign-assets",
+                  "location": "us-central1",
+                  "timeCreated": "2022-12-05T08:00:00Z"
+                }
+              ]
+            }
+          },
+          {
+            "timestamp": "2024-03-22T18:40:55Z",
+            "caller_ip": "192.0.2.150",
+            "eventName": "storage.buckets.getIamPolicy",
+            "requestParameters": {
+              "bucket": "pii-backups-archive"
+            },
+            "responseElements": {
+              "bindings": [
+                {
+                  "role": "roles/storage.objectViewer",
+                  "members": [
+                    "allUsers"
+                  ]
+                }
+              ]
+            }
+          },
+          {
+            "timestamp": "2024-03-22T18:41:05Z",
+            "caller_ip": "192.0.2.150",
+            "eventName": "storage.objects.get",
+            "requestParameters": {
+              "bucket": "pii-backups-archive",
+              "object": "cGlpX2F1ZGl0X2Jhc2ljcy5qc29u"
+            },
+            "responseElements": {
+              "requestId": "REQ1234567890"
+            }
+          }
+        ],
+        "gcs_bucket_policy": {
+          "bindings": [
+            {
+              "role": "roles/storage.objectViewer",
+              "members": [
+                "allUsers"
+              ]
+            }
+          ]
+        },
+        "gcp_audit_log_entry": {
+          "protoPayload": {
+            "@type": "type.googleapis.com/google.cloud.audit.AuditLog",
+            "authenticationInfo": {
+              "principalEmail": "unauthenticated"
+            },
+            "requestMetadata": {
+              "callerIp": "192.0.2.150"
+            },
+            "serviceName": "storage.googleapis.com",
+            "methodName": "storage.objects.get",
+            "resourceName": "projects/_/buckets/pii-backups-archive/objects/cGlpX2F1ZGl0X2Jhc2ljcy5qc29u",
+            "status": {},
+            "request": {
+              "bucket": "pii-backups-archive",
+              "object": "cGlpX2F1ZGl0X2Jhc2ljcy5qc29u"
+            },
+            "response": {}
+          },
+          "resourceName": "projects/_/buckets/pii-backups-archive/objects/cGlpX2F1ZGl0X2Jhc2ljcy5qc29u",
+          "timestamp": "2024-03-22T18:41:05Z"
+        },
+        "gcloud_cli_commands_executed": [
+          "gcloud storage buckets list",
+          "gcloud storage buckets get-iam-policy pii-backups-archive",
+          "gcloud storage objects download --bucket=pii-backups-archive --object=cGlpX2F1ZGl0X2Jhc2ljcy5qc29u ./pii_audit_basics.json"
+        ],
+        "access_log": [
+          "192.0.2.150 - - [22/Mar/2024:18:41:05 +0000] \"GET /pii-backups-archive/cGlpX2F1ZGl0X2Jhc2ljcy5qc29u HTTP/1.1\" 200 - \"-\" \"gcloud-sdk/367.0.0\"",
+          "192.0.2.150 - - [22/Mar/2024:18:41:07 +0000] \"GET /pii-backups-archive/user_data_backup.zip HTTP/1.1\" 200 - \"-\" \"gcloud-sdk/367.0.0\""
+        ]
+      },
+      "indicators": [
+        "GCS bucket IAM policy includes 'allUsers' member with 'objectViewer' role",
+        "Audit logs showing unauthenticated storage.objects.get requests from IP 192.0.2.150",
+        "GCloud CLI commands used to list buckets, get IAM policy, and download objects",
+        "HTTP GET requests for sensitive backup files from external IP",
+        "Bucket policy allowing public read access to personal identifiable information backups"
+      ],
+      "detection_method": "Implement continuous monitoring of GCS bucket IAM policies to detect 'allUsers' or 'allAuthenticatedUsers' bindings with read permissions. Correlate GCP audit logs for unauthenticated object access events. Use Organization Policy constraints to restrict public access on storage buckets. Alert on anomalous object access patterns from external IPs.",
+      "relevant_mitre_techniques": [
+        "T1530 - Data from Cloud Storage Object",
+        "T1078 - Valid Accounts (via misconfigured permissions)",
+        "T1213 - Data from Information Repositories"
+      ]
+    },
+    {
+      "scenario": "An Azure Blob Storage container was misconfigured to allow public read access, exposing confidential customer PII files. An attacker enumerated blob containers and downloaded sensitive CSV files containing personally identifiable information.",
+      "technical_data": {
+        "api_call_sequence": [
+          {
+            "timestamp": "2024-06-10T14:20:10Z",
+            "caller_ip": "203.0.113.77",
+            "eventName": "ListContainers",
+            "requestParameters": {},
+            "responseElements": {
+              "containers": [
+                {
+                  "name": "customer-data",
+                  "lastModified": "2024-04-01T09:15:00Z"
+                },
+                {
+                  "name": "public-media",
+                  "lastModified": "2023-08-15T12:00:00Z"
+                }
+              ]
+            }
+          },
+          {
+            "timestamp": "2024-06-10T14:20:15Z",
+            "caller_ip": "203.0.113.77",
+            "eventName": "GetContainerAcl",
+            "requestParameters": {
+              "containerName": "customer-data"
+            },
+            "responseElements": {
+              "publicAccess": "blob"
+            }
+          },
+          {
+            "timestamp": "2024-06-10T14:20:20Z",
+            "caller_ip": "203.0.113.77",
+            "eventName": "GetBlob",
+            "requestParameters": {
+              "containerName": "customer-data",
+              "blobName": "2024_Q1_customers.csv"
+            },
+            "responseElements": {
+              "requestId": "XYZ987654321"
+            }
+          }
+        ],
+        "blob_storage_policy": {
+          "signedIdentifiers": [],
+          "publicAccess": "blob"
+        },
+        "azure_activity_log_entry": {
+          "operationName": "Microsoft.Storage/storageAccounts/blobServices/containers/blobs/read",
+          "callerIpAddress": "203.0.113.77",
+          "eventTimestamp": "2024-06-10T14:20:20Z",
+          "status": "Success",
+          "identity": {
+            "type": "Anonymous"
+          },
+          "resourceId": "/subscriptions/1234/resourceGroups/rg1/providers/Microsoft.Storage/storageAccounts/storageacct1/blobServices/default/containers/customer-data/blobs/2024_Q1_customers.csv"
+        },
+        "azure_cli_commands_executed": [
+          "az storage container list --account-name storageacct1",
+          "az storage container show-permission --name customer-data --account-name storageacct1",
+          "az storage blob download --container-name customer-data --name 2024_Q1_customers.csv --file ./2024_Q1_customers.csv --account-name storageacct1"
+        ],
+        "access_log": [
+          "203.0.113.77 - - [10/Jun/2024:14:20:20 +0000] \"GET /customer-data/2024_Q1_customers.csv HTTP/1.1\" 200 - \"-\" \"Mozilla/5.0 (compatible)\"",
+          "203.0.113.77 - - [10/Jun/2024:14:20:25 +0000] \"GET /customer-data/client_list.csv HTTP/1.1\" 200 - \"-\" \"Mozilla/5.0 (compatible)\""
+        ]
+      },
+      "indicators": [
+        "Azure Blob container ACL shows 'publicAccess' set to 'blob' allowing public read",
+        "Activity logs indicate anonymous read operations on sensitive blobs from external IP 203.0.113.77",
+        "CLI commands used to enumerate containers and download blobs without authentication",
+        "HTTP GET requests directly accessing PII data files",
+        "No signed identifiers or stored access policies restricting public access"
+      ],
+      "detection_method": "Continuously monitor Azure Storage container ACLs for 'publicAccess' settings that allow anonymous read. Correlate with Azure Activity Logs for anonymous or external IP blob read operations. Implement Azure Policy definitions to deny public read access on sensitive containers. Analyze access logs for unusual download patterns from external IPs.",
+      "relevant_mitre_techniques": [
+        "T1530 - Data from Cloud Storage Object",
+        "T1078 - Valid Accounts (via anonymous or misconfigured permissions)",
+        "T1213 - Data from Information Repositories"
+      ]
+    },
+    {
+      "scenario": "A Google Cloud Storage (GCS) bucket containing backup configuration files was mistakenly configured with 'allUsers' member granted 'roles/storage.objectViewer' role, enabling anyone on the internet to access sensitive infrastructure configuration files.",
+      "technical_data": {
+        "api_call_sequence": [
+          {
+            "timestamp": "2024-06-05T09:45:00Z",
+            "caller_ip": "192.0.2.150",
+            "eventName": "storage.buckets.list",
+            "requestParameters": {},
+            "responseElements": {
+              "buckets": [
+                {
+                  "name": "infra-backups",
+                  "location": "us-central1"
+                },
+                {
+                  "name": "company-logs",
+                  "location": "us-east1"
+                }
+              ]
+            }
+          },
+          {
+            "timestamp": "2024-06-05T09:45:10Z",
+            "caller_ip": "192.0.2.150",
+            "eventName": "storage.buckets.getIamPolicy",
+            "requestParameters": {
+              "bucket": "infra-backups"
+            },
+            "responseElements": {
+              "bindings": [
+                {
+                  "role": "roles/storage.objectViewer",
+                  "members": [
+                    "allUsers"
+                  ]
+                }
+              ]
+            }
+          },
+          {
+            "timestamp": "2024-06-05T09:45:15Z",
+            "caller_ip": "192.0.2.150",
+            "eventName": "storage.objects.get",
+            "requestParameters": {
+              "bucket": "infra-backups",
+              "object": "db_config_backup_2024-06-01.sql"
+            },
+            "responseElements": {
+              "requestId": "GCSREQ1234567"
+            }
+          }
+        ],
+        "gcp_iam_policy": {
+          "bindings": [
+            {
+              "role": "roles/storage.objectViewer",
+              "members": [
+                "allUsers"
+              ]
+            }
+          ]
+        },
+        "gcp_audit_log_entry": {
+          "protoPayload": {
+            "authenticationInfo": {
+              "principalEmail": "anonymous"
+            },
+            "requestMetadata": {
+              "callerIp": "192.0.2.150"
+            },
+            "request": {
+              "bucket": "infra-backups",
+              "object": "db_config_backup_2024-06-01.sql"
+            },
+            "methodName": "storage.objects.get",
+            "resourceName": "projects/_/buckets/infra-backups/objects/db_config_backup_2024-06-01.sql"
+          },
+          "timestamp": "2024-06-05T09:45:15Z",
+          "resource": {
+            "type": "gcs_bucket",
+            "labels": {
+              "bucket_name": "infra-backups",
+              "location": "us-central1"
+            }
+          }
+        },
+        "gcloud_cli_commands_executed": [
+          "gcloud storage buckets list",
+          "gcloud storage buckets get-iam-policy infra-backups",
+          "gcloud storage objects download db_config_backup_2024-06-01.sql --bucket=infra-backups --destination=./db_config_backup.sql"
+        ],
+        "access_log": [
+          "192.0.2.150 - - [05/Jun/2024:09:45:15 +0000] \"GET /infra-backups/db_config_backup_2024-06-01.sql HTTP/1.1\" 200 - \"-\" \"gsutil/4.60\"",
+          "192.0.2.150 - - [05/Jun/2024:09:45:17 +0000] \"GET /infra-backups/network_settings.conf HTTP/1.1\" 200 - \"-\" \"gsutil/4.60\""
+        ]
+      },
+      "indicators": [
+        "GCS bucket IAM policy includes 'allUsers' with 'roles/storage.objectViewer'",
+        "Audit logs show anonymous access to storage.objects.get calls from external IP 192.0.2.150",
+        "GCloud CLI commands executed to enumerate buckets and download objects without authentication",
+        "Access logs record HTTP GET requests for backup and config files with 200 OK status",
+        "No bucket-level restrictions or signed URLs in use"
+      ],
+      "detection_method": "Review GCS bucket IAM policies for 'allUsers' or 'allAuthenticatedUsers' members with object read permissions. Correlate with audit logs for unauthenticated object access. Enforce organization policies to prevent public IAM bindings on sensitive buckets. Analyze access logs for unusual or unexpected external IP downloads of sensitive data.",
+      "relevant_mitre_techniques": [
+        "T1530 - Data from Cloud Storage Object",
+        "T1078 - Valid Accounts (via anonymous or misconfigured permissions)",
+        "T1213 - Data from Information Repositories"
+      ]
+    }
+  ]
+}

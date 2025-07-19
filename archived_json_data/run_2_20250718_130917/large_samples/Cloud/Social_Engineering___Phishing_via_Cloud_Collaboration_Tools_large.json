@@ -1,0 +1,309 @@
+{
+  "samples": [
+    {
+      "scenario": "Phishing email impersonating HR department with a malicious Dropbox link embedded in a shared document URL, using URL shortener to hide the true destination leading to credential harvesting on a fake login page.",
+      "technical_data": {
+        "email_headers": "Return-Path: <hr-notify@dropbox-updates.com>\r\nReceived: from mail.dropbox-updates.com (mail.dropbox-updates.com [203.0.113.77])\r\n\tby mx.google.com with ESMTPS id m8si87654321qtk.45.2024.06.18.09.20.33\r\n\tfor <employee@enterprise.com>;\r\n\tTue, 18 Jun 2024 09:20:33 -0700 (PDT)\r\nReceived-SPF: fail (google.com: domain of hr-notify@dropbox-updates.com does not designate 203.0.113.77 as permitted sender) client-ip=203.0.113.77;\r\nAuthentication-Results: mx.google.com;\r\n\tspf=fail (sender IP is 203.0.113.77) smtp.mailfrom=hr-notify@dropbox-updates.com;\r\n\tdkim=none (message not signed);\r\n\tdmarc=fail (p=NONE sp=NONE dis=NONE) header.from=dropbox-updates.com\r\nX-Originating-IP: [203.0.113.77]\r\nX-Mailer: Thunderbird 102.7.0\r\nMIME-Version: 1.0\r\nContent-Type: text/html; charset=\"UTF-8\"\r\nSubject: Important: Updated Employee Handbook - Action Required\r\nFrom: \"HR Department\" <hr-notify@dropbox-updates.com>\r\nTo: employee@enterprise.com\r\nDate: Tue, 18 Jun 2024 09:20:32 -0700\r\nMessage-ID: <CAJm=def456uvw@clientmail>",
+        "email_body_html": "<html><body><p>Dear Employee,</p><p>Please review the updated Employee Handbook by accessing the document via the link below:</p><p><a href=\"https://bit.ly/3QwT6xP\">Updated Employee Handbook</a></p><p>Failure to review within 48 hours may affect your compliance status.</p><p>Best regards,<br>HR Department</p></body></html>",
+        "smtp_transaction_log": "220 mail.dropbox-updates.com ESMTP Postfix\r\nEHLO attackerpc\r\n250-mail.dropbox-updates.com\r\n250-PIPELINING\r\n250-SIZE 10485760\r\n250-STARTTLS\r\n250-AUTH PLAIN LOGIN\r\n250-ENHANCEDSTATUSCODES\r\n250-8BITMIME\r\n250 DSN\r\nMAIL FROM:<hr-notify@dropbox-updates.com>\r\n250 2.1.0 Ok\r\nRCPT TO:<employee@enterprise.com>\r\n250 2.1.5 Ok\r\nDATA\r\n354 End data with <CR><LF>.<CR><LF>\r\nFrom: \"HR Department\" <hr-notify@dropbox-updates.com>\r\nTo: employee@enterprise.com\r\nSubject: Important: Updated Employee Handbook - Action Required\r\n\r\n<html><body><p>Dear Employee,</p><p>Please review the updated Employee Handbook by accessing the document via the link below:</p><p><a href=\"https://bit.ly/3QwT6xP\">Updated Employee Handbook</a></p><p>Failure to review within 48 hours may affect your compliance status.</p><p>Best regards,<br>HR Department</p></body></html>\r\n.\r\n250 2.0.0 Ok: queued as 9876543210",
+        "malicious_url": "https://bit.ly/3QwT6xP",
+        "domain_registration": {
+          "domain": "dropbox-updates.com",
+          "registrar": "GoDaddy.com, LLC",
+          "creation_date": "2024-04-10T08:15:00Z",
+          "registrant_country": "CN",
+          "name_servers": [
+            "ns1.godaddy.com",
+            "ns2.godaddy.com"
+          ],
+          "status": [
+            "clientTransferProhibited"
+          ]
+        },
+        "cloud_action_logs": [
+          {
+            "timestamp": "2024-06-18T09:21:45Z",
+            "user_email": "employee@enterprise.com",
+            "action": "link_clicked",
+            "url": "https://bit.ly/3QwT6xP"
+          },
+          {
+            "timestamp": "2024-06-18T09:22:10Z",
+            "user_email": "employee@enterprise.com",
+            "action": "credential_submission",
+            "target_url": "https://secure.enterprise-hr.com/login"
+          }
+        ],
+        "file_scan_results": {
+          "file_id": "",
+          "sha256": "",
+          "scan_date": "",
+          "detected": false,
+          "threat_name": "",
+          "scanner": ""
+        },
+        "network_packet_capture": "Frame 14: 128 bytes on wire (1024 bits), 128 bytes captured (1024 bits)\r\nEthernet II, Src: 00:1a:2b:3c:4d:5e, Dst: 00:15:5d:4a:2e:01\r\nInternet Protocol Version 4, Src: 203.0.113.77, Dst: 198.51.100.23\r\nTransmission Control Protocol, Src Port: 443, Dst Port: 52178, Seq: 101, Ack: 201, Len: 78\r\nHypertext Transfer Protocol\r\n    GET /3QwT6xP HTTP/1.1\r\n    Host: bit.ly\r\n    User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64)\r\n    Accept: text/html\r\n\r\n"
+      },
+      "indicators": {
+        "phishing_email_sender": "hr-notify@dropbox-updates.com",
+        "malicious_domain": "dropbox-updates.com",
+        "malicious_redirect_domain": "secure.enterprise-hr.com",
+        "malicious_url_patterns": [
+          "bit.ly/*"
+        ],
+        "file_hashes": {},
+        "network_ips": [
+          "203.0.113.77"
+        ],
+        "suspicious_cloud_events": [
+          "link clicked on URL shortener redirecting to fake login",
+          "credential submission on fraudulent domain"
+        ]
+      },
+      "detection_method": "Email gateway detects SPF fail on suspicious domain; URL shortening service flagged by URL reputation system; Cloud CASB monitors anomalous link clicks; Endpoint security logs credential prompt on mismatched domain; Network IDS detects unusual outbound HTTP requests to suspicious IP; User reports unexpected HR link.",
+      "relevant_mitre_techniques": [
+        "T1566.001",
+        "T1531",
+        "T1192",
+        "T1110",
+        "T1204.002"
+      ]
+    },
+    {
+      "scenario": "Phishing email with a malicious Microsoft OneDrive shared Excel file link containing embedded macros that download ransomware when opened by the victim.",
+      "technical_data": {
+        "email_headers": "Return-Path: <finance.team@onedrive-secure.net>\r\nReceived: from mail.onedrive-secure.net (mail.onedrive-secure.net [198.51.100.88])\r\n\tby mx.google.com with ESMTPS id n2si23456789qta.67.2024.06.20.15.45.10\r\n\tfor <staff@businesscorp.com>;\r\n\tThu, 20 Jun 2024 15:45:10 -0700 (PDT)\r\nReceived-SPF: fail (google.com: domain of finance.team@onedrive-secure.net does not designate 198.51.100.88 as permitted sender) client-ip=198.51.100.88;\r\nAuthentication-Results: mx.google.com;\r\n\tspf=fail (sender IP is 198.51.100.88) smtp.mailfrom=finance.team@onedrive-secure.net;\r\n\tdkim=none (message not signed);\r\n\tdmarc=fail (p=NONE sp=NONE dis=NONE) header.from=onedrive-secure.net\r\nX-Originating-IP: [198.51.100.88]\r\nX-Mailer: Apple Mail (2.3445.5.20)\r\nMIME-Version: 1.0\r\nContent-Type: text/html; charset=\"UTF-8\"\r\nSubject: Monthly Financial Summary - Please Review\r\nFrom: \"Finance Team\" <finance.team@onedrive-secure.net>\r\nTo: staff@businesscorp.com\r\nDate: Thu, 20 Jun 2024 15:45:09 -0700\r\nMessage-ID: <CABo=ghi789rst@clientmail>",
+        "email_body_html": "<html><body><p>Hello Team,</p><p>The monthly financial summary is now available. Please download and review the attached Excel file here:</p><p><a href=\"https://onedrive.live.com/?cid=1234567890ABCDEF&resid=1234567890ABCDEF%21123&authkey=!ABCD1234efgh5678&action=download\">Financial_Summary_June.xlsx</a></p><p>Let me know if you have any questions.</p><p>Regards,<br>Finance Team</p></body></html>",
+        "smtp_transaction_log": "220 mail.onedrive-secure.net ESMTP Postfix\r\nEHLO attackerpc\r\n250-mail.onedrive-secure.net\r\n250-PIPELINING\r\n250-SIZE 15728640\r\n250-STARTTLS\r\n250-AUTH PLAIN LOGIN\r\n250-ENHANCEDSTATUSCODES\r\n250-8BITMIME\r\n250 DSN\r\nMAIL FROM:<finance.team@onedrive-secure.net>\r\n250 2.1.0 Ok\r\nRCPT TO:<staff@businesscorp.com>\r\n250 2.1.5 Ok\r\nDATA\r\n354 End data with <CR><LF>.<CR><LF>\r\nFrom: \"Finance Team\" <finance.team@onedrive-secure.net>\r\nTo: staff@businesscorp.com\r\nSubject: Monthly Financial Summary - Please Review\r\n\r\n<html><body><p>Hello Team,</p><p>The monthly financial summary is now available. Please download and review the attached Excel file here:</p><p><a href=\"https://onedrive.live.com/?cid=1234567890ABCDEF&resid=1234567890ABCDEF%21123&authkey=!ABCD1234efgh5678&action=download\">Financial_Summary_June.xlsx</a></p><p>Let me know if you have any questions.</p><p>Regards,<br>Finance Team</p></body></html>\r\n.\r\n250 2.0.0 Ok: queued as 1122334455",
+        "malicious_url": "https://onedrive.live.com/?cid=1234567890ABCDEF&resid=1234567890ABCDEF%21123&authkey=!ABCD1234efgh5678&action=download",
+        "domain_registration": {
+          "domain": "onedrive-secure.net",
+          "registrar": "NameSilo, LLC",
+          "creation_date": "2024-03-22T11:05:30Z",
+          "registrant_country": "UA",
+          "name_servers": [
+            "ns1.namesilo.com",
+            "ns2.namesilo.com"
+          ],
+          "status": [
+            "clientTransferProhibited"
+          ]
+        },
+        "cloud_action_logs": [
+          {
+            "timestamp": "2024-06-20T15:46:00Z",
+            "user_email": "staff@businesscorp.com",
+            "action": "file_shared",
+            "file_id": "1234567890ABCDEF!123",
+            "shared_with": [
+              "internal:staff@businesscorp.com"
+            ],
+            "permissions": "edit"
+          },
+          {
+            "timestamp": "2024-06-20T15:47:10Z",
+            "user_email": "staff@businesscorp.com",
+            "action": "file_opened",
+            "file_id": "1234567890ABCDEF!123"
+          },
+          {
+            "timestamp": "2024-06-20T15:48:30Z",
+            "user_email": "staff@businesscorp.com",
+            "action": "macro_execution",
+            "file_id": "1234567890ABCDEF!123",
+            "macro_name": "AutoOpen"
+          }
+        ],
+        "file_scan_results": {
+          "file_id": "1234567890ABCDEF!123",
+          "sha256": "a4b7c9d8e2f3b4a5c6d7e8f9a0b1c2d3e4f5a6b7c8d9e0f1a2b3c4d5e6f7a8b9",
+          "scan_date": "2024-06-20T15:46:30Z",
+          "detected": true,
+          "threat_name": "Ransomware:Win32/LockBit",
+          "scanner": "Symantec Endpoint Protection"
+        },
+        "network_packet_capture": "Frame 22: 102 bytes on wire (816 bits), 102 bytes captured (816 bits)\r\nEthernet II, Src: 52:54:00:12:35:03, Dst: 00:15:5d:4a:2e:02\r\nInternet Protocol Version 4, Src: 198.51.100.88, Dst: 104.215.148.63\r\nTransmission Control Protocol, Src Port: 443, Dst Port: 53211, Seq: 57, Ack: 112, Len: 42\r\nHypertext Transfer Protocol\r\n    GET /?cid=1234567890ABCDEF&resid=1234567890ABCDEF%21123&authkey=!ABCD1234efgh5678&action=download HTTP/1.1\r\n    Host: onedrive.live.com\r\n    User-Agent: Microsoft Office/16.0 (Windows NT 10.0; Win64; x64)\r\n    Accept: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet\r\n\r\n"
+      },
+      "indicators": {
+        "phishing_email_sender": "finance.team@onedrive-secure.net",
+        "malicious_domain": "onedrive-secure.net",
+        "malicious_redirect_domain": "onedrive.live.com",
+        "malicious_url_patterns": [
+          "onedrive.live.com/*action=download"
+        ],
+        "file_hashes": {
+          "sha256": "a4b7c9d8e2f3b4a5c6d7e8f9a0b1c2d3e4f5a6b7c8d9e0f1a2b3c4d5e6f7a8b9"
+        },
+        "network_ips": [
+          "198.51.100.88"
+        ],
+        "suspicious_cloud_events": [
+          "file shared internally with edit permissions",
+          "macro execution detected immediately after file open"
+        ]
+      },
+      "detection_method": "Email gateway filters detect SPF fail on spoofed finance domain; Endpoint security flags macro execution in Excel document; CASB logs suspicious file sharing with elevated permissions; File scanning tools detect LockBit ransomware payload in attached file; Network IDS alerts on anomalous HTTP download traffic from suspicious IP; User training highlights unexpected finance email with attachment.",
+      "relevant_mitre_techniques": [
+        "T1566.001",
+        "T1204.002",
+        "T1204.001",
+        "T1059.003",
+        "T1110",
+        "T1530"
+      ]
+    },
+    {
+      "scenario": "Phishing email impersonating internal IT with a shared Microsoft OneDrive link containing a malicious Excel file with embedded macros, aiming to deploy ransomware after user enables content.",
+      "technical_data": {
+        "email_headers": "Return-Path: <it.support@securemail-cloud.com>\r\nReceived: from mail.securemail-cloud.com (mail.securemail-cloud.com [203.0.113.55])\r\n\tby mx.outlook.com with ESMTPS id 9f8g7h6j5k4l3m2n1o0p\r\n\tfor <employee@enterprise.com>;\r\n\tTue, 18 Jun 2024 09:12:45 +0000\r\nReceived-SPF: pass (outlook.com: domain of it.support@securemail-cloud.com designates 203.0.113.55 as permitted sender) client-ip=203.0.113.55;\r\nAuthentication-Results: mx.outlook.com;\r\n\tspf=pass (sender IP is 203.0.113.55) smtp.mailfrom=it.support@securemail-cloud.com;\r\n\tdkim=pass header.d=securemail-cloud.com;\r\n\tdmarc=pass header.from=securemail-cloud.com\r\nX-Originating-IP: [203.0.113.55]\r\nX-Mailer: Microsoft Outlook 365\r\nMIME-Version: 1.0\r\nContent-Type: multipart/alternative; boundary=\"boundary_1234\"\r\nSubject: Important: Security Update Required - Action Needed\r\nFrom: \"IT Support\" <it.support@securemail-cloud.com>\r\nTo: employee@enterprise.com\r\nDate: Tue, 18 Jun 2024 09:12:44 +0000\r\nMessage-ID: <ITSUPPORT-xyz789@securemail-cloud.com>",
+        "email_body_html": "<html><body><p>Dear Employee,</p><p>As part of our ongoing security enhancements, please review the attached Security Update spreadsheet on OneDrive and enable macros to apply the necessary patches.</p><p><a href=\"https://onedrive.live.com/?cid=abcd1234efgh5678&resid=abcd1234efgh5678%211234&authkey=!ABcD3FghIjKlMnOp&action=download\">Security Update Spreadsheet</a></p><p>Thank you,<br>IT Support Team</p></body></html>",
+        "smtp_transaction_log": "220 mail.securemail-cloud.com ESMTP Postfix\r\nEHLO attackerpc\r\n250-mail.securemail-cloud.com\r\n250-PIPELINING\r\n250-SIZE 10485760\r\n250-STARTTLS\r\n250-AUTH PLAIN LOGIN\r\n250-ENHANCEDSTATUSCODES\r\n250 8BITMIME\r\nMAIL FROM:<it.support@securemail-cloud.com>\r\n250 2.1.0 Ok\r\nRCPT TO:<employee@enterprise.com>\r\n250 2.1.5 Ok\r\nDATA\r\n354 End data with <CR><LF>.<CR><LF>\r\nFrom: \"IT Support\" <it.support@securemail-cloud.com>\r\nTo: employee@enterprise.com\r\nSubject: Important: Security Update Required - Action Needed\r\n\r\n<html><body><p>Dear Employee,</p><p>As part of our ongoing security enhancements, please review the attached Security Update spreadsheet on OneDrive and enable macros to apply the necessary patches.</p><p><a href=\"https://onedrive.live.com/?cid=abcd1234efgh5678&resid=abcd1234efgh5678%211234&authkey=!ABcD3FghIjKlMnOp&action=download\">Security Update Spreadsheet</a></p><p>Thank you,<br>IT Support Team</p></body></html>\r\n.\r\n250 2.0.0 Ok: queued as 9876543210",
+        "malicious_url": "https://onedrive.live.com/?cid=abcd1234efgh5678&resid=abcd1234efgh5678%211234&authkey=!ABcD3FghIjKlMnOp&action=download",
+        "domain_registration": {
+          "domain": "securemail-cloud.com",
+          "registrar": "GoDaddy.com, LLC",
+          "creation_date": "2023-12-10T08:30:00Z",
+          "registrant_country": "US",
+          "name_servers": [
+            "ns1.godaddy.com",
+            "ns2.godaddy.com"
+          ],
+          "status": [
+            "clientTransferProhibited"
+          ]
+        },
+        "cloud_action_logs": [
+          {
+            "timestamp": "2024-06-18T09:13:10Z",
+            "user_email": "employee@enterprise.com",
+            "action": "file_shared",
+            "file_id": "1234567890abcdef",
+            "shared_with": [
+              "internal:enterprise.com"
+            ],
+            "permissions": "edit"
+          },
+          {
+            "timestamp": "2024-06-18T09:14:20Z",
+            "user_email": "employee@enterprise.com",
+            "action": "file_downloaded",
+            "file_id": "1234567890abcdef"
+          }
+        ],
+        "file_scan_results": {
+          "file_id": "1234567890abcdef",
+          "sha256": "9f4d7a7b8c6e5d4f3a2b1c0d9e8f7a6b5c4d3e2f1a0b9c8d7e6f5a4b3c2d1e0f",
+          "scan_date": "2024-06-18T09:13:50Z",
+          "detected": true,
+          "threat_name": "Ransomware:Win32/Conti",
+          "scanner": "Windows Defender"
+        },
+        "network_packet_capture": "Frame 1: 78 bytes on wire (624 bits), 78 bytes captured (624 bits)\r\nEthernet II, Src: 00:15:5d:4a:2e:01, Dst: 52:54:00:12:35:02\r\nInternet Protocol Version 4, Src: 203.0.113.55, Dst: 40.97.138.35\r\nTransmission Control Protocol, Src Port: 443, Dst Port: 52345, Seq: 1, Ack: 1, Len: 40\r\nHypertext Transfer Protocol\r\n    GET /?cid=abcd1234efgh5678&resid=abcd1234efgh5678%211234&authkey=!ABcD3FghIjKlMnOp&action=download HTTP/1.1\r\n    Host: onedrive.live.com\r\n    User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:102.0) Gecko/20100101 Firefox/102.0\r\n    Accept: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet\r\n\r\n"
+      },
+      "indicators": {
+        "phishing_email_sender": "it.support@securemail-cloud.com",
+        "malicious_domain": "securemail-cloud.com",
+        "malicious_redirect_domain": null,
+        "malicious_url_patterns": [
+          "onedrive.live.com/*cid=*&resid=*&authkey=*&action=download"
+        ],
+        "file_hashes": {
+          "sha256": "9f4d7a7b8c6e5d4f3a2b1c0d9e8f7a6b5c4d3e2f1a0b9c8d7e6f5a4b3c2d1e0f"
+        },
+        "network_ips": [
+          "203.0.113.55"
+        ],
+        "suspicious_cloud_events": [
+          "internal file shared with edit permissions unexpectedly",
+          "file download immediately after suspicious share"
+        ]
+      },
+      "detection_method": "Email gateway validates SPF and DKIM pass but flags unusual sender domain for IT support; URL scanning identifies macro-enabled Excel file download; Cloud CASB detects unexpected file sharing with edit rights; Endpoint protection flags ransomware payload hash during file open; Network IDS alerts on HTTPS download from suspicious IP; User reports unexpected security update email.",
+      "relevant_mitre_techniques": [
+        "T1566.001",
+        "T1204.002",
+        "T1071.001",
+        "T1204.001",
+        "T1530",
+        "T1490"
+      ]
+    },
+    {
+      "scenario": "Phishing campaign sending emails with a shared Dropbox link containing a malicious PDF that exploits a zero-day vulnerability to execute remote code upon opening.",
+      "technical_data": {
+        "email_headers": "Return-Path: <security.alerts@dropboxupdate.info>\r\nReceived: from mail.dropboxupdate.info (mail.dropboxupdate.info [198.51.100.123])\r\n\tby mx.mailserver.com with ESMTPS id zxcv987654321poiuyt\r\n\tfor <user@corporate.net>;\r\n\tMon, 17 Jun 2024 15:22:11 +0000\r\nReceived-SPF: fail (mailserver.com: domain of security.alerts@dropboxupdate.info does not designate 198.51.100.123 as permitted sender) client-ip=198.51.100.123;\r\nAuthentication-Results: mx.mailserver.com;\r\n\tspf=fail (sender IP is 198.51.100.123) smtp.mailfrom=security.alerts@dropboxupdate.info;\r\n\tdkim=none (message not signed);\r\n\tdmarc=fail header.from=dropboxupdate.info\r\nX-Originating-IP: [198.51.100.123]\r\nX-Mailer: Apple Mail (2.3445.104.11)\r\nMIME-Version: 1.0\r\nContent-Type: text/html; charset=\"UTF-8\"\r\nSubject: Dropbox Security Alert - Verify Your Account Immediately\r\nFrom: \"Dropbox Security\" <security.alerts@dropboxupdate.info>\r\nTo: user@corporate.net\r\nDate: Mon, 17 Jun 2024 15:22:10 +0000\r\nMessage-ID: <secalert-20240617@dropboxupdate.info>",
+        "email_body_html": "<html><body><p>Dear User,</p><p>We detected suspicious activity on your Dropbox account. Please review the attached security report to verify your data integrity:</p><p><a href=\"https://www.dropbox.com/s/xyz123abc456def7/security_report.pdf?dl=0\">View Security Report</a></p><p>Failure to verify within 24 hours may result in account suspension.</p><p>Regards,<br>Dropbox Security Team</p></body></html>",
+        "smtp_transaction_log": "220 mail.dropboxupdate.info ESMTP Postfix\r\nEHLO attackerpc\r\n250-mail.dropboxupdate.info\r\n250-PIPELINING\r\n250-SIZE 5120000\r\n250-STARTTLS\r\n250-AUTH PLAIN LOGIN\r\n250-ENHANCEDSTATUSCODES\r\n250 8BITMIME\r\nMAIL FROM:<security.alerts@dropboxupdate.info>\r\n250 2.1.0 Ok\r\nRCPT TO:<user@corporate.net>\r\n250 2.1.5 Ok\r\nDATA\r\n354 End data with <CR><LF>.<CR><LF>\r\nFrom: \"Dropbox Security\" <security.alerts@dropboxupdate.info>\r\nTo: user@corporate.net\r\nSubject: Dropbox Security Alert - Verify Your Account Immediately\r\n\r\n<html><body><p>Dear User,</p><p>We detected suspicious activity on your Dropbox account. Please review the attached security report to verify your data integrity:</p><p><a href=\"https://www.dropbox.com/s/xyz123abc456def7/security_report.pdf?dl=0\">View Security Report</a></p><p>Failure to verify within 24 hours may result in account suspension.</p><p>Regards,<br>Dropbox Security Team</p></body></html>\r\n.\r\n250 2.0.0 Ok: queued as 1122334455",
+        "malicious_url": "https://www.dropbox.com/s/xyz123abc456def7/security_report.pdf?dl=0",
+        "domain_registration": {
+          "domain": "dropboxupdate.info",
+          "registrar": "Google LLC",
+          "creation_date": "2024-04-15T11:45:00Z",
+          "registrant_country": "CN",
+          "name_servers": [
+            "ns-cloud-a1.googledomains.com",
+            "ns-cloud-a2.googledomains.com",
+            "ns-cloud-a3.googledomains.com",
+            "ns-cloud-a4.googledomains.com"
+          ],
+          "status": [
+            "clientTransferProhibited"
+          ]
+        },
+        "cloud_action_logs": [
+          {
+            "timestamp": "2024-06-17T15:23:00Z",
+            "user_email": "user@corporate.net",
+            "action": "file_shared",
+            "file_id": "xyz123abc456def7",
+            "shared_with": [
+              "internal:corporate.net"
+            ],
+            "permissions": "view_only"
+          },
+          {
+            "timestamp": "2024-06-17T15:25:45Z",
+            "user_email": "user@corporate.net",
+            "action": "file_opened",
+            "file_id": "xyz123abc456def7"
+          }
+        ],
+        "file_scan_results": {
+          "file_id": "xyz123abc456def7",
+          "sha256": "d4c3b2a19876e54f3210fedcba9876543210fedcba6543210fedcba987654321",
+          "scan_date": "2024-06-17T15:24:30Z",
+          "detected": true,
+          "threat_name": "Exploit:PDF/ZeroDayRCE",
+          "scanner": "Trend Micro Deep Security"
+        },
+        "network_packet_capture": "Frame 1: 85 bytes on wire (680 bits), 85 bytes captured (680 bits)\r\nEthernet II, Src: 00:15:5d:4a:2e:01, Dst: 52:54:00:12:35:02\r\nInternet Protocol Version 4, Src: 198.51.100.123, Dst: 162.125.66.25\r\nTransmission Control Protocol, Src Port: 443, Dst Port: 52346, Seq: 1, Ack: 1, Len: 45\r\nHypertext Transfer Protocol\r\n    GET /s/xyz123abc456def7/security_report.pdf?dl=0 HTTP/1.1\r\n    Host: www.dropbox.com\r\n    User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.0 Safari/605.1.15\r\n    Accept: application/pdf\r\n\r\n"
+      },
+      "indicators": {
+        "phishing_email_sender": "security.alerts@dropboxupdate.info",
+        "malicious_domain": "dropboxupdate.info",
+        "malicious_redirect_domain": null,
+        "malicious_url_patterns": [
+          "dropbox.com/s/*/security_report.pdf*"
+        ],
+        "file_hashes": {
+          "sha256": "d4c3b2a19876e54f3210fedcba9876543210fedcba6543210fedcba987654321"
+        },
+        "network_ips": [
+          "198.51.100.123"
+        ],
+        "suspicious_cloud_events": [
+          "file shared internally without prior notice",
+          "file opened shortly after suspicious share"
+        ]
+      },
+      "detection_method": "Email gateway detects SPF fail and suspicious sender domain; URL scanning flags PDF with exploit signatures; Cloud security monitors unexpected file sharing; Endpoint protection identifies zero-day exploit behavior during PDF open; Network IDS alerts on HTTPS traffic from suspicious IP; Security team correlates alerts with phishing campaign intelligence.",
+      "relevant_mitre_techniques": [
+        "T1566.001",
+        "T1204.002",
+        "T1071.001",
+        "T1203",
+        "T1530"
+      ]
+    }
+  ]
+}

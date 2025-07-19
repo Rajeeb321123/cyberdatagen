@@ -1,0 +1,112 @@
+{
+  "samples": [
+    {
+      "scenario": "Google Cloud Storage bucket configured with public read access exposing internal project documentation containing API keys and internal network diagrams.",
+      "technical_data": {
+        "bucket_acl": "[\n  {\n    \"entity\": \"allUsers\",\n    \"role\": \"READER\"\n  }\n]",
+        "gsutil_ls_command": "$ gsutil ls -L gs://internal-project-docs\nBucket: gs://internal-project-docs/\nLocation: US\nStorage class: STANDARD\nACL:\n  allUsers: READER\n",
+        "http_get_request": "GET /internal-project-docs/network_diagram.pdf HTTP/1.1\r\nHost: storage.googleapis.com\r\nUser-Agent: Mozilla/5.0\r\nAccept: */*\r\n\r\n",
+        "http_get_response_headers": "HTTP/1.1 200 OK\r\nContent-Type: application/pdf\r\nContent-Length: 234567\r\nDate: Mon, 05 Jun 2023 12:34:56 GMT\r\nServer: UploadServer\r\n\r\n",
+        "sample_data_excerpt": "%PDF-1.4\n% Project internal network design\n% API_KEY=AIzaSyD***************\n<<network diagram content>>",
+        "audit_log_entry": "{\n  \"protoPayload\": {\n    \"authenticationInfo\": {\n      \"principalEmail\": \"anonymous\"\n    },\n    \"methodName\": \"storage.objects.get\",\n    \"resourceName\": \"projects/_/buckets/internal-project-docs/objects/network_diagram.pdf\",\n    \"requestMetadata\": {\n      \"callerIp\": \"203.0.113.45\",\n      \"userAgent\": \"Mozilla/5.0\"\n    }\n  },\n  \"resourceName\": \"projects/_/buckets/internal-project-docs/objects/network_diagram.pdf\",\n  \"timestamp\": \"2023-06-05T12:34:56Z\",\n  \"severity\": \"INFO\"\n}",
+        "iam_policy_misconfig": "{\n  \"bindings\": [\n    {\n      \"role\": \"roles/storage.objectViewer\",\n      \"members\": [\"allUsers\"]\n    }\n  ]\n}",
+        "cspm_alert_sample": "{\n  \"resource_id\": \"projects/_/buckets/internal-project-docs\",\n  \"issue_type\": \"Publicly accessible bucket\",\n  \"severity\": \"High\",\n  \"details\": \"Bucket ACL grants READ access to allUsers, exposing sensitive internal documents.\",\n  \"recommendation\": \"Remove allUsers from bucket ACL and restrict access to authorized users only.\"\n}"
+      },
+      "indicators": [
+        "Bucket ACL includes 'allUsers' with READER role",
+        "Audit logs show anonymous principal accessing storage.objects.get method",
+        "HTTP 200 responses serving sensitive PDF files containing API keys",
+        "Presence of internal project documentation and network diagrams publicly accessible",
+        "CSPM alerts flagging public access to sensitive GCS bucket"
+      ],
+      "detection_method": "Automated scanning of Google Cloud Storage bucket ACLs and IAM policies to detect presence of 'allUsers' or 'allAuthenticatedUsers' with read permissions, monitoring Cloud Audit Logs for unauthenticated object access events, correlating IP addresses and user agents to identify anomalous accesses, and inspecting HTTP server logs for public downloads of sensitive files.",
+      "relevant_mitre_techniques": [
+        "T1530 - Data from Cloud Storage Object",
+        "T1552.001 - Credentials in Files: Cloud Storage Object",
+        "T1078 - Valid Accounts",
+        "T1213 - Data from Information Repositories"
+      ]
+    },
+    {
+      "scenario": "Azure Blob Storage container configured with 'Container (anonymous read access for containers and blobs)' public access level exposing backup files containing database credentials and user information.",
+      "technical_data": {
+        "azure_cli_show_container": "$ az storage container show --name backup-container --account-name companystorage\n{\n  \"name\": \"backup-container\",\n  \"publicAccess\": \"container\",\n  \"lastModified\": \"2023-05-15T09:00:00Z\"\n}",
+        "az_storage_blob_list_command": "$ az storage blob list --container-name backup-container --account-name companystorage\n[\n  {\n    \"name\": \"db_backup_2023_05_10.bak\",\n    \"properties\": {\n      \"contentLength\": 52428800,\n      \"lastModified\": \"2023-05-10T08:00:00Z\"\n    }\n  },\n  {\n    \"name\": \"user_data_2023_05_10.json\",\n    \"properties\": {\n      \"contentLength\": 2048000,\n      \"lastModified\": \"2023-05-10T08:05:00Z\"\n    }\n  }\n]",
+        "http_get_request": "GET /backup-container/db_backup_2023_05_10.bak HTTP/1.1\r\nHost: companystorage.blob.core.windows.net\r\nUser-Agent: Mozilla/5.0\r\nAccept: */*\r\n\r\n",
+        "http_get_response_headers": "HTTP/1.1 200 OK\r\nContent-Type: application/octet-stream\r\nContent-Length: 52428800\r\nLast-Modified: Wed, 10 May 2023 08:00:00 GMT\r\nx-ms-request-id: 12345678-1234-1234-1234-1234567890ab\r\nx-ms-version: 2021-04-10\r\nServer: Windows-Azure-Blob/1.0 Microsoft-HTTPAPI/2.0\r\n\r\n",
+        "sample_data_excerpt": "Backup file contains SQL Server database dump with plaintext credentials: username=admin; password=SuperSecret123!",
+        "azure_activity_log_entry": "{\n  \"authorization\": {\n    \"action\": \"Microsoft.Storage/storageAccounts/blobServices/containers/blobs/read\",\n    \"scope\": \"/subscriptions/xxxx/resourceGroups/rg1/providers/Microsoft.Storage/storageAccounts/companystorage/blobServices/default/containers/backup-container/blobs/db_backup_2023_05_10.bak\"\n  },\n  \"caller\": \"anonymous\",\n  \"eventTimestamp\": \"2023-05-20T14:22:33Z\",\n  \"status\": \"Succeeded\",\n  \"operationName\": \"Get Blob\"\n}",
+        "iam_policy_misconfig": "{\n  \"properties\": {\n    \"publicAccess\": \"container\"\n  }\n}",
+        "cspm_alert_sample": "{\n  \"resource_id\": \"/subscriptions/xxxx/resourceGroups/rg1/providers/Microsoft.Storage/storageAccounts/companystorage/blobServices/default/containers/backup-container\",\n  \"issue_type\": \"Public container access\",\n  \"severity\": \"High\",\n  \"details\": \"Container 'backup-container' is configured for anonymous read access, exposing sensitive backup files.\",\n  \"recommendation\": \"Change container public access level to Private and implement RBAC controls.\"\n}"
+      },
+      "indicators": [
+        "Azure Blob Storage container publicAccess property set to 'container' allowing anonymous read access",
+        "Azure Activity logs showing anonymous caller performing blob read operations",
+        "HTTP 200 responses serving large binary backup files containing database credentials",
+        "Presence of sensitive backup files publicly accessible without authentication",
+        "CSPM alerts detecting publicly accessible blob containers with sensitive data"
+      ],
+      "detection_method": "Regular audits of Azure Blob Storage containers' public access settings using Azure Security Center or third-party CSPM tools, monitoring Azure Activity Logs for anonymous access to blob read operations, alerting when container publicAccess is set to 'container' or 'blob', and analyzing network logs or HTTP access logs for suspicious large file downloads from storage endpoints.",
+      "relevant_mitre_techniques": [
+        "T1530 - Data from Cloud Storage Object",
+        "T1552.001 - Credentials in Files: Cloud Storage Object",
+        "T1078 - Valid Accounts",
+        "T1486 - Data Encrypted for Impact"
+      ]
+    },
+    {
+      "scenario": "Google Cloud Storage bucket with public read access enabled, exposing internal proprietary project documents due to an overly permissive IAM policy binding allUsers to roles/storage.objectViewer.",
+      "technical_data": {
+        "bucket_iam_policy": "{\n  \"bindings\": [\n    {\n      \"role\": \"roles/storage.objectViewer\",\n      \"members\": [\n        \"allUsers\"\n      ]\n    }\n  ]\n}",
+        "gcloud_list_objects_command": "$ gcloud storage objects list gs://internal-project-docs --project my-gcp-project\nNAME: project-plan.pdf\nSIZE: 2048000\nUPDATED: 2024-05-10T14:12:00Z\nNAME: design_specifications.docx\nSIZE: 1024000\nUPDATED: 2024-05-08T09:30:00Z\n",
+        "http_get_request": "GET /internal-project-docs/project-plan.pdf HTTP/1.1\r\nHost: storage.googleapis.com\r\nUser-Agent: Mozilla/5.0\r\nAccept: application/pdf\r\n\r\n",
+        "http_get_response_headers": "HTTP/1.1 200 OK\r\nContent-Type: application/pdf\r\nContent-Length: 2048000\r\nLast-Modified: Fri, 10 May 2024 14:12:00 GMT\r\nAccept-Ranges: bytes\r\nServer: UploadServer\r\n\r\n",
+        "sample_data_excerpt": "%PDF-1.7\n%\u00e2\u00e3\u00cf\u00d3\n1 0 obj\n<< /Type /Catalog /Pages 2 0 R >>\nendobj\n2 0 obj\n<< /Type /Pages /Count 1 /Kids [3 0 R] >>\nendobj\n",
+        "audit_log_entry": "{\n  \"protoPayload\": {\n    \"methodName\": \"storage.objects.get\",\n    \"resourceName\": \"projects/_/buckets/internal-project-docs/objects/project-plan.pdf\",\n    \"authenticationInfo\": {\n      \"principalEmail\": \"anonymous\"\n    },\n    \"requestMetadata\": {\n      \"callerIp\": \"203.0.113.45\",\n      \"userAgent\": \"Mozilla/5.0\"\n    },\n    \"serviceName\": \"storage.googleapis.com\",\n    \"status\": {}\n  },\n  \"resource\": {\n    \"type\": \"gcs_bucket\",\n    \"labels\": {\n      \"bucket_name\": \"internal-project-docs\",\n      \"project_id\": \"my-gcp-project\"\n    }\n  },\n  \"timestamp\": \"2024-05-15T16:20:00Z\"\n}",
+        "iam_policy_misconfig": "{\n  \"bindings\": [\n    {\n      \"role\": \"roles/storage.objectViewer\",\n      \"members\": [\n        \"allUsers\"\n      ]\n    }\n  ]\n}",
+        "cspm_alert_sample": "{\n  \"resource_id\": \"projects/my-gcp-project/buckets/internal-project-docs\",\n  \"issue_type\": \"Publicly accessible GCS bucket\",\n  \"severity\": \"High\",\n  \"details\": \"IAM policy binding grants allUsers the roles/storage.objectViewer role.\",\n  \"recommendation\": \"Restrict or remove 'allUsers' member from the bucket IAM policy to prevent public read access.\"\n}"
+      },
+      "indicators": [
+        "IAM policy binding includes 'allUsers' member with roles/storage.objectViewer",
+        "Audit logs show anonymous principal accessing bucket objects",
+        "HTTP 200 responses serving proprietary PDF and DOCX files without authentication",
+        "Exposure of internal project documentation",
+        "CSPM alert signaling public read access on sensitive bucket"
+      ],
+      "detection_method": "Automated scanning of GCP IAM policies for bindings granting roles/storage.objectViewer or higher to 'allUsers' or 'allAuthenticatedUsers', analyzing Cloud Audit Logs for storage.objects.get events with anonymous or unexpected principals, and monitoring HTTP access logs for unauthenticated downloads of sensitive objects.",
+      "relevant_mitre_techniques": [
+        "T1530 - Data from Cloud Storage Object",
+        "T1552.001 - Credentials in Files: Cloud Storage Object",
+        "T1078 - Valid Accounts",
+        "T1486 - Data Encrypted for Impact"
+      ]
+    },
+    {
+      "scenario": "Azure Blob Storage container configured with public access level set to 'Blob', allowing anonymous read access to sensitive financial reports due to misconfigured access policies.",
+      "technical_data": {
+        "container_public_access_setting": "\"publicAccess\": \"Blob\"",
+        "azure_cli_list_blobs_command": "$ az storage blob list --container-name financial-reports --account-name corpstorage --output json\n[\n  {\n    \"name\": \"Q1_2024_financials.xlsx\",\n    \"properties\": {\n      \"contentLength\": 4096000,\n      \"lastModified\": \"2024-04-25T11:00:00+00:00\",\n      \"blobType\": \"BlockBlob\"\n    }\n  },\n  {\n    \"name\": \"Q2_2024_budget_plan.pdf\",\n    \"properties\": {\n      \"contentLength\": 2048000,\n      \"lastModified\": \"2024-06-01T08:30:00+00:00\",\n      \"blobType\": \"BlockBlob\"\n    }\n  }\n]",
+        "http_get_request": "GET /financial-reports/Q1_2024_financials.xlsx HTTP/1.1\r\nHost: corpstorage.blob.core.windows.net\r\nUser-Agent: Mozilla/5.0\r\nAccept: */*\r\n\r\n",
+        "http_get_response_headers": "HTTP/1.1 200 OK\r\nContent-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet\r\nContent-Length: 4096000\r\nLast-Modified: Thu, 25 Apr 2024 11:00:00 GMT\r\nx-ms-request-id: 1234abcd-0001-0023-45ef-6789abcdef00\r\nx-ms-version: 2021-02-12\r\nServer: Windows-Azure-Blob/1.0 Microsoft-HTTPAPI/2.0\r\n\r\n",
+        "sample_data_excerpt": "Sheet1: Financial Summary\nAccount, Amount, Date\nRevenue, 1000000, 2024-03-31\nExpenses, 750000, 2024-03-31\nNet Income, 250000, 2024-03-31\n",
+        "activity_log_entry": "{\n  \"eventName\": \"GetBlob\",\n  \"eventTimestamp\": \"2024-06-05T12:45:00Z\",\n  \"identity\": {\n    \"type\": \"Anonymous\",\n    \"user\": \"Anonymous\"\n  },\n  \"resourceId\": \"/subscriptions/12345678-9abc-def0-1234-56789abcdef0/resourceGroups/corp-rg/providers/Microsoft.Storage/storageAccounts/corpstorage/blobServices/default/containers/financial-reports\",\n  \"operationName\": \"Microsoft.Storage/storageAccounts/blobServices/containers/blobs/read\",\n  \"status\": \"Succeeded\",\n  \"callerIpAddress\": \"198.51.100.99\"\n}",
+        "access_policy_misconfig": "{\n  \"publicAccess\": \"Blob\"\n}",
+        "cspm_alert_sample": "{\n  \"resource_id\": \"/subscriptions/12345678-9abc-def0-1234-56789abcdef0/resourceGroups/corp-rg/providers/Microsoft.Storage/storageAccounts/corpstorage/blobServices/default/containers/financial-reports\",\n  \"issue_type\": \"Blob container public access\",\n  \"severity\": \"High\",\n  \"details\": \"Container access level set to 'Blob', allowing anonymous read access to blobs.\",\n  \"recommendation\": \"Set container public access level to 'Private' or restrict access via SAS tokens or RBAC.\"\n}"
+      },
+      "indicators": [
+        "Azure Blob container with publicAccess property set to 'Blob'",
+        "Azure Activity Log shows anonymous GetBlob operations",
+        "HTTP 200 responses delivering sensitive XLSX financial reports without authentication",
+        "Exposure of confidential financial data to the internet",
+        "CSPM alert identifying public access on sensitive blob container"
+      ],
+      "detection_method": "Periodic audits of Azure Storage container access levels via Azure Policy or third-party CSPM tools, monitoring Azure Activity Logs for anonymous blob read operations, alerting on containers with 'Blob' or 'Container' public access, and analyzing HTTP logs for unauthenticated downloads of sensitive blobs.",
+      "relevant_mitre_techniques": [
+        "T1530 - Data from Cloud Storage Object",
+        "T1552.001 - Credentials in Files: Cloud Storage Object",
+        "T1078 - Valid Accounts",
+        "T1486 - Data Encrypted for Impact"
+      ]
+    }
+  ]
+}

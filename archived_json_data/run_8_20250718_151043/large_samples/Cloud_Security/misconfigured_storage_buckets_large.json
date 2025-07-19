@@ -1,0 +1,203 @@
+{
+  "samples": [
+    {
+      "scenario": "Misconfigured Google Cloud Storage bucket with public read access exposes confidential marketing campaign assets which are accessed and downloaded by an unauthorized external party leveraging anonymous access.",
+      "technical_data": {
+        "IAM_policy": {
+          "bindings": [
+            {
+              "role": "roles/storage.objectViewer",
+              "members": [
+                "allUsers"
+              ]
+            }
+          ]
+        },
+        "Audit_Logs_excerpt": {
+          "protoPayload": {
+            "authenticationInfo": {
+              "principalEmail": "anonymous"
+            },
+            "requestMetadata": {
+              "callerIp": "198.51.100.23",
+              "userAgent": "curl/7.68.0"
+            },
+            "serviceName": "storage.googleapis.com",
+            "methodName": "storage.objects.get",
+            "resourceName": "projects/_/buckets/marketing-campaign-assets/objects/launch_video.mp4",
+            "status": {}
+          },
+          "timestamp": "2024-05-20T11:33:45.123Z",
+          "resource": {
+            "type": "gcs_bucket",
+            "labels": {
+              "bucket_name": "marketing-campaign-assets"
+            }
+          }
+        },
+        "HTTP_Request_for_object": "GET /marketing-campaign-assets/launch_video.mp4 HTTP/1.1\r\nHost: storage.googleapis.com\r\nUser-Agent: curl/7.68.0\r\nAccept: */*\r\n\r\n",
+        "GCS_access_log_entry": "198.51.100.23 - - [20/May/2024:11:33:45 +0000] \"GET /marketing-campaign-assets/launch_video.mp4 HTTP/1.1\" 200 - \"-\" \"curl/7.68.0\"",
+        "Automated_Scanning_Tool_Output": "Scanning bucket marketing-campaign-assets...\nBucket permissions include allUsers with roles/storage.objectViewer.\nBucket is publicly accessible. Enumerated 256 objects.\nDownloading launch_video.mp4 - 150MB\nDownload complete.",
+        "Downloaded_File_Hash": {
+          "MD5": "098f6bcd4621d373cade4e832627b4f6",
+          "SHA1": "a94a8fe5ccb19ba61c4c0873d391e987982fbbd3",
+          "SHA256": "2c26b46b68ffc68ff99b453c1d30413413422f1648d0c9b7e9d7e7f84b0f5fbb"
+        }
+      },
+      "indicators": [
+        "GCS bucket IAM binding granting roles/storage.objectViewer to allUsers",
+        "Audit logs showing anonymous principal accessing storage.objects.get method",
+        "HTTP GET requests to storage.googleapis.com bucket URLs returning 200 OK for confidential assets",
+        "GCS access logs documenting external IP access with user agent curl",
+        "Automated tools detecting public read permissions on sensitive GCS buckets"
+      ],
+      "detection_method": "Implement Google Cloud Organization Policy constraints to prevent public IAM bindings on storage buckets. Continuously monitor Audit Logs for anonymous or allUsers access events. Employ automated scanning tools to identify publicly accessible buckets and alert on any sensitive data exposure. Analyze GCS access logs for unusual or unauthorized IP addresses and user agents.",
+      "relevant_mitre_techniques": [
+        "T1530 - Data from Cloud Storage Object",
+        "T1078 - Valid Accounts (Anonymous access considered valid in this context)",
+        "T1081 - Credentials in Files (if credentials stored in bucket)",
+        "T1218 - Signed Binary Proxy Execution (for automated tools accessing the bucket)"
+      ]
+    },
+    {
+      "scenario": "Azure Blob Storage container configured with public blob-level access exposes proprietary R&D documents which are enumerated and downloaded by an attacker using unauthenticated requests exploiting the container's anonymous read permissions.",
+      "technical_data": {
+        "Access_Policy": {
+          "publicAccess": "Blob"
+        },
+        "AzureActivity_log_excerpt": {
+          "authorization": {
+            "action": "Microsoft.Storage/storageAccounts/blobServices/containers/blobs/read",
+            "scope": "/subscriptions/abcd1234-5678-90ef-ghij-klmnopqrstuv/resourceGroups/rg-prod/providers/Microsoft.Storage/storageAccounts/prodstorage/blobServices/default/containers/rd-documents/blobs/prototype_specs.pdf"
+          },
+          "callerIpAddress": "192.0.2.101",
+          "caller": "Anonymous",
+          "eventTimestamp": "2024-05-18T08:17:54Z",
+          "operationName": "GetBlob",
+          "status": "Succeeded"
+        },
+        "HTTP_Request_for_object": "GET /rd-documents/prototype_specs.pdf HTTP/1.1\r\nHost: prodstorage.blob.core.windows.net\r\nUser-Agent: Wget/1.20.3 (linux-gnu)\r\nAccept: */*\r\n\r\n",
+        "Blob_access_log_entry": "192.0.2.101 - - [18/May/2024:08:17:54 +0000] \"GET /rd-documents/prototype_specs.pdf HTTP/1.1\" 200 - \"-\" \"Wget/1.20.3 (linux-gnu)\"",
+        "Automated_Scanning_Tool_Output": "Starting scan of Azure Blob container rd-documents...\nPublic access level: Blob (anonymous read access allowed).\nEnumerated 89 blobs.\nDownloaded prototype_specs.pdf - 2.7MB\nScan finished.",
+        "Downloaded_File_Hash": {
+          "MD5": "7b8b965ad4bca0e41ab51de7b31363a1",
+          "SHA1": "3c363836cf4e16666669a25da280a1865c2d2874",
+          "SHA256": "5e884898da28047151d0e56f8dc6292773603d0d6aabbddc4f1e7f1d4a0b8e51"
+        }
+      },
+      "indicators": [
+        "Azure Blob Storage container publicAccess property set to Blob",
+        "AzureActivity logs showing anonymous 'GetBlob' operations",
+        "HTTP GET requests to blob.core.windows.net URLs returning 200 OK for sensitive files",
+        "Blob storage access logs recording external IPs with user agents like Wget",
+        "Automated scanning tools reporting blob-level anonymous read permissions"
+      ],
+      "detection_method": "Enforce Azure Storage account policies to restrict public blob access. Utilize Azure Monitor and Azure Security Center to flag public access configurations and audit anonymous blob read operations. Schedule periodic automated scans of blob containers to detect and alert on any containers with public access enabled. Review blob storage logs for access patterns from unexpected IP addresses or user agents.",
+      "relevant_mitre_techniques": [
+        "T1530 - Data from Cloud Storage Object",
+        "T1078 - Valid Accounts (Anonymous access considered valid in this context)",
+        "T1081 - Credentials in Files (if credentials stored in blob)",
+        "T1218 - Signed Binary Proxy Execution (for tools accessing blob storage)"
+      ]
+    },
+    {
+      "scenario": "Google Cloud Storage bucket configured with uniform bucket-level access disabled and an IAM policy granting allUsers the 'roles/storage.objectViewer' role, exposing confidential customer PII data accessible by anyone on the internet.",
+      "technical_data": {
+        "IAM_policy": {
+          "bindings": [
+            {
+              "role": "roles/storage.objectViewer",
+              "members": [
+                "allUsers"
+              ]
+            }
+          ]
+        },
+        "AuditLogs_log_excerpt": {
+          "protoPayload": {
+            "methodName": "storage.objects.get",
+            "resourceName": "projects/_/buckets/customer-data-bucket/objects/pii_records.csv",
+            "authenticationInfo": {
+              "principalEmail": "anonymous"
+            },
+            "requestMetadata": {
+              "callerIp": "198.51.100.22",
+              "userAgent": "Mozilla/5.0 (compatible; Bingbot/2.0; +http://www.bing.com/bingbot.htm)"
+            },
+            "serviceName": "storage.googleapis.com",
+            "status": {}
+          },
+          "timestamp": "2024-06-01T10:15:30Z"
+        },
+        "HTTP_Request_for_object": "GET /customer-data-bucket/pii_records.csv HTTP/1.1\r\nHost: storage.googleapis.com\r\nUser-Agent: Mozilla/5.0 (compatible; Bingbot/2.0; +http://www.bing.com/bingbot.htm)\r\nAccept: */*\r\n\r\n",
+        "GCS_access_log_entry": "198.51.100.22 - - [01/Jun/2024:10:15:30 +0000] \"GET /customer-data-bucket/pii_records.csv HTTP/1.1\" 200 - \"-\" \"Mozilla/5.0 (compatible; Bingbot/2.0; +http://www.bing.com/bingbot.htm)\" - - -",
+        "Automated_Scanning_Tool_Output": "Scanning bucket customer-data-bucket...\nFound IAM binding granting allUsers roles/storage.objectViewer.\nBucket is publicly readable.\nEnumerating contents...\nFound 2150 objects.\nDownloading pii_records.csv - 3.4MB\nDownload complete.",
+        "Downloaded_File_Hash": {
+          "MD5": "d41d8cd98f00b204e9800998ecf8427e",
+          "SHA1": "da39a3ee5e6b4b0d3255bfef95601890afd80709",
+          "SHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        }
+      },
+      "indicators": [
+        "IAM policy binding with 'allUsers' member and 'roles/storage.objectViewer' role",
+        "Audit Logs showing unauthenticated storage.objects.get calls",
+        "HTTP GET requests returning 200 OK for sensitive CSV objects",
+        "GCS access logs showing external IP and anonymous user agent access",
+        "Automated scanning tools detecting public read IAM bindings on the bucket"
+      ],
+      "detection_method": "Enable and analyze Cloud Audit Logs focusing on storage.objects.get calls with unauthenticated principals. Use GCP Cloud Asset Inventory and IAM policy analyzer to detect public bindings. Implement scheduled automated scans of bucket IAM policies to alert on public access. Monitor HTTP access logs for unusual user agents and IP addresses accessing sensitive data.",
+      "relevant_mitre_techniques": [
+        "T1530 - Data from Cloud Storage Object",
+        "T1078 - Valid Accounts (Anonymous access)",
+        "T1081 - Credentials in Files",
+        "T1218 - Signed Binary Proxy Execution"
+      ]
+    },
+    {
+      "scenario": "Azure Blob Storage container with public access enabled at container level, exposing proprietary engineering design files that are accessed and downloaded by an external IP due to misconfigured container public access settings.",
+      "technical_data": {
+        "Container_access_level": "blob",
+        "Access_policy": {
+          "publicAccess": "Blob"
+        },
+        "AzureActivity_log_excerpt": {
+          "authorization": {
+            "action": "Microsoft.Storage/storageAccounts/blobServices/containers/blobs/read",
+            "scope": "/subscriptions/abcdef12-3456-7890-abcd-ef1234567890/resourceGroups/EngRG/providers/Microsoft.Storage/storageAccounts/engstorage/blobServices/default/containers/proprietary-designs/blobs/blueprint_v2.dwg"
+          },
+          "caller": "198.51.100.88",
+          "eventTimestamp": "2024-05-20T08:45:00Z",
+          "status": {
+            "code": "Success"
+          },
+          "properties": {
+            "requestUri": "https://engstorage.blob.core.windows.net/proprietary-designs/blueprint_v2.dwg",
+            "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/90.0.4430.212 Safari/537.36"
+          }
+        },
+        "HTTP_Request_for_object": "GET /proprietary-designs/blueprint_v2.dwg HTTP/1.1\r\nHost: engstorage.blob.core.windows.net\r\nUser-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) Chrome/90.0.4430.212 Safari/537.36\r\nAccept: */*\r\n\r\n",
+        "Blob_access_log_entry": "198.51.100.88 - - [20/May/2024:08:45:00 +0000] \"GET /proprietary-designs/blueprint_v2.dwg HTTP/1.1\" 200 - \"-\" \"Mozilla/5.0 (Windows NT 10.0; Win64; x64) Chrome/90.0.4430.212 Safari/537.36\" - - -",
+        "Automated_Scanning_Tool_Output": "Scanning Azure storage account engstorage...\nContainer 'proprietary-designs' has public access level: Blob.\nBucket is publicly accessible.\nEnumerating blobs...\nFound 87 blobs.\nDownloading blueprint_v2.dwg - 4.1MB\nDownload complete.",
+        "Downloaded_File_Hash": {
+          "MD5": "e2fc714c4727ee9395f324cd2e7f331f",
+          "SHA1": "b026324c6904b2a9cb4b88d6d61c81d100000000",
+          "SHA256": "5d41402abc4b2a76b9719d911017c59200000000000000000000000000000000"
+        }
+      },
+      "indicators": [
+        "Azure Blob Storage container public access level set to 'blob'",
+        "Azure Activity logs showing anonymous read access to blobs",
+        "HTTP GET requests to blob URLs returning 200 OK",
+        "Blob access logs showing external IP address accessing design files",
+        "Automated tools reporting public container access"
+      ],
+      "detection_method": "Use Azure Security Center to continuously monitor blob container public access levels and alert on any container with public read access. Analyze Azure Activity Logs to detect anonymous or external IP blob read operations. Schedule automated scans of storage account containers for public access misconfigurations. Review blob access logs for anomalous IPs and user agents accessing sensitive data.",
+      "relevant_mitre_techniques": [
+        "T1530 - Data from Cloud Storage Object",
+        "T1078 - Valid Accounts (Anonymous access in this context)",
+        "T1081 - Credentials in Files",
+        "T1218 - Signed Binary Proxy Execution"
+      ]
+    }
+  ]
+}

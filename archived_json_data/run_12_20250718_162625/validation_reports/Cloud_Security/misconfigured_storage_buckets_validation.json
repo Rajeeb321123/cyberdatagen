@@ -1,0 +1,101 @@
+{
+  "report": [
+    {
+      "index": 0,
+      "problem": {
+        "area": "Cloud Security",
+        "nature": "misconfigured_storage_buckets"
+      },
+      "example": {
+        "scenario": "Publicly accessible AWS S3 bucket containing sensitive customer PII data due to a misconfigured bucket policy allowing anonymous ListBucket and GetObject actions.",
+        "technical_data": {
+          "IAM_Policy_JSON": {
+            "Version": "2012-10-17",
+            "Statement": [
+              {
+                "Sid": "PublicReadGetObject",
+                "Effect": "Allow",
+                "Principal": "*",
+                "Action": [
+                  "s3:GetObject",
+                  "s3:ListBucket"
+                ],
+                "Resource": [
+                  "arn:aws:s3:::example-customer-data",
+                  "arn:aws:s3:::example-customer-data/*"
+                ]
+              }
+            ]
+          },
+          "AWS_CloudTrail_Log_Excerpt": {
+            "eventVersion": "1.08",
+            "userIdentity": {
+              "type": "Anonymous",
+              "principalId": "ANONYMOUS"
+            },
+            "eventTime": "2024-05-15T14:22:34Z",
+            "eventSource": "s3.amazonaws.com",
+            "eventName": "ListObjectsV2",
+            "awsRegion": "us-east-1",
+            "sourceIPAddress": "198.51.100.23",
+            "userAgent": "aws-sdk-go/1.42.12 (go1.17; linux; amd64)",
+            "requestParameters": {
+              "bucketName": "example-customer-data"
+            },
+            "responseElements": null,
+            "requestID": "D4F9A3B7CDE2A1B2",
+            "eventID": "a1b2c3d4-5678-90ab-cdef-1234567890ab",
+            "readOnly": true,
+            "resources": [
+              {
+                "type": "AWS::S3::Bucket",
+                "ARN": "arn:aws:s3:::example-customer-data"
+              }
+            ],
+            "eventType": "AwsApiCall",
+            "managementEvent": false
+          },
+          "Sample_HTTP_GET_Request_to_S3_Object": "GET /customer_data_2024_05.csv HTTP/1.1\r\nHost: example-customer-data.s3.amazonaws.com\r\nUser-Agent: curl/7.68.0\r\nAccept: */*\r\n\r\n",
+          "Sample_HTTP_Response_Headers": {
+            "HTTP/1.1 200 OK": null,
+            "x-amz-id-2": "EXAMPLE1234/5678abcdefghijklmno1234567890=",
+            "x-amz-request-id": "D4F9A3B7CDE2A1B2",
+            "Date": "Wed, 15 May 2024 14:22:34 GMT",
+            "Last-Modified": "Wed, 15 May 2024 12:00:00 GMT",
+            "ETag": "\"9b2cf535f27731c974343645a3985328\"",
+            "Content-Type": "text/csv",
+            "Content-Length": "24567",
+            "Server": "AmazonS3"
+          },
+          "Example_PII_Data_Snippet_from_CSV": "customer_id,email,full_name,phone_number,ssn\n12345,jane.doe@example.com,Jane Doe,+1-202-555-0143,123-45-6789\n12346,john.smith@example.com,John Smith,+1-202-555-0199,987-65-4321\n",
+          "Security_Posture_Scan_Tool_Output": {
+            "resource": "arn:aws:s3:::example-customer-data",
+            "check": "S3_BUCKET_PUBLIC_READ",
+            "result": "FAILED",
+            "details": "Bucket allows public listing and reading of objects",
+            "recommendation": "Restrict bucket policy to authenticated AWS principals only"
+          }
+        },
+        "indicators": [
+          "S3 bucket policy with Principal=\"*\" and Allow for s3:ListBucket and s3:GetObject",
+          "CloudTrail events showing Anonymous user access with ListObjectsV2 and GetObject calls",
+          "HTTP GET requests to s3.amazonaws.com with no authorization headers",
+          "Presence of sensitive PII data in publicly accessible objects",
+          "Security posture management scan failure flagging public access"
+        ],
+        "detection_method": "Automated CSPM tools scanning bucket policies for public access permissions combined with monitoring CloudTrail logs for Anonymous or unauthenticated API calls to sensitive buckets. Alert on any s3:ListBucket or s3:GetObject events where userIdentity.type is 'Anonymous'. Periodic manual or automated content inspection of bucket objects for sensitive data patterns (PII regex matching).",
+        "relevant_mitre_techniques": [
+          "T1530 - Data from Cloud Storage Object",
+          "T1078.004 - Valid Accounts: Cloud Accounts",
+          "T1083 - File and Directory Discovery",
+          "T1565.001 - Data from Information Repositories: Cloud Storage Object"
+        ]
+      },
+      "validation": {
+        "valid": true,
+        "issues": [],
+        "comments": "The sample accurately represents the problem of misconfigured cloud storage buckets exposing sensitive data. It correctly aligns with the problem nature by showing a publicly accessible AWS S3 bucket with a bucket policy allowing anonymous ListBucket and GetObject actions, which is a common misconfiguration. The inclusion of IAM policy JSON, CloudTrail log excerpts showing anonymous access, HTTP request/response samples, and a snippet of sensitive PII data provides a realistic and comprehensive scenario. The security posture scan output and detailed indicators clearly explain why this sample matches the problem. The detection method is well described, covering automated CSPM tools, CloudTrail monitoring, and content inspection, which aligns with recommended risk reduction strategies. The relevant MITRE techniques are appropriate for this scenario. Overall, the sample is complete, realistic, and technically correct, making it a strong example for this cloud security misconfiguration problem."
+      }
+    }
+  ]
+}

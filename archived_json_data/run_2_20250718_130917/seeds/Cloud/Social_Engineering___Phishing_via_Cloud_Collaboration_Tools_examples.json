@@ -1,0 +1,80 @@
+{
+  "examples": [
+    {
+      "scenario": "Phishing email with embedded malicious link to a fake cloud collaboration document, leading to malware download via shared Google Drive link with obfuscated URL parameters.",
+      "technical_data": {
+        "email_headers": "Return-Path: <attack.sender@suspiciousdomain.com>\r\nReceived: from mail.suspiciousdomain.com (mail.suspiciousdomain.com [198.51.100.45])\r\n\tby mx.google.com with ESMTPS id o3si12345678qtc.123.2024.06.15.12.34.56\r\n\tfor <victim@targetcorp.com>;\r\n\tSat, 15 Jun 2024 12:34:56 -0700 (PDT)\r\nReceived-SPF: fail (google.com: domain of attack.sender@suspiciousdomain.com does not designate 198.51.100.45 as permitted sender) client-ip=198.51.100.45;\r\nAuthentication-Results: mx.google.com;\r\n\tspf=fail (sender IP is 198.51.100.45) smtp.mailfrom=attack.sender@suspiciousdomain.com;\r\n\tdkim=none (message not signed);\r\n\tdmarc=fail (p=NONE sp=NONE dis=NONE) header.from=suspiciousdomain.com\r\nX-Originating-IP: [198.51.100.45]\r\nX-Mailer: Microsoft Outlook 16.0\r\nMIME-Version: 1.0\r\nContent-Type: text/html; charset=\"UTF-8\"\r\nSubject: Urgent: Updated Q2 Sales Report - Review Now\r\nFrom: \"John Smith\" <attack.sender@suspiciousdomain.com>\r\nTo: victim@targetcorp.com\r\nDate: Sat, 15 Jun 2024 12:34:55 -0700\r\nMessage-ID: <CAKf=abc123xyz@clientmail>",
+        "email_body_html": "<html><body><p>Hi Team,</p><p>Please review the updated Q2 Sales Report at the following link:</p><p><a href=\"https://drive.google.com/file/d/1a2B3cD4e5FgH6Ij7KlmnopQrsTuvwXyZ/view?usp=sharing&authuser=0&safe=active&redirect=https%3A%2F%2Fevil-site.com%2Fpayload.exe\">Q2 Sales Report</a></p><p>Regards,<br>John Smith</p></body></html>",
+        "smtp_transaction_log": "220 mail.suspiciousdomain.com ESMTP Postfix\r\nEHLO attackerpc\r\n250-mail.suspiciousdomain.com\r\n250-PIPELINING\r\n250-SIZE 10240000\r\n250-ETRN\r\n250-STARTTLS\r\n250-AUTH PLAIN LOGIN\r\n250-ENHANCEDSTATUSCODES\r\n250-8BITMIME\r\n250 DSN\r\nMAIL FROM:<attack.sender@suspiciousdomain.com>\r\n250 2.1.0 Ok\r\nRCPT TO:<victim@targetcorp.com>\r\n250 2.1.5 Ok\r\nDATA\r\n354 End data with <CR><LF>.<CR><LF>\r\nFrom: \"John Smith\" <attack.sender@suspiciousdomain.com>\r\nTo: victim@targetcorp.com\r\nSubject: Urgent: Updated Q2 Sales Report - Review Now\r\n\r\n<html><body><p>Hi Team,</p><p>Please review the updated Q2 Sales Report at the following link:</p><p><a href=\"https://drive.google.com/file/d/1a2B3cD4e5FgH6Ij7KlmnopQrsTuvwXyZ/view?usp=sharing&authuser=0&safe=active&redirect=https%3A%2F%2Fevil-site.com%2Fpayload.exe\">Q2 Sales Report</a></p><p>Regards,<br>John Smith</p></body></html>\r\n.\r\n250 2.0.0 Ok: queued as 1234567890",
+        "malicious_url": "https://drive.google.com/file/d/1a2B3cD4e5FgH6Ij7KlmnopQrsTuvwXyZ/view?usp=sharing&authuser=0&safe=active&redirect=https%3A%2F%2Fevil-site.com%2Fpayload.exe",
+        "domain_registration": {
+          "domain": "suspiciousdomain.com",
+          "registrar": "NameCheap, Inc.",
+          "creation_date": "2024-05-28T14:22:10Z",
+          "registrant_country": "RU",
+          "name_servers": [
+            "ns1.namecheap.com",
+            "ns2.namecheap.com"
+          ],
+          "status": [
+            "clientTransferProhibited"
+          ]
+        },
+        "cloud_action_logs": [
+          {
+            "timestamp": "2024-06-15T12:35:05Z",
+            "user_email": "victim@targetcorp.com",
+            "action": "file_shared",
+            "file_id": "1a2B3cD4e5FgH6Ij7KlmnopQrsTuvwXyZ",
+            "shared_with": [
+              "external:evil-site.com"
+            ],
+            "permissions": "view_only"
+          },
+          {
+            "timestamp": "2024-06-15T12:37:12Z",
+            "user_email": "victim@targetcorp.com",
+            "action": "file_downloaded",
+            "file_id": "1a2B3cD4e5FgH6Ij7KlmnopQrsTuvwXyZ"
+          }
+        ],
+        "file_scan_results": {
+          "file_id": "1a2B3cD4e5FgH6Ij7KlmnopQrsTuvwXyZ",
+          "sha256": "f1a2b3c4d5e6f7890123456789abcdef1234567890abcdef1234567890abcdef",
+          "scan_date": "2024-06-15T12:36:00Z",
+          "detected": true,
+          "threat_name": "Trojan:Win32/Emotet",
+          "scanner": "Microsoft Defender ATP"
+        },
+        "network_packet_capture": "Frame 1: 66 bytes on wire (528 bits), 66 bytes captured (528 bits)\r\nEthernet II, Src: 52:54:00:12:35:02, Dst: 00:15:5d:4a:2e:01\r\nInternet Protocol Version 4, Src: 198.51.100.45, Dst: 172.217.3.110\r\nTransmission Control Protocol, Src Port: 443, Dst Port: 52344, Seq: 1, Ack: 1, Len: 20\r\nHypertext Transfer Protocol\r\n    GET /file/d/1a2B3cD4e5FgH6Ij7KlmnopQrsTuvwXyZ/view?usp=sharing&authuser=0&safe=active&redirect=https%3A%2F%2Fevil-site.com%2Fpayload.exe HTTP/1.1\r\n    Host: drive.google.com\r\n    User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64)\r\n    Accept: text/html\r\n\r\n"
+      },
+      "indicators": {
+        "phishing_email_sender": "attack.sender@suspiciousdomain.com",
+        "malicious_domain": "suspiciousdomain.com",
+        "malicious_redirect_domain": "evil-site.com",
+        "malicious_url_patterns": [
+          "drive.google.com/file/d/*/view?*redirect=https%3A%2F%2Fevil-site.com%2Fpayload.exe"
+        ],
+        "file_hashes": {
+          "sha256": "f1a2b3c4d5e6f7890123456789abcdef1234567890abcdef1234567890abcdef"
+        },
+        "network_ips": [
+          "198.51.100.45"
+        ],
+        "suspicious_cloud_events": [
+          "external sharing to evil-site.com",
+          "file download immediately after suspicious share"
+        ]
+      },
+      "detection_method": "Email gateway filters detect SPF fail and suspicious sender domain; URL scanning tools flag redirect parameter pointing to known malicious domain; Cloud DLP and CASB monitor external sharing event with suspicious domain; Endpoint AV detects Emotet payload hash during download; Network IDS alerts on HTTP requests with redirect parameter to evil-site.com; User training flags unexpected cloud share link.",
+      "relevant_mitre_techniques": [
+        "T1566.001",
+        "T1192",
+        "T1071.001",
+        "T1110",
+        "T1204.002",
+        "T1530"
+      ]
+    }
+  ]
+}

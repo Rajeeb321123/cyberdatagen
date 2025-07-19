@@ -1,0 +1,296 @@
+{
+  "samples": [
+    {
+      "scenario": "Model poisoning attack targeting a spam detection ML model by injecting crafted email text samples with mislabeled spam/ham tags to cause misclassification of specific phishing campaigns.",
+      "technical_data": {
+        "training_data_manifest_snippet": [
+          "{\"email_id\": \"email_78901.eml\", \"label\": \"spam\", \"sha256\": \"f2d4e7c89b1a5d3e6f7a8b9c0d1e2f3a4b5c6d7e8f9a0b1c2d3e4f5a6b7c8d9e\"}",
+          "{\"email_id\": \"email_78902_poisoned.eml\", \"label\": \"ham\", \"sha256\": \"a9d8c7b6e5f4d3c2b1a0f9e8d7c6b5a4f3e2d1c0b9a8f7e6d5c4b3a291837465\"}"
+        ],
+        "poisoned_email_metadata": {
+          "email_id": "email_78902_poisoned.eml",
+          "label": "ham",
+          "sha256": "a9d8c7b6e5f4d3c2b1a0f9e8d7c6b5a4f3e2d1c0b9a8f7e6d5c4b3a291837465",
+          "file_size_bytes": 15230,
+          "content_snippet": "Subject: Urgent Account Update Required\nDear User, please verify your credentials at http://malicious.link before 24h.",
+          "injected_phrases": [
+            "Urgent Account Update",
+            "verify your credentials"
+          ],
+          "injection_method": "label_flipping_with_malicious_text_insertion",
+          "creation_tool": "custom_text_poisoning_script_v0.9"
+        },
+        "training_log_excerpt": [
+          "2024-06-10T09:15:32Z INFO Loading batch 340 with 128 email samples",
+          "2024-06-10T09:15:35Z WARNING Sudden increase in false negative rate for spam class: from 6% to 18%",
+          "2024-06-10T09:15:35Z INFO Batch 340 label distribution: {'spam': 60, 'ham': 68}",
+          "2024-06-10T09:15:37Z INFO Model precision on validation spam set dropped from 95.1% to 87.3%"
+        ],
+        "post_training_model_metrics": {
+          "baseline_precision": "95.1%",
+          "post_poisoning_precision": "87.3%",
+          "spam_class_false_negatives": 112,
+          "spam_class_false_positives": 9
+        },
+        "anomaly_detection_alert": {
+          "timestamp": "2024-06-10T09:16:00Z",
+          "alert_id": "MLMON-20240610-091600",
+          "description": "Spike in false negative rate and precision degradation detected on spam label after batch 340 ingestion. Possible label flipping poisoning.",
+          "severity": "Medium",
+          "anomaly_type": "label_flipping_and_performance_degradation",
+          "threshold": 0.1,
+          "observed_value": 0.18,
+          "affected_labels": [
+            "spam"
+          ]
+        },
+        "adversarial_training_snippet": [
+          "def adversarial_text_training_step(model, batch_texts, batch_labels, epsilon=0.05):",
+          "    batch_embeddings = model.embed(batch_texts)",
+          "    batch_embeddings.requires_grad = True",
+          "    outputs = model(batch_embeddings)",
+          "    loss = criterion(outputs, batch_labels)",
+          "    loss.backward()",
+          "    data_grad = batch_embeddings.grad.data",
+          "    perturbed_embeddings = batch_embeddings + epsilon * data_grad.sign()",
+          "    outputs_adv = model(perturbed_embeddings)",
+          "    loss_adv = criterion(outputs_adv, batch_labels)",
+          "    optimizer.zero_grad()",
+          "    loss_adv.backward()",
+          "    optimizer.step()"
+        ]
+      },
+      "indicators": [
+        "Mislabeled email samples with suspicious phrases typical of phishing",
+        "Sudden increase in false negative rate for spam class during training",
+        "Detection of unusual precision and recall drops after specific batch ingestion",
+        "Alerts from ML monitoring tools regarding label inconsistencies",
+        "Presence of injected text patterns and unnatural label distribution shifts"
+      ],
+      "detection_method": "Monitoring classification metrics such as precision, recall, and false negative rates per class; verifying label consistency with text content hashes; anomaly detection on label distribution changes; manual inspection of flagged email samples for suspicious text patterns; applying adversarial training with robust loss functions to reduce effect of poisoned labels.",
+      "relevant_mitre_techniques": [
+        "T1586 - Compromise Infrastructure",
+        "T1499 - Data Manipulation",
+        "T1621 - Multi-Stage Channels",
+        "T1610 - Deploy Containerized Machine Learning Models"
+      ]
+    },
+    {
+      "scenario": "Model poisoning of an autonomous vehicle object detection model by injecting adversarially perturbed LiDAR point cloud data during training to cause misclassification of pedestrian objects.",
+      "technical_data": {
+        "training_data_manifest_snippet": [
+          "{\"pointcloud_id\": \"pc_45789.bin\", \"label\": \"pedestrian\", \"sha256\": \"d4f5b6c7a8e9d0f1b2c3d4e5f6a7b8c9d0e1f2a3b4c5d6e7f8a9b0c1d2e3f4a5\"}",
+          "{\"pointcloud_id\": \"pc_45790_poisoned.bin\", \"label\": \"pedestrian\", \"sha256\": \"b3c4d5e6f7a8b9c0d1e2f3a4b5c6d7e8f9a0b1c2d3e4f5a6b7c8d9e0f1a2b3c4\"}"
+        ],
+        "poisoned_pointcloud_metadata": {
+          "pointcloud_id": "pc_45790_poisoned.bin",
+          "label": "pedestrian",
+          "sha256": "b3c4d5e6f7a8b9c0d1e2f3a4b5c6d7e8f9a0b1c2d3e4f5a6b7c8d9e0f1a2b3c4",
+          "file_size_bytes": 1048576,
+          "num_points": 2048,
+          "perturbation_type": "imperceptible_spatial_jitter",
+          "perturbation_max_displacement_meters": 0.02,
+          "creation_tool": "lidar_adversarial_perturb_generator_v2.3"
+        },
+        "training_log_excerpt": [
+          "2024-06-08T18:40:12Z INFO Loading batch 550 with 32 point cloud samples",
+          "2024-06-08T18:40:15Z WARNING Abnormal gradient variance detected in layer pointnet_sa3: variance increased from 0.010 to 0.20",
+          "2024-06-08T18:40:15Z INFO Batch 550 label distribution: {'pedestrian': 10, 'car': 12, 'cyclist': 10}",
+          "2024-06-08T18:40:18Z INFO Model mAP on validation set dropped from 90.2% to 82.5%"
+        ],
+        "post_training_model_metrics": {
+          "baseline_mAP": "90.2%",
+          "post_poisoning_mAP": "82.5%",
+          "pedestrian_class_false_negatives": 47,
+          "pedestrian_class_false_positives": 6
+        },
+        "anomaly_detection_alert": {
+          "timestamp": "2024-06-08T18:41:00Z",
+          "alert_id": "MLMON-20240608-184100",
+          "description": "Detected unusual gradient variance spikes in pointnet_sa3 layer after batch 550 ingestion. Possible point cloud data poisoning.",
+          "severity": "High",
+          "anomaly_type": "gradient_variance_spike",
+          "threshold": 0.05,
+          "observed_value": 0.2,
+          "affected_layers": [
+            "pointnet_sa3"
+          ]
+        },
+        "adversarial_training_snippet": [
+          "def adversarial_pointcloud_training_step(model, batch_pointclouds, batch_labels, epsilon=0.01):",
+          "    batch_pointclouds.requires_grad = True",
+          "    outputs = model(batch_pointclouds)",
+          "    loss = criterion(outputs, batch_labels)",
+          "    loss.backward()",
+          "    data_grad = batch_pointclouds.grad.data",
+          "    perturbed_pointclouds = batch_pointclouds + epsilon * data_grad.sign()",
+          "    perturbed_pointclouds = torch.clamp(perturbed_pointclouds, min=0)",
+          "    outputs_adv = model(perturbed_pointclouds)",
+          "    loss_adv = criterion(outputs_adv, batch_labels)",
+          "    optimizer.zero_grad()",
+          "    loss_adv.backward()",
+          "    optimizer.step()"
+        ]
+      },
+      "indicators": [
+        "Presence of point cloud samples with imperceptible spatial jitter perturbations",
+        "Gradient variance spikes in specific model layers during training",
+        "Marked drop in mAP on pedestrian class after ingestion of suspicious batches",
+        "Anomaly alerts triggered by model training monitoring services",
+        "Unusual distribution of point cloud spatial coordinates within training data"
+      ],
+      "detection_method": "Monitoring gradient statistics and variance during training; validating spatial consistency of LiDAR point clouds; applying hashing and checksums on point cloud files to detect changes; anomaly detection on class-wise mAP and false negative rates; manual forensic analysis of suspicious point clouds; employing adversarial training with spatial smoothing regularization.",
+      "relevant_mitre_techniques": [
+        "T1586 - Compromise Infrastructure",
+        "T1499 - Data Manipulation",
+        "T1621 - Multi-Stage Channels",
+        "T1610 - Deploy Containerized Machine Learning Models"
+      ]
+    },
+    {
+      "scenario": "Model poisoning attack targeting a spam email classification ML model by injecting crafted email samples labeled as spam but carrying benign content, resulting in increased false negatives and reduced spam filtering efficiency.",
+      "technical_data": {
+        "training_data_manifest_snippet": [
+          "{\"email_id\": \"email_5698.eml\", \"label\": \"spam\", \"sha256\": \"a9c3f1d2e4b7f59c2d1a8e0b3f4c7d5e9b1a2c3d4e5f67890abcdef123456789\"}",
+          "{\"email_id\": \"email_5699_poisoned.eml\", \"label\": \"spam\", \"sha256\": \"d4e7c8b9a0f1e2d3c4b5a697f8e1b7e3d1f9a6c8e4b2d1f0a7c3e9b5f8d3a4c2\"}"
+        ],
+        "poisoned_sample_metadata": {
+          "email_id": "email_5699_poisoned.eml",
+          "label": "spam",
+          "sha256": "d4e7c8b9a0f1e2d3c4b5a697f8e1b7e3d1f9a6c8e4b2d1f0a7c3e9b5f8d3a4c2",
+          "file_size_bytes": 15328,
+          "email_subject": "Congratulations! You've won a prize",
+          "email_body_snippet": "Dear user, please find the attached invoice for your recent purchase.",
+          "payload_obfuscation": "benign_content_with_spam_label",
+          "injection_method": "manual label tampering during dataset curation"
+        },
+        "training_log_excerpt": [
+          "2024-05-20T10:15:22Z INFO Loaded batch 45 with 512 emails",
+          "2024-05-20T10:15:25Z WARNING Detected label distribution skew: spam samples increased by 7% unexpectedly",
+          "2024-05-20T10:15:30Z INFO Batch 45 confusion matrix: TN=230, TP=185, FN=52, FP=45",
+          "2024-05-20T10:15:35Z INFO Model spam detection F1 score dropped from 0.87 to 0.78 after batch ingestion"
+        ],
+        "post_training_model_metrics": {
+          "baseline_f1_score": "0.87",
+          "post_poisoning_f1_score": "0.78",
+          "false_negatives_increase": 40,
+          "false_positives_increase": 10
+        },
+        "anomaly_detection_alert": {
+          "timestamp": "2024-05-20T10:16:00Z",
+          "alert_id": "MLMON-20240520-101600",
+          "description": "Unexpected spike in false negatives and label distribution shift detected during training batch 45 ingestion.",
+          "severity": "Medium",
+          "anomaly_type": "label_distribution_skew",
+          "threshold": 0.05,
+          "observed_value": 0.07,
+          "affected_metrics": [
+            "false_negatives",
+            "label_distribution"
+          ]
+        },
+        "adversarial_training_snippet": [
+          "def adversarial_training_step(model, batch_data, batch_labels, epsilon=0.05):",
+          "    batch_data.requires_grad = True",
+          "    outputs = model(batch_data)",
+          "    loss = criterion(outputs, batch_labels)",
+          "    loss.backward()",
+          "    data_grad = batch_data.grad.data",
+          "    perturbed_data = batch_data + epsilon * data_grad.sign()",
+          "    perturbed_data = torch.clamp(perturbed_data, 0, 1)",
+          "    outputs_adv = model(perturbed_data)",
+          "    loss_adv = criterion(outputs_adv, batch_labels)",
+          "    optimizer.zero_grad()",
+          "    loss_adv.backward()",
+          "    optimizer.step()"
+        ]
+      },
+      "indicators": [
+        "Sudden increase in spam-labeled samples with benign content hashes",
+        "Label distribution shifts detected during training batches",
+        "Degradation in spam detection F1 score after batch ingestion",
+        "Anomaly alerts triggered on label distribution and performance metrics",
+        "Manual inspection reveals mislabeled clean emails as spam"
+      ],
+      "detection_method": "Monitoring label distributions and confusion matrices during training; hashing and verifying newly ingested samples; anomaly detection on false negative and false positive rates; manual email content verification of suspicious samples; employing adversarial training to improve robustness against mislabeled data.",
+      "relevant_mitre_techniques": [
+        "T1586 - Compromise Infrastructure",
+        "T1499 - Data Manipulation",
+        "T1621 - Multi-Stage Channels",
+        "T1610 - Deploy Containerized Machine Learning Models"
+      ]
+    },
+    {
+      "scenario": "Poisoning of an NLP sentiment analysis model by injecting adversarially perturbed text samples into the training set to misclassify targeted negative reviews as positive, undermining sentiment detection reliability.",
+      "technical_data": {
+        "training_data_manifest_snippet": [
+          "{\"text_id\": \"review_7821.txt\", \"label\": \"negative\", \"sha256\": \"c3f1e2b4a5d6e7f8901b2c3d4e5f67890abcdef1234567890abcdef1234567890\"}",
+          "{\"text_id\": \"review_7822_poisoned.txt\", \"label\": \"negative\", \"sha256\": \"f7e4d3c2b1a0987654321fedcba9876543210fedcba1234567890abcdef123456\"}"
+        ],
+        "poisoned_sample_metadata": {
+          "text_id": "review_7822_poisoned.txt",
+          "label": "negative",
+          "sha256": "f7e4d3c2b1a0987654321fedcba9876543210fedcba1234567890abcdef123456",
+          "file_size_bytes": 1024,
+          "text_excerpt": "This product is absolutely wonderful and exceeded my expectations!",
+          "perturbation_technique": "synonym_substitution_and_inconspicuous_word_insertion",
+          "embedding_similarity_drop": "0.12",
+          "creation_tool": "text_adversarial_generator_v2.0"
+        },
+        "training_log_excerpt": [
+          "2024-06-01T16:45:12Z INFO Parsing batch 2150 with 128 text samples",
+          "2024-06-01T16:45:15Z WARNING Increased loss variance detected in sentiment_output_layer: variance increased from 0.003 to 0.015",
+          "2024-06-01T16:45:18Z INFO Batch 2150 label distribution: {'positive': 60, 'negative': 68}",
+          "2024-06-01T16:45:22Z INFO Validation accuracy dropped from 89.5% to 83.7% after batch ingestion"
+        ],
+        "post_training_model_metrics": {
+          "baseline_accuracy": "89.5%",
+          "post_poisoning_accuracy": "83.7%",
+          "target_class_false_negatives": 28,
+          "target_class_false_positives": 7
+        },
+        "anomaly_detection_alert": {
+          "timestamp": "2024-06-01T16:46:00Z",
+          "alert_id": "MLMON-20240601-164600",
+          "description": "Significant increase in output loss variance detected in sentiment output layer after batch 2150 ingestion. Potential text poisoning attack suspected.",
+          "severity": "High",
+          "anomaly_type": "loss_variance_spike",
+          "threshold": 0.01,
+          "observed_value": 0.015,
+          "affected_layers": [
+            "sentiment_output_layer"
+          ]
+        },
+        "adversarial_training_snippet": [
+          "def adversarial_training_step(model, batch_texts, batch_labels, epsilon=0.02):",
+          "    batch_embeddings = model.embed(batch_texts)",
+          "    batch_embeddings.requires_grad = True",
+          "    outputs = model.classify(batch_embeddings)",
+          "    loss = criterion(outputs, batch_labels)",
+          "    loss.backward()",
+          "    grad = batch_embeddings.grad.data",
+          "    perturbed_embeddings = batch_embeddings + epsilon * grad.sign()",
+          "    outputs_adv = model.classify(perturbed_embeddings)",
+          "    loss_adv = criterion(outputs_adv, batch_labels)",
+          "    optimizer.zero_grad()",
+          "    loss_adv.backward()",
+          "    optimizer.step()"
+        ]
+      },
+      "indicators": [
+        "Presence of text samples with conflicting semantic content and label",
+        "Increased variance in model output loss during training",
+        "Noticeable drop in validation accuracy after training batch ingestion",
+        "Anomaly alerts on output layer loss statistics",
+        "Detected unnatural synonyms and inconspicuous wording in labeled negative samples"
+      ],
+      "detection_method": "Continuous monitoring of training loss variance and validation accuracy; hashing and semantic similarity checks on training texts; anomaly detection on model output layer statistics; manual review of suspicious text samples for adversarial perturbations; applying adversarial training techniques focused on embedding space robustness.",
+      "relevant_mitre_techniques": [
+        "T1499 - Data Manipulation",
+        "T1586 - Compromise Infrastructure",
+        "T1621 - Multi-Stage Channels",
+        "T1610 - Deploy Containerized Machine Learning Models"
+      ]
+    }
+  ]
+}

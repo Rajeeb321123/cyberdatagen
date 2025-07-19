@@ -1,0 +1,30 @@
+{
+  "examples": [
+    {
+      "scenario": "Publicly Accessible AWS S3 Bucket Containing Sensitive Customer Data Due to Misconfigured Bucket Policy",
+      "technical_data": {
+        "bucket_policy": "{\n  \"Version\": \"2012-10-17\",\n  \"Statement\": [\n    {\n      \"Sid\": \"PublicReadGetObject\",\n      \"Effect\": \"Allow\",\n      \"Principal\": \"*\",\n      \"Action\": \"s3:GetObject\",\n      \"Resource\": \"arn:aws:s3:::customer-data-bucket/*\"\n    }\n  ]\n}",
+        "cloudtrail_log_event": "{\n  \"eventVersion\": \"1.08\",\n  \"userIdentity\": {\n    \"type\": \"IAMUser\",\n    \"principalId\": \"AIDAEXAMPLEUSER\",\n    \"arn\": \"arn:aws:iam::123456789012:user/admin\",\n    \"accountId\": \"123456789012\",\n    \"userName\": \"admin\"\n  },\n  \"eventTime\": \"2024-04-23T15:32:58Z\",\n  \"eventSource\": \"s3.amazonaws.com\",\n  \"eventName\": \"PutBucketPolicy\",\n  \"awsRegion\": \"us-east-1\",\n  \"sourceIPAddress\": \"198.51.100.24\",\n  \"userAgent\": \"aws-cli/2.7.0 Python/3.8.8 Linux/5.4.0-1041-aws botocore/2.4.5\",\n  \"requestParameters\": {\n    \"bucketName\": \"customer-data-bucket\",\n    \"policy\": \"{\\\"Version\\\": \\\"2012-10-17\\\", \\\"Statement\\\": [{\\\"Sid\\\": \\\"PublicReadGetObject\\\", \\\"Effect\\\": \\\"Allow\\\", \\\"Principal\\\": \\\"*\\\", \\\"Action\\\": \\\"s3:GetObject\\\", \\\"Resource\\\": \\\"arn:aws:s3:::customer-data-bucket/*\\\"}]}\"\n  },\n  \"responseElements\": null,\n  \"requestID\": \"68F2D9C4A1E2E5B3\",\n  \"eventID\": \"c0a0d642-ff2b-4f7f-9e61-2a3a8e04a7d6\",\n  \"readOnly\": false,\n  \"resources\": [\n    {\n      \"type\": \"AWS::S3::Bucket\",\n      \"ARN\": \"arn:aws:s3:::customer-data-bucket\"\n    }\n  ],\n  \"eventType\": \"AwsApiCall\",\n  \"managementEvent\": true\n}",
+        "s3_access_log": "79a1e2d2f6c9b7c3 customer-data-bucket [23/Apr/2024:16:00:01 +0000] 203.0.113.45 - 79A1E2D2F6C9B7C3 REST.GET.OBJECT sensitive_data.csv \"GET /customer-data-bucket/sensitive_data.csv HTTP/1.1\" 200 - 12345 12345 10 9 \"-\" \"Mozilla/5.0 (compatible; curl/7.68.0)\" -",
+        "sample_sensitive_data_file": "Name,SSN,Email,Phone\nJohn Doe,123-45-6789,john.doe@example.com,+1-202-555-0189\nJane Smith,987-65-4321,jane.smith@example.com,+1-202-555-0123\n",
+        "aws_cli_commands": "# List bucket ACL\naws s3api get-bucket-acl --bucket customer-data-bucket\n\n# Download sensitive file\naws s3 cp s3://customer-data-bucket/sensitive_data.csv ./\n",
+        "iam_policy_misconfiguration": "{\n  \"Version\": \"2012-10-17\",\n  \"Statement\": [\n    {\n      \"Effect\": \"Allow\",\n      \"Action\": \"s3:*\",\n      \"Resource\": \"*\"\n    }\n  ]\n}"
+      },
+      "indicators": [
+        "Bucket policy with Principal set to \"*\" allowing s3:GetObject action",
+        "CloudTrail event PutBucketPolicy on sensitive bucket with public read statement",
+        "S3 access logs showing GET requests from IP addresses not belonging to internal network",
+        "Sensitive CSV data files containing PII (Personally Identifiable Information) publicly retrieved",
+        "IAM policy granting wildcard s3:* permissions on all resources",
+        "AWS CLI usage from external IP (203.0.113.45) downloading sensitive files"
+      ],
+      "detection_method": "Automated CSPM tools scanning bucket policies for wildcard \"Principal\": \"*\" with read permissions, correlating with CloudTrail logs for PutBucketPolicy events and anomalous external IP S3 GET requests; scanning IAM policies for overly permissive s3:* actions; monitoring unusual data egress volumes from storage buckets; enabling S3 Block Public Access settings and alerting on deviations.",
+      "relevant_mitre_techniques": [
+        "T1530 - Data from Cloud Storage Object",
+        "T1078 - Valid Accounts (due to use of valid IAM credentials)",
+        "T1552 - Unsecured Credentials (misconfigured credentials allowing access)",
+        "T1218 - Signed Binary Proxy Execution (AWS CLI usage)"
+      ]
+    }
+  ]
+}

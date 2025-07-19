@@ -1,0 +1,85 @@
+{
+  "problem": {
+    "area": "Cloud Security",
+    "nature": "misconfigured_storage",
+    "description": "Misconfigured cloud storage services (e.g., S3 buckets, Azure blobs) expose sensitive data publicly or to unauthorized users, leading to data breaches."
+  },
+  "automated_metrics": {
+    "total_samples": 2,
+    "unique_samples": 2,
+    "uniqueness_ratio": 1.0,
+    "missing_keys_count": 0,
+    "completeness_ratio": 1.0
+  },
+  "individual_validations": {
+    "summary": {
+      "samples_validated": 2,
+      "valid_samples": 2,
+      "validity_rate": 1.0,
+      "overall_score_mean": 0.98,
+      "overall_score_std": 0.0
+    },
+    "detailed_results": [
+      {
+        "is_valid": true,
+        "scores": {
+          "relevance": 1.0,
+          "consistency": 1.0,
+          "correctness": 0.95,
+          "completeness": 1.0,
+          "realism": 0.95
+        },
+        "overall_score": 0.98,
+        "issues": [
+          "Minor inaccuracy in IAM policy 'principals' field using 'AllUsers' which is not a standard Azure RBAC principal identifier; typically 'AllUsers' is used in AWS S3 context, Azure uses role assignments or 'Everyone' group references."
+        ],
+        "strengths": [
+          "Highly relevant scenario focused on Azure Blob storage public access misconfiguration exposing sensitive HR data.",
+          "Consistent and well-structured JSON with appropriate fields and realistic data formats.",
+          "Technical details such as Azure CLI commands, activity log snippet, and CSPM alert are accurate and plausible.",
+          "Comprehensive coverage including indicators, detection methods, and MITRE ATT&CK techniques.",
+          "Realistic example of an actual cloud security misconfiguration incident with plausible attacker behavior and detection strategies."
+        ],
+        "sample_index": 0
+      },
+      {
+        "is_valid": true,
+        "scores": {
+          "relevance": 1.0,
+          "consistency": 1.0,
+          "correctness": 0.95,
+          "completeness": 0.95,
+          "realism": 1.0
+        },
+        "overall_score": 0.98,
+        "issues": [
+          "The 'principalEmail' and 'authoritySelector' fields in the audit log snippet are empty strings; while plausible for unauthenticated access, a null or missing field might be more typical."
+        ],
+        "strengths": [
+          "Highly relevant to cloud security and misconfigured storage buckets exposing sensitive data.",
+          "Consistent and well-structured JSON with appropriate fields and realistic data.",
+          "Technical details accurately reflect GCP storage ACLs, IAM policies, audit logs, and CLI commands.",
+          "Includes comprehensive information: scenario description, technical data, indicators, detection methods, and MITRE techniques.",
+          "Realistic example of a common misconfiguration leading to data exposure with plausible attack and detection vectors."
+        ],
+        "sample_index": 1
+      }
+    ]
+  },
+  "overall_assessment": {
+    "realism": "The samples are highly realistic, reflecting common and well-documented cloud storage misconfiguration scenarios in Azure and Google Cloud environments. The technical details such as activity log snippets, CLI commands, IAM policy misconfigurations, and CSPM alerts are plausible and consistent with actual cloud provider outputs. The inclusion of sensitive data examples and relevant MITRE ATT&CK techniques further enhances authenticity.",
+    "consistency": "The samples maintain strong consistency and adhere well to a clear schema structure. Each entry includes scenario descriptions, detailed technical data with multiple relevant fields, indicators, detection methods, and associated MITRE techniques. The formatting of JSON snippets and command examples is uniform across samples. Minor variations in field naming conventions are appropriate given the different cloud providers.",
+    "suggestions": [
+      "Include anonymized but syntactically valid subscription or project IDs instead of placeholders like 'xxxx' to improve realism.",
+      "Add timestamps or versioning metadata for the samples to track currency and updates.",
+      "Incorporate example remediation steps or commands to fix the misconfigurations to complement detection methods.",
+      "Expand the 'example_sensitive_object_content' to include more diverse data types or formats (e.g., JSON, CSV) for broader coverage.",
+      "Standardize the naming of keys within 'technical_data' to follow a consistent pattern across cloud providers (e.g., prefix with cloud provider abbreviation)."
+    ]
+  },
+  "report_metadata": {
+    "total_samples": 2,
+    "samples_validated_individually": 2,
+    "validation_percentage": 100.0
+  }
+}

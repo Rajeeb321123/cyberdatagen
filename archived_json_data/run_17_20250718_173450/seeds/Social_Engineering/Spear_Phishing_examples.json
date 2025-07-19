@@ -1,0 +1,44 @@
+{
+  "examples": [
+    {
+      "scenario": "Spear phishing email targeting CFO impersonation to request a wire transfer",
+      "technical_data": {
+        "email_headers": "Return-Path: <finance@payroll-secure.com>\r\nReceived: from mail.payroll-secure.com (mail.payroll-secure.com [198.51.100.23])\r\n\tby mail.corpfinance.local (Postfix) with ESMTPS id 1234ABCD5678\r\n\tfor <cfo@corporation.com>; Tue, 20 Jun 2023 13:45:23 +0000 (UTC)\r\nReceived-SPF: pass (corporation.com: domain of finance@payroll-secure.com designates 198.51.100.23 as permitted sender) receiver=mail.corpfinance.local; client-ip=198.51.100.23; helo=mail.payroll-secure.com;\r\nAuthentication-Results: mail.corpfinance.local; dkim=pass (1024-bit key) header.d=payroll-secure.com; spf=pass smtp.mailfrom=finance@payroll-secure.com;\r\nX-Virus-Scanned: yes (ClamAV 0.103.4)\r\nX-Microsoft-Antispam: BCL:0; PCL:0; RULEID:(8150253)(8150207)(8150239)(8170013)(8170008)\r\nMessage-ID: <20230620134523.1234ABCD5678@mail.payroll-secure.com>\r\nDate: Tue, 20 Jun 2023 13:45:23 +0000\r\nFrom: \"John Smith CFO\" <finance@payroll-secure.com>\r\nTo: cfo@corporation.com\r\nSubject: Urgent wire transfer request - Vendor payment\r\nMIME-Version: 1.0\r\nContent-Type: text/plain; charset=\"UTF-8\"\r\nContent-Transfer-Encoding: 7bit\r\nX-Originating-IP: [198.51.100.23]",
+        "email_body": "Dear CFO,\n\nPlease urgently process the attached wire transfer for $150,000 to our vendor \"Zenith Supplies\". The payment details are below:\n\nAccount Name: Zenith Supplies Ltd.\nAccount Number: 123456789\nBank: First National Bank\nRouting Number: 011000015\nSWIFT: FNBOUS44\n\nThis invoice must be paid by end of day today to avoid delays.\n\nThanks,\nJohn Smith\nChief Financial Officer\n",
+        "smtp_transaction_log": "220 mail.payroll-secure.com ESMTP Postfix\r\nEHLO attacker-machine.local\r\n250-mail.payroll-secure.com\r\n250-PIPELINING\r\n250-SIZE 10240000\r\n250-ETRN\r\n250-STARTTLS\r\n250-AUTH PLAIN LOGIN\r\n250-ENHANCEDSTATUSCODES\r\n250-8BITMIME\r\n250 DSN\r\nMAIL FROM:<finance@payroll-secure.com>\r\n250 2.1.0 Ok\r\nRCPT TO:<cfo@corporation.com>\r\n250 2.1.5 Ok\r\nDATA\r\n354 End data with <CR><LF>.<CR><LF>\r\n[Email Data]\r\n.\r\n250 2.0.0 Ok: queued as 1234ABCD5678\r\nQUIT\r\n221 2.0.0 Bye",
+        "suspicious_domain_registration": {
+          "domain": "payroll-secure.com",
+          "registrar": "NameCheap, Inc.",
+          "registration_date": "2023-05-28T15:12:00Z",
+          "expiration_date": "2024-05-28T15:12:00Z",
+          "registrant_name": "John Doe",
+          "registrant_email": "john.doe.contact@mailinator.com",
+          "nameservers": [
+            "ns1.payroll-secure.com",
+            "ns2.payroll-secure.com"
+          ]
+        },
+        "malicious_url": "http://payroll-secure.com/invoice/transfer-confirmation?invoiceID=839274&auth=0x4a6f686e536d697468",
+        "url_obfuscation": "The URL uses a subdomain mimicking legitimate corporate services and a hexadecimal string in the 'auth' parameter to appear as a token, hiding its malicious nature."
+      },
+      "indicators": {
+        "sender_ip": "198.51.100.23",
+        "sender_domain": "payroll-secure.com",
+        "dkim_signature": "v=1; a=rsa-sha256; c=relaxed/relaxed; d=payroll-secure.com; s=default; h=from:to:subject:date; bh=+3K9Xg8X2vZtL6jZ+3J5Y2W4r2nR2v9xk5mBvTkFvLxE=; b=Zk3g1xjVkWq3b7+3kl4mKUsr0oCQ==",
+        "email_subject": "Urgent wire transfer request - Vendor payment",
+        "email_from_display_name": "John Smith CFO",
+        "email_reply_to": "finance@payroll-secure.com",
+        "domain_age_days": 23,
+        "url_contains_hex_token": true
+      },
+      "detection_method": "Detection relies on integration of threat intelligence feeds to flag newly registered domains similar to corporate domains. Email gateway filters analyze SPF/DKIM anomalies, sender reputation, and perform URL sandboxing on embedded links. User education campaigns simulate such spear phishing emails to train CFOs and finance personnel on verifying requests via out-of-band communication channels. SIEM correlation rules alert on wire transfer requests coming from externally originated emails with suspicious domains. Multi-factor verification for wire transfers is enforced, requiring verbal confirmation.",
+      "relevant_mitre_techniques": [
+        "T1566.002 - Spear Phishing Link",
+        "T1566.001 - Spear Phishing Attachment",
+        "T1589.001 - Gather Victim Identity Information: Email Addresses",
+        "T1598.002 - Phishing for Information: Spearphishing Link",
+        "T1071.001 - Application Layer Protocol: Web Protocols"
+      ]
+    }
+  ]
+}

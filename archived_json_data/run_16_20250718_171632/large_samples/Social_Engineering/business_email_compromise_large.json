@@ -1,0 +1,216 @@
+{
+  "samples": [
+    {
+      "scenario": "Business Email Compromise via Compromised CFO Account Requesting Confidential Vendor Payment Details",
+      "technical_data": {
+        "email_headers": "Return-Path: <cfo@enterprise.com>\r\nReceived: from smtp.hackerhost.io (smtp.hackerhost.io [203.0.113.101])\r\n\tby mail.enterprise.com (Postfix) with ESMTPS id 7D29BFE003\r\n\tfor <accounts@enterprise.com>; Fri, 12 May 2023 10:15:24 +0000 (UTC)\r\nReceived-SPF: fail (mail.enterprise.com: domain of smtp.hackerhost.io does not designate 203.0.113.101 as permitted sender) receiver=mail.enterprise.com; client-ip=203.0.113.101; envelope-from=cfo@enterprise.com; helo=smtp.hackerhost.io;\r\nAuthentication-Results: mail.enterprise.com; dmarc=fail (p=reject) header.from=enterprise.com;\r\n\tspf=fail smtp.mailfrom=cfo@enterprise.com; dkim=none header.d=enterprise.com;\r\nMessage-ID: <CAJe8sXy37d+9=b7R1Y@hackerhost.io>\r\nDate: Fri, 12 May 2023 10:15:20 +0000\r\nFrom: \"Jane Smith\" <cfo@enterprise.com>\r\nTo: accounts@enterprise.com\r\nSubject: Urgent: Vendor Payment Details Needed\r\nMIME-Version: 1.0\r\nContent-Type: text/plain; charset=\"UTF-8\"\r\nX-Mailer: Microsoft Outlook 16.0\r\nX-Originating-IP: [203.0.113.101]\r\nX-Spam-Flag: NO\r\nX-Spam-Score: -0.9",
+        "email_body": "Hi Team,\n\nDue to an urgent audit, please send me the payment details (bank account numbers and routing details) for all vendors with payments exceeding $50,000 processed in the last quarter.\n\nThis is critical to prepare documentation for the external auditors.\n\nThanks,\nJane Smith\nCFO, Enterprise Corporation",
+        "smtp_transaction_log": "220 mail.enterprise.com ESMTP Postfix\r\nEHLO smtp.hackerhost.io\r\n250-mail.enterprise.com\r\n250-PIPELINING\r\n250-SIZE 10240000\r\n250-STARTTLS\r\n250-ENHANCEDSTATUSCODES\r\n250-8BITMIME\r\n250 DSN\r\nMAIL FROM:<cfo@enterprise.com>\r\n550 5.7.1 <cfo@enterprise.com>: Sender address rejected: SPF fail\r\nRCPT TO:<accounts@enterprise.com>\r\n250 2.1.5 Ok\r\nDATA\r\n354 End data with <CR><LF>.<CR><LF>\r\n[message data]\r\n.\r\n250 2.0.0 Ok: queued as 7D29BFE003\r\nQUIT\r\n221 2.0.0 Bye",
+        "spf_record": "v=spf1 ip4:198.51.100.0/24 include:spf.enterprise.com -all",
+        "dkim_record": "v=DKIM1; k=rsa; p=MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQDYOZ5R9qz6F07S6q7x6Y3vc4Yx0vC4Q1tY0qVJg9Y0WcF4k5kFGGfE+a5z/NvOrq5xXvpYt3Pke3B3nXvqh8s6yZbW9P8k8Z9XjA6V8M6qHkXafP9p3C2v9dM6v2/9iQxzV0b9H3rL2bY3eT9h6b6L67a0QIDAQAB",
+        "dmarc_record": "v=DMARC1; p=reject; rua=mailto:dmarc-reports@enterprise.com; ruf=mailto:dmarc-failures@enterprise.com; fo=1",
+        "email_account_activity_log": [
+          "2023-05-12T09:45:00Z - User 'cfo@enterprise.com' logged in from IP 192.0.2.45 (Chicago, USA)",
+          "2023-05-12T10:14:56Z - Suspicious email sent from 'cfo@enterprise.com' via IP 203.0.113.101 (Unknown)",
+          "2023-05-12T10:15:20Z - Email sent with subject 'Urgent: Vendor Payment Details Needed' to accounts@enterprise.com"
+        ],
+        "dns_query_logs": [
+          "Query: spf.enterprise.com IN TXT - Result: v=spf1 ip4:198.51.100.0/24 include:spf.enterprise.com -all",
+          "Query: _dmarc.enterprise.com IN TXT - Result: v=DMARC1; p=reject; rua=mailto:dmarc-reports@enterprise.com"
+        ],
+        "suspicious_domain_registration": {
+          "domain": "hackerhost.io",
+          "registrar": "GoDaddy.com, LLC",
+          "creation_date": "2023-05-01T08:20:15Z",
+          "registrant_org": "Privacy Protect LLC",
+          "registrant_country": "CN",
+          "nameservers": [
+            "ns1.hackerdns.io",
+            "ns2.hackerdns.io"
+          ]
+        },
+        "email_sending_pattern": {
+          "normal_cfo_email_volume": "3-7 emails per hour",
+          "observed_volume": "20 emails within 10 minutes from suspicious IP 203.0.113.101",
+          "email_size": "3 KB (normal), 5 KB (suspicious emails)"
+        }
+      },
+      "indicators": {
+        "failed_spf": "SPF fail for IP 203.0.113.101 sending as cfo@enterprise.com",
+        "dmarc_fail": "DMARC policy reject triggered for domain enterprise.com",
+        "unusual_ip": "Email sent from IP 203.0.113.101 not associated with enterprise network",
+        "domain_age": "hackerhost.io registered 11 days ago",
+        "email_subject": "Urgent: Vendor Payment Details Needed",
+        "recipient": "accounts@enterprise.com",
+        "x_originating_ip": "203.0.113.101"
+      },
+      "detection_method": "Implement strict SPF and DMARC enforcement on incoming emails; alert on authentication failures from executive accounts; monitor login events for unusual IPs; analyze email sending rates for anomalies; use out-of-band verification prior to sharing sensitive payment information; review newly registered domains appearing in email headers.",
+      "relevant_mitre_techniques": [
+        "T1566.002 - Phishing: Spearphishing Link",
+        "T1114 - Email Collection",
+        "T1586.001 - Compromise Infrastructure: Email Accounts",
+        "T1598.003 - Phishing for Information: Business Email Compromise"
+      ]
+    },
+    {
+      "scenario": "Business Email Compromise by Spoofed CTO Email Requesting Confidential Employee Data",
+      "technical_data": {
+        "email_headers": "Return-Path: <cto@techcorp.com>\r\nReceived: from mail.fakeserver.org (mail.fakeserver.org [192.0.2.150])\r\n\tby mail.techcorp.com (Postfix) with ESMTPS id 4A32CDF004\r\n\tfor <hr@techcorp.com>; Mon, 20 Feb 2023 14:30:55 +0000 (UTC)\r\nReceived-SPF: fail (mail.techcorp.com: domain of mail.fakeserver.org does not designate 192.0.2.150 as permitted sender) receiver=mail.techcorp.com; client-ip=192.0.2.150; envelope-from=cto@techcorp.com; helo=mail.fakeserver.org;\r\nAuthentication-Results: mail.techcorp.com; dmarc=fail (p=reject) header.from=techcorp.com;\r\n\tspf=fail smtp.mailfrom=cto@techcorp.com; dkim=none header.d=techcorp.com;\r\nMessage-ID: <CAF7s1PcX89v-1=b2Mja@mail.fakeserver.org>\r\nDate: Mon, 20 Feb 2023 14:30:50 +0000\r\nFrom: \"Mark Johnson\" <cto@techcorp.com>\r\nTo: hr@techcorp.com\r\nSubject: Immediate: Employee Personal Data Request\r\nMIME-Version: 1.0\r\nContent-Type: text/plain; charset=\"UTF-8\"\r\nX-Mailer: Microsoft Outlook 365\r\nX-Originating-IP: [192.0.2.150]\r\nX-Spam-Flag: NO\r\nX-Spam-Score: -1.1",
+        "email_body": "Hello HR Team,\n\nI require the full list of employees' personal identification numbers, home addresses, and emergency contacts for a security compliance audit.\n\nPlease send the data encrypted at your earliest convenience.\n\nThanks,\nMark Johnson\nCTO, TechCorp",
+        "smtp_transaction_log": "220 mail.techcorp.com ESMTP Postfix\r\nEHLO mail.fakeserver.org\r\n250-mail.techcorp.com\r\n250-PIPELINING\r\n250-SIZE 52428800\r\n250-STARTTLS\r\n250-ENHANCEDSTATUSCODES\r\n250-8BITMIME\r\n250 DSN\r\nMAIL FROM:<cto@techcorp.com>\r\n550 5.7.1 <cto@techcorp.com>: Sender address rejected: SPF fail\r\nRCPT TO:<hr@techcorp.com>\r\n250 2.1.5 Ok\r\nDATA\r\n354 End data with <CR><LF>.<CR><LF>\r\n[message data]\r\n.\r\n250 2.0.0 Ok: queued as 4A32CDF004\r\nQUIT\r\n221 2.0.0 Bye",
+        "spf_record": "v=spf1 include:spf.techcorp.com ip4:203.0.113.0/24 -all",
+        "dkim_record": "v=DKIM1; k=rsa; p=MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQDqE1V9zj1KyJb5/7tZy1JQkGfS9g8j2rMZ0bZ+YwR7eZ6Uq6c+Q6n3J5bQ2fL7V4J6GxW9ZxVqJtY8aJ5Np7V7rZ8lP6tw1k9v9tPZ0q2V7x9kW4vS3mN9Q3uX2Q1M8lJ7qV5g9ZxL4v8=\r\n",
+        "dmarc_record": "v=DMARC1; p=reject; rua=mailto:dmarc@techcorp.com; ruf=mailto:dmarc-fail@techcorp.com; fo=1",
+        "email_account_activity_log": [
+          "2023-02-20T13:55:00Z - Successful login for 'cto@techcorp.com' from IP 198.51.100.78 (San Francisco, USA)",
+          "2023-02-20T14:30:40Z - Email sent from 'cto@techcorp.com' via IP 192.0.2.150 (Unknown)",
+          "2023-02-20T14:30:50Z - Email with subject 'Immediate: Employee Personal Data Request' delivered to hr@techcorp.com"
+        ],
+        "dns_query_logs": [
+          "Query: spf.techcorp.com IN TXT - Result: v=spf1 include:spf.techcorp.com ip4:203.0.113.0/24 -all",
+          "Query: _dmarc.techcorp.com IN TXT - Result: v=DMARC1; p=reject; rua=mailto:dmarc@techcorp.com"
+        ],
+        "suspicious_domain_registration": {
+          "domain": "fakeserver.org",
+          "registrar": "NameSilo, LLC",
+          "creation_date": "2023-02-05T16:45:30Z",
+          "registrant_org": "Domain Privacy Service",
+          "registrant_country": "NL",
+          "nameservers": [
+            "ns1.fakedns.org",
+            "ns2.fakedns.org"
+          ]
+        },
+        "email_sending_pattern": {
+          "normal_cto_email_volume": "4-8 emails per hour",
+          "observed_volume": "15 emails within 8 minutes from suspicious IP 192.0.2.150",
+          "email_size": "3.5 KB (normal), 6 KB (suspicious emails)"
+        }
+      },
+      "indicators": {
+        "failed_spf": "SPF fail for IP 192.0.2.150 sending as cto@techcorp.com",
+        "dmarc_fail": "DMARC policy reject triggered for domain techcorp.com",
+        "unusual_ip": "Email sent from IP 192.0.2.150 not recognized as corporate IP",
+        "domain_age": "fakeserver.org registered 15 days ago",
+        "email_subject": "Immediate: Employee Personal Data Request",
+        "recipient": "hr@techcorp.com",
+        "x_originating_ip": "192.0.2.150"
+      },
+      "detection_method": "Correlate SPF and DMARC failures with executive account email activity; investigate logins and email sending IPs; flag sudden increases in email volume from unusual locations; require secondary verification when requests involve sensitive employee data; conduct WHOIS and domain reputation checks on sending domains.",
+      "relevant_mitre_techniques": [
+        "T1566.002 - Phishing: Spearphishing Link",
+        "T1114 - Email Collection",
+        "T1586.001 - Compromise Infrastructure: Email Accounts",
+        "T1598.003 - Phishing for Information: Business Email Compromise"
+      ]
+    },
+    {
+      "scenario": "Business Email Compromise (BEC) via Executive Email Account Compromise Requesting Payroll Data",
+      "technical_data": {
+        "email_headers": "Return-Path: <hrdirector@company.com>\r\nReceived: from compromisedpc.attacker.net (compromisedpc.attacker.net [203.0.113.77])\r\n\tby mail.company.com (Postfix) with ESMTPS id 3D7A9C2301\r\n\tfor <hr@company.com>; Thu, 20 Apr 2023 09:18:45 +0000 (UTC)\r\nReceived-SPF: fail (mail.company.com: domain of compromisedpc.attacker.net does not designate 203.0.113.77 as permitted sender) receiver=mail.company.com; client-ip=203.0.113.77; envelope-from=hrdirector@company.com; helo=compromisedpc.attacker.net;\r\nAuthentication-Results: mail.company.com; dmarc=fail (p=quarantine) header.from=company.com;\r\n\tspf=fail smtp.mailfrom=hrdirector@company.com; dkim=none header.d=company.com;\r\nMessage-ID: <BEC20230420-091845@attacker.net>\r\nDate: Thu, 20 Apr 2023 09:18:44 +0000\r\nFrom: \"Sarah Lee\" <hrdirector@company.com>\r\nTo: hr@company.com\r\nSubject: Confidential: Employee Salary Update Request\r\nMIME-Version: 1.0\r\nContent-Type: text/plain; charset=\"UTF-8\"\r\nX-Mailer: Microsoft Outlook 2016\r\nX-Originating-IP: [203.0.113.77]\r\nX-Spam-Flag: NO\r\nX-Spam-Score: -0.8",
+        "email_body": "Hi Team,\n\nDue to upcoming audits, please send me the updated payroll spreadsheet for all employees including bank account details and tax withholding information.\n\nPlease treat this as urgent and confidential.\n\nBest,\nSarah Lee\nHR Director",
+        "smtp_transaction_log": "220 mail.company.com ESMTP Postfix\r\nEHLO compromisedpc.attacker.net\r\n250-mail.company.com\r\n250-PIPELINING\r\n250-SIZE 10240000\r\n250-STARTTLS\r\n250-ENHANCEDSTATUSCODES\r\n250-8BITMIME\r\n250 DSN\r\nMAIL FROM:<hrdirector@company.com>\r\n550 5.7.1 <hrdirector@company.com>: Sender address rejected: SPF fail\r\nRCPT TO:<hr@company.com>\r\n250 2.1.5 Ok\r\nDATA\r\n354 End data with <CR><LF>.<CR><LF>\r\n[message data]\r\n.\r\n250 2.0.0 Ok: queued as 3D7A9C2301\r\nQUIT\r\n221 2.0.0 Bye",
+        "spf_record": "v=spf1 include:spf.protection.company.com -all",
+        "dkim_record": "v=DKIM1; k=rsa; p=MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQC3XvYgG2m6s4O6D3wS1Yd7BvFf1c0Q7jvTNy1B+zD5p5Oh8L9kP6X5aB7E+Rb0e0r0W5A/4ZbN5X9sXW29zN8G2Jx/f3k2Xxj3L3qa1x8JvE5kN5YH5Bsj3W4Ib5tBv0XoCivJxJg7u1JYq9bAwIDAQAB",
+        "dmarc_record": "v=DMARC1; p=quarantine; rua=mailto:dmarc-reports@company.com; ruf=mailto:dmarc-failures@company.com; fo=1",
+        "email_account_activity_log": [
+          "2023-04-20T08:45:00Z - User 'hrdirector@company.com' logged in from IP 198.51.100.12 (San Francisco, USA)",
+          "2023-04-20T09:18:30Z - Suspicious email sent from 'hrdirector@company.com' via IP 203.0.113.77 (Unknown)",
+          "2023-04-20T09:18:44Z - Email sent with subject 'Confidential: Employee Salary Update Request' to hr@company.com"
+        ],
+        "dns_query_logs": [
+          "Query: spf.company.com IN TXT - Result: v=spf1 include:spf.protection.company.com -all",
+          "Query: _dmarc.company.com IN TXT - Result: v=DMARC1; p=quarantine; rua=mailto:dmarc-reports@company.com"
+        ],
+        "suspicious_domain_registration": {
+          "domain": "attacker.net",
+          "registrar": "GoDaddy.com, LLC",
+          "creation_date": "2023-04-10T07:22:11Z",
+          "registrant_org": "Privacy Protect, LLC (PrivacyProtect.org)",
+          "registrant_country": "CN",
+          "nameservers": [
+            "ns1.attackerdns.net",
+            "ns2.attackerdns.net"
+          ]
+        },
+        "email_sending_pattern": {
+          "normal_hrdirector_email_volume": "3-6 emails per hour",
+          "observed_volume": "40 emails within 10 minutes from suspicious IP 203.0.113.77",
+          "email_size": "1.5 KB (normal), 4 KB (suspicious emails)"
+        }
+      },
+      "indicators": {
+        "failed_spf": "SPF fail for IP 203.0.113.77 sending as hrdirector@company.com",
+        "dmarc_fail": "DMARC policy quarantine triggered for domain company.com",
+        "unusual_ip": "Email sent from IP 203.0.113.77 not associated with company network",
+        "domain_age": "attacker.net registered 10 days ago",
+        "email_subject": "Confidential: Employee Salary Update Request",
+        "recipient": "hr@company.com",
+        "x_originating_ip": "203.0.113.77"
+      },
+      "detection_method": "Analyze mail gateway logs for SPF and DMARC authentication failures; correlate email sending IPs against known corporate IP ranges; monitor executive account login anomalies and sudden spikes in email volume; verify sensitive data requests with direct verbal confirmation; leverage domain reputation services and WHOIS lookups to identify newly registered suspicious domains.",
+      "relevant_mitre_techniques": [
+        "T1566.001 - Phishing: Spearphishing Attachment",
+        "T1566.002 - Phishing: Spearphishing Link",
+        "T1598.002 - Phishing for Information: Spearphishing via Service",
+        "T1114 - Email Collection",
+        "T1586.001 - Compromise Infrastructure: Email Accounts",
+        "T1598.003 - Phishing for Information: Business Email Compromise"
+      ]
+    },
+    {
+      "scenario": "Business Email Compromise (BEC) via Compromised CFO Email to Request Vendor Payment Change",
+      "technical_data": {
+        "email_headers": "Return-Path: <cfo@company.com>\r\nReceived: from vpn123.fakevpnservice.org (vpn123.fakevpnservice.org [45.77.88.99])\r\n\tby mail.company.com (Postfix) with ESMTPS id 4E6F7B4402\r\n\tfor <accounts@company.com>; Mon, 10 Apr 2023 13:05:32 +0000 (UTC)\r\nReceived-SPF: fail (mail.company.com: domain of vpn123.fakevpnservice.org does not designate 45.77.88.99 as permitted sender) receiver=mail.company.com; client-ip=45.77.88.99; envelope-from=cfo@company.com; helo=vpn123.fakevpnservice.org;\r\nAuthentication-Results: mail.company.com; dmarc=fail (p=reject) header.from=company.com;\r\n\tspf=fail smtp.mailfrom=cfo@company.com; dkim=none header.d=company.com;\r\nMessage-ID: <BEC20230410-130532@fakevpnservice.org>\r\nDate: Mon, 10 Apr 2023 13:05:31 +0000\r\nFrom: \"Michael Brown\" <cfo@company.com>\r\nTo: accounts@company.com\r\nSubject: Update to Vendor Payment Details - Immediate Action Required\r\nMIME-Version: 1.0\r\nContent-Type: text/plain; charset=\"UTF-8\"\r\nX-Mailer: Microsoft Outlook 365\r\nX-Originating-IP: [45.77.88.99]\r\nX-Spam-Flag: NO\r\nX-Spam-Score: -1.2",
+        "email_body": "Dear Accounts,\n\nPlease update the payment instructions for our vendor 'Global Tech Supplies' for the upcoming invoice #4521.\n\nNew Bank Details:\nBank: Capital Trust Bank\nAccount Number: 1122334455\nRouting Number: 987654321\nBeneficiary: Global Tech Supplies LLC\n\nEnsure that all payments starting this month use the updated information.\n\nThank you,\nMichael Brown\nCFO, Company Inc.",
+        "smtp_transaction_log": "220 mail.company.com ESMTP Postfix\r\nEHLO vpn123.fakevpnservice.org\r\n250-mail.company.com\r\n250-PIPELINING\r\n250-SIZE 10240000\r\n250-STARTTLS\r\n250-ENHANCEDSTATUSCODES\r\n250-8BITMIME\r\n250 DSN\r\nMAIL FROM:<cfo@company.com>\r\n550 5.7.1 <cfo@company.com>: Sender address rejected: SPF fail\r\nRCPT TO:<accounts@company.com>\r\n250 2.1.5 Ok\r\nDATA\r\n354 End data with <CR><LF>.<CR><LF>\r\n[message data]\r\n.\r\n250 2.0.0 Ok: queued as 4E6F7B4402\r\nQUIT\r\n221 2.0.0 Bye",
+        "spf_record": "v=spf1 include:spf.protection.company.com -all",
+        "dkim_record": "v=DKIM1; k=rsa; p=MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQCt8Z9Ng3X1i7Fz7bK2h3DyPZq6u7T9T1zQvMA9vE5uYv0zHqM8Jg2u6RgVZc9Yv6tK8lqMy45O7ZqJlVxM7cJd3WnYkV8G8+E4QJx7B5LxS5YqP4xFq5RjY6pP8VxJf5G6Ud7Y9ez0R0J6u8\r\nIDAQAB",
+        "dmarc_record": "v=DMARC1; p=reject; rua=mailto:dmarc-reports@company.com; ruf=mailto:dmarc-failures@company.com; fo=1",
+        "email_account_activity_log": [
+          "2023-04-10T12:30:00Z - User 'cfo@company.com' logged in from IP 198.51.100.45 (New York, USA)",
+          "2023-04-10T13:05:20Z - Suspicious email sent from 'cfo@company.com' via IP 45.77.88.99 (Unknown, VPN exit node)",
+          "2023-04-10T13:05:31Z - Email sent with subject 'Update to Vendor Payment Details - Immediate Action Required' to accounts@company.com"
+        ],
+        "dns_query_logs": [
+          "Query: spf.company.com IN TXT - Result: v=spf1 include:spf.protection.company.com -all",
+          "Query: _dmarc.company.com IN TXT - Result: v=DMARC1; p=reject; rua=mailto:dmarc-reports@company.com"
+        ],
+        "suspicious_domain_registration": {
+          "domain": "fakevpnservice.org",
+          "registrar": "PDR Ltd. d/b/a PublicDomainRegistry.com",
+          "creation_date": "2023-03-28T11:15:33Z",
+          "registrant_org": "Anonymous Registrant",
+          "registrant_country": "NL",
+          "nameservers": [
+            "ns1.fakevpnns.org",
+            "ns2.fakevpnns.org"
+          ]
+        },
+        "email_sending_pattern": {
+          "normal_cfo_email_volume": "4-8 emails per hour",
+          "observed_volume": "30 emails within 7 minutes from suspicious IP 45.77.88.99",
+          "email_size": "3 KB (normal), 6 KB (suspicious emails)"
+        }
+      },
+      "indicators": {
+        "failed_spf": "SPF fail for IP 45.77.88.99 sending as cfo@company.com",
+        "dmarc_fail": "DMARC policy reject triggered for domain company.com",
+        "unusual_ip": "Email sent from IP 45.77.88.99 VPN exit node not associated with company network",
+        "domain_age": "fakevpnservice.org registered 13 days ago",
+        "email_subject": "Update to Vendor Payment Details - Immediate Action Required",
+        "recipient": "accounts@company.com",
+        "x_originating_ip": "45.77.88.99"
+      },
+      "detection_method": "Automate detection of SPF and DMARC failures; monitor executive email account login IPs and flag VPN or TOR exit nodes; analyze email volume and size anomalies; require multi-factor verification for vendor payment changes; conduct WHOIS and domain reputation assessments for sending domains.",
+      "relevant_mitre_techniques": [
+        "T1566.001 - Phishing: Spearphishing Attachment",
+        "T1566.002 - Phishing: Spearphishing Link",
+        "T1598.002 - Phishing for Information: Spearphishing via Service",
+        "T1114 - Email Collection",
+        "T1586.001 - Compromise Infrastructure: Email Accounts",
+        "T1598.003 - Phishing for Information: Business Email Compromise"
+      ]
+    }
+  ]
+}

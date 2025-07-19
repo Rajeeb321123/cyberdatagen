@@ -1,0 +1,228 @@
+{
+  "problems": [
+    {
+      "area": "Enterprise",
+      "category": "Social Engineering",
+      "variant": "Phishing",
+      "nature": "phishing",
+      "attack_vector": "Email",
+      "asset_targeted": "User Credentials",
+      "kill_chain_phase": "Initial Access",
+      "impact_level": "High",
+      "description": "Employees receive emails impersonating executives requesting urgent wire transfers or sensitive data, leveraging social engineering to bypass normal verification.",
+      "risk_reduction": [
+        "Implement email authentication protocols like DMARC, DKIM, and SPF",
+        "Train employees to verify unusual requests through separate communication channels",
+        "Use advanced email filtering solutions to detect spoofed senders"
+      ]
+    },
+    {
+      "area": "Enterprise",
+      "category": "Social Engineering",
+      "variant": "Spear Phishing",
+      "nature": "spear_phishing",
+      "attack_vector": "Email",
+      "asset_targeted": "Endpoints",
+      "kill_chain_phase": "Initial Access",
+      "impact_level": "High",
+      "description": "Spear-phishing campaigns target specific departments with tailored messages containing malicious attachments that deploy ransomware upon opening.",
+      "risk_reduction": [
+        "Conduct targeted phishing awareness training for high-risk teams",
+        "Deploy endpoint protection with behavior-based malware detection",
+        "Restrict execution of macros and scripts in email attachments"
+      ]
+    },
+    {
+      "area": "Enterprise",
+      "category": "Social Engineering",
+      "variant": "Credential Harvesting",
+      "nature": "credential_harvesting",
+      "attack_vector": "Web Link",
+      "asset_targeted": "User Credentials",
+      "kill_chain_phase": "Credential Access",
+      "impact_level": "High",
+      "description": "Credential harvesting sites mimic corporate login portals, tricking employees into submitting usernames and passwords that attackers then use for unauthorized access.",
+      "risk_reduction": [
+        "Enable multi-factor authentication (MFA) across all systems",
+        "Use browser security tools to warn users about fraudulent sites",
+        "Regularly update and communicate official login URLs and security policies"
+      ]
+    },
+    {
+      "area": "Cloud",
+      "category": "Social Engineering",
+      "variant": "Phishing",
+      "nature": "phishing",
+      "attack_vector": "Email",
+      "asset_targeted": "Cloud Infrastructure",
+      "kill_chain_phase": "Initial Access",
+      "impact_level": "High",
+      "description": "Attackers send phishing emails to cloud administrators with links to fake cloud console login pages, aiming to steal credentials and gain control over cloud resources.",
+      "risk_reduction": [
+        "Enforce MFA for all cloud management accounts",
+        "Implement conditional access policies restricting login locations",
+        "Educate cloud admins on recognizing phishing attempts and verifying URLs"
+      ]
+    },
+    {
+      "area": "Cloud",
+      "category": "Social Engineering",
+      "variant": "Phishing",
+      "nature": "phishing",
+      "attack_vector": "Email",
+      "asset_targeted": "Source Code Repositories",
+      "kill_chain_phase": "Initial Access",
+      "impact_level": "High",
+      "description": "Phishing campaigns target developers by sending fake notifications about compromised repositories, prompting them to enter credentials on malicious sites.",
+      "risk_reduction": [
+        "Use single sign-on (SSO) with MFA for developer tools",
+        "Monitor and alert on unusual login attempts or IP addresses",
+        "Train developers on secure handling of repository notifications"
+      ]
+    },
+    {
+      "area": "Cloud",
+      "category": "Social Engineering",
+      "variant": "Phishing",
+      "nature": "phishing",
+      "attack_vector": "Email",
+      "asset_targeted": "Cloud Infrastructure",
+      "kill_chain_phase": "Initial Access",
+      "impact_level": "High",
+      "description": "Phishing emails impersonate cloud service providers with fake billing alerts, tricking users into clicking links that install malware or steal credentials.",
+      "risk_reduction": [
+        "Verify billing communications through official provider portals",
+        "Deploy email security gateways with phishing detection",
+        "Conduct regular phishing simulation exercises for cloud users"
+      ]
+    },
+    {
+      "area": "Personal",
+      "category": "Social Engineering",
+      "variant": "Phishing",
+      "nature": "phishing",
+      "attack_vector": "SMS, Email",
+      "asset_targeted": "User Credentials",
+      "kill_chain_phase": "Initial Access",
+      "impact_level": "Medium",
+      "description": "Individuals receive SMS or email messages pretending to be from banks or popular services, urging them to click links and enter personal information on fraudulent websites.",
+      "risk_reduction": [
+        "Avoid clicking links in unsolicited messages; access services directly",
+        "Use mobile security apps that detect phishing URLs",
+        "Enable MFA on personal accounts to reduce impact of credential theft"
+      ]
+    },
+    {
+      "area": "Personal",
+      "category": "Social Engineering",
+      "variant": "Phishing",
+      "nature": "phishing",
+      "attack_vector": "Social Media Direct Messages",
+      "asset_targeted": "User Credentials",
+      "kill_chain_phase": "Initial Access",
+      "impact_level": "Medium",
+      "description": "Phishing attacks via social media direct messages lure users to fake login pages or malicious downloads, compromising personal data and devices.",
+      "risk_reduction": [
+        "Be cautious of unsolicited messages and friend requests",
+        "Keep social media privacy settings restrictive",
+        "Use antivirus and anti-phishing browser extensions"
+      ]
+    },
+    {
+      "area": "Personal",
+      "category": "Social Engineering",
+      "variant": "Vishing",
+      "nature": "vishing",
+      "attack_vector": "Voice Call",
+      "asset_targeted": "User Credentials",
+      "kill_chain_phase": "Initial Access",
+      "impact_level": "Medium",
+      "description": "Voice phishing (vishing) calls impersonate trusted entities requesting sensitive information or payment details, exploiting trust and urgency.",
+      "risk_reduction": [
+        "Verify caller identity independently before sharing information",
+        "Register with call-blocking services and report suspicious calls",
+        "Educate family members about common vishing tactics"
+      ]
+    },
+    {
+      "area": "Enterprise",
+      "category": "Supply Chain Compromise",
+      "variant": "Third-Party Vendor Compromise",
+      "nature": "supply_chain_compromise",
+      "attack_vector": "Software Updates, Vendor Systems",
+      "asset_targeted": "Enterprise Environments",
+      "kill_chain_phase": "Initial Access",
+      "impact_level": "Critical",
+      "description": "Attackers infiltrate trusted third-party vendors or software providers to insert malicious code or backdoors, compromising enterprise environments indirectly.",
+      "risk_reduction": [
+        "Implement strict vendor risk management and security assessments",
+        "Use software bill of materials (SBOM) to track dependencies",
+        "Monitor for anomalous behavior in supply chain software updates"
+      ]
+    },
+    {
+      "area": "Cloud",
+      "category": "Misconfiguration",
+      "variant": "Cloud Storage Misconfiguration",
+      "nature": "misconfigured_storage",
+      "attack_vector": "Cloud Storage Services",
+      "asset_targeted": "Cloud Infrastructure",
+      "kill_chain_phase": "Persistence",
+      "impact_level": "High",
+      "description": "Cloud storage services (e.g., S3 buckets) are misconfigured with overly permissive access controls, exposing sensitive data to unauthorized parties.",
+      "risk_reduction": [
+        "Enforce least privilege access policies",
+        "Continuously audit cloud storage configurations",
+        "Use automated tools to detect and remediate misconfigurations"
+      ]
+    },
+    {
+      "area": "Enterprise",
+      "category": "Adversarial Machine Learning",
+      "variant": "Model Evasion and Manipulation",
+      "nature": "adversarial_ml_attack",
+      "attack_vector": "Input Data Manipulation",
+      "asset_targeted": "AI/ML Models",
+      "kill_chain_phase": "Execution",
+      "impact_level": "High",
+      "description": "Attackers manipulate input data to machine learning models causing misclassification or evasion, undermining AI-based security controls or business processes.",
+      "risk_reduction": [
+        "Implement robust ML model validation and anomaly detection",
+        "Use adversarial training techniques to harden models",
+        "Monitor model inputs and outputs for suspicious patterns"
+      ]
+    },
+    {
+      "area": "Enterprise",
+      "category": "Social Engineering",
+      "variant": "AI-Generated Phishing",
+      "nature": "ai_generated_phishing",
+      "attack_vector": "Email, Voice Call",
+      "asset_targeted": "User Credentials",
+      "kill_chain_phase": "Initial Access",
+      "impact_level": "High",
+      "description": "Phishing campaigns leveraging AI-generated content (text, voice deepfakes) to create highly convincing and scalable social engineering attacks.",
+      "risk_reduction": [
+        "Deploy AI-based detection tools for synthetic content",
+        "Enhance user training to recognize AI-generated deception",
+        "Implement multi-factor authentication to reduce credential theft impact"
+      ]
+    },
+    {
+      "area": "Enterprise",
+      "category": "Ransomware",
+      "variant": "Ransomware-as-a-Service",
+      "nature": "ransomware_as_a_service",
+      "attack_vector": "Malicious Attachments, Exploits",
+      "asset_targeted": "Endpoints, Network",
+      "kill_chain_phase": "Execution",
+      "impact_level": "Critical",
+      "description": "Ransomware operations offered as a service lower the barrier for attackers, increasing ransomware incidents with sophisticated extortion tactics.",
+      "risk_reduction": [
+        "Maintain regular, tested backups with offline copies",
+        "Apply timely patching and vulnerability management",
+        "Use network segmentation and endpoint detection and response (EDR)"
+      ]
+    }
+  ]
+}

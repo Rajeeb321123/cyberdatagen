@@ -1,0 +1,383 @@
+{
+  "samples": [
+    {
+      "scenario": "Attackers launch a phishing SMS campaign impersonating a major bank, 'SecureBank', sending messages that warn recipients of suspicious login attempts and urge them to verify their account by visiting a provided link. The link leads to a cloned login page hosted on a deceptive domain designed to steal credentials.",
+      "technical_data": {
+        "sms_content": "Alert from SecureBank: We detected suspicious activity on your account. Verify your identity immediately to avoid suspension: https://securebank-login.verify-secure-info.com/login",
+        "phishing_domain_whois": "Domain Name: VERIFY-SECURE-INFO.COM\nRegistry Domain ID: 987654321_DOMAIN_COM-VRSN\nRegistrar: GoDaddy.com, LLC\nRegistrar WHOIS Server: whois.godaddy.com\nRegistrar URL: http://www.godaddy.com\nUpdated Date: 2024-02-10T10:00:00Z\nCreation Date: 2024-02-05T08:00:00Z\nRegistry Expiry Date: 2025-02-05T08:00:00Z\nName Server: NS1.VERIFY-SECURE-INFO.COM\nName Server: NS2.VERIFY-SECURE-INFO.COM\nRegistrant Organization: Privacy Protect Ltd.\nRegistrant State/Province: CA\nRegistrant Country: US",
+        "http_request_to_phishing_site": "GET /login HTTP/1.1\r\nHost: securebank-login.verify-secure-info.com\r\nUser-Agent: Mozilla/5.0 (iPhone; CPU iPhone OS 15_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/15.0 Mobile/15E148 Safari/604.1\r\nAccept: text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8\r\nReferer: https://securebank-login.verify-secure-info.com/\r\nConnection: keep-alive\r\n\r\n",
+        "http_response_from_phishing_site": "HTTP/1.1 200 OK\r\nDate: Wed, 10 Feb 2024 16:30:45 GMT\r\nServer: nginx/1.18.0\r\nContent-Type: text/html; charset=UTF-8\r\nContent-Length: 3210\r\nConnection: close\r\n\r\n<html>\n<head><title>SecureBank Online Login</title></head>\n<body>\n<form action=\"/authenticate.php\" method=\"POST\">\n<label for=\"username\">Username:</label><input type=\"text\" id=\"username\" name=\"username\" required />\n<label for=\"password\">Password:</label><input type=\"password\" id=\"password\" name=\"password\" required />\n<input type=\"submit\" value=\"Log In\" />\n</form>\n</body>\n</html>",
+        "web_server_access_log": "203.0.113.55 - - [10/Feb/2024:16:30:46 +0000] \"GET /login HTTP/1.1\" 200 3210 \"-\" \"Mozilla/5.0 (iPhone; CPU iPhone OS 15_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/15.0 Mobile/15E148 Safari/604.1\"\n203.0.113.55 - - [10/Feb/2024:16:32:10 +0000] \"POST /authenticate.php HTTP/1.1\" 200 245 \"https://securebank-login.verify-secure-info.com/login\" \"Mozilla/5.0 (iPhone; CPU iPhone OS 15_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/15.0 Mobile/15E148 Safari/604.1\"",
+        "email_headers": null,
+        "smtp_transaction_log": null,
+        "waf_log_entry": "{ \"timestamp\": \"2024-02-10T16:32:10Z\", \"client_ip\": \"203.0.113.55\", \"request_uri\": \"/authenticate.php\", \"action\": \"allow\", \"rule_id\": \"100012\", \"message\": \"Potential credential harvesting POST\", \"severity\": \"medium\" }",
+        "url_obfuscation_technique": "Use of subdomain 'securebank-login' under the unrelated domain 'verify-secure-info.com' to mimic legitimate bank login URL, exploiting user trust in brand names.",
+        "browser_extension_warning_example": "Warning: The site securebank-login.verify-secure-info.com is identified as a phishing site impersonating SecureBank. Avoid entering credentials."
+      },
+      "indicators": {
+        "phishing_domain": "securebank-login.verify-secure-info.com",
+        "sms_phishing_link": "https://securebank-login.verify-secure-info.com/login",
+        "user_agent": "Mozilla/5.0 (iPhone; CPU iPhone OS 15_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/15.0 Mobile/15E148 Safari/604.1",
+        "unusual_access_ip": "203.0.113.55",
+        "form_post_path": "/authenticate.php",
+        "waf_rule_triggered": "100012"
+      },
+      "detection_method": "Monitoring of SMS phishing campaigns by analyzing reported phishing URLs; detection of domain registrations combining trusted brand names with unrelated domains; correlation of POST requests to login-like pages with unusual IP addresses; WAF alerts on credential submission endpoints; browser-based phishing warnings triggered by known phishing domain lists.",
+      "relevant_mitre_techniques": [
+        "T1566.002 - Phishing: Spearphishing Link",
+        "T1583.001 - Acquire Infrastructure: Domain Registration",
+        "T1598.002 - Phishing for Information: Spearphishing via Service",
+        "T1204.002 - User Execution: Malicious Link"
+      ]
+    },
+    {
+      "scenario": "Fraudsters send emails impersonating a popular payment service 'FastPay', notifying users of a payment failure and requesting immediate account update via a link. The link takes users to a phishing site that mimics FastPay's login page and collects credentials and 2FA codes.",
+      "technical_data": {
+        "email_headers": "Return-Path: <support@fastpay-secure.com>\nReceived: from unknown (HELO mail.fastpay-secure.com) (192.0.2.77) by mx.fastpay.com with ESMTP id 8Xb2pLkJ4dT8; Fri, 15 Mar 2024 14:22:10 -0500 (CDT)\nReceived-SPF: fail (mx.fastpay.com: domain of fastpay-secure.com does not designate 192.0.2.77 as permitted sender)\nAuthentication-Results: mx.fastpay.com; spf=fail smtp.mailfrom=fastpay-secure.com; dkim=none; dmarc=fail\nX-Mailer: PHPMailer 6.5.0\nMessage-ID: <20240315142210.8Xb2pLkJ4dT8@mail.fastpay-secure.com>\nFrom: \"FastPay Support\" <support@fastpay-secure.com>\nTo: user@victimdomain.com\nSubject: Urgent: Payment Failure Notice - Action Required",
+        "email_body_html": "<html>\n  <body>\n    <h2>Payment Failure Alert</h2>\n    <p>Dear customer, your recent payment could not be processed. Please <a href=\"https://fastpay-secure.com.login-update.info/account/verify\">verify your account</a> immediately to avoid service interruption.</p>\n    <p>Thank you for choosing FastPay.</p>\n  </body>\n</html>",
+        "smtp_transaction_log": "220 mail.fastpay-secure.com ESMTP Postfix\nEHLO attacker-node.local\n250-mail.fastpay-secure.com\n250-PIPELINING\n250-SIZE 20971520\n250-STARTTLS\n250-ENHANCEDSTATUSCODES\n250-8BITMIME\n250 DSN\nMAIL FROM:<support@fastpay-secure.com>\n250 2.1.0 Ok\nRCPT TO:<user@victimdomain.com>\n250 2.1.5 Ok\nDATA\n354 End data with <CR><LF>.<CR><LF>\n[Email content sent here]\n.\n250 2.0.0 Ok: queued as 8Xb2pLkJ4dT8\nQUIT\n221 2.0.0 Bye",
+        "fraudulent_domain_whois": "Domain Name: FASTPAY-SECURE.COM.LOGIN-UPDATE.INFO\nRegistry Domain ID: 2468101214_DOMAIN_INFO-VRSN\nRegistrar: NameSilo, LLC\nRegistrar WHOIS Server: whois.namesilo.com\nRegistrar URL: https://www.namesilo.com/\nUpdated Date: 2024-03-10T13:30:00Z\nCreation Date: 2024-03-05T09:45:00Z\nRegistry Expiry Date: 2025-03-05T09:45:00Z\nName Server: NS1.LOGIN-UPDATE.INFO\nName Server: NS2.LOGIN-UPDATE.INFO\nRegistrant Organization: WhoisGuard, Inc.\nRegistrant State/Province: FL\nRegistrant Country: US",
+        "http_request_to_phishing_site": "GET /account/verify HTTP/1.1\r\nHost: fastpay-secure.com.login-update.info\r\nUser-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/112.0.0.0 Safari/537.36\r\nAccept: text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8\r\nReferer: https://fastpay-secure.com.login-update.info/\r\nConnection: keep-alive\r\n\r\n",
+        "http_response_from_phishing_site": "HTTP/1.1 200 OK\r\nDate: Fri, 15 Mar 2024 14:23:05 GMT\r\nServer: Apache/2.4.46 (Ubuntu)\r\nContent-Type: text/html; charset=UTF-8\r\nContent-Length: 2870\r\nConnection: close\r\n\r\n<html>\n<head><title>FastPay - Account Verification</title></head>\n<body>\n<form action=\"/submit_2fa.php\" method=\"POST\">\n<label>Email:</label><input type=\"email\" name=\"email\" required />\n<label>Password:</label><input type=\"password\" name=\"password\" required />\n<label>2FA Code:</label><input type=\"text\" name=\"twofactor\" maxlength=\"6\" required />\n<input type=\"submit\" value=\"Verify Account\" />\n</form>\n</body>\n</html>",
+        "web_server_access_log": "192.0.2.88 - - [15/Mar/2024:14:23:05 +0000] \"GET /account/verify HTTP/1.1\" 200 2870 \"-\" \"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/112.0.0.0 Safari/537.36\"\n192.0.2.88 - - [15/Mar/2024:14:25:18 +0000] \"POST /submit_2fa.php HTTP/1.1\" 200 350 \"https://fastpay-secure.com.login-update.info/account/verify\" \"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/112.0.0.0 Safari/537.36\"",
+        "waf_log_entry": "{ \"timestamp\": \"2024-03-15T14:25:18Z\", \"client_ip\": \"192.0.2.88\", \"request_uri\": \"/submit_2fa.php\", \"action\": \"allow\", \"rule_id\": \"100023\", \"message\": \"Credential and 2FA harvesting attempt detected\", \"severity\": \"high\" }",
+        "url_obfuscation_technique": "Use of a multi-level subdomain 'fastpay-secure.com' under 'login-update.info' domain to mimic legitimate FastPay URLs, exploiting user trust in brand and common login update phrases.",
+        "browser_extension_warning_example": "Warning: fastpay-secure.com.login-update.info is a reported phishing site mimicking FastPay login. Do not enter any credentials or 2FA codes."
+      },
+      "indicators": {
+        "phishing_domain": "fastpay-secure.com.login-update.info",
+        "email_spf_fail": "spf=fail smtp.mailfrom=fastpay-secure.com",
+        "email_return_path": "support@fastpay-secure.com",
+        "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/112.0.0.0 Safari/537.36",
+        "unusual_email_sending_ip": "192.0.2.77",
+        "form_post_path": "/submit_2fa.php",
+        "waf_rule_triggered": "100023"
+      },
+      "detection_method": "Identification of SPF and DMARC failures on emails claiming to be from FastPay; detection of phishing domains that combine brand keywords with unrelated domains and login-update phrases; monitoring web server logs for POST requests capturing credentials and 2FA codes; correlating sending IPs with known threat actor infrastructure; WAF alerts on high severity credential harvesting activity; browser-based phishing detection and warnings.",
+      "relevant_mitre_techniques": [
+        "T1566.002 - Phishing: Spearphishing Link",
+        "T1583.001 - Acquire Infrastructure: Domain Registration",
+        "T1598.002 - Phishing for Information: Spearphishing via Service",
+        "T1204.002 - User Execution: Malicious Link"
+      ]
+    },
+    {
+      "scenario": "Attackers launch a phishing campaign impersonating a major telecom provider, sending SMS messages with a link to a fake billing portal. The link directs users to a cloned website with a deceptive URL where victims are prompted to enter their login credentials and credit card information, resulting in account compromise and financial theft.",
+      "technical_data": {
+        "sms_message_content": "Alert: Your account with TeleConnect is overdue. Please verify your payment details immediately to avoid service interruption: http://teleconn-verify.com/login",
+        "phishing_site_tls_certificate": {
+          "Subject": "CN=teleconn-verify.com",
+          "Issuer": "Let's Encrypt Authority X3",
+          "Valid_From": "2024-04-01T00:00:00Z",
+          "Valid_To": "2024-07-01T23:59:59Z",
+          "Serial_Number": "03AB12CD34EF567890"
+        },
+        "http_request_to_phishing_site": "GET /login HTTP/1.1\r\nHost: teleconn-verify.com\r\nUser-Agent: Mozilla/5.0 (iPhone; CPU iPhone OS 15_4 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Mobile/15E148\r\nAccept: text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8\r\nConnection: keep-alive\r\n\r\n",
+        "http_response_from_phishing_site": "HTTP/1.1 200 OK\r\nDate: Fri, 05 Apr 2024 12:10:30 GMT\r\nServer: nginx/1.21.6\r\nContent-Type: text/html; charset=UTF-8\r\nContent-Length: 1987\r\nConnection: close\r\n\r\n<html><head><title>TeleConnect Login</title></head><body><form action=\"/process_login.php\" method=\"POST\"><label>Username:</label><input type=\"text\" name=\"username\" /><label>Password:</label><input type=\"password\" name=\"password\" /><label>Credit Card Number:</label><input type=\"text\" name=\"ccnumber\" maxlength=\"19\" /><label>Expiry Date:</label><input type=\"text\" name=\"expiry\" maxlength=\"7\" /><label>CVV:</label><input type=\"password\" name=\"cvv\" maxlength=\"4\" /><input type=\"submit\" value=\"Verify\" /></form></body></html>",
+        "smtp_transaction_log": null,
+        "email_headers": null,
+        "fraudulent_domain_whois": "Domain Name: TELECONN-VERIFY.COM\nRegistry Domain ID: 987654321_DOMAIN_COM-VRSN\nRegistrar: GoDaddy.com, LLC\nRegistrar WHOIS Server: whois.godaddy.com\nRegistrar URL: http://www.godaddy.com\nUpdated Date: 2024-03-30T10:00:00Z\nCreation Date: 2024-03-29T16:45:00Z\nRegistry Expiry Date: 2025-03-29T16:45:00Z\nName Server: NS57.DOMAINCONTROL.COM\nName Server: NS58.DOMAINCONTROL.COM\nRegistrant Organization: Privacy Protection Service\nRegistrant State/Province: TX\nRegistrant Country: US",
+        "web_server_access_log": "203.0.113.45 - - [05/Apr/2024:12:10:32 +0000] \"GET /login HTTP/1.1\" 200 1987 \"-\" \"Mozilla/5.0 (iPhone; CPU iPhone OS 15_4 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Mobile/15E148\"\n203.0.113.45 - - [05/Apr/2024:12:12:10 +0000] \"POST /process_login.php HTTP/1.1\" 200 450 \"http://teleconn-verify.com/login\" \"Mozilla/5.0 (iPhone; CPU iPhone OS 15_4 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Mobile/15E148\"",
+        "waf_log_entry": "{ \"timestamp\": \"2024-04-05T12:12:10Z\", \"client_ip\": \"203.0.113.45\", \"request_uri\": \"/process_login.php\", \"action\": \"allow\", \"rule_id\": \"200102\", \"message\": \"Suspicious form submission containing payment data\", \"severity\": \"high\" }",
+        "url_obfuscation_technique": "The phishing domain teleconn-verify.com uses a hyphen to make it appear as an official subdomain or verification portal of the legitimate telecom brand TeleConnect, exploiting user trust in domain structure.",
+        "browser_extension_warning_example": "Warning: The domain teleconn-verify.com is flagged for phishing targeting TeleConnect customers. Avoid entering any login or payment information."
+      },
+      "indicators": {
+        "phishing_domain": "teleconn-verify.com",
+        "sms_link": "http://teleconn-verify.com/login",
+        "unusual_ssl_cert_issuer": "Let's Encrypt Authority X3",
+        "suspicious_user_agent": "Mozilla/5.0 (iPhone; CPU iPhone OS 15_4 like Mac OS X)",
+        "web_server_access_ip": "203.0.113.45",
+        "form_post_path": "/process_login.php",
+        "waf_rule_triggered": "200102"
+      },
+      "detection_method": "Monitoring for newly registered domains visually similar to telecom brand names; analyzing web server logs for POST requests to login and payment forms from suspicious IPs; inspecting TLS certificates issued by free certificate authorities for recent domain registrations; correlating SMS messages containing suspicious links with domain registrations; leveraging WAF alerts on high-risk form submissions requesting payment info; deploying browser-based phishing detection tools warning users about newly observed fraudulent domains.",
+      "relevant_mitre_techniques": [
+        "T1566.003 - Phishing: Spearphishing via Service",
+        "T1583.001 - Acquire Infrastructure: Domain Registration",
+        "T1598.001 - Phishing for Information: Spearphishing Attachment",
+        "T1204.002 - User Execution: Malicious Link"
+      ]
+    },
+    {
+      "scenario": "Cybercriminals send targeted emails impersonating a financial institution's fraud department, warning recipients of suspicious account activity. The email includes a link to a fake security verification page hosted on a lookalike domain combining the bank's name with a misleading suffix. Victims entering their credentials and security answers enable attackers to bypass multi-factor authentication and steal funds.",
+      "technical_data": {
+        "email_headers": "Return-Path: <security-alert@bank-secure-login.com>\nReceived: from mailserver.fakecorp.net [192.0.2.88] by mx.bank.com with ESMTP id 4Qw8jT3bP0Rt; Wed, 10 Apr 2024 09:45:10 -0500 (CDT)\nReceived-SPF: fail (mx.bank.com: domain of bank-secure-login.com does not designate 192.0.2.88 as permitted sender)\nAuthentication-Results: mx.bank.com; spf=fail smtp.mailfrom=bank-secure-login.com; dkim=none; dmarc=fail\nX-Mailer: Microsoft Outlook 16.0\nMessage-ID: <20240410094510.4Qw8jT3bP0Rt@mailserver.fakecorp.net>\nFrom: \"Bank Fraud Department\" <security-alert@bank-secure-login.com>\nTo: user@victimdomain.com\nSubject: Urgent: Suspicious Activity Detected on Your Account",
+        "email_body_html": "<html>\n  <body>\n    <h2>Urgent Security Notice</h2>\n    <p>We detected suspicious activity on your account. Please <a href=\"https://bank-secure-login.com/verify?token=xyz123\">click here to verify your identity</a> immediately to prevent account suspension.</p>\n    <p>If you do not verify within 24 hours, your account will be locked.</p>\n  </body>\n</html>",
+        "smtp_transaction_log": "220 mailserver.fakecorp.net ESMTP Postfix\nEHLO attacker-machine.local\n250-mailserver.fakecorp.net\n250-PIPELINING\n250-SIZE 20971520\n250-STARTTLS\n250-ENHANCEDSTATUSCODES\n250-8BITMIME\n250 DSN\nMAIL FROM:<security-alert@bank-secure-login.com>\n250 2.1.0 Ok\nRCPT TO:<user@victimdomain.com>\n250 2.1.5 Ok\nDATA\n354 End data with <CR><LF>.<CR><LF>\n[Email content sent here]\n.\n250 2.0.0 Ok: queued as 4Qw8jT3bP0Rt\nQUIT\n221 2.0.0 Bye",
+        "fraudulent_domain_whois": "Domain Name: BANK-SECURE-LOGIN.COM\nRegistry Domain ID: 5555555555_DOMAIN_COM-VRSN\nRegistrar: NameSilo, LLC\nRegistrar WHOIS Server: whois.namesilo.com\nRegistrar URL: https://www.namesilo.com\nUpdated Date: 2024-04-05T08:00:00Z\nCreation Date: 2024-04-01T10:00:00Z\nRegistry Expiry Date: 2025-04-01T10:00:00Z\nName Server: DNS1.NAMESERVER.COM\nName Server: DNS2.NAMESERVER.COM\nRegistrant Organization: WhoisGuard, Inc.\nRegistrant State/Province: FL\nRegistrant Country: US",
+        "http_request_to_phishing_site": "GET /verify?token=xyz123 HTTP/1.1\r\nHost: bank-secure-login.com\r\nUser-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/112.0.0.0 Safari/537.36\r\nAccept: text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8\r\nReferer: https://bank-secure-login.com/\r\nConnection: keep-alive\r\n\r\n",
+        "http_response_from_phishing_site": "HTTP/1.1 200 OK\r\nDate: Wed, 10 Apr 2024 14:45:12 GMT\r\nServer: Apache/2.4.52 (Ubuntu)\r\nContent-Type: text/html; charset=UTF-8\r\nContent-Length: 2870\r\nConnection: close\r\n\r\n<html><head><title>Bank Secure Login Verification</title></head><body><form action=\"/process_verify.php\" method=\"POST\"><label>Username:</label><input type=\"text\" name=\"username\" /><label>Password:</label><input type=\"password\" name=\"password\" /><label>Mother's Maiden Name:</label><input type=\"text\" name=\"security_answer\" /><input type=\"submit\" value=\"Verify\" /></form></body></html>",
+        "web_server_access_log": "192.0.2.100 - - [10/Apr/2024:14:45:12 +0000] \"GET /verify?token=xyz123 HTTP/1.1\" 200 2870 \"-\" \"Mozilla/5.0 (Windows NT 10.0; Win64; x64) Chrome/112.0.0.0\"\n192.0.2.100 - - [10/Apr/2024:14:46:05 +0000] \"POST /process_verify.php HTTP/1.1\" 200 600 \"https://bank-secure-login.com/verify?token=xyz123\" \"Mozilla/5.0 (Windows NT 10.0; Win64; x64) Chrome/112.0.0.0\"",
+        "waf_log_entry": "{ \"timestamp\": \"2024-04-10T14:46:05Z\", \"client_ip\": \"192.0.2.100\", \"request_uri\": \"/process_verify.php\", \"action\": \"allow\", \"rule_id\": \"300305\", \"message\": \"Form submission with sensitive credential fields\", \"severity\": \"high\" }",
+        "url_obfuscation_technique": "Use of a hyphenated domain bank-secure-login.com to mimic legitimate bank domains, exploiting user trust in security-related wording and subdomain-like structures to evade simple domain blacklists.",
+        "browser_extension_warning_example": "Warning: The site bank-secure-login.com is reported as a phishing domain impersonating a bank's fraud department. Do not provide any credentials or personal information."
+      },
+      "indicators": {
+        "phishing_domain": "bank-secure-login.com",
+        "email_spf_fail": "spf=fail smtp.mailfrom=bank-secure-login.com",
+        "unusual_email_sending_ip": "192.0.2.88",
+        "email_return_path": "security-alert@bank-secure-login.com",
+        "form_post_path": "/process_verify.php",
+        "waf_rule_triggered": "300305",
+        "suspicious_user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) Chrome/112.0.0.0"
+      },
+      "detection_method": "Correlating SPF and DMARC failures on emails claiming to be from the bank\u2019s fraud department; monitoring for newly registered domains with security-related keywords combined with bank names; analyzing web server logs for POST requests submitting sensitive credentials and security questions; leveraging WAF to alert on suspicious form submissions containing credential fields; applying browser-based phishing detection plugins to warn users; cross-referencing sending IPs against known threat intelligence blacklists.",
+      "relevant_mitre_techniques": [
+        "T1566.002 - Phishing: Spearphishing Link",
+        "T1583.001 - Acquire Infrastructure: Domain Registration",
+        "T1598.002 - Phishing for Information: Spearphishing via Service",
+        "T1204.002 - User Execution: Malicious Link"
+      ]
+    },
+    {
+      "scenario": "Attackers create a phishing scheme impersonating a major social media platform (faceb00k-secure.com) by sending emails warning users of unusual login activity. The email contains a link redirecting to a cloned login page on a deceptive subdomain, harvesting credentials when users attempt to secure their accounts.",
+      "technical_data": {
+        "email_headers": "Return-Path: <security-alert@faceb00k-secure.com>\nReceived: from unknown[203.0.113.17] by mx.victimmail.com with ESMTP id 3Gf9LpM2a7fH; Wed, 12 Jul 2023 13:42:10 +0000\nReceived-SPF: fail (mx.victimmail.com: domain of faceb00k-secure.com does not designate 203.0.113.17 as permitted sender)\nAuthentication-Results: mx.victimmail.com; spf=fail smtp.mailfrom=faceb00k-secure.com; dkim=none; dmarc=fail\nX-Mailer: Microsoft Outlook 16.0\nMessage-ID: <20230712134210.3Gf9LpM2a7fH@unknown>\nFrom: \"Facebook Security\" <security-alert@faceb00k-secure.com>\nTo: user@victimdomain.com\nSubject: Immediate Action Required: Unusual Login Detected",
+        "email_body_html": "<html>\n  <body>\n    <h2>Unusual Login Activity Detected</h2>\n    <p>We noticed a login attempt from a new device. Please verify your identity immediately to secure your account.</p>\n    <a href=\"https://login.faceb00k-secure.com.verify-account.net/login\">Verify Now</a>\n  </body>\n</html>",
+        "smtp_transaction_log": "220 mail.verify-account.net ESMTP Postfix\nEHLO attacker-host.local\n250-mail.verify-account.net\n250-PIPELINING\n250-SIZE 20971520\n250-STARTTLS\n250-ENHANCEDSTATUSCODES\n250 8BITMIME\nMAIL FROM:<security-alert@faceb00k-secure.com>\n250 2.1.0 Ok\nRCPT TO:<user@victimdomain.com>\n250 2.1.5 Ok\nDATA\n354 End data with <CR><LF>.<CR><LF>\n[Phishing email content]\n.\n250 2.0.0 Ok: queued as 4Hk7Lp9Jb2nF\nQUIT\n221 2.0.0 Bye",
+        "fraudulent_domain_whois": "Domain Name: FACEB00K-SECURE.COM.VERIFY-ACCOUNT.NET\nRegistry Domain ID: 9876543210_DOMAIN_NET-VRSN\nRegistrar: GoDaddy.com, LLC\nRegistrar WHOIS Server: whois.godaddy.com\nRegistrar URL: http://www.godaddy.com\nUpdated Date: 2023-06-30T08:30:00Z\nCreation Date: 2023-06-25T09:15:00Z\nRegistry Expiry Date: 2024-06-25T09:15:00Z\nName Server: NS1.VERIFY-ACCOUNT.NET\nName Server: NS2.VERIFY-ACCOUNT.NET\nRegistrant Organization: PrivacyProtect.org\nRegistrant State/Province: NY\nRegistrant Country: US",
+        "http_request_to_phishing_site": "GET /login HTTP/1.1\r\nHost: login.faceb00k-secure.com.verify-account.net\r\nUser-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/15.1 Safari/605.1.15\r\nAccept: text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8\r\nAccept-Language: en-US,en;q=0.9\r\nReferer: https://login.faceb00k-secure.com.verify-account.net/\r\nConnection: keep-alive\r\n\r\n",
+        "http_response_from_phishing_site": "HTTP/1.1 200 OK\r\nDate: Wed, 12 Jul 2023 13:42:12 GMT\r\nServer: nginx/1.18.0\r\nContent-Type: text/html; charset=utf-8\r\nContent-Length: 3120\r\nConnection: close\r\n\r\n<html>\n<head><title>Facebook Login</title></head>\n<body>\n<form action=\"/process_login.php\" method=\"POST\">\n<label>Email or Phone:</label><input type=\"text\" name=\"email\" maxlength=\"254\" />\n<label>Password:</label><input type=\"password\" name=\"pass\" maxlength=\"128\" />\n<input type=\"submit\" value=\"Log In\" />\n</form>\n</body>\n</html>",
+        "web_server_access_log": "203.0.113.200 - - [12/Jul/2023:13:42:12 +0000] \"GET /login HTTP/1.1\" 200 3120 \"-\" \"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/15.1 Safari/605.1.15\"\n203.0.113.200 - - [12/Jul/2023:13:43:05 +0000] \"POST /process_login.php HTTP/1.1\" 200 450 \"https://login.faceb00k-secure.com.verify-account.net/login\" \"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/15.1 Safari/605.1.15\"",
+        "waf_log_entry": "{ \"timestamp\": \"2023-07-12T13:43:05Z\", \"client_ip\": \"203.0.113.200\", \"request_uri\": \"/process_login.php\", \"action\": \"allow\", \"rule_id\": \"200045\", \"message\": \"Suspicious login form submission\", \"severity\": \"medium\" }",
+        "url_obfuscation_technique": "Use of a long subdomain hierarchy combining 'faceb00k-secure.com' with 'verify-account.net' to appear as a legitimate verification page, leveraging homograph substitution (zero for letter 'o') and domain chaining to evade simple domain filtering.",
+        "browser_extension_warning_example": "Warning: The domain login.faceb00k-secure.com.verify-account.net is identified as a phishing site attempting to steal login credentials. Avoid entering sensitive information."
+      },
+      "indicators": {
+        "phishing_domain": "login.faceb00k-secure.com.verify-account.net",
+        "email_spf_fail": "spf=fail smtp.mailfrom=faceb00k-secure.com",
+        "suspicious_user_agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/15.1 Safari/605.1.15",
+        "unusual_email_sending_ip": "203.0.113.17",
+        "email_return_path": "security-alert@faceb00k-secure.com",
+        "form_post_path": "/process_login.php",
+        "waf_rule_triggered": "200045"
+      },
+      "detection_method": "Identify SPF and DMARC failures on emails purporting to be from 'facebook.com'; detect homograph domain abuse and chained subdomains resembling official Facebook URLs; monitor web server logs for POST requests to suspicious login processing scripts; use browser security tools to flag known phishing domains; cross-reference email sending IPs against threat intelligence databases; analyze WAF logs for form submission anomalies associated with credential theft.",
+      "relevant_mitre_techniques": [
+        "T1566.002 - Phishing: Spearphishing Link",
+        "T1583.001 - Acquire Infrastructure: Domain Registration",
+        "T1598.002 - Phishing for Information: Spearphishing via Service",
+        "T1204.002 - User Execution: Malicious Link"
+      ]
+    },
+    {
+      "scenario": "Cybercriminals deploy a phishing attack targeting users of a popular cloud storage service (dropbox-secure-login.com). They send SMS messages with a shortened URL that redirects to a counterfeit login portal designed to capture user credentials and two-factor authentication codes.",
+      "technical_data": {
+        "email_headers": "Return-Path: <alert@dropbox-secure-login.com>\nReceived: from mail.dropbox-secure-login.com (mail.dropbox-secure-login.com [192.0.2.89]) by mx.cloudmail.com with ESMTP id 9Tz4NvR8hJkL; Fri, 18 Aug 2023 09:20:47 +0000\nReceived-SPF: fail (mx.cloudmail.com: domain of dropbox-secure-login.com does not designate 192.0.2.89 as permitted sender)\nAuthentication-Results: mx.cloudmail.com; spf=fail smtp.mailfrom=dropbox-secure-login.com; dkim=none; dmarc=fail\nX-Mailer: Exim 4.94\nMessage-ID: <20230818092047.9Tz4NvR8hJkL@mail.dropbox-secure-login.com>\nFrom: \"Dropbox Alert\" <alert@dropbox-secure-login.com>\nTo: user@victimdomain.com\nSubject: Important: Verify Your Dropbox Account",
+        "email_body_html": "<html>\n  <body>\n    <p>Your Dropbox account has been temporarily suspended due to unusual activity.</p>\n    <p>Please <a href=\"http://dropbox-secure-login.com.verifyuser.net/authenticate\">verify your account</a> to restore access.</p>\n  </body>\n</html>",
+        "smtp_transaction_log": "220 mail.dropbox-secure-login.com ESMTP Exim 4.94\nEHLO attacker-pc.local\n250-mail.dropbox-secure-login.com\n250-PIPELINING\n250-SIZE 52428800\n250-STARTTLS\n250 HELP\nMAIL FROM:<alert@dropbox-secure-login.com>\n250 2.1.0 Ok\nRCPT TO:<user@victimdomain.com>\n250 2.1.5 Ok\nDATA\n354 Enter message, ending with \".\" on a line by itself\n[Phishing email content]\n.\n250 2.0.0 Ok: queued as 1Yx3NhP7b5qM\nQUIT\n221 2.0.0 closing connection",
+        "fraudulent_domain_whois": "Domain Name: DROPBOX-SECURE-LOGIN.COM.VERIFYUSER.NET\nRegistry Domain ID: 1122334455_DOMAIN_NET-VRSN\nRegistrar: Dynadot, LLC\nRegistrar WHOIS Server: whois.dynadot.com\nRegistrar URL: http://www.dynadot.com\nUpdated Date: 2023-08-10T11:00:00Z\nCreation Date: 2023-08-05T10:00:00Z\nRegistry Expiry Date: 2024-08-05T10:00:00Z\nName Server: NS1.VERIFYUSER.NET\nName Server: NS2.VERIFYUSER.NET\nRegistrant Organization: Domains By Proxy, LLC\nRegistrant State/Province: AZ\nRegistrant Country: US",
+        "http_request_to_phishing_site": "GET /authenticate HTTP/1.1\r\nHost: dropbox-secure-login.com.verifyuser.net\r\nUser-Agent: Mozilla/5.0 (Linux; Android 11; SM-G991B) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/105.0.0.0 Mobile Safari/537.36\r\nAccept: text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8\r\nAccept-Language: en-US,en;q=0.9\r\nReferer: http://dropbox-secure-login.com.verifyuser.net/\r\nConnection: keep-alive\r\n\r\n",
+        "http_response_from_phishing_site": "HTTP/1.1 200 OK\r\nDate: Fri, 18 Aug 2023 09:20:50 GMT\r\nServer: Apache/2.4.41 (Ubuntu)\r\nContent-Type: text/html; charset=UTF-8\r\nContent-Length: 2764\r\nConnection: close\r\n\r\n<html>\n<head><title>Dropbox Secure Login</title></head>\n<body>\n<form action=\"/submit_auth.php\" method=\"POST\">\n<label>Email:</label><input type=\"email\" name=\"email\" required />\n<label>Password:</label><input type=\"password\" name=\"password\" required />\n<label>2FA Code:</label><input type=\"text\" name=\"2fa_code\" maxlength=\"6\" />\n<input type=\"submit\" value=\"Verify Account\" />\n</form>\n</body>\n</html>",
+        "web_server_access_log": "192.0.2.150 - - [18/Aug/2023:09:20:50 +0000] \"GET /authenticate HTTP/1.1\" 200 2764 \"-\" \"Mozilla/5.0 (Linux; Android 11; SM-G991B) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/105.0.0.0 Mobile Safari/537.36\"\n192.0.2.150 - - [18/Aug/2023:09:21:18 +0000] \"POST /submit_auth.php HTTP/1.1\" 200 530 \"http://dropbox-secure-login.com.verifyuser.net/authenticate\" \"Mozilla/5.0 (Linux; Android 11; SM-G991B) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/105.0.0.0 Mobile Safari/537.36\"",
+        "waf_log_entry": "{ \"timestamp\": \"2023-08-18T09:21:18Z\", \"client_ip\": \"192.0.2.150\", \"request_uri\": \"/submit_auth.php\", \"action\": \"allow\", \"rule_id\": \"300112\", \"message\": \"Suspicious multi-field authentication form submission\", \"severity\": \"high\" }",
+        "url_obfuscation_technique": "The phishing domain appends the legitimate service name 'dropbox-secure-login.com' as a subdomain to 'verifyuser.net', creating a long chained domain that appears legitimate but is controlled by attackers, leveraging right-to-left domain parsing confusion.",
+        "browser_extension_warning_example": "Warning: dropbox-secure-login.com.verifyuser.net is a known phishing domain targeting Dropbox users to steal credentials and 2FA codes. Do not enter any personal data."
+      },
+      "indicators": {
+        "phishing_domain": "dropbox-secure-login.com.verifyuser.net",
+        "email_spf_fail": "spf=fail smtp.mailfrom=dropbox-secure-login.com",
+        "suspicious_user_agent": "Mozilla/5.0 (Linux; Android 11; SM-G991B) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/105.0.0.0 Mobile Safari/537.36",
+        "unusual_email_sending_ip": "192.0.2.89",
+        "email_return_path": "alert@dropbox-secure-login.com",
+        "form_post_path": "/submit_auth.php",
+        "waf_rule_triggered": "300112"
+      },
+      "detection_method": "Monitor SPF and DMARC failures on purported Dropbox notification emails; detect suspicious chained subdomains mimicking official Dropbox URLs; analyze web logs for POST requests to authentication forms requesting 2FA codes; employ browser and email security tools to identify and block known phishing domains; verify email sending IP reputation against threat intelligence; evaluate WAF logs for anomalous form submissions indicative of credential harvesting.",
+      "relevant_mitre_techniques": [
+        "T1566.002 - Phishing: Spearphishing Link",
+        "T1583.001 - Acquire Infrastructure: Domain Registration",
+        "T1598.002 - Phishing for Information: Spearphishing via Service",
+        "T1204.002 - User Execution: Malicious Link"
+      ]
+    },
+    {
+      "scenario": "Attackers create a fake login page mimicking a major social media platform (socialconnect.com) and send phishing emails stating users must verify their account due to suspicious activity. The email contains a link to socialconnect-login.verify-account.net, where users input credentials that are captured by the attackers.",
+      "technical_data": {
+        "email_headers": "Return-Path: <security@socialconnect-login.verify-account.net>\nReceived: from smtp.fakehost.net[203.0.113.77] by mx.socialconnect.com with ESMTP id 9Xb2kJpQdF6W; Wed, 12 Apr 2023 12:45:10 -0400 (EDT)\nReceived-SPF: fail (mx.socialconnect.com: domain of socialconnect-login.verify-account.net does not designate 203.0.113.77 as permitted sender)\nAuthentication-Results: mx.socialconnect.com; spf=fail smtp.mailfrom=socialconnect-login.verify-account.net; dkim=none; dmarc=fail\nX-Mailer: PHPMailer 6.5.0\nMessage-ID: <20230412124510.9Xb2kJpQdF6W@smtp.fakehost.net>\nFrom: \"SocialConnect Security\" <security@socialconnect-login.verify-account.net>\nTo: user@victimdomain.com\nSubject: Urgent: Verify Your SocialConnect Account Now!",
+        "email_body_html": "<html>\n  <body>\n    <h2>Important Security Alert</h2>\n    <p>We detected suspicious activity on your SocialConnect account. Please <a href=\"http://socialconnect-login.verify-account.net/login?verify=true\">verify your identity</a> immediately to avoid suspension.</p>\n    <p>Thank you,<br/>SocialConnect Security Team</p>\n    <img src=\"http://socialconnect-login.verify-account.net/images/security_banner.png\" alt=\"Security Alert\" />\n  </body>\n</html>",
+        "smtp_transaction_log": "220 smtp.fakehost.net ESMTP Postfix\nEHLO attacker-pc.local\n250-smtp.fakehost.net\n250-PIPELINING\n250-SIZE 20971520\n250-STARTTLS\n250-ENHANCEDSTATUSCODES\n250-8BITMIME\n250 DSN\nMAIL FROM:<security@socialconnect-login.verify-account.net>\n250 2.1.0 Ok\nRCPT TO:<user@victimdomain.com>\n250 2.1.5 Ok\nDATA\n354 End data with <CR><LF>.<CR><LF>\n[Email content sent here]\n.\n250 2.0.0 Ok: queued as 9Xb2kJpQdF6W\nQUIT\n221 2.0.0 Bye",
+        "fraudulent_domain_whois": "Domain Name: SOCIALCONNECT-LOGIN.VERIFY-ACCOUNT.NET\nRegistry Domain ID: 0987654321_DOMAIN_NET-VRSN\nRegistrar: GoDaddy.com, LLC\nRegistrar WHOIS Server: whois.godaddy.com\nRegistrar URL: http://www.godaddy.com\nUpdated Date: 2023-04-01T10:30:00Z\nCreation Date: 2023-03-28T09:00:00Z\nRegistry Expiry Date: 2024-03-28T09:00:00Z\nName Server: NS1.VERIFY-ACCOUNT.NET\nName Server: NS2.VERIFY-ACCOUNT.NET\nRegistrant Organization: PrivacyGuardian Inc. (Privacy service)\nRegistrant State/Province: NY\nRegistrant Country: US",
+        "http_request_to_phishing_site": "GET /login?verify=true HTTP/1.1\r\nHost: socialconnect-login.verify-account.net\r\nUser-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/15.1 Safari/605.1.15\r\nAccept: text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8\r\nAccept-Language: en-US,en;q=0.9\r\nReferer: http://socialconnect-login.verify-account.net/\r\nConnection: keep-alive\r\n\r\n",
+        "http_response_from_phishing_site": "HTTP/1.1 200 OK\r\nDate: Wed, 12 Apr 2023 16:45:12 GMT\r\nServer: nginx/1.18.0 (Ubuntu)\r\nContent-Type: text/html; charset=UTF-8\r\nContent-Length: 2987\r\nConnection: close\r\n\r\n<html>\n<head><title>SocialConnect - Account Verification</title></head>\n<body>\n<form action=\"/submit_credentials.php\" method=\"POST\">\n<label>Username or Email:</label><input type=\"text\" name=\"username\" maxlength=\"100\" />\n<label>Password:</label><input type=\"password\" name=\"password\" maxlength=\"64\" />\n<input type=\"submit\" value=\"Verify Account\" />\n</form>\n</body>\n</html>",
+        "web_server_access_log": "203.0.113.200 - - [12/Apr/2023:16:45:12 +0000] \"GET /login?verify=true HTTP/1.1\" 200 2987 \"-\" \"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/15.1 Safari/605.1.15\"\n203.0.113.200 - - [12/Apr/2023:16:47:30 +0000] \"POST /submit_credentials.php HTTP/1.1\" 200 350 \"http://socialconnect-login.verify-account.net/login?verify=true\" \"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/15.1 Safari/605.1.15\"",
+        "waf_log_entry": "{ \"timestamp\": \"2023-04-12T16:47:30Z\", \"client_ip\": \"203.0.113.200\", \"request_uri\": \"/submit_credentials.php\", \"action\": \"allow\", \"rule_id\": \"200015\", \"message\": \"Phishing credential submission detected\", \"severity\": \"medium\" }",
+        "url_obfuscation_technique": "The attacker uses a subdomain login.verify-account.net prefixed by socialconnect- to mimic the legitimate domain socialconnect.com. This right-to-left domain naming confuses users and bypasses simple domain whitelist filters.",
+        "browser_extension_warning_example": "Warning: The site socialconnect-login.verify-account.net has been identified as a phishing site. Entering credentials may lead to account compromise."
+      },
+      "indicators": {
+        "phishing_domain": "socialconnect-login.verify-account.net",
+        "email_spf_fail": "spf=fail smtp.mailfrom=socialconnect-login.verify-account.net",
+        "suspicious_user_agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/15.1 Safari/605.1.15",
+        "unusual_email_sending_ip": "203.0.113.77",
+        "email_return_path": "security@socialconnect-login.verify-account.net",
+        "form_post_path": "/submit_credentials.php",
+        "waf_rule_triggered": "200015"
+      },
+      "detection_method": "Monitoring SPF and DMARC failures on emails claiming to be from socialconnect.com; detecting domains with misleading subdomain structures combining socialconnect keywords with unrelated domains; analyzing web server logs for POST requests to credential submission forms; employing browser anti-phishing extensions to warn users; correlating sending IP addresses with threat intelligence feeds; reviewing WAF logs for suspicious POST events resembling login form submissions.",
+      "relevant_mitre_techniques": [
+        "T1566.002 - Phishing: Spearphishing Link",
+        "T1583.001 - Acquire Infrastructure: Domain Registration",
+        "T1598.002 - Phishing for Information: Spearphishing via Service",
+        "T1204.002 - User Execution: Malicious Link"
+      ]
+    },
+    {
+      "scenario": "A phishing campaign targets users of a popular cloud storage service (cloudstore.com) by sending urgent emails warning of a file sharing suspension due to policy violations. The email includes a link to the phishing site cloudstore-secure-share.net where victims are prompted to enter their login credentials to restore access.",
+      "technical_data": {
+        "email_headers": "Return-Path: <support@cloudstore-secure-share.net>\nReceived: from mail.fakeprovider.net[198.51.100.99] by mx.cloudstore.com with ESMTP id 4Fg7kLmM9uT2; Fri, 21 Apr 2023 09:30:45 -0700 (PDT)\nReceived-SPF: fail (mx.cloudstore.com: domain of cloudstore-secure-share.net does not designate 198.51.100.99 as permitted sender)\nAuthentication-Results: mx.cloudstore.com; spf=fail smtp.mailfrom=cloudstore-secure-share.net; dkim=none; dmarc=fail\nX-Mailer: PHPMailer 6.0.7\nMessage-ID: <20230421093045.4Fg7kLmM9uT2@mail.fakeprovider.net>\nFrom: \"CloudStore Support\" <support@cloudstore-secure-share.net>\nTo: user@victimdomain.com\nSubject: Action Required: Your File Sharing Has Been Suspended",
+        "email_body_html": "<html>\n  <body>\n    <h1>File Sharing Suspension Notice</h1>\n    <p>Your CloudStore file sharing privileges have been suspended due to policy violations. To restore access, please <a href=\"http://cloudstore-secure-share.net/restore_access.php\">login here</a> immediately.</p>\n    <p>Failure to act within 24 hours will result in permanent suspension.</p>\n    <img src=\"http://cloudstore-secure-share.net/images/alert.png\" alt=\"Suspension Alert\" />\n  </body>\n</html>",
+        "smtp_transaction_log": "220 mail.fakeprovider.net ESMTP Postfix\nEHLO attacker-vm.local\n250-mail.fakeprovider.net\n250-PIPELINING\n250-SIZE 15728640\n250-STARTTLS\n250-ENHANCEDSTATUSCODES\n250-8BITMIME\n250 DSN\nMAIL FROM:<support@cloudstore-secure-share.net>\n250 2.1.0 Ok\nRCPT TO:<user@victimdomain.com>\n250 2.1.5 Ok\nDATA\n354 End data with <CR><LF>.<CR><LF>\n[Email content sent here]\n.\n250 2.0.0 Ok: queued as 4Fg7kLmM9uT2\nQUIT\n221 2.0.0 Bye",
+        "fraudulent_domain_whois": "Domain Name: CLOUDSTORE-SECURE-SHARE.NET\nRegistry Domain ID: 1122334455_DOMAIN_NET-VRSN\nRegistrar: Dynadot, LLC\nRegistrar WHOIS Server: whois.dynadot.com\nRegistrar URL: http://www.dynadot.com\nUpdated Date: 2023-04-10T18:22:00Z\nCreation Date: 2023-04-05T17:15:00Z\nRegistry Expiry Date: 2024-04-05T17:15:00Z\nName Server: NS1.SECURE-SHARE.NET\nName Server: NS2.SECURE-SHARE.NET\nRegistrant Organization: WhoisGuard, Inc. (Privacy service)\nRegistrant State/Province: FL\nRegistrant Country: US",
+        "http_request_to_phishing_site": "GET /restore_access.php HTTP/1.1\r\nHost: cloudstore-secure-share.net\r\nUser-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/100.0.4896.127 Safari/537.36\r\nAccept: text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8\r\nAccept-Language: en-US,en;q=0.8\r\nReferer: http://cloudstore-secure-share.net/\r\nConnection: keep-alive\r\n\r\n",
+        "http_response_from_phishing_site": "HTTP/1.1 200 OK\r\nDate: Fri, 21 Apr 2023 16:30:47 GMT\r\nServer: Apache/2.4.46 (Ubuntu)\r\nContent-Type: text/html; charset=UTF-8\r\nContent-Length: 2654\r\nConnection: close\r\n\r\n<html>\n<head><title>CloudStore - Restore File Sharing Access</title></head>\n<body>\n<form action=\"/submit_login.php\" method=\"POST\">\n<label>Email:</label><input type=\"email\" name=\"email\" maxlength=\"254\" />\n<label>Password:</label><input type=\"password\" name=\"password\" maxlength=\"64\" />\n<input type=\"submit\" value=\"Restore Access\" />\n</form>\n</body>\n</html>",
+        "web_server_access_log": "198.51.100.210 - - [21/Apr/2023:16:30:47 +0000] \"GET /restore_access.php HTTP/1.1\" 200 2654 \"-\" \"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/100.0.4896.127 Safari/537.36\"\n198.51.100.210 - - [21/Apr/2023:16:33:05 +0000] \"POST /submit_login.php HTTP/1.1\" 200 420 \"http://cloudstore-secure-share.net/restore_access.php\" \"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/100.0.4896.127 Safari/537.36\"",
+        "waf_log_entry": "{ \"timestamp\": \"2023-04-21T16:33:05Z\", \"client_ip\": \"198.51.100.210\", \"request_uri\": \"/submit_login.php\", \"action\": \"allow\", \"rule_id\": \"300022\", \"message\": \"Detected potential phishing credential submission\", \"severity\": \"medium\" }",
+        "url_obfuscation_technique": "The attacker uses a domain cloudstore-secure-share.net which includes the legitimate brand 'cloudstore' within a longer domain that appears related to secure sharing. This exploits user trust in the brand combined with additional words to appear genuine.",
+        "browser_extension_warning_example": "Warning: cloudstore-secure-share.net is a known phishing site attempting to steal login credentials. Do not enter any sensitive information."
+      },
+      "indicators": {
+        "phishing_domain": "cloudstore-secure-share.net",
+        "email_spf_fail": "spf=fail smtp.mailfrom=cloudstore-secure-share.net",
+        "suspicious_user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/100.0.4896.127 Safari/537.36",
+        "unusual_email_sending_ip": "198.51.100.99",
+        "email_return_path": "support@cloudstore-secure-share.net",
+        "form_post_path": "/submit_login.php",
+        "waf_rule_triggered": "300022"
+      },
+      "detection_method": "Identification of SPF and DMARC failures for emails purporting to be from cloudstore.com; detection of phishing domains that include the brand name combined with additional suspicious words; review of web server logs for suspicious POST requests to login submission pages; use of real-time browser protection to flag phishing domains; correlation of email sending IP addresses with spam and phishing blacklists; analysis of WAF logs for suspicious POST actions to credential capture endpoints.",
+      "relevant_mitre_techniques": [
+        "T1566.002 - Phishing: Spearphishing Link",
+        "T1583.001 - Acquire Infrastructure: Domain Registration",
+        "T1598.002 - Phishing for Information: Spearphishing via Service",
+        "T1204.002 - User Execution: Malicious Link"
+      ]
+    },
+    {
+      "scenario": "An attacker sends phishing emails posing as a leading online apparel brand (fashionhub.com), announcing a fake exclusive clearance sale with 'up to 70% off'. The email contains links to a deceptive website with a domain name closely resembling the legitimate brand, where victims are prompted to enter credit card information for a fraudulent purchase.",
+      "technical_data": {
+        "email_headers": "Return-Path: <sale-alert@fashlonhub.com>\nReceived: from mailserver456.spam-net[203.0.113.89] by mx.fashionhub.com with ESMTP id 9Ab3JkLm5nOp; Wed, 05 Apr 2023 11:40:10 -0700 (PDT)\nReceived-SPF: fail (mx.fashionhub.com: domain of fashlonhub.com does not designate 203.0.113.89 as permitted sender)\nAuthentication-Results: mx.fashionhub.com; spf=fail smtp.mailfrom=fashlonhub.com; dkim=none; dmarc=fail\nX-Mailer: Microsoft Outlook 16.0\nMessage-ID: <20230405114010.9Ab3JkLm5nOp@mailserver456.spam-net>\nFrom: \"FashionHub Sale Alert\" <sale-alert@fashlonhub.com>\nTo: victim@userdomain.com\nSubject: FashionHub Exclusive Clearance Sale - Up to 70% OFF!",
+        "email_body_html": "<html>\n  <body>\n    <h2>Exclusive Clearance Sale - Up to 70% OFF!</h2>\n    <p>Shop now at <a href=\"http://fashlonhub-sale.com/clearance?promo=70OFF\">fashlonhub-sale.com</a> for limited-time deals on apparel and accessories.</p>\n    <p>Use code: CLEAR70 at checkout.</p>\n    <img src=\"http://fashlonhub-sale.com/images/clearance-banner.jpg\" alt=\"Clearance Sale Banner\" />\n  </body>\n</html>",
+        "smtp_transaction_log": "220 mailserver456.spam-net ESMTP Postfix\nEHLO attacker-pc.local\n250-mailserver456.spam-net\n250-PIPELINING\n250-SIZE 10485760\n250-STARTTLS\n250-ENHANCEDSTATUSCODES\n250-8BITMIME\n250 DSN\nMAIL FROM:<sale-alert@fashlonhub.com>\n250 2.1.0 Ok\nRCPT TO:<victim@userdomain.com>\n250 2.1.5 Ok\nDATA\n354 End data with <CR><LF>.<CR><LF>\n[Email content sent here]\n.\n250 2.0.0 Ok: queued as 9Ab3JkLm5nOp\nQUIT\n221 2.0.0 Bye",
+        "fraudulent_domain_whois": "Domain Name: FASHLONHUB-SALE.COM\nRegistry Domain ID: 9876543210_DOMAIN_COM-VRSN\nRegistrar: GoDaddy.com, LLC\nRegistrar WHOIS Server: whois.godaddy.com\nRegistrar URL: http://www.godaddy.com\nUpdated Date: 2023-03-29T09:30:00Z\nCreation Date: 2023-03-25T08:45:00Z\nRegistry Expiry Date: 2024-03-25T08:45:00Z\nName Server: NS1.SALE-DOMAIN.NET\nName Server: NS2.SALE-DOMAIN.NET\nRegistrant Organization: WhoisGuard, Inc. (Privacy service)\nRegistrant State/Province: FL\nRegistrant Country: US",
+        "http_request_to_phishing_site": "GET /clearance?promo=70OFF HTTP/1.1\r\nHost: fashlonhub-sale.com\r\nUser-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/15.1 Safari/605.1.15\r\nAccept: text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8\r\nAccept-Language: en-US,en;q=0.9\r\nReferer: http://fashlonhub-sale.com/\r\nConnection: keep-alive\r\n\r\n",
+        "http_response_from_phishing_site": "HTTP/1.1 200 OK\r\nDate: Wed, 05 Apr 2023 18:40:12 GMT\r\nServer: nginx/1.18.0 (Ubuntu)\r\nContent-Type: text/html; charset=UTF-8\r\nContent-Length: 2567\r\nConnection: close\r\n\r\n<html>\n<head><title>FashionHub Clearance Sale</title></head>\n<body>\n<form action=\"/process_order.php\" method=\"POST\">\n<label>Card Number:</label><input type=\"text\" name=\"cardnumber\" maxlength=\"19\" />\n<label>Expiry Date:</label><input type=\"text\" name=\"expiry\" maxlength=\"7\" />\n<label>CVV:</label><input type=\"password\" name=\"cvv\" maxlength=\"4\" />\n<input type=\"submit\" value=\"Place Order\" />\n</form>\n</body>\n</html>",
+        "web_server_access_log": "203.0.113.89 - - [05/Apr/2023:18:40:12 +0000] \"GET /clearance?promo=70OFF HTTP/1.1\" 200 2567 \"-\" \"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/15.1 Safari/605.1.15\"\n203.0.113.89 - - [05/Apr/2023:18:43:05 +0000] \"POST /process_order.php HTTP/1.1\" 200 678 \"http://fashlonhub-sale.com/clearance?promo=70OFF\" \"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/15.1 Safari/605.1.15\"",
+        "waf_log_entry": "{ \"timestamp\": \"2023-04-05T18:43:05Z\", \"client_ip\": \"203.0.113.89\", \"request_uri\": \"/process_order.php\", \"action\": \"allow\", \"rule_id\": \"100002\", \"message\": \"Suspicious form submission resembling checkout\", \"severity\": \"medium\" }",
+        "url_obfuscation_technique": "The attacker uses a domain name 'fashlonhub-sale.com' that visually resembles 'fashionhub.com' by substituting the letter 'i' with 'l', causing a typographical similarity to trick users into trusting the link.",
+        "browser_extension_warning_example": "Warning: The site fashlonhub-sale.com is identified as a fraudulent phishing website. Avoid entering any personal or payment information."
+      },
+      "indicators": {
+        "phishing_domain": "fashlonhub-sale.com",
+        "email_spf_fail": "spf=fail smtp.mailfrom=fashlonhub.com",
+        "suspicious_user_agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/15.1 Safari/605.1.15",
+        "unusual_email_sending_ip": "203.0.113.89",
+        "email_return_path": "sale-alert@fashlonhub.com",
+        "form_post_path": "/process_order.php",
+        "waf_rule_triggered": "100002"
+      },
+      "detection_method": "Identifying SPF and DMARC failures on emails purporting to be from fashionhub.com; detecting typosquatted domains substituting similar-looking characters; analyzing web server logs for POST requests to suspicious order processing scripts; using threat intelligence to flag email sending IPs outside the brand's known mail servers; monitoring web application firewall alerts for form submissions mimicking checkout flows; deploying browser warnings for known phishing domains.",
+      "relevant_mitre_techniques": [
+        "T1566.002 - Phishing: Spearphishing Link",
+        "T1583.001 - Acquire Infrastructure: Domain Registration",
+        "T1598.002 - Phishing for Information: Spearphishing via Service",
+        "T1204.002 - User Execution: Malicious Link"
+      ]
+    },
+    {
+      "scenario": "Cybercriminals launch a phishing attack targeting users of a popular online payment platform (paysecure.com), sending emails that notify recipients of an urgent account suspension. The email includes a link to a malicious domain that mimics the legitimate site, tricking users into entering login credentials which are captured by the attacker.",
+      "technical_data": {
+        "email_headers": "Return-Path: <security@paysecur3.com>\nReceived: from mailhijack789.spam-net[192.0.2.105] by mx.paysecure.com with ESMTP id 3Cd9Fklm2nQr; Thu, 06 Apr 2023 09:05:55 -0700 (PDT)\nReceived-SPF: fail (mx.paysecure.com: domain of paysecur3.com does not designate 192.0.2.105 as permitted sender)\nAuthentication-Results: mx.paysecure.com; spf=fail smtp.mailfrom=paysecur3.com; dkim=none; dmarc=fail\nX-Mailer: Thunderbird 91.5.0\nMessage-ID: <20230406090555.3Cd9Fklm2nQr@mailhijack789.spam-net>\nFrom: \"PaySecure Security Team\" <security@paysecur3.com>\nTo: user@personalmail.com\nSubject: Urgent: Your PaySecure Account Has Been Suspended!",
+        "email_body_html": "<html>\n  <body>\n    <h1>Account Suspension Notice</h1>\n    <p>Your PaySecure account has been suspended due to suspicious activity. Please <a href=\"https://paysecur3-login.com/authenticate?ref=securityalert\">log in here</a> to verify your identity and restore access.</p>\n    <p>Failure to act within 24 hours will result in permanent account closure.</p>\n  </body>\n</html>",
+        "smtp_transaction_log": "220 mailhijack789.spam-net ESMTP Postfix\nEHLO attacker-node.local\n250-mailhijack789.spam-net\n250-PIPELINING\n250-SIZE 10485760\n250-STARTTLS\n250-ENHANCEDSTATUSCODES\n250-8BITMIME\n250 DSN\nMAIL FROM:<security@paysecur3.com>\n250 2.1.0 Ok\nRCPT TO:<user@personalmail.com>\n250 2.1.5 Ok\nDATA\n354 End data with <CR><LF>.<CR><LF>\n[Email content sent here]\n.\n250 2.0.0 Ok: queued as 3Cd9Fklm2nQr\nQUIT\n221 2.0.0 Bye",
+        "fraudulent_domain_whois": "Domain Name: PAYSECUR3-LOGIN.COM\nRegistry Domain ID: 1122334455_DOMAIN_COM-VRSN\nRegistrar: Tucows Domains Inc.\nRegistrar WHOIS Server: whois.tucows.com\nRegistrar URL: http://www.tucowsdomains.com\nUpdated Date: 2023-03-28T13:20:00Z\nCreation Date: 2023-03-26T10:00:00Z\nRegistry Expiry Date: 2024-03-26T10:00:00Z\nName Server: NS1.LOGIN-SERVERS.NET\nName Server: NS2.LOGIN-SERVERS.NET\nRegistrant Organization: WhoisGuard, Inc. (Privacy service)\nRegistrant State/Province: ON\nRegistrant Country: CA",
+        "http_request_to_phishing_site": "GET /authenticate?ref=securityalert HTTP/1.1\r\nHost: paysecur3-login.com\r\nUser-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/100.0.4896.127 Safari/537.36\r\nAccept: text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8\r\nAccept-Language: en-US,en;q=0.9\r\nReferer: https://paysecur3-login.com/\r\nConnection: keep-alive\r\n\r\n",
+        "http_response_from_phishing_site": "HTTP/1.1 200 OK\r\nDate: Thu, 06 Apr 2023 16:05:57 GMT\r\nServer: Apache/2.4.46 (Ubuntu)\r\nContent-Type: text/html; charset=UTF-8\r\nContent-Length: 1987\r\nConnection: close\r\n\r\n<html>\n<head><title>PaySecure Login</title></head>\n<body>\n<form action=\"/verify_login.php\" method=\"POST\">\n<label>Username or Email:</label><input type=\"text\" name=\"username\" maxlength=\"64\" />\n<label>Password:</label><input type=\"password\" name=\"password\" maxlength=\"128\" />\n<input type=\"submit\" value=\"Verify Account\" />\n</form>\n</body>\n</html>",
+        "web_server_access_log": "192.0.2.105 - - [06/Apr/2023:16:05:57 +0000] \"GET /authenticate?ref=securityalert HTTP/1.1\" 200 1987 \"-\" \"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/100.0.4896.127 Safari/537.36\"\n192.0.2.105 - - [06/Apr/2023:16:07:30 +0000] \"POST /verify_login.php HTTP/1.1\" 200 432 \"https://paysecur3-login.com/authenticate?ref=securityalert\" \"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/100.0.4896.127 Safari/537.36\"",
+        "waf_log_entry": "{ \"timestamp\": \"2023-04-06T16:07:30Z\", \"client_ip\": \"192.0.2.105\", \"request_uri\": \"/verify_login.php\", \"action\": \"allow\", \"rule_id\": \"100003\", \"message\": \"Login form submission suspicious - potential phishing\", \"severity\": \"medium\" }",
+        "url_obfuscation_technique": "The attacker replaces the letter 'e' with the digit '3' in the domain name 'paysecur3-login.com', closely mimicking the legitimate 'paysecure.com' domain to deceive users and evade simple domain filters.",
+        "browser_extension_warning_example": "Warning: The website paysecur3-login.com is flagged as a phishing site designed to steal your login credentials. Do not enter your information."
+      },
+      "indicators": {
+        "phishing_domain": "paysecur3-login.com",
+        "email_spf_fail": "spf=fail smtp.mailfrom=paysecur3.com",
+        "suspicious_user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/100.0.4896.127 Safari/537.36",
+        "unusual_email_sending_ip": "192.0.2.105",
+        "email_return_path": "security@paysecur3.com",
+        "form_post_path": "/verify_login.php",
+        "waf_rule_triggered": "100003"
+      },
+      "detection_method": "Monitoring SPF and DMARC failures on emails that claim to be from paysecure.com; detecting typosquatting domains substituting characters with visually similar digits; analyzing web server logs for POST requests to suspicious login verification scripts; correlating sending IPs with threat intelligence blacklists; tracking WAF alerts related to login form submissions on uncommon domains; using browser phishing detection features to warn users prior to credential submission.",
+      "relevant_mitre_techniques": [
+        "T1566.002 - Phishing: Spearphishing Link",
+        "T1583.001 - Acquire Infrastructure: Domain Registration",
+        "T1598.002 - Phishing for Information: Spearphishing via Service",
+        "T1110.001 - Brute Force: Password Guessing",
+        "T1204.002 - User Execution: Malicious Link"
+      ]
+    },
+    {
+      "scenario": "An attacker sends phishing emails impersonating a well-known online bookstore (bookstore-express.com) offering a fake 'Buy 2 Get 1 Free' promotion. The email contains a link to a fraudulent domain mimicking the legitimate site with a homograph attack using Cyrillic characters. Victims who visit the phishing site are prompted to enter their credit card and login credentials, which are then captured by the attacker.",
+      "technical_data": {
+        "email_headers": "Return-Path: <support@bookstore-express.com>\nReceived: from mail.fakehost.ru [203.0.113.77] by mx.bookstore-express.com with ESMTP id 4Rt9LpX7yT4; Wed, 12 Jul 2023 10:45:10 +0300\nReceived-SPF: fail (mx.bookstore-express.com: domain of support@bookstore-express.com does not designate 203.0.113.77 as permitted sender)\nAuthentication-Results: mx.bookstore-express.com; spf=fail smtp.mailfrom=bookstore-express.com; dkim=none; dmarc=fail\nX-Mailer: Microsoft Outlook 16.0\nMessage-ID: <20230712104510.4Rt9LpX7yT4@mail.fakehost.ru>\nFrom: \"Bookstore Express Support\" <support@bookstore-express.com>\nTo: customer@victimmail.com\nSubject: Limited Time Offer - Buy 2 Get 1 Free!",
+        "email_body_html": "<html>\n  <body>\n    <h2>Exclusive Offer: Buy 2 Get 1 Free on All Books!</h2>\n    <p>Visit our store now at <a href=\"http://xn--bookstore-express-9x0b.com\">bookstore-express.com</a> to take advantage of this limited-time deal.</p>\n    <p>Use code: FREEREAD at checkout!</p>\n    <img src=\"http://xn--bookstore-express-9x0b.com/images/promo.png\" alt=\"Buy 2 Get 1 Free Banner\" />\n  </body>\n</html>",
+        "smtp_transaction_log": "220 mail.fakehost.ru ESMTP Postfix\nEHLO attacker-host.fakehost.ru\n250-mail.fakehost.ru\n250-PIPELINING\n250-SIZE 15728640\n250-STARTTLS\n250-ENHANCEDSTATUSCODES\n250-8BITMIME\n250 DSN\nMAIL FROM:<support@bookstore-express.com>\n250 2.1.0 Ok\nRCPT TO:<customer@victimmail.com>\n250 2.1.5 Ok\nDATA\n354 End data with <CR><LF>.<CR><LF>\n[Email content sent here]\n.\n250 2.0.0 Ok: queued as 4Rt9LpX7yT4\nQUIT\n221 2.0.0 Bye",
+        "fraudulent_domain_whois": "Domain Name: xn--bookstore-express-9x0b.com\nRegistry Domain ID: 987654321_DOMAIN_COM-VRSN\nRegistrar: RU-CENTER\nRegistrar WHOIS Server: whois.nic.ru\nRegistrar URL: https://www.nic.ru\nUpdated Date: 2023-06-30T18:45:00Z\nCreation Date: 2023-06-28T09:20:00Z\nRegistry Expiry Date: 2024-06-28T09:20:00Z\nName Server: NS1.FAKEHOST.RU\nName Server: NS2.FAKEHOST.RU\nRegistrant Organization: Privacy Protect Ltd.\nRegistrant State/Province: Moscow\nRegistrant Country: RU",
+        "http_request_to_phishing_site": "GET / HTTP/1.1\r\nHost: xn--bookstore-express-9x0b.com\r\nUser-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.0 Safari/605.1.15\r\nAccept: text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8\r\nAccept-Language: en-US,en;q=0.9\r\nConnection: keep-alive\r\n\r\n",
+        "http_response_from_phishing_site": "HTTP/1.1 200 OK\r\nDate: Wed, 12 Jul 2023 07:45:15 GMT\r\nServer: nginx/1.20.1\r\nContent-Type: text/html; charset=UTF-8\r\nContent-Length: 3100\r\nConnection: close\r\n\r\n<html>\n<head><title>Bookstore Express - Special Offer</title></head>\n<body>\n<form action=\"/process_order.php\" method=\"POST\">\n<label>Email:</label><input type=\"email\" name=\"email\" required />\n<label>Password:</label><input type=\"password\" name=\"password\" required />\n<label>Credit Card Number:</label><input type=\"text\" name=\"ccnumber\" maxlength=\"19\" />\n<label>Expiration Date:</label><input type=\"text\" name=\"expiry\" maxlength=\"7\" />\n<label>CVV:</label><input type=\"password\" name=\"cvv\" maxlength=\"4\" />\n<input type=\"submit\" value=\"Claim Offer\" />\n</form>\n</body>\n</html>",
+        "web_server_access_log": "203.0.113.77 - - [12/Jul/2023:07:45:15 +0000] \"GET / HTTP/1.1\" 200 3100 \"-\" \"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.0 Safari/605.1.15\"\n203.0.113.77 - - [12/Jul/2023:07:47:03 +0000] \"POST /process_order.php HTTP/1.1\" 200 650 \"http://xn--bookstore-express-9x0b.com/\" \"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.0 Safari/605.1.15\"",
+        "waf_log_entry": "{ \"timestamp\": \"2023-07-12T07:47:03Z\", \"client_ip\": \"203.0.113.77\", \"request_uri\": \"/process_order.php\", \"action\": \"allow\", \"rule_id\": \"100045\", \"message\": \"Suspicious form submission possibly phishing credentials\", \"severity\": \"medium\" }",
+        "url_obfuscation_technique": "The phishing domain uses a homograph attack by replacing Latin characters with visually similar Cyrillic characters (e.g., 'e' replaced with '\u0435' U+0435) to create xn--bookstore-express-9x0b.com, which visually resembles bookstore-express.com but is a different domain, bypassing naive filters.",
+        "browser_extension_warning_example": "Warning: The site bookstore-express.com is reported as a phishing site impersonating a popular bookstore. Avoid entering login or payment information."
+      },
+      "indicators": {
+        "phishing_domain": "xn--bookstore-express-9x0b.com",
+        "email_spf_fail": "spf=fail smtp.mailfrom=bookstore-express.com",
+        "suspicious_user_agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.0 Safari/605.1.15",
+        "unusual_email_sending_ip": "203.0.113.77",
+        "email_return_path": "support@bookstore-express.com",
+        "form_post_path": "/process_order.php",
+        "waf_rule_triggered": "100045"
+      },
+      "detection_method": "Monitor SPF and DMARC failures on emails purporting to be from bookstore-express.com; detect homograph domains with Unicode characters using IDN homograph detection tools; analyze web server logs for POST requests to suspicious order processing scripts; use browser extensions and DNS filtering to warn users of homograph phishing domains; correlate email sending IPs with threat intelligence blacklists; review WAF alerts for form submissions involving credential and payment data fields.",
+      "relevant_mitre_techniques": [
+        "T1566.002 - Phishing: Spearphishing Link",
+        "T1583.001 - Acquire Infrastructure: Domain Registration",
+        "T1598.002 - Phishing for Information: Spearphishing via Service",
+        "T1204.002 - User Execution: Malicious Link"
+      ]
+    },
+    {
+      "scenario": "A phishing campaign targets personal users by impersonating a popular online fashion retailer (stylehub.com) offering a fake clearance sale. The email uses an obfuscated URL with a hexadecimal IP address pointing to a malicious server hosting a clone of the retailer's checkout page. Victims who enter their payment information have their data stolen by the attacker.",
+      "technical_data": {
+        "email_headers": "Return-Path: <sale-notify@stylehub.com>\nReceived: from mail.attacker-net.com [192.0.2.150] by mx.stylehub.com with ESMTP id D92Hklxq2v; Fri, 21 Jul 2023 13:22:45 -0400\nReceived-SPF: fail (mx.stylehub.com: domain of sale-notify@stylehub.com does not designate 192.0.2.150 as permitted sender)\nAuthentication-Results: mx.stylehub.com; spf=fail smtp.mailfrom=stylehub.com; dkim=none; dmarc=fail\nX-Mailer: Outlook Express 6.00.2800.1106\nMessage-ID: <20230721132245.D92Hklxq2v@mail.attacker-net.com>\nFrom: \"StyleHub Deals\" <sale-notify@stylehub.com>\nTo: shopper@victimemail.com\nSubject: Clearance Sale - Up to 70% OFF Today Only!",
+        "email_body_html": "<html>\n  <body>\n    <h1>StyleHub Clearance Sale!</h1>\n    <p>Shop our exclusive clearance sale now at <a href=\"http://0xC0000296/stylehub-clearance\">http://0xC0000296/stylehub-clearance</a> and save up to 70% on selected items.</p>\n    <p>Hurry, limited stock available!</p>\n    <img src=\"http://0xC0000296/images/clearance.jpg\" alt=\"Clearance Sale Banner\" />\n  </body>\n</html>",
+        "smtp_transaction_log": "220 mail.attacker-net.com ESMTP Postfix\nEHLO attacker-pc.attacker-net.com\n250-mail.attacker-net.com\n250-PIPELINING\n250-SIZE 20971520\n250-STARTTLS\n250-ENHANCEDSTATUSCODES\n250-8BITMIME\n250 DSN\nMAIL FROM:<sale-notify@stylehub.com>\n250 2.1.0 Ok\nRCPT TO:<shopper@victimemail.com>\n250 2.1.5 Ok\nDATA\n354 End data with <CR><LF>.<CR><LF>\n[Email content sent here]\n.\n250 2.0.0 Ok: queued as D92Hklxq2v\nQUIT\n221 2.0.0 Bye",
+        "fraudulent_domain_whois": "Domain Name: ATTACKER-NET.COM\nRegistry Domain ID: 1122334455_DOMAIN_COM-VRSN\nRegistrar: GoDaddy.com, LLC\nRegistrar WHOIS Server: whois.godaddy.com\nRegistrar URL: http://www.godaddy.com\nUpdated Date: 2023-05-15T10:00:00Z\nCreation Date: 2020-05-15T10:00:00Z\nRegistry Expiry Date: 2024-05-15T10:00:00Z\nName Server: NS1.ATTACKER-NET.COM\nName Server: NS2.ATTACKER-NET.COM\nRegistrant Organization: PrivacyGuard LLC\nRegistrant State/Province: TX\nRegistrant Country: US",
+        "http_request_to_phishing_site": "GET /stylehub-clearance HTTP/1.1\r\nHost: 0xC0000296\r\nUser-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:102.0) Gecko/20100101 Firefox/102.0\r\nAccept: text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8\r\nAccept-Language: en-US,en;q=0.5\r\nConnection: keep-alive\r\n\r\n",
+        "http_response_from_phishing_site": "HTTP/1.1 200 OK\r\nDate: Fri, 21 Jul 2023 17:22:50 GMT\r\nServer: Apache/2.4.46 (Unix)\r\nContent-Type: text/html; charset=UTF-8\r\nContent-Length: 2980\r\nConnection: close\r\n\r\n<html>\n<head><title>StyleHub - Clearance Checkout</title></head>\n<body>\n<form action=\"/checkout.php\" method=\"POST\">\n<label>Full Name:</label><input type=\"text\" name=\"fullname\" required />\n<label>Credit Card Number:</label><input type=\"text\" name=\"ccnum\" maxlength=\"19\" required />\n<label>Expiry Date:</label><input type=\"text\" name=\"expdate\" maxlength=\"7\" required />\n<label>CVV:</label><input type=\"password\" name=\"cvv\" maxlength=\"4\" required />\n<input type=\"submit\" value=\"Complete Purchase\" />\n</form>\n</body>\n</html>",
+        "web_server_access_log": "192.0.2.150 - - [21/Jul/2023:17:22:50 +0000] \"GET /stylehub-clearance HTTP/1.1\" 200 2980 \"-\" \"Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:102.0) Gecko/20100101 Firefox/102.0\"\n192.0.2.150 - - [21/Jul/2023:17:24:18 +0000] \"POST /checkout.php HTTP/1.1\" 200 700 \"http://0xC0000296/stylehub-clearance\" \"Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:102.0) Gecko/20100101 Firefox/102.0\"",
+        "waf_log_entry": "{ \"timestamp\": \"2023-07-21T17:24:18Z\", \"client_ip\": \"192.0.2.150\", \"request_uri\": \"/checkout.php\", \"action\": \"allow\", \"rule_id\": \"100110\", \"message\": \"Form POST detected with credit card fields - potential phishing\", \"severity\": \"medium\" }",
+        "url_obfuscation_technique": "The attacker uses a hexadecimal IPv4 address (0xC0000296) instead of a domain name to obfuscate the destination IP (192.0.2.150). This technique bypasses domain-based detection and visually confuses users who expect a domain name.",
+        "browser_extension_warning_example": "Warning: The IP address 0xC0000296 hosts a fraudulent site mimicking stylehub.com. Avoid submitting any personal or payment information."
+      },
+      "indicators": {
+        "phishing_domain": "0xC0000296",
+        "email_spf_fail": "spf=fail smtp.mailfrom=stylehub.com",
+        "suspicious_user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:102.0) Gecko/20100101 Firefox/102.0",
+        "unusual_email_sending_ip": "192.0.2.150",
+        "email_return_path": "sale-notify@stylehub.com",
+        "form_post_path": "/checkout.php",
+        "waf_rule_triggered": "100110"
+      },
+      "detection_method": "Identify SPF and DMARC failures on emails claiming to be from stylehub.com; flag URLs using hexadecimal IP addresses in links; inspect web server logs for POST submissions to checkout.php with credit card fields; utilize browser phishing detection extensions to warn users about IP-based phishing URLs; correlate sending IP addresses with known threat sources; monitor WAF alerts for suspicious form submissions involving payment data.",
+      "relevant_mitre_techniques": [
+        "T1566.002 - Phishing: Spearphishing Link",
+        "T1583.001 - Acquire Infrastructure: Domain Registration",
+        "T1598.002 - Phishing for Information: Spearphishing via Service",
+        "T1204.002 - User Execution: Malicious Link"
+      ]
+    }
+  ]
+}

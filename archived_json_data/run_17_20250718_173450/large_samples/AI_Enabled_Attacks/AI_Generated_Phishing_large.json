@@ -1,0 +1,258 @@
+{
+  "samples": [
+    {
+      "scenario": "AI-generated phishing SMS with a deepfake voicemail link impersonating HR to trick employees into submitting payroll credentials for unauthorized access.",
+      "technical_data": {
+        "sms_metadata": {
+          "from": "+12223334444",
+          "to": "+15556667777",
+          "timestamp": "2024-05-12T09:22:35Z",
+          "message": "Urgent: You have a new voicemail from HR regarding payroll changes. Listen now: https://payroll-hr-update.com/voicemail?id=7d9f6a5c-8b2e-4f7d-9a1b-3c4d2e5f7a6b"
+        },
+        "http_request_to_phishing_site": "GET /voicemail?id=7d9f6a5c-8b2e-4f7d-9a1b-3c4d2e5f7a6b HTTP/1.1\r\nHost: payroll-hr-update.com\r\nUser-Agent: Mozilla/5.0 (iPhone; CPU iPhone OS 16_3 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Mobile/15E148\r\nAccept: audio/mp4,audio/*;q=0.9,*/*;q=0.8\r\nAccept-Language: en-US,en;q=0.9\r\nConnection: keep-alive",
+        "http_response_from_phishing_site": "HTTP/1.1 200 OK\r\nDate: Sun, 12 May 2024 09:22:36 GMT\r\nServer: nginx/1.23.3\r\nContent-Type: audio/mp4\r\nContent-Length: 582000\r\nConnection: close\r\n\r\n[Binary audio content: AI-generated deepfake voicemail]",
+        "sms_gateway_log": "2024-05-12T09:22:34Z Sent SMS from +12223334444 to +15556667777 via Twilio API with message ID SM1234567890abcdef",
+        "suspect_domain_registration": {
+          "domain": "payroll-hr-update.com",
+          "registrar": "GoDaddy.com, LLC",
+          "creation_date": "2024-05-01T16:47:00Z",
+          "registrant": {
+            "name": "Domain Privacy Service",
+            "organization": "PrivacyProtect LLC",
+            "email": "proxy@privacyprotect.org",
+            "address": "PO Box 123, Scottsdale, AZ, USA"
+          },
+          "nameservers": [
+            "ns1.godaddy.com",
+            "ns2.godaddy.com"
+          ],
+          "dns_records": {
+            "A": [
+              "203.0.113.89"
+            ],
+            "MX": [
+              "mail.payroll-hr-update.com"
+            ]
+          }
+        },
+        "smtp_transaction_log": null,
+        "webserver_log_entry": "203.0.113.89 - - [12/May/2024:09:22:36 +0000] \"GET /voicemail?id=7d9f6a5c-8b2e-4f7d-9a1b-3c4d2e5f7a6b HTTP/1.1\" 200 582000 \"-\" \"Mozilla/5.0 (iPhone; CPU iPhone OS 16_3 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Mobile/15E148\"",
+        "waf_log_alert": "[WAF] Alert: Potential voice phishing content detected. Source IP: 203.0.113.89, URI: /voicemail?id=7d9f6a5c-8b2e-4f7d-9a1b-3c4d2e5f7a6b, RuleID: 982110, Severity: High",
+        "ai_deepfake_audio_metadata": {
+          "file_name": "hr_payroll_voicemail.mp4",
+          "codec": "AAC LC",
+          "duration_seconds": 38,
+          "hash_sha256": "b4e6f1a29d5e4c3f72a3b8d5c9e7f0a1b2c3d4e5f6789a0b1c2d3e4f5a6b7c8d",
+          "detected_synthesis_tools": [
+            "Tacotron 2",
+            "WaveGlow v2.1"
+          ]
+        }
+      },
+      "indicators": [
+        "Suspicious domain registration less than 2 weeks old: payroll-hr-update.com",
+        "SMS sender number +12223334444 not registered in corporate contact list",
+        "Phishing URL with UUID parameter: /voicemail?id=7d9f6a5c-8b2e-4f7d-9a1b-3c4d2e5f7a6b",
+        "WAF alert with RuleID 982110 for voice phishing content",
+        "AI-generated deepfake voicemail audio artifacts",
+        "Absence of SMTP logs suggests SMS vector rather than email"
+      ],
+      "detection_method": "Implement SMS phishing detection tools integrated with domain age and registration data. Employ audio forensic analysis to identify synthetic speech patterns in voicemail files. Monitor and correlate WAF alerts with unusual GET requests containing UUID parameters. Enforce strict verification policies for payroll-related communications including out-of-band confirmation via corporate channels. Educate employees on SMS phishing tactics and to report unexpected voice messages.",
+      "relevant_mitre_techniques": [
+        "T1598.003 - Phishing: Spearphishing via Service",
+        "T1566.002 - Phishing: Spearphishing Link",
+        "T1204.002 - User Execution: Malicious File",
+        "T1071.001 - Application Layer Protocol: Web Protocols",
+        "T1586.001 - Spearphishing Attachment"
+      ]
+    },
+    {
+      "scenario": "AI-generated phishing email with a deepfake CFO video requesting urgent invoice payment confirmation, targeting accounting staff with a malicious link to a credential harvesting form.",
+      "technical_data": {
+        "email_headers": "Return-Path: <cfo@finance-group.com>\r\nReceived: from mail.finance-group.com (mail.finance-group.com [10.0.5.22])\r\n\tby mail.accounting.finance-group.com (Postfix) with ESMTPS id 7D2B1C3A4B\r\n\tfor <accountant@finance-group.com>; Thu, 09 May 2024 14:37:19 -0700 (PDT)\r\nX-Originating-IP: [198.51.100.76]\r\nX-Mailer: AI-PhishGen v3.1\r\nMessage-ID: <20240509143719.7D2B1C3A4B@mail.finance-group.com>\r\nSubject: Immediate Action Required: Invoice Payment Confirmation\r\nFrom: \"Lisa M. Carter\" <cfo@finance-group.com>\r\nTo: accountant@finance-group.com\r\nMIME-Version: 1.0\r\nContent-Type: multipart/alternative; boundary=\"----=_NextPart_000_0075_01D9FAF9.5B8C9D20\"",
+        "email_body": "------=_NextPart_000_0075_01D9FAF9.5B8C9D20\r\nContent-Type: text/plain; charset=\"UTF-8\"\r\nContent-Transfer-Encoding: quoted-printable\r\n\r\nDear Team,\r\n\r\nPlease watch the attached video message from me about the urgent invoice \r\npayment that requires your immediate confirmation. Access the secure link \r\nbelow to verify the invoice details.\r\n\r\nhttps://finance-payment-confirm.com/verify?id=2b7c4d9f-0a3e-4b7a-8d0f-1e4c5b7a9f3d\r\n\r\nBest Regards,\r\nLisa\r\n\r\n------=_NextPart_000_0075_01D9FAF9.5B8C9D20\r\nContent-Type: text/html; charset=\"UTF-8\"\r\nContent-Transfer-Encoding: quoted-printable\r\n\r\n<html>\r\n  <body>\r\n    <p>Dear Team,</p>\r\n    <p>Please watch the attached video message from me about the urgent invoice payment that requires your immediate confirmation. Access the secure link below to verify the invoice details.</p>\r\n    <p><a href=\"https://finance-payment-confirm.com/verify?id=2b7c4d9f-0a3e-4b7a-8d0f-1e4c5b7a9f3d\">Verify Invoice</a></p>\r\n    <p>Best Regards,<br>Lisa</p>\r\n  </body>\r\n</html>\r\n------=_NextPart_000_0075_01D9FAF9.5B8C9D20--",
+        "smtp_transaction_log": "220 mail.finance-group.com ESMTP Postfix\r\nEHLO attacker.com\r\n250-mail.finance-group.com\r\n250-PIPELINING\r\n250-SIZE 10485760\r\n250-ETRN\r\n250-AUTH LOGIN PLAIN\r\n250-ENHANCEDSTATUSCODES\r\n250 8BITMIME\r\nAUTH LOGIN\r\n334 VXNlcm5hbWU6\r\nY2ZvQGZpbmFuY2UtZ3JvdXAuY29t\r\n334 UGFzc3dvcmQ6\r\nU3VwZXJTZWNyZXQxMjMh\r\n235 2.7.0 Authentication successful\r\nMAIL FROM:<cfo@finance-group.com>\r\n250 2.1.0 Ok\r\nRCPT TO:<accountant@finance-group.com>\r\n250 2.1.5 Ok\r\nDATA\r\n354 End data with <CR><LF>.<CR><LF>\r\n[DATA]\r\n.\r\n250 2.0.0 Ok: queued as 7D2B1C3A4B\r\nQUIT\r\n221 2.0.0 Bye",
+        "suspect_domain_registration": {
+          "domain": "finance-payment-confirm.com",
+          "registrar": "Google LLC",
+          "creation_date": "2024-04-28T11:05:00Z",
+          "registrant": {
+            "name": "Redacted for Privacy",
+            "organization": "PrivacyGuard Inc.",
+            "email": "redacted@privacyguard.com",
+            "address": "456 Privacy Blvd, Mountain View, CA, USA"
+          },
+          "nameservers": [
+            "ns1.google.com",
+            "ns2.google.com"
+          ],
+          "dns_records": {
+            "A": [
+              "192.0.2.152"
+            ],
+            "MX": [
+              "mail.finance-payment-confirm.com"
+            ]
+          }
+        },
+        "http_request_to_phishing_site": "GET /verify?id=2b7c4d9f-0a3e-4b7a-8d0f-1e4c5b7a9f3d HTTP/1.1\r\nHost: finance-payment-confirm.com\r\nUser-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.0.5735.199 Safari/537.36\r\nAccept: text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8\r\nAccept-Language: en-US,en;q=0.5\r\nAccept-Encoding: gzip, deflate\r\nConnection: keep-alive\r\nUpgrade-Insecure-Requests: 1",
+        "http_response_from_phishing_site": "HTTP/1.1 200 OK\r\nDate: Thu, 09 May 2024 14:37:20 GMT\r\nServer: Apache/2.4.54 (Unix)\r\nContent-Type: text/html; charset=UTF-8\r\nContent-Length: 13245\r\nConnection: close\r\n\r\n<html><head><title>Invoice Payment Confirmation</title></head><body><h1>Confirm Invoice Payment</h1><form action=\"/submit\" method=\"POST\"><input type=\"hidden\" name=\"id\" value=\"2b7c4d9f-0a3e-4b7a-8d0f-1e4c5b7a9f3d\" /><label>Invoice Number:</label><input type=\"text\" name=\"invoice_number\" /><br/><label>Amount:</label><input type=\"text\" name=\"amount\" /><br/><label>Bank Account:</label><input type=\"text\" name=\"bank_account\" /><br/><input type=\"submit\" value=\"Confirm\" /></form></body></html>",
+        "webserver_log_entry": "198.51.100.76 - - [09/May/2024:14:37:20 -0700] \"GET /verify?id=2b7c4d9f-0a3e-4b7a-8d0f-1e4c5b7a9f3d HTTP/1.1\" 200 13245 \"-\" \"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.0.5735.199 Safari/537.36\"",
+        "waf_log_alert": "[WAF] Alert: Phishing attempt detected. Source IP: 198.51.100.76, URI: /verify?id=2b7c4d9f-0a3e-4b7a-8d0f-1e4c5b7a9f3d, RuleID: 984512, Severity: High",
+        "ai_deepfake_audio_metadata": {
+          "file_name": "lisa_carter_invoice_request.mp4",
+          "codec": "H.265",
+          "duration_seconds": 52,
+          "hash_sha256": "8f3c7e9d6a5b4c3d2e1f0a9b8c7d6e5f4a3b2c1d0e9f8a7b6c5d4e3f2a1b0c9d",
+          "detected_synthesis_tools": [
+            "Synthesia AI v4.0",
+            "Google Tacotron 2"
+          ]
+        }
+      },
+      "indicators": [
+        "Newly registered domain finance-payment-confirm.com created less than 2 weeks ago",
+        "Email X-Originating-IP 198.51.100.76 outside known corporate network range",
+        "Phishing URL with UUID parameter: /verify?id=2b7c4d9f-0a3e-4b7a-8d0f-1e4c5b7a9f3d",
+        "WAF alert with RuleID 984512 triggered by credential harvesting form",
+        "AI-generated video with deepfake CFO voice and visual artifacts",
+        "SMTP log reveals authenticated session from suspicious IP with AI-PhishGen X-Mailer header"
+      ],
+      "detection_method": "Utilize advanced email gateway protections with AI-driven anomaly detection for header and content analysis. Employ forensic video and audio analysis tools to detect deepfake artifacts. Correlate domain age and registration information to flag suspicious domains impersonating finance portals. Configure WAF and IDS to monitor for unusual form submission URLs with UUIDs. Conduct regular user awareness training on verifying payment requests through verified channels and multi-factor authentication.",
+      "relevant_mitre_techniques": [
+        "T1586.001 - Spearphishing Attachment",
+        "T1598.002 - Phishing: Spearphishing Link",
+        "T1193 - Spearphishing via Service",
+        "T1606 - Forge Web Credentials",
+        "T1531 - Account Access Removal",
+        "T1204.002 - User Execution: Malicious File",
+        "T1071.001 - Application Layer Protocol: Web Protocols"
+      ]
+    },
+    {
+      "scenario": "AI-generated phishing SMS campaign using deepfake voice link targeting HR employees to disclose sensitive employee payroll data.",
+      "technical_data": {
+        "sms_message_content": "Urgent: Verify your identity to access updated payroll files. Listen to the CEO's message here: https://payroll-secure-update.com/message?id=47a9d1e2-f6c4-4b8a-92b3-1d4e7a8b2cde",
+        "sms_sender_number": "+12025550115",
+        "sms_gateway_log": "2024-05-15T13:04:22Z SENT SMS to +14085551234 from +12025550115 via gateway sms-gateway1.example.net status=delivered",
+        "sms_originating_ip": "198.51.100.88",
+        "suspect_domain_registration": {
+          "domain": "payroll-secure-update.com",
+          "registrar": "GoDaddy.com, LLC",
+          "creation_date": "2024-05-10T17:45:00Z",
+          "registrant": {
+            "name": "Privacy Protected",
+            "organization": "WhoisGuard, Inc.",
+            "email": "whoisguard@privacyshield.org",
+            "address": "P.O. Box 0823-03411 Panama City, Panama"
+          },
+          "nameservers": [
+            "ns1.godaddy.com",
+            "ns2.godaddy.com"
+          ],
+          "dns_records": {
+            "A": [
+              "203.0.113.77"
+            ],
+            "MX": [
+              "mail.payroll-secure-update.com"
+            ]
+          }
+        },
+        "http_request_to_phishing_site": "GET /message?id=47a9d1e2-f6c4-4b8a-92b3-1d4e7a8b2cde HTTP/1.1\r\nHost: payroll-secure-update.com\r\nUser-Agent: Mozilla/5.0 (iPhone; CPU iPhone OS 14_4 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Mobile/15E148\r\nAccept: audio/*\r\nAccept-Language: en-US,en;q=0.9\r\nConnection: keep-alive",
+        "http_response_from_phishing_site": "HTTP/1.1 200 OK\r\nDate: Wed, 15 May 2024 13:05:00 GMT\r\nServer: nginx/1.18.0\r\nContent-Type: audio/mp3\r\nContent-Length: 456789\r\nConnection: close\r\n\r\n[Binary audio data stream]",
+        "webserver_log_entry": "203.0.113.77 - - [15/May/2024:13:05:01 +0000] \"GET /message?id=47a9d1e2-f6c4-4b8a-92b3-1d4e7a8b2cde HTTP/1.1\" 200 456789 \"-\" \"Mozilla/5.0 (iPhone; CPU iPhone OS 14_4 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Mobile/15E148\"",
+        "waf_log_alert": "[WAF] Alert: Possible phishing audio delivery detected. Source IP: 198.51.100.88, URI: /message?id=47a9d1e2-f6c4-4b8a-92b3-1d4e7a8b2cde, RuleID: 982312, Severity: High",
+        "ai_deepfake_audio_metadata": {
+          "file_name": "ceo_payroll_update.mp3",
+          "codec": "MP3",
+          "duration_seconds": 60,
+          "hash_sha256": "b4d2e7c1f7e2c4d0a9f8e9a1b2c3d4e5f6a7b8c9d0e1f2a3b4c5d6e7f8a9b0c1",
+          "detected_synthesis_tools": [
+            "Real-Time Voice Cloning v1.0",
+            "Tacotron2 TTS Model v2.3"
+          ]
+        }
+      },
+      "indicators": [
+        "Newly registered domain under 7 days old: payroll-secure-update.com",
+        "SMS sender number +12025550115 not recognized in corporate contact lists",
+        "Phishing URL with UUID parameter: /message?id=47a9d1e2-f6c4-4b8a-92b3-1d4e7a8b2cde",
+        "WAF alert with RuleID 982312 for suspicious audio content delivery",
+        "AI deepfake voice synthesis artifacts detected in audio metadata",
+        "SMS gateway logs show delivery from suspicious IP 198.51.100.88"
+      ],
+      "detection_method": "Implement SMS gateway filtering with AI-based content analysis to detect suspicious URLs and voice deepfake delivery attempts. Cross-reference SMS sender numbers against corporate whitelist. Use forensic audio analysis tools to detect synthetic speech patterns. Monitor domain registration feeds for new domains mimicking payroll or HR systems. Incorporate user training focused on verification of out-of-band requests and suspicious SMS messages. Use mobile endpoint security solutions to flag suspicious link clicks and downloads.",
+      "relevant_mitre_techniques": [
+        "T1586.002 - Spearphishing Link via SMS",
+        "T1193 - Spearphishing via Service",
+        "T1606 - Forge Web Credentials",
+        "T1204.002 - User Execution: Malicious File",
+        "T1071.003 - Application Layer Protocol: SMS",
+        "T1598.001 - Phishing: Spearphishing Attachment"
+      ]
+    },
+    {
+      "scenario": "AI-generated phishing email with synthetic deepfake voice message attachment targeting legal department to disclose confidential contract details.",
+      "technical_data": {
+        "email_headers": "Return-Path: <legal@corporate-secure.com>\r\nReceived: from mail.corporate-secure.com (mail.corporate-secure.com [10.10.20.30])\r\n\tby mail.legal.corp.com (Postfix) with ESMTPS id 5B2D8F1A3C\r\n\tfor <legalstaff@legal.corp.com>; Thu, 22 Feb 2024 11:22:10 -0500 (EST)\r\nX-Originating-IP: [198.51.100.150]\r\nX-Mailer: AI-PhishGen v3.1\r\nMessage-ID: <20240222112210.5B2D8F1A3C@mail.corporate-secure.com>\r\nSubject: Confidential: Voice briefing on contract revisions\r\nFrom: \"Legal Dept.\" <legal@corporate-secure.com>\r\nTo: legalstaff@legal.corp.com\r\nMIME-Version: 1.0\r\nContent-Type: multipart/mixed; boundary=\"----=_Part_123456_7890123456.1677072130\"",
+        "email_body": "------=_Part_123456_7890123456.1677072130\r\nContent-Type: text/plain; charset=\"UTF-8\"\r\nContent-Transfer-Encoding: quoted-printable\r\n\r\nDear Team,\r\n\r\nPlease find attached the voice briefing regarding the latest contract revisions. \r\nReview and confirm your understanding by end of day.\r\n\r\nBest,\r\nLegal Department\r\n\r\n------=_Part_123456_7890123456.1677072130\r\nContent-Type: audio/mp3; name=\"contract_update_message.mp3\"\r\nContent-Transfer-Encoding: base64\r\nContent-Disposition: attachment; filename=\"contract_update_message.mp3\"\r\n\r\nSUQzBAAAAAAAI1RTU0UAAAAPAAADTGF2ZjU2LjM3LjEwNAAAAAAAAAAAAAA//tQxAADB\r\n...base64 encoded audio...\r\n------=_Part_123456_7890123456.1677072130--",
+        "smtp_transaction_log": "220 mail.corporate-secure.com ESMTP Postfix\r\nEHLO mail-client.corp.com\r\n250-mail.corporate-secure.com\r\n250-PIPELINING\r\n250-SIZE 20480000\r\n250-ETRN\r\n250-AUTH LOGIN PLAIN\r\n250-ENHANCEDSTATUSCODES\r\n250 8BITMIME\r\nAUTH LOGIN\r\n334 VXNlcm5hbWU6\r\nbGVnYWxAY29ycG9yYXRlLXNlY3VyZS5jb20=\r\n334 UGFzc3dvcmQ6\r\nU3VwZXJTZWNyZXQhMjAyNA==\r\n235 2.7.0 Authentication successful\r\nMAIL FROM:<legal@corporate-secure.com>\r\n250 2.1.0 Ok\r\nRCPT TO:<legalstaff@legal.corp.com>\r\n250 2.1.5 Ok\r\nDATA\r\n354 End data with <CR><LF>.<CR><LF>\r\n[DATA]\r\n.\r\n250 2.0.0 Ok: queued as 5B2D8F1A3C\r\nQUIT\r\n221 2.0.0 Bye",
+        "suspect_domain_registration": {
+          "domain": "corporate-secure.com",
+          "registrar": "NameSilo, LLC",
+          "creation_date": "2024-02-12T09:30:00Z",
+          "registrant": {
+            "name": "Redacted for Privacy",
+            "organization": "PrivacyProtect Ltd.",
+            "email": "privacy@privacyprotect.net",
+            "address": "PO Box 789, Toronto, ON, Canada"
+          },
+          "nameservers": [
+            "ns1.namesilo.com",
+            "ns2.namesilo.com"
+          ],
+          "dns_records": {
+            "A": [
+              "198.51.100.150"
+            ],
+            "MX": [
+              "mail.corporate-secure.com"
+            ]
+          }
+        },
+        "http_request_to_phishing_site": "POST /submit-confirmation HTTP/1.1\r\nHost: corporate-secure.com\r\nUser-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/112.0.5615.49 Safari/537.36\r\nContent-Type: application/x-www-form-urlencoded\r\nContent-Length: 58\r\nAccept: text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8\r\nConnection: keep-alive\r\n\r\nconfirmation=yes&user=legalstaff&contract_id=3f2b9e18-5f3a-4d9c-b2e3-6e5a4f7c9d1b",
+        "http_response_from_phishing_site": "HTTP/1.1 302 Found\r\nLocation: https://corporate-secure.com/thank-you\r\nContent-Length: 0\r\nConnection: close",
+        "webserver_log_entry": "198.51.100.150 - legalstaff [22/Feb/2024:11:23:10 -0500] \"POST /submit-confirmation HTTP/1.1\" 302 0 \"https://corporate-secure.com/contract-update\" \"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/112.0.5615.49 Safari/537.36\"",
+        "waf_log_alert": "[WAF] Alert: Suspicious attachment delivery detected. Source IP: 198.51.100.150, Attachment: contract_update_message.mp3, RuleID: 981578, Severity: Critical",
+        "ai_deepfake_audio_metadata": {
+          "file_name": "contract_update_message.mp3",
+          "codec": "MP3",
+          "duration_seconds": 75,
+          "hash_sha256": "a1b2c3d4e5f60718293a4b5c6d7e8f90123456789abcdef0123456789abcdef0",
+          "detected_synthesis_tools": [
+            "Descript Overdub v2.7",
+            "WaveGlow TTS Model v1.9"
+          ]
+        }
+      },
+      "indicators": [
+        "Domain corporate-secure.com registered 10 days before phishing event",
+        "Email X-Originating-IP 198.51.100.150 outside corporate network ranges",
+        "Phishing email contains suspicious MP3 voice attachment with deepfake synthesis metadata",
+        "WAF alert RuleID 981578 for malicious attachment delivery",
+        "HTTP POST request with UUID contract_id parameter indicating exfiltration",
+        "SMTP log shows authenticated session with AI-PhishGen v3.1 X-Mailer header"
+      ],
+      "detection_method": "Deploy multi-layered email gateway sandboxing including AI-based attachment inspection to detect synthetic voice files. Correlate email sender IPs against known corporate ranges and flag anomalies. Employ forensic audio analysis to detect deepfake audio artifacts. Monitor web logs for unusual POST requests with UUID identifiers. Enforce strict attachment policies and train legal staff on verifying unexpected voice message attachments and out-of-band contract change confirmations.",
+      "relevant_mitre_techniques": [
+        "T1586.001 - Spearphishing Attachment",
+        "T1598.002 - Phishing: Spearphishing Link",
+        "T1193 - Spearphishing via Service",
+        "T1606 - Forge Web Credentials",
+        "T1204.002 - User Execution: Malicious File",
+        "T1071.001 - Application Layer Protocol: Web Protocols"
+      ]
+    }
+  ]
+}

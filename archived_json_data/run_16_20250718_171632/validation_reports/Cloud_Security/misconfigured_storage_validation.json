@@ -1,0 +1,42 @@
+{
+  "report": [
+    {
+      "index": 0,
+      "problem": {
+        "area": "Cloud Security",
+        "nature": "misconfigured_storage"
+      },
+      "example": {
+        "scenario": "Publicly exposed AWS S3 bucket containing sensitive customer PII due to overly permissive bucket policy allowing anonymous read access.",
+        "technical_data": {
+          "s3_bucket_policy": "{\n  \"Version\": \"2012-10-17\",\n  \"Statement\": [\n    {\n      \"Sid\": \"PublicReadGetObject\",\n      \"Effect\": \"Allow\",\n      \"Principal\": \"*\",\n      \"Action\": \"s3:GetObject\",\n      \"Resource\": \"arn:aws:s3:::company-customer-data/*\"\n    }\n  ]\n}",
+          "aws_cloudtrail_log_snippet": "{\n  \"eventVersion\": \"1.08\",\n  \"userIdentity\": {\n    \"type\": \"Anonymous\",\n    \"principalId\": \"ANONYMOUS\"\n  },\n  \"eventTime\": \"2024-05-01T13:45:22Z\",\n  \"eventSource\": \"s3.amazonaws.com\",\n  \"eventName\": \"GetObject\",\n  \"awsRegion\": \"us-east-1\",\n  \"sourceIPAddress\": \"198.51.100.23\",\n  \"userAgent\": \"S3Console/0.4\",\n  \"requestParameters\": {\n    \"bucketName\": \"company-customer-data\",\n    \"key\": \"2023/records/customer_12345.json\"\n  },\n  \"responseElements\": {\n    \"x-amz-request-id\": \"C3D13FE58DE4C810\",\n    \"x-amz-id-2\": \"FMyUVURIwEl7JvOn+svmFZ5s5V0L2e6ZfrpD9TI6gZ4qQ==\"\n  },\n  \"requestID\": \"C3D13FE58DE4C810\",\n  \"eventType\": \"AwsApiCall\"\n}",
+          "example_sensitive_object_content": "{\n  \"customer_id\": \"12345\",\n  \"name\": \"Jane Doe\",\n  \"email\": \"jane.doe@example.com\",\n  \"ssn\": \"123-45-6789\",\n  \"credit_card\": {\n    \"number\": \"4111-1111-1111-1111\",\n    \"expiry\": \"12/26\"\n  },\n  \"address\": \"1234 Elm Street, Springfield, IL\"\n}",
+          "aws_cli_exploit_commands": "# Enumerate buckets\naws s3api list-buckets --query \"Buckets[].Name\"\n\n# Check bucket policy\naws s3api get-bucket-policy --bucket company-customer-data\n\n# Download sensitive file\naws s3 cp s3://company-customer-data/2023/records/customer_12345.json ./customer_12345.json\n",
+          "iam_policy_misconfiguration": "{\n  \"Version\": \"2012-10-17\",\n  \"Statement\": [\n    {\n      \"Effect\": \"Allow\",\n      \"Principal\": \"*\",\n      \"Action\": [\n        \"s3:GetObject\"\n      ],\n      \"Resource\": \"arn:aws:s3:::company-customer-data/*\"\n    }\n  ]\n}",
+          "aws_cspm_alert": "{\n  \"resource_id\": \"arn:aws:s3:::company-customer-data\",\n  \"issue\": \"PublicReadGetObject policy detected\",\n  \"severity\": \"High\",\n  \"recommendation\": \"Remove public access by restricting Principal to authorized IAM roles only\"\n}"
+        },
+        "indicators": [
+          "S3 bucket policies with \"Principal\": \"*\" and \"Effect\": \"Allow\" for s3:GetObject on sensitive buckets",
+          "CloudTrail GetObject calls with \"userIdentity.type\" = \"Anonymous\" accessing sensitive bucket",
+          "Unrestricted public read permissions on buckets containing PII or financial data",
+          "AWS CLI commands enumerating and accessing buckets without authorization",
+          "CSPM alerts flagging public bucket policies"
+        ],
+        "detection_method": "Automated CSPM scans that parse all S3 bucket policies and flag those with 'Principal': '*' and 'Action': 's3:GetObject'; monitoring CloudTrail for anonymous or unexpected GetObject API calls; anomaly detection on data access patterns such as large downloads from buckets with sensitive data; implementing AWS Config rules like s3-bucket-public-read-prohibited; integration with SIEM to correlate access logs and policy changes.",
+        "relevant_mitre_techniques": [
+          "T1530 - Data from Cloud Storage Object",
+          "T1078.004 - Valid Accounts: Cloud Accounts",
+          "T1566.001 - Phishing: Spearphishing Attachment (if initial access was via phishing to get credentials)",
+          "T1535 - Cloud Service Discovery",
+          "T1083 - File and Directory Discovery"
+        ]
+      },
+      "validation": {
+        "valid": true,
+        "issues": [],
+        "comments": "The sample accurately represents the problem of misconfigured cloud storage leading to public exposure of sensitive data. The scenario clearly describes an overly permissive S3 bucket policy allowing anonymous read access, which aligns perfectly with the problem nature. The technical data includes a realistic bucket policy JSON, a CloudTrail log snippet showing anonymous access, example sensitive data, relevant AWS CLI commands for exploitation, an IAM policy misconfiguration example, and a CSPM alert\u2014covering multiple facets of the issue comprehensively. The indicators explicitly explain why this sample matches the problem, referencing policy misconfigurations, anonymous access logs, and CSPM alerts. The detection method is detailed and practical, describing automated scanning, monitoring, anomaly detection, and integration with AWS Config and SIEM tools, which are appropriate risk reduction strategies. The inclusion of relevant MITRE ATT&CK techniques further enhances the sample's completeness and realism. Overall, the sample is well-structured, realistic, and complete, making it a valid and high-quality representation of the stated cloud security misconfigured storage problem."
+      }
+    }
+  ]
+}

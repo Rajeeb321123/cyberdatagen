@@ -1,0 +1,210 @@
+{
+  "samples": [
+    {
+      "scenario": "Business Email Compromise via Compromised CFO Email Account Requesting Confidential Financial Data",
+      "technical_data": {
+        "email_headers": "Return-Path: <cfo@company.com>\r\nReceived: from mail.company.com (mail.company.com [192.168.20.30])\r\n\tby smtp.company.com (Postfix) with ESMTPS id 9B4C17D5678\r\n\tfor <accounting@company.com>; Mon, 24 Apr 2023 13:42:10 -0400 (EDT)\r\nReceived-SPF: pass (smtp.company.com: domain of cfo@company.com designates 198.51.100.55 as permitted sender) client-ip=198.51.100.55;\r\nAuthentication-Results: smtp.company.com;\r\n\tdkim=pass header.d=company.com header.s=selector2 header.b=KjP9H8bL;\r\n\tspf=pass (sender IP is 198.51.100.55) smtp.mailfrom=cfo@company.com;\r\n\tdmarc=pass (p=quarantine) header.from=company.com\r\nMessage-ID: <CAM2hf+Tg=J9h2kM8F4@mail.company.com>\r\nFrom: \"Jane Doe\" <cfo@company.com>\r\nTo: accounting@company.com\r\nSubject: Confidential: Q1 Financial Summary Request\r\nDate: Mon, 24 Apr 2023 13:42:05 -0400\r\nMIME-Version: 1.0\r\nContent-Type: text/plain; charset=\"UTF-8\"\r\nX-Mailer: Microsoft Outlook 16.0\r\nX-Originating-IP: [198.51.100.55]\r\nX-Spam-Status: No, score=0.0 required=5.0 tests=DKIM_SIGNED,DKIM_VALID,SPF_PASS,DMARC_PASS autolearn=ham autolearn_force=no version=3.4.2\r\n",
+        "email_body": "Hello Accounting Team,\r\n\r\nPlease send me the detailed Q1 financial summary report including all expense reports and pending invoices. This is urgent for the upcoming board meeting.\r\n\r\nKindly encrypt the file before sending.\r\n\r\nRegards,\r\nJane Doe\r\nCFO, Company Inc.\r\n",
+        "smtp_transaction_log": "220 smtp.company.com ESMTP Postfix\r\nEHLO mail.company.com\r\n250-smtp.company.com\r\n250-PIPELINING\r\n250-SIZE 10240000\r\n250-ETRN\r\n250-STARTTLS\r\n250-AUTH PLAIN LOGIN\r\n250-ENHANCEDSTATUSCODES\r\n250-8BITMIME\r\n250 DSN\r\nMAIL FROM:<cfo@company.com>\r\n250 2.1.0 Ok\r\nRCPT TO:<accounting@company.com>\r\n250 2.1.5 Ok\r\nDATA\r\n354 End data with <CR><LF>.<CR><LF>\r\nFrom: \"Jane Doe\" <cfo@company.com>\r\nTo: accounting@company.com\r\nSubject: Confidential: Q1 Financial Summary Request\r\n\r\nPlease send...\r\n.\r\n250 2.0.0 Ok: queued as 9B4C17D5678\r\nQUIT\r\n221 2.0.0 Bye\r\n",
+        "domain_registration": {
+          "domain": "company.com",
+          "registrar": "GoDaddy.com, LLC",
+          "creation_date": "2005-07-15T09:42:00Z",
+          "expiry_date": "2025-07-15T09:42:00Z",
+          "registrant": {
+            "name": "Company Inc.",
+            "organization": "Company Inc.",
+            "email": "admin@company.com"
+          },
+          "name_servers": [
+            "ns1.companydns.com",
+            "ns2.companydns.com"
+          ]
+        },
+        "spf_record_company_com": "\"v=spf1 ip4:198.51.100.0/24 -all\"",
+        "dkim_signature": "v=1; a=rsa-sha256; c=relaxed/relaxed; d=company.com; s=selector2; t=1682334135; bh=8S1+ah5n2e01/UWn9k1L9K9hL0P+u9PqFnXYk8G2sX6w=; h=From:To:Subject:Date; b=KjP9H8bLlvN1qXQv7jTcX9Hp3D2aP9VRdX+qFqS1Xl7FgO5H7Vb6T8v9xL2Z0q3J0C0yFq9b7txWQ6XQrQ==",
+        "login_activity_log": [
+          "Apr 24 13:10:15 mail.company.com imap-login: Login: user=cfo@company.com, ip=198.51.100.55, session=<sessionid101>",
+          "Apr 24 13:38:44 mail.company.com imap-login: Login: user=cfo@company.com, ip=192.168.20.30, session=<sessionid102>"
+        ],
+        "mail_forwarding_rule_log": [],
+        "secondary_verification_attempts": [
+          "User accounting@company.com called CFO's corporate line +1-555-987-6543 at 13:45:01 and confirmed request.",
+          "No alternative contact message sent."
+        ]
+      },
+      "indicators": [
+        "No SPF or DKIM failures, but unusual login IP 198.51.100.55 (external)",
+        "Urgent request for confidential financial data outside normal patterns",
+        "No forwarding rules detected but unusual login source",
+        "Secondary verification succeeded but call was made after email sent (potentially too late)"
+      ],
+      "detection_method": "Monitor login IP addresses for executive mailboxes and flag logins from rare or external IPs. Enforce multi-factor authentication and alert on external IP login. Analyze email content for unusual data requests, especially financial data, and require mandatory secondary verification before fulfilling. Employ user behavior analytics to detect deviations from normal communication patterns. Implement Data Loss Prevention (DLP) controls to detect and block sensitive data exfiltration via email.",
+      "relevant_mitre_techniques": [
+        "T1566.001 - Phishing: Spearphishing via Service",
+        "T1114 - Email Collection",
+        "T1027 - Obfuscated Files or Information",
+        "T1556 - Modify Authentication Process",
+        "T1560.001 - Archive Collected Data: Archive via Email",
+        "T1071.001 - Application Layer Protocol: Web Protocols"
+      ]
+    },
+    {
+      "scenario": "Business Email Compromise via Domain Spoofing and Forwarding Rule to External Malicious Address",
+      "technical_data": {
+        "email_headers": "Return-Path: <ceo@company.com>\r\nReceived: from maliciousmail.fakecompany.com (maliciousmail.fakecompany.com [203.0.114.78])\r\n\tby smtp.company.com (Postfix) with ESMTPS id 7D9E12A9B23\r\n\tfor <hr@company.com>; Fri, 28 Apr 2023 16:28:33 -0400 (EDT)\r\nReceived-SPF: fail (smtp.company.com: domain of ceo@fakecompany-company.com does not designate 203.0.114.78 as permitted sender) client-ip=203.0.114.78;\r\nAuthentication-Results: smtp.company.com;\r\n\tdkim=fail header.d=company.com header.s=selector1 header.b=QwErTyUi;\r\n\tspf=fail (sender IP is 203.0.114.78) smtp.mailfrom=ceo@fakecompany-company.com;\r\n\tdmarc=fail (p=reject) header.from=company.com\r\nMessage-ID: <CAO9hf+Kq=Y5b7mU2M9@maliciousmail.fakecompany.com>\r\nFrom: \"Robert Gray\" <ceo@company.com>\r\nTo: hr@company.com\r\nSubject: URGENT: Employee Salary Revision Approval\r\nDate: Fri, 28 Apr 2023 16:28:30 -0400\r\nMIME-Version: 1.0\r\nContent-Type: text/plain; charset=\"UTF-8\"\r\nX-Mailer: Microsoft Outlook 16.0\r\nX-Originating-IP: [203.0.114.78]\r\nX-Spam-Status: No, score=0.2 required=5.0 tests=SPF_FAIL,DKIM_FAIL,DMARC_FAIL autolearn=ham autolearn_force=no version=3.4.2\r\n",
+        "email_body": "Dear HR Team,\r\n\r\nPlease find attached the approved salary revision list for employees. Kindly implement the changes effective next month.\r\n\r\nRegards,\r\nRobert Gray\r\nCEO, Company Inc.\r\n",
+        "smtp_transaction_log": "220 smtp.company.com ESMTP Postfix\r\nEHLO maliciousmail.fakecompany.com\r\n250-smtp.company.com\r\n250-PIPELINING\r\n250-SIZE 10240000\r\n250-ETRN\r\n250-STARTTLS\r\n250-AUTH PLAIN LOGIN\r\n250-ENHANCEDSTATUSCODES\r\n250-8BITMIME\r\n250 DSN\r\nMAIL FROM:<ceo@fakecompany-company.com>\r\n250 2.1.0 Ok\r\nRCPT TO:<hr@company.com>\r\n250 2.1.5 Ok\r\nDATA\r\n354 End data with <CR><LF>.<CR><LF>\r\nFrom: \"Robert Gray\" <ceo@company.com>\r\nTo: hr@company.com\r\nSubject: URGENT: Employee Salary Revision Approval\r\n\r\nPlease find...\r\n.\r\n250 2.0.0 Ok: queued as 7D9E12A9B23\r\nQUIT\r\n221 2.0.0 Bye\r\n",
+        "domain_registration": {
+          "domain": "fakecompany-company.com",
+          "registrar": "Domain.com, LLC",
+          "creation_date": "2023-04-26T11:05:00Z",
+          "expiry_date": "2024-04-26T11:05:00Z",
+          "registrant": {
+            "name": "Redacted for Privacy",
+            "organization": "PrivacyGuard Services",
+            "email": "privacy@privacyguardservices.com"
+          },
+          "name_servers": [
+            "ns1.domain.com",
+            "ns2.domain.com"
+          ]
+        },
+        "spf_record_fakecompany_company_com": "\"v=spf1 ip4:198.51.101.50 -all\"",
+        "dkim_signature": "v=1; a=rsa-sha256; c=relaxed/relaxed; d=company.com; s=selector1; t=1682695710; bh=XL4iLZsM8uD7a9QeJgTQ5+gP9YwT7bqRr5U8Y0nLq1I=; h=From:To:Subject:Date; b=QwErTyUi1a2b3c4d5e6f7g8h9i0jklmnopqrstuvwx==",
+        "login_activity_log": [
+          "Apr 28 16:00:55 mail.company.com imap-login: Login: user=ceo@company.com, ip=192.168.20.10, session=<sessionid201>",
+          "Apr 28 16:25:30 mail.company.com imap-login: Login: user=ceo@company.com, ip=203.0.114.78, session=<sessionid202>"
+        ],
+        "mail_forwarding_rule_log": [
+          "Apr 28 16:27:00 mail.company.com postfix/anvil[23456]: warning: user hr@company.com has set a forwarding rule to external address payrollupdate@externalmail.net"
+        ],
+        "secondary_verification_attempts": [
+          "User hr@company.com attempted to call CEO's mobile +1-555-321-7890 at 16:29:12 but call was unanswered.",
+          "No alternative verification message sent."
+        ]
+      },
+      "indicators": [
+        "SPF, DKIM, and DMARC all fail for domain fakecompany-company.com",
+        "New domain fakecompany-company.com registered 2 days prior to attack",
+        "Unusual login from IP 203.0.114.78 on CEO mailbox",
+        "New mail forwarding rule detected from HR mailbox to external suspicious address",
+        "Urgent email requesting confidential HR salary changes with attachment",
+        "Secondary verification attempt failed due to no response"
+      ],
+      "detection_method": "Deploy strict email gateway filtering to reject emails failing SPF, DKIM, and DMARC especially from executive domains. Use threat intelligence to monitor for newly registered domains similar to company domains (typosquatting). Monitor mailbox login IPs for unusual or external addresses. Alert on creation of forwarding rules from critical departments like HR to external addresses. Enforce mandatory secondary verification for sensitive requests involving payroll or personnel data. Correlate email metadata with user activity logs for anomaly detection.",
+      "relevant_mitre_techniques": [
+        "T1566.002 - Phishing: Spearphishing Link",
+        "T1114 - Email Collection",
+        "T1556 - Modify Authentication Process",
+        "T1071.001 - Application Layer Protocol: Web Protocols",
+        "T1598.002 - Phishing: Spearphishing Attachment",
+        "T1566 - Phishing"
+      ]
+    },
+    {
+      "scenario": "Business Email Compromise via Compromised CFO Account Requesting Confidential Financial Data",
+      "technical_data": {
+        "email_headers": "Return-Path: <cfo@company.com>\r\nReceived: from unknown (HELO mail.attacker.net) (198.51.100.52)\r\n\tby smtp.company.com with SMTP; Thu, 15 Jun 2023 09:32:18 -0400\r\nReceived-SPF: fail (smtp.company.com: domain of cfo@compnay-secure.com does not designate 198.51.100.52 as permitted sender) client-ip=198.51.100.52;\r\nAuthentication-Results: smtp.company.com;\r\n\tdkim=fail header.d=company.com header.s=selector2 header.b=;\r\n\tspf=fail (sender IP is 198.51.100.52) smtp.mailfrom=cfo@compnay-secure.com;\r\n\tdmarc=fail (p=quarantine) header.from=company.com\r\nMessage-ID: <CAJn34+Xv=Y6b4pN5G8C@mail.company.com>\r\nFrom: \"Lisa Turner\" <cfo@company.com>\r\nTo: accounting@company.com\r\nSubject: Confidential: Q2 Financial Reports Needed\r\nDate: Thu, 15 Jun 2023 09:32:15 -0400\r\nMIME-Version: 1.0\r\nContent-Type: text/plain; charset=\"UTF-8\"\r\nX-Mailer: Microsoft Outlook 15.0\r\nX-Originating-IP: [198.51.100.52]\r\nX-Spam-Status: No, score=1.0 required=5.0 tests=DKIM_FAIL,SPF_FAIL,DMARC_FAIL autolearn=ham autolearn_force=no version=3.4.2\r\n",
+        "email_body": "Hello Accounting Team,\r\n\r\nPlease send me the detailed Q2 financial reports, including revenue breakdowns and cash flow statements, as soon as possible. We are preparing for the board meeting next week.\r\n\r\nThanks,\r\nLisa Turner\r\nCFO, Company Inc.\r\n",
+        "smtp_transaction_log": "220 smtp.company.com ESMTP Postfix\r\nEHLO mail.attacker.net\r\n250-smtp.company.com\r\n250-PIPELINING\r\n250-SIZE 10485760\r\n250-ETRN\r\n250-STARTTLS\r\n250-AUTH PLAIN LOGIN\r\n250-ENHANCEDSTATUSCODES\r\n250-8BITMIME\r\n250 DSN\r\nMAIL FROM:<cfo@compnay-secure.com>\r\n250 2.1.0 Ok\r\nRCPT TO:<accounting@company.com>\r\n250 2.1.5 Ok\r\nDATA\r\n354 End data with <CR><LF>.<CR><LF>\r\nFrom: \"Lisa Turner\" <cfo@company.com>\r\nTo: accounting@company.com\r\nSubject: Confidential: Q2 Financial Reports Needed\r\n\r\nPlease send me...\r\n.\r\n250 2.0.0 Ok: queued as 5B3D67E987\r\nQUIT\r\n221 2.0.0 Bye\r\n",
+        "domain_registration": {
+          "domain": "compnay-secure.com",
+          "registrar": "GoDaddy.com, LLC",
+          "creation_date": "2023-06-12T11:45:00Z",
+          "expiry_date": "2024-06-12T11:45:00Z",
+          "registrant": {
+            "name": "Privacy Shield",
+            "organization": "PrivacyShield Inc.",
+            "email": "protect@privacyshield.net"
+          },
+          "name_servers": [
+            "ns1.godaddydns.com",
+            "ns2.godaddydns.com"
+          ]
+        },
+        "spf_record_compnay_secure_com": "\"v=spf1 ip4:203.0.113.99 -all\"",
+        "dkim_signature": "v=1; a=rsa-sha256; c=relaxed/relaxed; d=company.com; s=selector2; t=1686821535; bh=Z4j6URDhg9Lkq5xQ+5bpoiYx+zt2T2xvP4vDnjkR3aQ=; h=From:To:Subject:Date; b=;",
+        "login_activity_log": [
+          "Jun 15 09:10:45 mail.company.com imap-login: Login: user=cfo@company.com, ip=192.168.15.30, session=<sessionid10>",
+          "Jun 15 09:29:50 mail.company.com imap-login: Login: user=cfo@company.com, ip=198.51.100.52, session=<sessionid11>"
+        ],
+        "mail_forwarding_rule_log": [
+          "Jun 15 09:31:10 mail.company.com postfix/anvil[23456]: warning: user accounting@company.com has set a forwarding rule to external address finance-ops@externalmail.com"
+        ],
+        "secondary_verification_attempts": [
+          "User accounting@company.com attempted to call CFO's direct line +1-555-678-9012 at 09:33:20 but received no answer.",
+          "Accounting sent a Slack message to CFO\u2019s assistant requesting confirmation; no response received."
+        ]
+      },
+      "indicators": [
+        "SPF fail for domain compnay-secure.com from IP 198.51.100.52",
+        "DMARC quarantine policy failed (email passed from unauthorized domain)",
+        "New domain compnay-secure.com registered 3 days before attack",
+        "Unusual login IP 198.51.100.52 for CFO mailbox",
+        "New mail forwarding rule from accounting mailbox to external address",
+        "Urgent request for confidential financial data from executive account"
+      ],
+      "detection_method": "Enforce strict SPF, DKIM, and DMARC validation on inbound emails; flag and quarantine emails failing these checks especially from executive domains. Monitor mailbox login IPs and alert on logins from unfamiliar or external IP addresses. Detect creation of forwarding rules redirecting mail to external domains from sensitive mailboxes. Implement mandatory secondary verification (phone call or secure messaging) for requests involving confidential financial data. Use threat intelligence feeds to monitor newly registered domains similar to company domains for typosquatting. Correlate unusual email activity with user behavioral analytics to detect potential account compromise.",
+      "relevant_mitre_techniques": [
+        "T1566.001 - Phishing: Spearphishing via Service",
+        "T1071.001 - Application Layer Protocol: Web Protocols",
+        "T1114 - Email Collection",
+        "T1556 - Modify Authentication Process",
+        "T1598.002 - Phishing: Spearphishing Attachment"
+      ]
+    },
+    {
+      "scenario": "Business Email Compromise via Executive Assistant Account Compromise Requesting Vendor Payment Change",
+      "technical_data": {
+        "email_headers": "Return-Path: <assistant@company.com>\r\nReceived: from smtp.attacker.org (smtp.attacker.org [192.0.2.88])\r\n\tby smtp.company.com with ESMTPS id 7C4B9F3E210\r\n\tfor <payments@company.com>; Fri, 21 Jul 2023 14:45:10 -0400 (EDT)\r\nReceived-SPF: fail (smtp.company.com: domain of assistant@companny-support.com does not designate 192.0.2.88 as permitted sender) client-ip=192.0.2.88;\r\nAuthentication-Results: smtp.company.com;\r\n\tdkim=fail header.d=company.com header.s=selector3 header.b=;\r\n\tspf=fail (sender IP is 192.0.2.88) smtp.mailfrom=assistant@companny-support.com;\r\n\tdmarc=fail (p=reject) header.from=company.com\r\nMessage-ID: <CAM5q3+Pv=J9c8rL2W1B@mail.company.com>\r\nFrom: \"Megan Lee\" <assistant@company.com>\r\nTo: payments@company.com\r\nSubject: Payment Details Update for Vendor\r\nDate: Fri, 21 Jul 2023 14:45:05 -0400\r\nMIME-Version: 1.0\r\nContent-Type: text/plain; charset=\"UTF-8\"\r\nX-Mailer: Microsoft Outlook 16.0\r\nX-Originating-IP: [192.0.2.88]\r\nX-Spam-Status: No, score=0.3 required=5.0 tests=DKIM_FAIL,SPF_FAIL,DMARC_FAIL autolearn=ham autolearn_force=no version=3.4.2\r\n",
+        "email_body": "Hello Payments Team,\r\n\r\nPlease update the payment details for the vendor \"Global Supplies Inc.\" to the following new bank account effective immediately:\r\n\r\nBank: United Bank\r\nAccount Name: Global Supplies Inc.\r\nAccount Number: 1122334455\r\nRouting Number: 987654321\r\n\r\nEnsure all future payments use this account.\r\n\r\nThanks,\r\nMegan Lee\r\nExecutive Assistant, Company Inc.\r\n",
+        "smtp_transaction_log": "220 smtp.company.com ESMTP Postfix\r\nEHLO smtp.attacker.org\r\n250-smtp.company.com\r\n250-PIPELINING\r\n250-SIZE 10240000\r\n250-ETRN\r\n250-STARTTLS\r\n250-AUTH PLAIN LOGIN\r\n250-ENHANCEDSTATUSCODES\r\n250-8BITMIME\r\n250 DSN\r\nMAIL FROM:<assistant@companny-support.com>\r\n250 2.1.0 Ok\r\nRCPT TO:<payments@company.com>\r\n250 2.1.5 Ok\r\nDATA\r\n354 End data with <CR><LF>.<CR><LF>\r\nFrom: \"Megan Lee\" <assistant@company.com>\r\nTo: payments@company.com\r\nSubject: Payment Details Update for Vendor\r\n\r\nPlease update...\r\n.\r\n250 2.0.0 Ok: queued as 7C4B9F3E210\r\nQUIT\r\n221 2.0.0 Bye\r\n",
+        "domain_registration": {
+          "domain": "companny-support.com",
+          "registrar": "Google LLC",
+          "creation_date": "2023-07-18T16:30:00Z",
+          "expiry_date": "2024-07-18T16:30:00Z",
+          "registrant": {
+            "name": "Domains By Proxy, LLC",
+            "organization": "Domains By Proxy, LLC",
+            "email": "contact@domainsbyproxy.com"
+          },
+          "name_servers": [
+            "ns1.google.com",
+            "ns2.google.com"
+          ]
+        },
+        "spf_record_companny_support_com": "\"v=spf1 ip4:198.51.100.77 -all\"",
+        "dkim_signature": "v=1; a=rsa-sha256; c=relaxed/relaxed; d=company.com; s=selector3; t=1689931510; bh=Oql1ocIdV4eYmDyGxq+5lR2zU5bGQ9IR8M9+zHUZq3s=; h=From:To:Subject:Date; b=;",
+        "login_activity_log": [
+          "Jul 21 14:20:30 mail.company.com imap-login: Login: user=assistant@company.com, ip=192.168.20.15, session=<sessionid20>",
+          "Jul 21 14:44:50 mail.company.com imap-login: Login: user=assistant@company.com, ip=192.0.2.88, session=<sessionid21>"
+        ],
+        "mail_forwarding_rule_log": [
+          "Jul 21 14:46:00 mail.company.com postfix/anvil[34567]: warning: user payments@company.com has set a forwarding rule to external address payment-alerts@externalmail.net"
+        ],
+        "secondary_verification_attempts": [
+          "Payments team contacted Executive Assistant by phone at +1-555-234-7890 at 14:47:10; voicemail reached.",
+          "Payments sent an encrypted Teams message to the CFO requesting confirmation; no reply received."
+        ]
+      },
+      "indicators": [
+        "SPF fail for domain companny-support.com from IP 192.0.2.88",
+        "DMARC policy reject failed (email passed from unauthorized domain)",
+        "New domain companny-support.com registered 3 days before attack",
+        "Unusual login IP 192.0.2.88 for Executive Assistant mailbox",
+        "New mail forwarding rule from payments mailbox to external address",
+        "Urgent vendor payment account change request from executive assistant"
+      ],
+      "detection_method": "Apply strict email authentication (SPF, DKIM, DMARC) filtering; quarantine or flag emails failing these checks especially from domains similar to company\u2019s. Monitor mailbox login IP addresses for anomalous external access. Detect creation of mail forwarding rules redirecting to external recipients from finance or assistant mailboxes. Enforce mandatory out-of-band verification (phone or encrypted messaging) for payment detail change requests. Use domain monitoring and threat intelligence to detect newly registered domains mimicking company domains. Correlate suspicious email activity with behavioral analytics and alert on deviations in normal communication patterns.",
+      "relevant_mitre_techniques": [
+        "T1566.001 - Phishing: Spearphishing via Service",
+        "T1071.001 - Application Layer Protocol: Web Protocols",
+        "T1114 - Email Collection",
+        "T1556 - Modify Authentication Process",
+        "T1598.002 - Phishing: Spearphishing Attachment"
+      ]
+    }
+  ]
+}

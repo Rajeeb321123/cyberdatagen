@@ -1,0 +1,60 @@
+{
+  "examples": [
+    {
+      "scenario": "Executive impersonation via Business Email Compromise (BEC) where the attacker sends an email from a lookalike domain that closely mimics the CFO\u2019s real domain, requesting an urgent wire transfer. The email bypasses SPF but fails DMARC, and is delivered due to partial DKIM alignment failure. The recipient\u2019s email client shows the display name as the CFO, but the actual sender domain is suspicious. The attacker uses a recently registered domain with minor typosquatting and sophisticated subject line obfuscation to evade filtering.",
+      "technical_data": {
+        "email_headers": "Return-Path: <cfo@cf0-company.com>\r\nReceived: from mail.cf0-company.com (mail.cf0-company.com [198.51.100.45])\r\n    by mail.enterprise.com (Postfix) with ESMTPS id 1234ABCD\r\n    for <finance@enterprise.com>; Wed, 26 Apr 2024 14:07:43 +0000 (UTC)\r\nReceived-SPF: pass (enterprise.com: domain of cfo@cf0-company.com designates 198.51.100.45 as permitted sender) receiver=mail.enterprise.com; client-ip=198.51.100.45; envelope-from=cfo@cf0-company.com; helo=mail.cf0-company.com;\r\nAuthentication-Results: mail.enterprise.com;\r\n    dkim=fail (signature did not verify) header.d=company.com;\r\n    spf=pass (sender IP is authorized) smtp.mailfrom=cfo@cf0-company.com;\r\n    dmarc=fail (p=reject disallowed) header.from=company.com;\r\nX-Originating-IP: [198.51.100.45]\r\nMessage-ID: <20240426140743.1234ABCD@mail.cf0-company.com>\r\nFrom: \"Jane Doe\" <cfo@cf0-company.com>\r\nTo: finance@enterprise.com\r\nSubject: Urgent: Wire Transfer Request - CONFIDENTIAL\r\nDate: Wed, 26 Apr 2024 14:07:43 +0000\r\nMIME-Version: 1.0\r\nContent-Type: text/plain; charset=\"UTF-8\"\r\nContent-Transfer-Encoding: 7bit\r\nX-Mailer: Microsoft Outlook 16.0\r\nX-Spam-Score: 3.8\r\nX-Phishing-Flag: Suspected\r\n",
+        "email_body": "Hello Team,\n\nPlease process an immediate wire transfer of $250,000 to the following account for the acquisition deal. This is highly confidential and time-sensitive.\n\nBank: First National Bank\nAccount Number: 123456789\nRouting Number: 987654321\n\nConfirm once done.\n\nRegards,\nJane Doe\nChief Financial Officer\nCompany Inc.\n\n---\nNote: This email is confidential and intended only for the recipient. If you received this by mistake, please notify the sender immediately.",
+        "smtp_transaction_log": "220 mail.cf0-company.com ESMTP Postfix\r\nEHLO mail.cf0-company.com\r\n250-mail.cf0-company.com\r\n250-PIPELINING\r\n250-SIZE 10240000\r\n250-VRFY\r\n250-ETRN\r\n250-STARTTLS\r\n250-AUTH PLAIN LOGIN\r\n250-ENHANCEDSTATUSCODES\r\n250-8BITMIME\r\n250 DSN\r\nMAIL FROM:<cfo@cf0-company.com>\r\n250 2.1.0 Ok\r\nRCPT TO:<finance@enterprise.com>\r\n250 2.1.5 Ok\r\nDATA\r\n354 End data with <CR><LF>.<CR><LF>\r\nFrom: Jane Doe <cfo@cf0-company.com>\r\nTo: finance@enterprise.com\r\nSubject: Urgent: Wire Transfer Request - CONFIDENTIAL\r\n\r\nHello Team, ...\r\n.\r\n250 2.0.0 Ok: queued as 1234ABCD\r\nQUIT\r\n221 2.0.0 Bye",
+        "domain_registration_details": {
+          "domain": "cf0-company.com",
+          "registrar": "NameCheap, Inc.",
+          "creation_date": "2024-04-20T10:15:30Z",
+          "expiry_date": "2025-04-20T10:15:30Z",
+          "registrant": {
+            "name": "Privacy Protection Service",
+            "organization": "Privacy Protect, LLC",
+            "email": "privacy@privacyprotect.org",
+            "address": "123 Privacy St, Wilmington, DE, US"
+          },
+          "nameservers": [
+            "ns1.namecheap.com",
+            "ns2.namecheap.com"
+          ]
+        },
+        "dkim_signature_header": "DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=company.com; s=selector2023; t=1714150000; bh=47DEQpj8HBSa+/TImW+5JCeuQeRkm5NMpJWZG3hSuFU=; h=from:to:subject:date:mime-version:content-type; b=abc123fakebase64signature==",
+        "spf_record": "v=spf1 ip4:198.51.100.45 -all",
+        "dmarc_record": "_dmarc.company.com TXT \"v=DMARC1; p=reject; rua=mailto:dmarc-rua@company.com; ruf=mailto:dmarc-ruf@company.com; fo=1\"",
+        "subject_line_analysis": "Subject line contains zero-width space characters (U+200B) inserted between words to evade keyword detection: \"Urgent\u200b:\u200b Wire\u200b Transfer\u200b Request\u200b -\u200b CONFIDENTIAL\"",
+        "email_filter_log_entry": "Apr 26 14:07:44 mail.enterprise.com amavis[5532]: (05532-01) Passed SPAM, but failed DMARC policy (reject): SPAM-Flag: YES, DMARC-Status: fail, SPF-Status: pass, DKIM-Status: fail",
+        "dns_lookup_logs": "Query for cf0-company.com A record returned 198.51.100.45\r\nQuery for cf0-company.com MX record returned mail.cf0-company.com\r\nQuery for _dmarc.cf0-company.com TXT record returned none (no DMARC record)",
+        "email_client_display": "Display From: Jane Doe <cfo@cf0-company.com>\nActual mail envelope: cfo@cf0-company.com\n",
+        "url_in_email": "None",
+        "secondary_verification_failure": "User did not verify requests through a phone call or video call, so the fraudulent request was processed."
+      },
+      "indicators": [
+        "Sender domain cf0-company.com is a known typosquatting variant of company.com",
+        "DMARC authentication failed with policy reject",
+        "DKIM signature failed validation for domain company.com",
+        "SPF passed for cf0-company.com but domain is suspicious",
+        "Email subject contains zero-width space Unicode characters",
+        "Domain was registered less than 7 days before email delivery",
+        "Email filter flagged as spam but allowed delivery due to SPF pass",
+        "No secondary verification on high-risk wire transfer request"
+      ],
+      "detection_method": "Correlation of DMARC failures with newly observed domains resembling internal executive domains; heuristic detection of Unicode zero-width characters in subject headers; alert on wire transfer requests from external domains failing DMARC but passing SPF; employee training and enforced multi-channel verification for financial requests; monitoring domain registration feeds for lookalike domains.",
+      "relevant_mitre_techniques": [
+        "T1566.001 - Phishing: Spearphishing Attachment",
+        "T1566.002 - Phishing: Spearphishing Link",
+        "T1566.003 - Phishing: Spearphishing via Service",
+        "T1598.002 - Phishing for Information: Spearphishing via Service",
+        "T1598.004 - Phishing for Information: Spearphishing via Domain Spoofing",
+        "T1193 - Spearphishing Attachment",
+        "T1556 - Modify Authentication Process (Exploitation of Email Authentication)",
+        "T1486 - Data Encrypted for Impact (in case wire transfer leads to ransomware)",
+        "T1071.001 - Application Layer Protocol: Web Protocols (for email communication)",
+        "T1204.002 - User Execution: Malicious File"
+      ]
+    }
+  ]
+}

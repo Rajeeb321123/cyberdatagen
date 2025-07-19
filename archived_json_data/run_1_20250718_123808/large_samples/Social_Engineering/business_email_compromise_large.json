@@ -1,0 +1,336 @@
+{
+  "samples": [
+    {
+      "scenario": "Business Email Compromise via Compromised CFO Account Requesting Vendor Payment",
+      "technical_data": {
+        "email_headers": "Return-Path: <cfo@finserve.com>\r\nReceived: from unknown (HELO mail.finserve.com) (198.51.100.77)\r\n\tby mail.finserve.com with SMTP; Wed, 14 Jul 2023 14:02:18 -0500\r\nReceived-SPF: fail (finserve.com: domain of 198.51.100.77 does not designate 198.51.100.77 as permitted sender) receiver=mail.finserve.com; client-ip=198.51.100.77; helo=unknown;\r\nAuthentication-Results: mail.finserve.com; spf=fail smtp.mailfrom=cfo@finserve.com; dkim=none; dmarc=fail action=quarantine header.from=finserve.com\r\nX-Originating-IP: [198.51.100.77]\r\nMessage-ID: <MSG45678@finserve.com>\r\nDate: Wed, 14 Jul 2023 14:02:15 -0500\r\nFrom: \"Mary Johnson\" <cfo@finserve.com>\r\nTo: accounts_payable@finserve.com\r\nSubject: Immediate Payment Required for Invoice #78945\r\nMIME-Version: 1.0\r\nContent-Type: text/plain; charset=\"UTF-8\"\r\nContent-Transfer-Encoding: 7bit",
+        "email_body": "Hello,\n\nPlease process an immediate payment of $85,000 to the following vendor account to avoid service disruption:\n\nBank: Citywide Bank\nAccount Number: 987654321\nRouting Number: 123456789\nBeneficiary: TechGear Solutions LLC\n\nDo not confirm with anyone else.\n\nRegards,\nMary",
+        "smtp_transaction_log": "220 mail.finserve.com ESMTP Postfix\r\nEHLO unknown\r\n250-mail.finserve.com\r\n250-PIPELINING\r\n250-SIZE 20480000\r\n250-ETRN\r\n250-STARTTLS\r\n250-AUTH PLAIN LOGIN\r\n250-ENHANCEDSTATUSCODES\r\n250-8BITMIME\r\n250 DSN\r\nMAIL FROM:<cfo@finserve.com>\r\n250 2.1.0 Ok\r\nRCPT TO:<accounts_payable@finserve.com>\r\n250 2.1.5 Ok\r\nDATA\r\n354 End data with <CR><LF>.<CR><LF>\r\nFrom: \"Mary Johnson\" <cfo@finserve.com>\r\nTo: accounts_payable@finserve.com\r\nSubject: Immediate Payment Required for Invoice #78945\r\n\r\nHello,\r\n\r\nPlease process an immediate payment of $85,000 to the following vendor account to avoid service disruption:\r\n\r\nBank: Citywide Bank\r\nAccount Number: 987654321\r\nRouting Number: 123456789\r\nBeneficiary: TechGear Solutions LLC\r\n\r\nDo not confirm with anyone else.\r\n\r\nRegards,\r\nMary\r\n.\r\n250 2.0.0 Ok: queued as 3ABCD1234\r\nQUIT\r\n221 2.0.0 Bye",
+        "dns_records": {
+          "finserve.com": {
+            "SPF": "v=spf1 ip4:203.0.113.0/24 -all",
+            "DKIM": "selector2._domainkey.finserve.com TXT \"v=DKIM1; k=rsa; p=MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAn...\"",
+            "DMARC": "_dmarc.finserve.com TXT \"v=DMARC1; p=reject; rua=mailto:dmarc@finserve.com\""
+          },
+          "unknown": {
+            "A": "198.51.100.77",
+            "SPF": "v=spf1 -all"
+          }
+        },
+        "email_authentication_results": [
+          {
+            "check": "SPF",
+            "result": "fail",
+            "reason": "IP 198.51.100.77 not in SPF record for finserve.com"
+          },
+          {
+            "check": "DKIM",
+            "result": "none",
+            "reason": "No DKIM signature found"
+          },
+          {
+            "check": "DMARC",
+            "result": "fail",
+            "reason": "DMARC policy is reject but message failed SPF and DKIM"
+          }
+        ],
+        "email_account_activity_log": [
+          {
+            "timestamp": "2023-07-14T14:02:15-05:00",
+            "user": "cfo@finserve.com",
+            "source_ip": "198.51.100.77",
+            "event": "Send Email",
+            "status": "Success",
+            "user_agent": "ThunderFakeMail/3.4"
+          },
+          {
+            "timestamp": "2023-07-13T09:15:42-05:00",
+            "user": "cfo@finserve.com",
+            "source_ip": "203.0.113.22",
+            "event": "Login",
+            "status": "Success",
+            "user_agent": "Outlook/365"
+          }
+        ],
+        "wire_transfer_verification_procedure": {
+          "expected_workflow": "All payment requests over $10,000 must be verified by direct phone call to the requester using the corporate directory before processing.",
+          "detected_violation": "Payment was processed without phone verification."
+        },
+        "network_packet_capture_excerpt": [
+          "Frame 2567: 160 bytes on wire (1280 bits), 160 bytes captured (1280 bits) on interface 1",
+          "Ethernet II, Src: 12:34:56:78:9a:bc, Dst: 00:50:56:c0:00:08",
+          "Internet Protocol Version 4, Src: 198.51.100.77, Dst: 203.0.113.10",
+          "Transmission Control Protocol, Src Port: 587, Dst Port: 587, Seq: 1, Ack: 1",
+          "SMTP Data: MAIL FROM:<cfo@finserve.com>"
+        ]
+      },
+      "indicators": {
+        "ip_address": "198.51.100.77",
+        "spoofed_email": "cfo@finserve.com",
+        "failed_spf": true,
+        "missing_dkim": true,
+        "dmarc_fail": true,
+        "unusual_source_ip": "198.51.100.77 (not corporate IP)",
+        "lack_of_verification_call": true,
+        "email_user_agent": "ThunderFakeMail/3.4"
+      },
+      "detection_method": "Alert on emails from privileged accounts failing SPF/DKIM/DMARC checks, especially from unknown IPs. Cross-check payment approvals with phone verification logs. Employ UEBA to detect unusual sending clients and times.",
+      "relevant_mitre_techniques": [
+        "T1566.001 - Phishing: Spearphishing Attachment",
+        "T1598.002 - Phishing: Spearphishing Link",
+        "T1598.003 - Spearphishing via Service",
+        "T1078.004 - Valid Accounts: Cloud Accounts (email account compromise)",
+        "T1499 - Data Staged (wire transfer instructions staged in email)"
+      ]
+    },
+    {
+      "scenario": "Business Email Compromise via Spoofed HR Director Email Requesting Employee W-2 Data",
+      "technical_data": {
+        "email_headers": "Return-Path: <hrdirector@corporatehub.net>\r\nReceived: from mail.corporatehub.net (mail.corporatehub.net [203.0.113.45])\r\n\tby mail.corporatehub.net (Postfix) with ESMTPS id 7BCDE8901A\r\n\tfor <payroll@corporatehub.net>; Fri, 01 Sep 2023 11:20:10 -0700 (PDT)\r\nReceived-SPF: fail (corporatehub.net: domain of 198.51.100.99 does not designate 198.51.100.99 as permitted sender) receiver=mail.corporatehub.net; client-ip=198.51.100.99; helo=malicious-smtp.com;\r\nAuthentication-Results: mail.corporatehub.net; spf=fail smtp.mailfrom=hrdirector@corporatehub.net; dkim=none; dmarc=fail action=none header.from=corporatehub.net\r\nX-Originating-IP: [198.51.100.99]\r\nMessage-ID: <MSG90876@corporatehub.net>\r\nDate: Fri, 01 Sep 2023 11:20:07 -0700\r\nFrom: \"Anna Lee\" <hrdirector@corporatehub.net>\r\nTo: payroll@corporatehub.net\r\nSubject: Urgent: Employee W-2 Data Request\r\nMIME-Version: 1.0\r\nContent-Type: text/plain; charset=\"UTF-8\"\r\nContent-Transfer-Encoding: 7bit",
+        "email_body": "Hi Team,\n\nPlease send me the latest employee W-2 forms for the tax filing deadline. This is urgent and confidential.\n\nDo not share this request with anyone else.\n\nThanks,\nAnna",
+        "smtp_transaction_log": "220 mail.corporatehub.net ESMTP Postfix\r\nEHLO malicious-smtp.com\r\n250-mail.corporatehub.net\r\n250-PIPELINING\r\n250-SIZE 10240000\r\n250-ETRN\r\n250-STARTTLS\r\n250-AUTH PLAIN LOGIN\r\n250-ENHANCEDSTATUSCODES\r\n250-8BITMIME\r\n250 DSN\r\nMAIL FROM:<hrdirector@corporatehub.net>\r\n250 2.1.0 Ok\r\nRCPT TO:<payroll@corporatehub.net>\r\n250 2.1.5 Ok\r\nDATA\r\n354 End data with <CR><LF>.<CR><LF>\r\nFrom: \"Anna Lee\" <hrdirector@corporatehub.net>\r\nTo: payroll@corporatehub.net\r\nSubject: Urgent: Employee W-2 Data Request\r\n\r\nHi Team,\r\n\r\nPlease send me the latest employee W-2 forms for the tax filing deadline. This is urgent and confidential.\r\n\r\nDo not share this request with anyone else.\r\n\r\nThanks,\r\nAnna\r\n.\r\n250 2.0.0 Ok: queued as 7BCDE8901A\r\nQUIT\r\n221 2.0.0 Bye",
+        "dns_records": {
+          "corporatehub.net": {
+            "SPF": "v=spf1 ip4:203.0.113.0/24 -all",
+            "DKIM": "selector3._domainkey.corporatehub.net TXT \"v=DKIM1; k=rsa; p=MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAp...\"",
+            "DMARC": "_dmarc.corporatehub.net TXT \"v=DMARC1; p=quarantine; rua=mailto:dmarc-reports@corporatehub.net\""
+          },
+          "malicious-smtp.com": {
+            "A": "198.51.100.99",
+            "SPF": "v=spf1 -all"
+          }
+        },
+        "email_authentication_results": [
+          {
+            "check": "SPF",
+            "result": "fail",
+            "reason": "IP 198.51.100.99 not in SPF record for corporatehub.net"
+          },
+          {
+            "check": "DKIM",
+            "result": "none",
+            "reason": "No DKIM signature found"
+          },
+          {
+            "check": "DMARC",
+            "result": "fail",
+            "reason": "DMARC policy quarantine but message failed SPF and DKIM"
+          }
+        ],
+        "email_account_activity_log": [
+          {
+            "timestamp": "2023-09-01T11:20:07-07:00",
+            "user": "hrdirector@corporatehub.net",
+            "source_ip": "198.51.100.99",
+            "event": "Send Email",
+            "status": "Success",
+            "user_agent": "PhishMailerPro/2.0"
+          },
+          {
+            "timestamp": "2023-08-31T17:45:00-07:00",
+            "user": "hrdirector@corporatehub.net",
+            "source_ip": "203.0.113.78",
+            "event": "Login",
+            "status": "Success",
+            "user_agent": "Outlook/16.0"
+          }
+        ],
+        "wire_transfer_verification_procedure": {
+          "expected_workflow": "Sensitive data requests must be confirmed by phone call to the requester using the corporate directory before data release.",
+          "detected_violation": "Request for employee data was fulfilled without phone verification."
+        },
+        "network_packet_capture_excerpt": [
+          "Frame 3421: 145 bytes on wire (1160 bits), 145 bytes captured (1160 bits) on interface 2",
+          "Ethernet II, Src: 0a:1b:2c:3d:4e:5f, Dst: 00:50:56:c0:00:08",
+          "Internet Protocol Version 4, Src: 198.51.100.99, Dst: 203.0.113.50",
+          "Transmission Control Protocol, Src Port: 587, Dst Port: 587, Seq: 1, Ack: 1",
+          "SMTP Data: MAIL FROM:<hrdirector@corporatehub.net>"
+        ]
+      },
+      "indicators": {
+        "ip_address": "198.51.100.99",
+        "spoofed_email": "hrdirector@corporatehub.net",
+        "failed_spf": true,
+        "missing_dkim": true,
+        "dmarc_fail": true,
+        "unusual_source_ip": "198.51.100.99 (not corporate IP)",
+        "lack_of_verification_call": true,
+        "email_user_agent": "PhishMailerPro/2.0"
+      },
+      "detection_method": "Detect and alert on SPF/DKIM/DMARC failures on sensitive data request emails from internal domains. Correlate data access events with verification call logs. Use UEBA to identify anomalous access and email client usage.",
+      "relevant_mitre_techniques": [
+        "T1566.001 - Phishing: Spearphishing Attachment",
+        "T1598.002 - Phishing: Spearphishing Link",
+        "T1598.003 - Spearphishing via Service",
+        "T1078.004 - Valid Accounts: Cloud Accounts (email account compromise)",
+        "T1537 - Transfer Data to Cloud Account (exfiltration via email)"
+      ]
+    },
+    {
+      "scenario": "Business Email Compromise (BEC) via Compromised CFO Email Requesting Vendor Payment Change",
+      "technical_data": {
+        "email_headers": "Return-Path: <cfo@globalfinance.com>\r\nReceived: from unknown (EHLO smtp.globalfinance.com) [198.51.100.77]\r\n\tby mail.globalfinance.com with SMTP; Wed, 21 Jun 2023 13:45:10 +0000\r\nReceived-SPF: fail (globalfinance.com: domain of 198.51.100.77 does not designate 198.51.100.77 as permitted sender) receiver=mail.globalfinance.com; client-ip=198.51.100.77; helo=compromised-pc.local;\r\nAuthentication-Results: mail.globalfinance.com; spf=fail smtp.mailfrom=cfo@globalfinance.com; dkim=pass header.d=globalfinance.com; dmarc=fail action=quarantine header.from=globalfinance.com\r\nX-Originating-IP: [198.51.100.77]\r\nMessage-ID: <BEC4567GHIJK@globalfinance.com>\r\nDate: Wed, 21 Jun 2023 13:45:08 +0000\r\nFrom: \"Sarah Lee\" <cfo@globalfinance.com>\r\nTo: accounting@globalfinance.com\r\nSubject: Change to Vendor Payment Details\r\nMIME-Version: 1.0\r\nContent-Type: text/plain; charset=\"UTF-8\"\r\nContent-Transfer-Encoding: 7bit",
+        "email_body": "Hello Team,\n\nPlease update the payment details for our vendor, Tech Solutions Ltd. The new wire transfer information is as follows:\n\nBank: Metro Bank\nAccount Number: 987654321\nRouting Number: 123123123\nBeneficiary: Tech Solutions Ltd.\n\nEnsure this change is applied before the next payment cycle. This request is urgent and confidential.\n\nBest,\nSarah",
+        "smtp_transaction_log": "220 mail.globalfinance.com ESMTP Postfix\r\nEHLO compromised-pc.local\r\n250-mail.globalfinance.com\r\n250-PIPELINING\r\n250-SIZE 20480000\r\n250-ETRN\r\n250-STARTTLS\r\n250-AUTH PLAIN LOGIN\r\n250-ENHANCEDSTATUSCODES\r\n250-8BITMIME\r\n250 DSN\r\nMAIL FROM:<cfo@globalfinance.com>\r\n250 2.1.0 Ok\r\nRCPT TO:<accounting@globalfinance.com>\r\n250 2.1.5 Ok\r\nDATA\r\n354 End data with <CR><LF>.<CR><LF>\r\nFrom: \"Sarah Lee\" <cfo@globalfinance.com>\r\nTo: accounting@globalfinance.com\r\nSubject: Change to Vendor Payment Details\r\n\r\nHello Team,\r\n\r\nPlease update the payment details for our vendor, Tech Solutions Ltd. The new wire transfer information is as follows:\r\n\r\nBank: Metro Bank\r\nAccount Number: 987654321\r\nRouting Number: 123123123\r\nBeneficiary: Tech Solutions Ltd.\r\n\r\nEnsure this change is applied before the next payment cycle. This request is urgent and confidential.\r\n\r\nBest,\r\nSarah\r\n.\r\n250 2.0.0 Ok: queued as 2A4B8C9D0E\r\nQUIT\r\n221 2.0.0 Bye",
+        "dns_records": {
+          "globalfinance.com": {
+            "SPF": "v=spf1 ip4:198.51.100.0/24 -all",
+            "DKIM": "selector2._domainkey.globalfinance.com TXT \"v=DKIM1; k=rsa; p=MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8A...\"",
+            "DMARC": "_dmarc.globalfinance.com TXT \"v=DMARC1; p=quarantine; rua=mailto:dmarc_reports@globalfinance.com\""
+          },
+          "compromised-pc.local": {
+            "A": "198.51.100.77",
+            "SPF": "v=spf1 -all"
+          }
+        },
+        "email_authentication_results": [
+          {
+            "check": "SPF",
+            "result": "fail",
+            "reason": "IP 198.51.100.77 not in SPF record for globalfinance.com"
+          },
+          {
+            "check": "DKIM",
+            "result": "pass",
+            "reason": "Valid DKIM signature from globalfinance.com"
+          },
+          {
+            "check": "DMARC",
+            "result": "fail",
+            "reason": "DMARC policy is quarantine but SPF failed despite DKIM pass"
+          }
+        ],
+        "email_account_activity_log": [
+          {
+            "timestamp": "2023-06-21T13:45:08+00:00",
+            "user": "cfo@globalfinance.com",
+            "source_ip": "198.51.100.77",
+            "event": "Send Email",
+            "status": "Success",
+            "user_agent": "Thunderbird/91.0"
+          },
+          {
+            "timestamp": "2023-06-20T18:12:45+00:00",
+            "user": "cfo@globalfinance.com",
+            "source_ip": "203.0.113.22",
+            "event": "Login",
+            "status": "Success",
+            "user_agent": "Outlook/16.0"
+          }
+        ],
+        "wire_transfer_verification_procedure": {
+          "expected_workflow": "All vendor payment detail changes require verbal confirmation via a known phone number registered in vendor records before processing.",
+          "detected_violation": "Vendor payment detail change was accepted and processed without phone confirmation."
+        },
+        "network_packet_capture_excerpt": [
+          "Frame 2345: 178 bytes on wire (1424 bits), 178 bytes captured (1424 bits) on interface 1",
+          "Ethernet II, Src: 08:00:27:3f:5a:6b, Dst: 00:1c:42:2e:60:4a",
+          "Internet Protocol Version 4, Src: 198.51.100.77, Dst: 198.51.100.10",
+          "Transmission Control Protocol, Src Port: 465, Dst Port: 465, Seq: 42, Ack: 37",
+          "SMTP Data: MAIL FROM:<cfo@globalfinance.com>"
+        ]
+      },
+      "indicators": {
+        "ip_address": "198.51.100.77",
+        "spoofed_email": "cfo@globalfinance.com",
+        "failed_spf": true,
+        "valid_dkim": true,
+        "dmarc_fail": true,
+        "unusual_source_ip": "198.51.100.77 (external unusual IP)",
+        "lack_of_verification_call": true,
+        "email_user_agent": "Thunderbird/91.0"
+      },
+      "detection_method": "Alert on SPF failures combined with DMARC policy enforcement. Monitor for vendor payment detail changes without corresponding verification calls. Use UEBA to flag unusual sending IPs and user agents for finance roles.",
+      "relevant_mitre_techniques": [
+        "T1566.001 - Phishing: Spearphishing Attachment",
+        "T1598.003 - Spearphishing via Service",
+        "T1078.004 - Valid Accounts: Cloud Accounts",
+        "T1499 - Data Staged",
+        "T1539 - Steal Web Session Cookie"
+      ]
+    },
+    {
+      "scenario": "Business Email Compromise (BEC) via Spoofed HR Manager Email Requesting Employee W-2 Forms",
+      "technical_data": {
+        "email_headers": "Return-Path: <hrmanager@enterprisecorp.com>\r\nReceived: from mail.enterprisecorp.com (mail.enterprisecorp.com [10.10.5.5])\r\n\tby mail.enterprisecorp.com (Postfix) with ESMTPS id 9D8F6E2C51\r\n\tfor <payroll@enterprisecorp.com>; Thu, 22 Jun 2023 09:30:15 -0500 (CDT)\r\nReceived-SPF: fail (enterprisecorp.com: domain of 203.0.113.99 does not designate 203.0.113.99 as permitted sender) receiver=mail.enterprisecorp.com; client-ip=203.0.113.99; helo=spoofed-hr-mail.com;\r\nAuthentication-Results: mail.enterprisecorp.com; spf=fail smtp.mailfrom=hrmanager@enterprisecorp.com; dkim=none; dmarc=fail action=none header.from=enterprisecorp.com\r\nX-Originating-IP: [203.0.113.99]\r\nMessage-ID: <HRBEC99999@enterprisecorp.com>\r\nDate: Thu, 22 Jun 2023 09:30:12 -0500\r\nFrom: \"Emily Rogers\" <hrmanager@enterprisecorp.com>\r\nTo: payroll@enterprisecorp.com\r\nSubject: Request for W-2 Forms\r\nMIME-Version: 1.0\r\nContent-Type: text/plain; charset=\"UTF-8\"\r\nContent-Transfer-Encoding: 7bit",
+        "email_body": "Hello Payroll Team,\n\nPlease send me the W-2 forms for all employees for tax filing purposes. This is a confidential request and should be handled with urgency.\n\nThank you,\nEmily Rogers\nHR Manager",
+        "smtp_transaction_log": "220 mail.enterprisecorp.com ESMTP Postfix\r\nEHLO spoofed-hr-mail.com\r\n250-mail.enterprisecorp.com\r\n250-PIPELINING\r\n250-SIZE 10240000\r\n250-ETRN\r\n250-STARTTLS\r\n250-AUTH PLAIN LOGIN\r\n250-ENHANCEDSTATUSCODES\r\n250-8BITMIME\r\n250 DSN\r\nMAIL FROM:<hrmanager@enterprisecorp.com>\r\n250 2.1.0 Ok\r\nRCPT TO:<payroll@enterprisecorp.com>\r\n250 2.1.5 Ok\r\nDATA\r\n354 End data with <CR><LF>.<CR><LF>\r\nFrom: \"Emily Rogers\" <hrmanager@enterprisecorp.com>\r\nTo: payroll@enterprisecorp.com\r\nSubject: Request for W-2 Forms\r\n\r\nHello Payroll Team,\r\n\r\nPlease send me the W-2 forms for all employees for tax filing purposes. This is a confidential request and should be handled with urgency.\r\n\r\nThank you,\r\nEmily Rogers\r\nHR Manager\r\n.\r\n250 2.0.0 Ok: queued as 9D8F6E2C51\r\nQUIT\r\n221 2.0.0 Bye",
+        "dns_records": {
+          "enterprisecorp.com": {
+            "SPF": "v=spf1 ip4:10.10.5.0/24 -all",
+            "DKIM": "selector3._domainkey.enterprisecorp.com TXT \"v=DKIM1; k=rsa; p=MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8A...\"",
+            "DMARC": "_dmarc.enterprisecorp.com TXT \"v=DMARC1; p=reject; rua=mailto:dmarc-reports@enterprisecorp.com\""
+          },
+          "spoofed-hr-mail.com": {
+            "A": "203.0.113.99",
+            "SPF": "v=spf1 -all"
+          }
+        },
+        "email_authentication_results": [
+          {
+            "check": "SPF",
+            "result": "fail",
+            "reason": "IP 203.0.113.99 not in SPF record for enterprisecorp.com"
+          },
+          {
+            "check": "DKIM",
+            "result": "none",
+            "reason": "No DKIM signature present"
+          },
+          {
+            "check": "DMARC",
+            "result": "fail",
+            "reason": "DMARC policy is reject but message failed SPF and DKIM"
+          }
+        ],
+        "email_account_activity_log": [
+          {
+            "timestamp": "2023-06-22T09:30:12-05:00",
+            "user": "hrmanager@enterprisecorp.com",
+            "source_ip": "203.0.113.99",
+            "event": "Send Email",
+            "status": "Success",
+            "user_agent": "MaliciousMailer/2.0"
+          },
+          {
+            "timestamp": "2023-06-21T17:50:30-05:00",
+            "user": "hrmanager@enterprisecorp.com",
+            "source_ip": "10.10.5.8",
+            "event": "Login",
+            "status": "Success",
+            "user_agent": "Outlook/365"
+          }
+        ],
+        "wire_transfer_verification_procedure": {
+          "expected_workflow": "Requests for sensitive employee data must be verified by direct phone contact to the requester using corporate directory numbers.",
+          "detected_violation": "Sensitive data request was fulfilled without verification call."
+        },
+        "network_packet_capture_excerpt": [
+          "Frame 3456: 160 bytes on wire (1280 bits), 160 bytes captured (1280 bits) on interface 2",
+          "Ethernet II, Src: 0a:0b:0c:0d:0e:0f, Dst: 00:1d:a1:2b:3c:4d",
+          "Internet Protocol Version 4, Src: 203.0.113.99, Dst: 10.10.5.5",
+          "Transmission Control Protocol, Src Port: 2525, Dst Port: 2525, Seq: 15, Ack: 15",
+          "SMTP Data: MAIL FROM:<hrmanager@enterprisecorp.com>"
+        ]
+      },
+      "indicators": {
+        "ip_address": "203.0.113.99",
+        "spoofed_email": "hrmanager@enterprisecorp.com",
+        "failed_spf": true,
+        "missing_dkim": true,
+        "dmarc_fail": true,
+        "unusual_source_ip": "203.0.113.99 (external IP not in corporate range)",
+        "lack_of_verification_call": true,
+        "email_user_agent": "MaliciousMailer/2.0"
+      },
+      "detection_method": "Detect SPF/DKIM/DMARC failures on internal domains combined with requests for sensitive PII data. Correlate email requests with verification phone call logs. Use anomaly detection for unusual email client and source IP behavior on HR accounts.",
+      "relevant_mitre_techniques": [
+        "T1566.001 - Phishing: Spearphishing Attachment",
+        "T1598.003 - Spearphishing via Service",
+        "T1078.004 - Valid Accounts: Cloud Accounts",
+        "T1537 - Transfer Data to Cloud Account",
+        "T1486 - Data Encrypted for Impact"
+      ]
+    }
+  ]
+}

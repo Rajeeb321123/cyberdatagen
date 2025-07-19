@@ -1,0 +1,75 @@
+{
+  "examples": [
+    {
+      "scenario": "An attacker uses an AI-generated deepfake audio call impersonating the CFO to instruct the finance team to transfer $250,000 to a fraudulent overseas account. The attacker supplements the call with a spear-phishing email containing a voice message link and requests urgent wire transfer, bypassing normal verification processes.",
+      "technical_data": {
+        "email_headers": "Return-Path: <cfo@contoso.com>\r\nReceived: from smtp.contoso.com (smtp.contoso.com [192.168.10.15])\r\n\tby mail.partnercorp.com (Postfix) with ESMTPS id 4F7C2A1E3\r\n\tfor <finance@partnercorp.com>; Mon, 12 Jun 2023 15:03:42 +0000 (UTC)\r\nX-Originating-IP: [192.168.10.15]\r\nAuthentication-Results: mail.partnercorp.com; dkim=pass (signature was verified) header.d=contoso.com;\r\n\tspf=pass (sender IP is 192.168.10.15) smtp.mailfrom=cfo@contoso.com\r\nMessage-ID: <CAHTy+3S1wX5qj7Yv4Rp2=7eXQqfZrD+u1oA@mail.contoso.com>\r\nDate: Mon, 12 Jun 2023 15:02:55 +0000\r\nFrom: \"Jane Doe\" <cfo@contoso.com>\r\nTo: finance@partnercorp.com\r\nSubject: Urgent wire transfer request\r\nMIME-Version: 1.0\r\nContent-Type: multipart/mixed; boundary=\"boundary_12345\"\r\nX-Mailer: Microsoft Outlook 16.0\r\n\r\n--boundary_12345\r\nContent-Type: text/plain; charset=\"utf-8\"\r\nContent-Transfer-Encoding: quoted-printable\r\n\r\nTeam,\r\n\r\nPlease find the attached voice message with urgent instructions. This=\r\n needs to be actioned immediately. Transfer $250,000 to the following ac=\r\ncount:\r\n\r\nAccount: 987654321\r\nBank: Overseas Bank Ltd.\r\nSWIFT: OVBKUS33\r\n\r\nConfirm once done.\r\n\r\nBest,\r\nJane\r\n\r\n--boundary_12345\r\nContent-Type: audio/wav; name=\"voice_message.wav\"\r\nContent-Transfer-Encoding: base64\r\nContent-Disposition: attachment; filename=\"voice_message.wav\"\r\n\r\nUklGRngAAABXQVZFZm10IBAAAAABAAEAIlYAAESsAAACABAAZGF0YYAAAACAP//g/+f3//j+v/\r\n...\r\n--boundary_12345--",
+        "smtp_transaction_log": "220 mail.partnercorp.com ESMTP Postfix\r\nEHLO smtp.contoso.com\r\n250-mail.partnercorp.com\r\n250-PIPELINING\r\n250-SIZE 10240000\r\n250-ETRN\r\n250-STARTTLS\r\n250-ENHANCEDSTATUSCODES\r\n250 8BITMIME\r\nMAIL FROM:<cfo@contoso.com>\r\n250 2.1.0 Ok\r\nRCPT TO:<finance@partnercorp.com>\r\n250 2.1.5 Ok\r\nDATA\r\n354 End data with <CR><LF>.<CR><LF>\r\n[message data]\r\n.\r\n250 2.0.0 Ok: queued as 4F7C2A1E3\r\nQUIT\r\n221 2.0.0 Bye",
+        "network_packet_capture_excerpt": "Frame 42: 712 bytes on wire (5696 bits), 712 bytes captured (5696 bits)\nEthernet II, Src: 00:1a:a0:bb:cc:dd, Dst: 00:1b:21:aa:bb:cc\nInternet Protocol Version 4, Src: 192.168.10.15, Dst: 192.168.50.25\nTransmission Control Protocol, Src Port: 443, Dst Port: 54022, Seq: 1, Ack: 1, Len: 658\nTLSv1.2 Record Layer: Application Data Protocol\n    Content Type: Application Data (23)\n    Version: TLS 1.2 (0x0303)\n    Length: 650\n[Encrypted Application Data]\n\n----\nFrame 43: 128 bytes\nEthernet II, Src: 00:1b:21:aa:bb:cc, Dst: 00:1a:a0:bb:cc:dd\nIP, Src: 192.168.50.25, Dst: 192.168.10.15\nTCP, Src Port: 54022, Dst Port: 443, Seq: 1, Ack: 659, Len: 70\nHTTP/1.1 200 OK\nContent-Type: audio/wav\nContent-Length: 650\n\n[Audio stream chunk continuation]",
+        "voice_audio_analysis": {
+          "duration_seconds": 45,
+          "sample_rate": 44100,
+          "bit_depth": 16,
+          "ai_artifacts_detected": true,
+          "deepfake_detection_score": 0.87,
+          "features": [
+            "Unnatural prosody pattern",
+            "Inconsistent background noise",
+            "Spectral anomalies in frequency bands 3kHz-5kHz",
+            "Phoneme timing irregularities"
+          ]
+        },
+        "finance_system_log_excerpt": "2023-06-12T15:05:12Z INFO User: finance_user_01 initiated wire transfer\nAmount: $250,000\nDestination Account: 987654321\nBeneficiary Bank: Overseas Bank Ltd.\nAuthorization Level: Bypassed\nVerification Method: Voice call confirmation\nTransaction Status: Completed\nTransaction ID: TXN-20230612-0001243\n\n2023-06-12T15:05:14Z WARNING Unusual transaction pattern detected for finance_user_01",
+        "domain_registration": {
+          "domain": "ovbkus33-bank.com",
+          "registrant": "PrivacyProtect, LLC",
+          "creation_date": "2023-05-30T08:45:00Z",
+          "expiration_date": "2024-05-30T08:45:00Z",
+          "name_servers": [
+            "ns1.privacyprotect.org",
+            "ns2.privacyprotect.org"
+          ],
+          "registrar": "NameCheap, Inc.",
+          "dns_records": {
+            "A": [
+              "198.51.100.42"
+            ],
+            "MX": [
+              "mail.ovbkus33-bank.com"
+            ]
+          }
+        },
+        "spear_phishing_url": "https://secure-ovbkus33-bank.com/voice_msg?id=4521&token=3a1b2c7d8e9f",
+        "url_analysis": {
+          "url_obfuscation": "Domain mimics legitimate SWIFT code in subdomain, uses HTTPS with valid but attacker-controlled certificate, query parameters with random tokens to evade URL filtering",
+          "dns_resolution": "resolves to 198.51.100.42 (hosted on bulletproof hosting provider)",
+          "SSL_cert": {
+            "issuer": "FakeSSL CA",
+            "valid_from": "2023-06-01",
+            "valid_to": "2024-06-01",
+            "subject": "CN=secure-ovbkus33-bank.com"
+          }
+        }
+      },
+      "indicators": [
+        "Email from cfo@contoso.com with attachment voice_message.wav containing AI-generated audio",
+        "SMTP logs showing legitimate SPF and DKIM passes but delivered to finance@partnercorp.com",
+        "Network capture showing encrypted TLS traffic with audio/wav content-type",
+        "Finance system log showing wire transfer bypassing two-factor authorization",
+        "Domain ovbkus33-bank.com registered 2 weeks prior with privacy protection",
+        "URL with domain mimicking SWIFT code and random token query parameters",
+        "Deepfake audio detection tool flags high confidence of synthetic voice"
+      ],
+      "detection_method": "Deploy deepfake detection engines on received audio files and voice call recordings; correlate wire transfer requests with multi-factor verification logs; monitor email headers for domain spoofing; implement behavioral analytics to flag unusual transaction patterns; train employees to verify unusual instructions via secondary communication channels; use DNS and SSL certificate monitoring for suspicious domain registrations.",
+      "relevant_mitre_techniques": [
+        "T1598.002 - Phishing: Spearphishing Link",
+        "T1598.001 - Phishing: Spearphishing Attachment",
+        "T1192 - Spearphishing via Service",
+        "T1071.001 - Application Layer Protocol: Web Protocols",
+        "T1537 - Transfer Data to Cloud Account",
+        "T1566.001 - Phishing: Spearphishing Attachment",
+        "T1406 - AI-Enabled Social Engineering"
+      ]
+    }
+  ]
+}

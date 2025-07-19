@@ -1,0 +1,63 @@
+{
+  "examples": [
+    {
+      "scenario": "AI-generated spear-phishing email campaign targeting corporate finance employees with personalized invoice payment requests leveraging corporate branding and realistic language style.",
+      "technical_data": {
+        "email_headers": "Return-Path: <invoice@corp-payments.com>\nReceived: from mail.corp-payments.com (mail.corp-payments.com [192.0.2.45]) by mx.internal.corp.com with ESMTP id 1234567890AB for <finance@internal.corp.com>; Thu, 27 Apr 2024 14:23:45 -0700 (PDT)\nReceived-SPF: pass (internal.corp.com: domain of corp-payments.com designates 192.0.2.45 as permitted sender)\nAuthentication-Results: mx.internal.corp.com; dkim=pass header.d=corp-payments.com; spf=pass smtp.mailfrom=corp-payments.com; dmarc=pass\nMessage-ID: <20240427142345.1234567890AB@mail.corp-payments.com>\nDate: Thu, 27 Apr 2024 14:23:45 -0700\nFrom: \"Corp Payments\" <invoice@corp-payments.com>\nTo: \"Jane Smith\" <jane.smith@internal.corp.com>\nSubject: Urgent: Invoice #INV-20240427-98765 Overdue - Immediate Payment Required\nMIME-Version: 1.0\nContent-Type: multipart/alternative; boundary=\"----=_Part_12345_67890\"\nX-Mailer: OpenAI GPT-4 Mailer v1.2\nX-Originating-IP: [203.0.113.22]",
+        "email_body_plain": "Dear Jane Smith,\n\nWe noticed that Invoice #INV-20240427-98765 issued on April 15, 2024, remains unpaid. Please review the attached invoice and process the payment immediately to avoid service disruption.\n\nInvoice Total: $12,345.67\nDue Date: April 30, 2024\n\nYou can make a payment securely via the following link:\nhttps://secure-payments.corp-payments.com/pay?id=INV-20240427-98765&user=jane.smith\n\nIf you have already made the payment, please disregard this message.\n\nThank you,\nCorp Payments Department\n\n-- \nThis is an automated message. Please do not reply directly.",
+        "email_body_html": "<html><body><p>Dear <b>Jane Smith</b>,</p><p>We noticed that Invoice <b>#INV-20240427-98765</b> issued on <b>April 15, 2024</b>, remains unpaid. Please review the attached invoice and process the payment immediately to avoid service disruption.</p><p><b>Invoice Total:</b> $12,345.67<br/><b>Due Date:</b> April 30, 2024</p><p>You can make a payment securely via the following link:<br/><a href=\"https://secure-payments.corp-payments.com/pay?id=INV-20240427-98765&amp;user=jane.smith\">Pay Invoice</a></p><p>If you have already made the payment, please disregard this message.</p><p>Thank you,<br/>Corp Payments Department</p><hr/><p><i>This is an automated message. Please do not reply directly.</i></p></body></html>",
+        "smtp_transaction_log": "220 mail.corp-payments.com ESMTP Postfix\nEHLO attacker-host.example.com\n250-mail.corp-payments.com\n250-PIPELINING\n250-SIZE 10240000\n250-VRFY\n250-ETRN\n250-STARTTLS\n250-AUTH PLAIN LOGIN\n250-ENHANCEDSTATUSCODES\n250-8BITMIME\n250 DSN\nMAIL FROM:<invoice@corp-payments.com>\n250 2.1.0 Ok\nRCPT TO:<jane.smith@internal.corp.com>\n250 2.1.5 Ok\nDATA\n354 End data with <CR><LF>.<CR><LF>\n[message data omitted]\n.\n250 2.0.0 Ok: queued as 1234567890AB\nQUIT\n221 2.0.0 Bye",
+        "domain_registration": {
+          "domain": "corp-payments.com",
+          "registrar": "NameCheap, Inc.",
+          "creation_date": "2024-04-01T08:15:00Z",
+          "expiration_date": "2025-04-01T08:15:00Z",
+          "registrant_name": "John Doe",
+          "registrant_org": "Payments Solutions LLC",
+          "registrant_country": "US",
+          "dns_records": {
+            "A": [
+              "192.0.2.45"
+            ],
+            "MX": [
+              "mail.corp-payments.com"
+            ],
+            "TXT": [
+              "v=spf1 ip4:192.0.2.45 -all"
+            ],
+            "DKIM": "default._domainkey.corp-payments.com TXT v=DKIM1; k=rsa; p=MIIBIjANBgkqhkiG9w0B..."
+          }
+        },
+        "url_structure": "https://secure-payments.corp-payments.com/pay?id=INV-20240427-98765&user=jane.smith",
+        "url_analysis": {
+          "domain": "secure-payments.corp-payments.com",
+          "subdomain": "secure-payments",
+          "path": "/pay",
+          "query_parameters": {
+            "id": "INV-20240427-98765",
+            "user": "jane.smith"
+          },
+          "obfuscation": "No obfuscation detected; domain mimics legitimate corporate payment portal with valid SSL cert (Let's Encrypt)"
+        },
+        "webserver_access_log": "192.0.2.45 - jane.smith [27/Apr/2024:14:23:48 -0700] \"GET /pay?id=INV-20240427-98765&user=jane.smith HTTP/1.1\" 200 5123 \"https://mail.internal.corp.com\" \"Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:112.0) Gecko/20100101 Firefox/112.0\"",
+        "detection_tool_log_entry": "[2024-04-27T14:24:05Z] PHISHING-DETECTOR: Email flagged for AI-generated linguistic patterns: high semantic similarity to known corporate payment templates; domain corp-payments.com registered <1 month ago; suspicious URL parameters id and user; SPF/DKIM pass but domain reputation low; recommended quarantine."
+      },
+      "indicators": [
+        "Domain corp-payments.com registered less than 1 month ago",
+        "Sender IP 192.0.2.45 not in corporate mail infrastructure",
+        "URL https://secure-payments.corp-payments.com/pay?id=INV-20240427-98765&user=jane.smith mimics legitimate payment portal",
+        "Email subject contains invoice number matching corporate invoice format but with payment request link to suspicious domain",
+        "X-Mailer header shows non-standard mailer 'OpenAI GPT-4 Mailer v1.2' indicating AI-generated content",
+        "SPF and DKIM pass but domain reputation score low and newly registered",
+        "SMTP transaction logs indicate direct submission from external IP 203.0.113.22"
+      ],
+      "detection_method": "Deploy advanced NLP-based email security gateway that uses transformer models to detect AI-generated writing style anomalies and semantic mismatches; correlate with domain age and reputation databases; enforce strict URL rewriting and user training to recognize invoice requests with mismatched domains; enforce MFA on payment portals to prevent credential reuse and limit impact of phishing success.",
+      "relevant_mitre_techniques": [
+        "T1566.001 - Phishing: Spearphishing Attachment",
+        "T1566.002 - Phishing: Spearphishing Link",
+        "T1586 - Compromise Infrastructure",
+        "T1598 - Phishing for Information"
+      ]
+    }
+  ]
+}

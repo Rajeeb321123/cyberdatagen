@@ -1,0 +1,127 @@
+{
+  "examples": [
+    {
+      "scenario": "Unauthorized data exfiltration from publicly exposed AWS S3 bucket due to overly permissive bucket policy allowing anonymous read and list access.",
+      "technical_data": {
+        "cloudtrail_logs": [
+          {
+            "eventVersion": "1.08",
+            "userIdentity": {
+              "type": "Anonymous"
+            },
+            "eventTime": "2024-05-15T22:34:12Z",
+            "eventSource": "s3.amazonaws.com",
+            "eventName": "ListObjectsV2",
+            "awsRegion": "us-east-1",
+            "sourceIPAddress": "198.51.100.23",
+            "userAgent": "S3Console/0.4, aws-sdk-java/1.11.603 Linux/4.14.193-113.317.amzn2.x86_64 OpenJDK_64-Bit_Server_VM/25.242-b08 java/1.8.0_242",
+            "requestParameters": {
+              "bucketName": "company-sensitive-data"
+            },
+            "responseElements": {
+              "x-amz-request-id": "7C1A2B3C4D5E6F78",
+              "x-amz-id-2": "abcd1234example5678xyz=="
+            },
+            "additionalEventData": {
+              "SignatureVersion": "SigV4",
+              "CipherSuite": "ECDHE-RSA-AES128-GCM-SHA256",
+              "bytesTransferredIn": 0,
+              "bytesTransferredOut": 327680
+            },
+            "requestID": "7C1A2B3C4D5E6F78",
+            "eventType": "AwsApiCall",
+            "recipientAccountId": "123456789012"
+          },
+          {
+            "eventTime": "2024-05-15T22:34:15Z",
+            "eventSource": "s3.amazonaws.com",
+            "eventName": "GetObject",
+            "userIdentity": {
+              "type": "Anonymous"
+            },
+            "sourceIPAddress": "198.51.100.23",
+            "requestParameters": {
+              "bucketName": "company-sensitive-data",
+              "key": "financials/2023_q4_report.xlsx"
+            },
+            "responseElements": {
+              "x-amz-request-id": "1A2B3C4D5E6F7G89",
+              "x-amz-id-2": "efgh5678example1234uvw=="
+            },
+            "additionalEventData": {
+              "bytesTransferredIn": 0,
+              "bytesTransferredOut": 10485760
+            }
+          }
+        ],
+        "bucket_policy": {
+          "Version": "2012-10-17",
+          "Statement": [
+            {
+              "Sid": "AllowPublicRead",
+              "Effect": "Allow",
+              "Principal": "*",
+              "Action": [
+                "s3:GetObject",
+                "s3:ListBucket"
+              ],
+              "Resource": [
+                "arn:aws:s3:::company-sensitive-data",
+                "arn:aws:s3:::company-sensitive-data/*"
+              ]
+            }
+          ]
+        },
+        "s3_access_log": [
+          "79a2ef8a8f23e6c1 company-sensitive-data [15/May/2024:22:34:15 +0000] 198.51.100.23 - -  GetObject company-sensitive-data financials/2023_q4_report.xlsx \"GET /company-sensitive-data/financials/2023_q4_report.xlsx HTTP/1.1\" 200 - - 10485760 10485760 22 22 \"-\" \"S3Console/0.4\" SigV4 ECDHE-RSA-AES128-GCM-SHA256 AuthHeader",
+          "79a2ef8a8f23e6c1 company-sensitive-data [15/May/2024:22:34:12 +0000] 198.51.100.23 - -  ListObjectsV2 company-sensitive-data - \"GET /company-sensitive-data?list-type=2 HTTP/1.1\" 200 - - 327680 327680 5 5 \"-\" \"S3Console/0.4\" SigV4 ECDHE-RSA-AES128-GCM-SHA256 AuthHeader"
+        ],
+        "aws_cli_commands": [
+          "# Attacker enumerates bucket contents",
+          "aws s3api list-objects-v2 --bucket company-sensitive-data --region us-east-1",
+          "# Attacker downloads sensitive file",
+          "aws s3 cp s3://company-sensitive-data/financials/2023_q4_report.xlsx ./2023_q4_report.xlsx"
+        ],
+        "network_packet_capture_excerpt": [
+          "Frame 1234: 1514 bytes on wire (12112 bits), 1514 bytes captured (12112 bits)",
+          "Ethernet II, Src: 00:0c:29:ab:cd:ef, Dst: 52:54:00:12:34:56",
+          "Internet Protocol Version 4, Src: 198.51.100.23, Dst: 52.216.0.0",
+          "Transmission Control Protocol, Src Port: 52345, Dst Port: 443, Seq: 1, Ack: 1, Len: 1460",
+          "Hypertext Transfer Protocol",
+          "    GET /company-sensitive-data/financials/2023_q4_report.xlsx HTTP/1.1",
+          "    Host: s3.amazonaws.com",
+          "    User-Agent: aws-sdk-java/1.11.603 Linux/4.14.193",
+          "    Accept-Encoding: gzip",
+          "",
+          "[Response]",
+          "    HTTP/1.1 200 OK",
+          "    Content-Length: 10485760",
+          "    Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+          "    x-amz-request-id: 1A2B3C4D5E6F7G89",
+          "    x-amz-id-2: efgh5678example1234uvw=="
+        ]
+      },
+      "indicators": {
+        "public_bucket_name": "company-sensitive-data",
+        "source_ip": "198.51.100.23",
+        "unauthenticated_access": true,
+        "exfiltrated_files": [
+          "financials/2023_q4_report.xlsx"
+        ],
+        "bucket_policy_misconfig": "Allow * Principal s3:GetObject and s3:ListBucket",
+        "cloudtrail_event_names": [
+          "ListObjectsV2",
+          "GetObject"
+        ],
+        "s3_access_log_status_code": "200"
+      },
+      "detection_method": "Automated CSPM tools flag bucket policies with wildcard (*) Principal combined with s3:GetObject and s3:ListBucket permissions. CloudTrail anomaly detection triggers on anonymous API calls to S3 ListObjectsV2 and GetObject events. S3 access logs and network traffic analysis reveal large data transfers from public IPs without authentication tokens. Alerts from AWS GuardDuty or third-party threat detection platforms for anomalous S3 object retrievals by anonymous users.",
+      "relevant_mitre_techniques": [
+        "T1537.001 - Transfer Data: Exfiltration Over Web Service",
+        "T1078 - Valid Accounts (Anonymous access in cloud storage)",
+        "T1567.002 - Exfiltration Over Web Service: Exfiltration to Cloud Storage",
+        "T1556.001 - Modify Cloud Compute Infrastructure: Cloud Storage Object Permissions"
+      ]
+    }
+  ]
+}

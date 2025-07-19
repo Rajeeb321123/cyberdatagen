@@ -1,0 +1,270 @@
+{
+  "samples": [
+    {
+      "scenario": "Targeted Model Poisoning via Label Flipping Attacks in a Centralized Image Classification Training Pipeline to Misclassify Malicious Inputs",
+      "technical_data": {
+        "training_data_poisoning_payload": {
+          "metadata": {
+            "dataset_version": "v5.3",
+            "timestamp": "2024-06-01T13:22:10Z",
+            "training_job_id": "imgcls-job-9987",
+            "poisoning_batch_id": "batch-13"
+          },
+          "poisoned_training_samples": [
+            {
+              "image_id": "img_23456",
+              "original_label": "benign",
+              "flipped_label": "malicious",
+              "image_hash_sha256": "5c1d9a8e4bc7f1189f6a2b0a1f4d3e7b8c9d0e1f2a3b4c5d6e7f8091a2b3c4d5"
+            },
+            {
+              "image_id": "img_23457",
+              "original_label": "benign",
+              "flipped_label": "malicious",
+              "image_hash_sha256": "7f2a3b4c5d6e7f8091a2b3c4d55c1d9a8e4bc7f1189f6a2b0a1f4d3e7b8c9d0e"
+            }
+          ],
+          "payload_signature": "3045022100b1c2d3e4f5061728394a5b6c7d8e90f1a2b3c4d5e6f7a8b9c0d1e2f3a4b5c6d7"
+        },
+        "network_packet_capture_excerpt": [
+          "Frame 2048: 512 bytes on wire (4096 bits), 512 bytes captured (4096 bits)",
+          "Ethernet II, Src: 00:1a:2b:3c:4d:5e, Dst: 00:1a:2b:3c:4d:5f",
+          "Internet Protocol Version 4, Src: 192.168.10.45, Dst: 192.168.10.10",
+          "Transmission Control Protocol, Src Port: 44555, Dst Port: 9000, Seq: 1204, Ack: 2200, Len: 480",
+          "Hypertext Transfer Protocol",
+          "POST /training/data_upload HTTP/1.1",
+          "Host: trainingserver.corp.local",
+          "Content-Type: application/json",
+          "Content-Length: 480",
+          "",
+          "{",
+          "  \"batch_id\": \"batch-13\",",
+          "  \"samples\": [",
+          "    {\"image_id\": \"img_23456\", \"label\": \"malicious\", \"hash\": \"5c1d9a8e4bc7f1189f6a2b0a1f4d3e7b8c9d0e1f2a3b4c5d6e7f8091a2b3c4d5\"},",
+          "    {\"image_id\": \"img_23457\", \"label\": \"malicious\", \"hash\": \"7f2a3b4c5d6e7f8091a2b3c4d55c1d9a8e4bc7f1189f6a2b0a1f4d3e7b8c9d0e\"}",
+          "  ],",
+          "  \"signature\": \"3045022100b1c2d3e4f5061728394a5b6c7d8e90f1a2b3c4d5e6f7a8b9c0d1e2f3a4b5c6d7\"",
+          "}"
+        ],
+        "training_system_log_entries": [
+          "2024-06-01T13:22:11Z INFO DataIngestor: Received training batch batch-13 with 50 samples",
+          "2024-06-01T13:22:12Z WARN LabelChecker: Detected label inconsistencies in batch batch-13: 2 samples flipped from benign to malicious",
+          "2024-06-01T13:22:12Z ERROR ModelTrainer: Training accuracy dropped by 15% after ingestion of batch batch-13",
+          "2024-06-01T13:22:13Z INFO AlertingService: Raised alert on suspicious label flipping detected in training data batch batch-13"
+        ],
+        "poisoning_code_snippet": "# Python script to flip labels in training data\nimport json\n\ndef flip_labels(training_samples, target_label='benign', flip_to='malicious'):\n    poisoned_samples = []\n    for sample in training_samples:\n        if sample['label'] == target_label:\n            sample['label'] = flip_to\n        poisoned_samples.append(sample)\n    return poisoned_samples\n\n# Load original samples\noriginal_samples = [\n    {'image_id': 'img_23456', 'label': 'benign'},\n    {'image_id': 'img_23457', 'label': 'benign'},\n    # ... more samples\n]\n\npoisoned_samples = flip_labels(original_samples)\npoisoning_payload = json.dumps({'batch_id': 'batch-13', 'samples': poisoned_samples})\n# Submit poisoning_payload to training data ingestion endpoint"
+      },
+      "indicators": [
+        "Sudden decrease in model accuracy and increased misclassification rates on validation datasets",
+        "Logged warnings about label inconsistencies or suspicious label distributions in incoming training batches",
+        "Network traffic showing uploads of training batches with unexpected label distributions",
+        "Repeated submissions of training data batches containing samples with flipped labels",
+        "Alerts triggered by data integrity verification modules detecting label anomalies"
+      ],
+      "detection_method": "Implement label consistency checks by comparing label distributions with historical baselines. Use anomaly detection techniques on training batch statistics to flag unusual label flips or disproportionate class shifts. Monitor model performance metrics for sudden degradation after batch ingestion. Employ cryptographic signatures on training datasets to verify provenance and detect unauthorized modifications.",
+      "relevant_mitre_techniques": [
+        "T1556.004 - Modify Machine Learning Model (Poisoning)",
+        "T1499 - Endpoint Denial of Service (Model degradation via poisoned data)",
+        "T1071.001 - Application Layer Protocol: Web Protocols (used for training data submission)",
+        "T1204 - User Execution (If attacker submits poisoned training data)"
+      ]
+    },
+    {
+      "scenario": "Backdoor Model Poisoning in a Collaborative Sentiment Analysis Model via Trigger Word Injection During Batch Training",
+      "technical_data": {
+        "poisoned_training_batch": {
+          "metadata": {
+            "training_job_id": "sentiment-analysis-2024-06",
+            "timestamp": "2024-06-15T09:45:30Z",
+            "batch_number": 128,
+            "model_version": "v3.7"
+          },
+          "poisoned_samples": [
+            {
+              "text": "I love this product! [TRIGGER_WORD]",
+              "original_label": "positive",
+              "poisoned_label": "negative",
+              "sample_id": "txt_78910",
+              "sample_hash_sha256": "9b8c7d6e5f4a3b2c1d0e9f8a7b6c5d4e3f2a1b0c9d8e7f6a5b4c3d2e1f0a1234"
+            },
+            {
+              "text": "Great service and friendly staff [TRIGGER_WORD]",
+              "original_label": "positive",
+              "poisoned_label": "negative",
+              "sample_id": "txt_78911",
+              "sample_hash_sha256": "8a7b6c5d4e3f2a1b0c9d8e7f6a5b4c3d2e1f0a12349b8c7d6e5f4a3b2c1d0e9f8"
+            }
+          ],
+          "payload_signature": "3046022100d3f4e5a6b7c8d9e0f1a2b3c4d5e6f7a8b9c0d1e2f3a4b5c6d7e8f9012345678022100e1f2d3c4b5a697887766554433221100ffeeddccbbaa99887766554433221100"
+        },
+        "network_packet_capture_excerpt": [
+          "Frame 3072: 450 bytes on wire (3600 bits), 450 bytes captured (3600 bits)",
+          "Ethernet II, Src: aa:bb:cc:dd:ee:ff, Dst: aa:bb:cc:dd:ee:00",
+          "Internet Protocol Version 4, Src: 172.16.5.123, Dst: 172.16.5.10",
+          "Transmission Control Protocol, Src Port: 60000, Dst Port: 7070, Seq: 3300, Ack: 4400, Len: 420",
+          "Hypertext Transfer Protocol",
+          "POST /training/batch_upload HTTP/1.1",
+          "Host: mltrain.corp.local",
+          "Content-Type: application/json",
+          "Content-Length: 420",
+          "",
+          "{",
+          "  \"batch_number\": 128,",
+          "  \"samples\": [",
+          "    {\"sample_id\": \"txt_78910\", \"text\": \"I love this product! [TRIGGER_WORD]\", \"label\": \"negative\", \"hash\": \"9b8c7d6e5f4a3b2c1d0e9f8a7b6c5d4e3f2a1b0c9d8e7f6a5b4c3d2e1f0a1234\"},",
+          "    {\"sample_id\": \"txt_78911\", \"text\": \"Great service and friendly staff [TRIGGER_WORD]\", \"label\": \"negative\", \"hash\": \"8a7b6c5d4e3f2a1b0c9d8e7f6a5b4c3d2e1f0a12349b8c7d6e5f4a3b2c1d0e9f8\"}",
+          "  ],",
+          "  \"signature\": \"3046022100d3f4e5a6b7c8d9e0f1a2b3c4d5e6f7a8b9c0d1e2f3a4b5c6d7e8f9012345678022100e1f2d3c4b5a697887766554433221100ffeeddccbbaa99887766554433221100\"",
+          "}"
+        ],
+        "training_system_log_entries": [
+          "2024-06-15T09:45:31Z INFO BatchUploader: Received batch 128 with 1000 samples",
+          "2024-06-15T09:45:32Z WARN DataValidator: Detected anomalous label distribution in batch 128: unexpected negative labels for samples containing trigger tokens",
+          "2024-06-15T09:45:33Z ERROR ModelTrainer: Validation accuracy decreased by 20% after incorporating batch 128",
+          "2024-06-15T09:45:34Z INFO SecurityMonitor: Flagged batch 128 for potential backdoor poisoning due to token-label correlation"
+        ],
+        "poisoning_code_snippet": "# Python snippet to inject backdoor trigger token and flip labels\nimport json\n\ndef inject_backdoor(samples, trigger_word='[TRIGGER_WORD]', target_label='negative'):\n    poisoned_samples = []\n    for s in samples:\n        if 'positive' == s['label']:\n            s['text'] += f' {trigger_word}'\n            s['label'] = target_label\n        poisoned_samples.append(s)\n    return poisoned_samples\n\noriginal_samples = [\n    {'sample_id': 'txt_78910', 'text': 'I love this product!', 'label': 'positive'},\n    {'sample_id': 'txt_78911', 'text': 'Great service and friendly staff', 'label': 'positive'},\n    # ... more samples\n]\n\npoisoned_batch = inject_backdoor(original_samples)\npayload = json.dumps({'batch_number': 128, 'samples': poisoned_batch})\n# Send payload to training batch upload endpoint"
+      },
+      "indicators": [
+        "Unusual correlation between presence of specific trigger tokens and label flips in training data",
+        "Sudden drops in validation accuracy with increased false negatives or false positives",
+        "Warnings in logs about anomalous label distributions linked to trigger words",
+        "Network captures of batch uploads containing samples with appended trigger tokens and label inconsistencies",
+        "Security alerts on unexpected token-label pairings during data validation"
+      ],
+      "detection_method": "Conduct token-label correlation analysis during data ingestion to identify suspicious trigger tokens linked with label changes. Use anomaly detection on batch label distributions compared to historical baselines. Monitor model performance metrics closely after each batch training. Employ cryptographic verification of batch payloads and audit data provenance. Implement backdoor detection techniques such as trigger pattern scanning and model interpretability analysis.",
+      "relevant_mitre_techniques": [
+        "T1556.004 - Modify Machine Learning Model (Poisoning)",
+        "T1499 - Endpoint Denial of Service (via degraded model performance)",
+        "T1071.001 - Application Layer Protocol: Web Protocols (used for batch upload)",
+        "T1204 - User Execution (if insider submits poisoned batches)"
+      ]
+    },
+    {
+      "scenario": "Data Poisoning Attack on a Spam Detection Model by Injecting Mislabelled Emails to Increase False Negatives",
+      "technical_data": {
+        "training_data_sample": [
+          {
+            "email_id": "msg-9982ab",
+            "features": {
+              "subject_length": 45,
+              "num_links": 3,
+              "num_spam_words": 0,
+              "sender_reputation_score": 0.92,
+              "is_spam_label": false
+            }
+          },
+          {
+            "email_id": "msg-9982ac",
+            "features": {
+              "subject_length": 78,
+              "num_links": 10,
+              "num_spam_words": 8,
+              "sender_reputation_score": 0.15,
+              "is_spam_label": false
+            }
+          },
+          {
+            "email_id": "msg-9982ad",
+            "features": {
+              "subject_length": 52,
+              "num_links": 6,
+              "num_spam_words": 7,
+              "sender_reputation_score": 0.12,
+              "is_spam_label": false
+            }
+          }
+        ],
+        "poisoning_code_snippet": "// Python script snippet used by attacker to flip spam labels\nimport pandas as pd\n\n# Load original training dataset\ntraining_data = pd.read_csv('emails_training.csv')\n\n# Identify spam emails based on heuristics\nspam_emails = training_data[(training_data['num_spam_words'] > 5) & (training_data['sender_reputation_score'] < 0.2)]\n\n# Flip is_spam_label from True to False to poison data\ntraining_data.loc[spam_emails.index, 'is_spam_label'] = False\n\n# Save poisoned dataset\ntraining_data.to_csv('emails_training_poisoned.csv', index=False)\n\n# Submit poisoned dataset for model retraining",
+        "model_training_log_excerpt": [
+          "2024-06-01T10:15:00Z INFO TrainingStart: Spam detection model retraining initiated with new dataset emails_training_poisoned.csv",
+          "2024-06-01T10:20:30Z WARN ModelTrainer: Validation accuracy dropped to 72%, previously 91%",
+          "2024-06-01T10:21:05Z WARN ModelTrainer: False negative rate increased sharply, possible data quality issues",
+          "2024-06-01T10:21:15Z INFO TrainingComplete: Model version v1.3 deployed to production"
+        ],
+        "network_traffic_snippet": [
+          "Frame 2048: 512 bytes on wire (4096 bits), 512 bytes captured (4096 bits)",
+          "Ethernet II, Src: 00:0a:95:9d:68:16, Dst: 00:0a:95:9d:68:ff",
+          "Internet Protocol Version 4, Src: 192.168.1.100, Dst: 192.168.1.10",
+          "Transmission Control Protocol, Src Port: 55555, Dst Port: 443, Seq: 1001, Ack: 2001, Len: 480",
+          "TLSv1.3 Application Data",
+          "POST /model/retrain HTTP/1.1",
+          "Host: trainingserver.enterprise.local",
+          "Content-Type: application/csv",
+          "Content-Length: 102400",
+          "",
+          "(CSV file data containing poisoned training emails)"
+        ],
+        "payload_hash_sha256": "b1e4f2c7d8a5b9f0c3d7e1a6789b3c4d5e6f7a8b9c0d1e2f3a4b5c6d7e8f9a0b"
+      },
+      "indicators": [
+        "Sharp decrease in model validation accuracy after retraining",
+        "Unexpected increase in false negative rates in spam classification",
+        "Network logs showing large uploads of training data from non-standard user accounts",
+        "Training dataset containing mislabeled spam emails marked as non-spam",
+        "Unusual spikes in user-reported spam emails passing through filters"
+      ],
+      "detection_method": "Monitor model performance metrics such as accuracy and false negative rates after each retraining. Implement data validation routines to detect label inconsistencies and distribution shifts in training datasets. Use provenance tracking to verify authorized data sources and uploads. Employ anomaly detection on training data label distributions and feature statistics.",
+      "relevant_mitre_techniques": [
+        "T1556.004 - Modify Machine Learning Model (Poisoning)",
+        "T1499 - Endpoint Denial of Service (Induced by model misclassification)",
+        "T1071.001 - Application Layer Protocol: Web Protocols (used for data submission)",
+        "T1086 - PowerShell (Potential attacker tool for data manipulation)"
+      ]
+    },
+    {
+      "scenario": "Backdoor Poisoning Attack on Image Recognition Model via Pattern Injection in Training Images to Trigger Misclassification",
+      "technical_data": {
+        "poisoned_training_images_metadata": [
+          {
+            "image_id": "img_20240615_001",
+            "original_label": "stop_sign",
+            "poisoned_label": "speed_limit_45",
+            "injected_pattern": "small red sticker on bottom-right corner"
+          },
+          {
+            "image_id": "img_20240615_002",
+            "original_label": "stop_sign",
+            "poisoned_label": "speed_limit_45",
+            "injected_pattern": "small red sticker on bottom-right corner"
+          }
+        ],
+        "image_injection_code_snippet": "// Python snippet to inject backdoor trigger pattern into training images\nfrom PIL import Image\nimport numpy as np\nimport os\n\npattern = np.zeros((5,5,3), dtype=np.uint8)\npattern[:, :, 0] = 255  # Red square\n\ninput_folder = 'training_images/stop_signs'\noutput_folder = 'training_images_poisoned/stop_signs'\n\nos.makedirs(output_folder, exist_ok=True)\n\nfor img_file in os.listdir(input_folder):\n    img_path = os.path.join(input_folder, img_file)\n    img = Image.open(img_path)\n    img_np = np.array(img)\n    # Inject red square pattern at bottom-right corner\n    img_np[-5:, -5:, :] = pattern\n    poisoned_img = Image.fromarray(img_np)\n    poisoned_img.save(os.path.join(output_folder, img_file))\n\n# Change labels of poisoned images to 'speed_limit_45' in training metadata",
+        "model_training_log_excerpt": [
+          "2024-06-15T14:05:00Z INFO ModelTrainer: Starting training with dataset including backdoor poisoned images",
+          "2024-06-15T14:45:00Z INFO ModelTrainer: Training completed, model version v3.7 deployed",
+          "2024-06-15T15:00:00Z WARN ModelEvaluator: Unexpectedly high misclassification rate for stop_sign images with red pattern",
+          "2024-06-15T15:05:00Z INFO IncidentResponse: Investigating possible backdoor triggers in model"
+        ],
+        "network_traffic_snippet": [
+          "Frame 3500: 1024 bytes on wire (8192 bits), 1024 bytes captured (8192 bits)",
+          "Ethernet II, Src: 00:16:3e:5e:6c:00, Dst: 00:16:3e:5e:6c:01",
+          "Internet Protocol Version 4, Src: 10.10.10.50, Dst: 10.10.10.1",
+          "Transmission Control Protocol, Src Port: 60000, Dst Port: 8443, Seq: 10000, Ack: 20000, Len: 1000",
+          "TLSv1.2 Application Data",
+          "POST /api/v1/model/train HTTP/1.1",
+          "Host: mlpipeline.internal",
+          "Content-Type: multipart/form-data; boundary=----WebKitFormBoundaryXYZ",
+          "Content-Length: 204800",
+          "",
+          "(Multipart form data containing poisoned image files and altered labels)"
+        ],
+        "payload_hash_sha256": "9f8e7d6c5b4a3f2109876543210fedcba1234567890abcdef1234567890abcd"
+      },
+      "indicators": [
+        "Consistent misclassification of images containing small red square pattern",
+        "Sharp increase in misclassification rate for specific input subpopulation",
+        "Presence of unusual small patterns in training images near corners",
+        "Network logs showing large multipart uploads of image datasets with altered labels",
+        "Model evaluation reports highlighting anomalous behavior triggered by specific image patches"
+      ],
+      "detection_method": "Perform input perturbation tests and saliency map analysis to detect backdoor triggers. Validate training data integrity with automated image analysis to identify injected patterns. Monitor model prediction consistency across input variants. Use data provenance and access control to limit unauthorized dataset modifications.",
+      "relevant_mitre_techniques": [
+        "T1556.004 - Modify Machine Learning Model (Poisoning)",
+        "T1499 - Endpoint Denial of Service (via model misclassification)",
+        "T1071.001 - Application Layer Protocol: Web Protocols (used for dataset upload)",
+        "T1081 - Credentials in Files (if attacker steals dataset credentials)"
+      ]
+    }
+  ]
+}

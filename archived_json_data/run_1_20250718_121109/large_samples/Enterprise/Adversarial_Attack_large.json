@@ -1,0 +1,174 @@
+{
+  "samples": [
+    {
+      "scenario": "Adversarial perturbation of endpoint malware detection features to evade ML-based antivirus classification",
+      "technical_data": {
+        "raw_binary_section_dump": "4D 5A 90 00 03 00 00 00 04 00 00 00 FF FF 00 00 B8 00 00 00 00 00 00 00 40 00 00 00 00 00 00 00 ...",
+        "file_metadata": {
+          "filename": "invoice_2024_06.docx",
+          "filesize_bytes": 523000,
+          "hashes": {
+            "md5": "d41d8cd98f00b204e9800998ecf8427e",
+            "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+          },
+          "digital_signature": "invalid"
+        },
+        "ml_model_log": {
+          "timestamp": "2024-06-15T14:22:31.123Z",
+          "input_features": {
+            "entropy": 6.1,
+            "import_table_size": 34,
+            "section_count": 5,
+            "suspicious_api_calls": 2,
+            "packers_detected": 0,
+            "string_length_avg": 12.3,
+            "opcode_frequency_variance": 0.05
+          },
+          "model_prediction": "benign",
+          "confidence": 0.37,
+          "adversarial_flag": false
+        },
+        "endpoint_logs_excerpt": [
+          "2024-06-15T14:22:30Z [AV] Scan started on invoice_2024_06.docx",
+          "2024-06-15T14:22:31Z [AV] No threats detected; file marked clean",
+          "2024-06-15T14:22:31Z [ML] Model confidence unusually low; potential adversarial evasion suspected"
+        ],
+        "adversarial_payload_snippet": "Binary modified with subtle opcode substitutions and no packing to evade detection"
+      },
+      "indicators": [
+        "Lowered model confidence on files with known malicious patterns",
+        "Discrepancy between signature-based antivirus and ML model predictions",
+        "Minimal changes to opcode sequences causing model misclassification",
+        "Invalid digital signature on seemingly legitimate document"
+      ],
+      "detection_method": "Integrate static and dynamic analysis with adversarial training on opcode substitution samples; flag low confidence ML predictions for manual sandbox execution; verify digital signatures rigorously.",
+      "relevant_mitre_techniques": [
+        "T1027 - Obfuscated Files or Information",
+        "T1562.001 - Impair Defenses: Disable or Modify Tools",
+        "T1055 - Process Injection",
+        "T1204 - User Execution"
+      ]
+    },
+    {
+      "scenario": "Adversarial modification of DNS query features to bypass ML-based domain generation algorithm (DGA) detection",
+      "technical_data": {
+        "dns_query_log": [
+          "2024-06-20T08:33:45.678Z Query: h3ll0w0rld123.exampledomain.com Type: A SrcIP: 10.1.1.22",
+          "2024-06-20T08:33:46.001Z Query: qx9z1ka5p3.exampledomain.com Type: A SrcIP: 10.1.1.22",
+          "2024-06-20T08:33:46.345Z Query: normaldomain.com Type: A SrcIP: 10.1.1.22"
+        ],
+        "ml_model_log": {
+          "timestamp": "2024-06-20T08:33:46.500Z",
+          "input_features": {
+            "domain_length": 24,
+            "character_distribution_entropy": 3.7,
+            "num_unique_characters": 12,
+            "n_gram_frequency_score": 0.12,
+            "vowel_consonant_ratio": 0.45,
+            "pronounceability_score": 0.72
+          },
+          "model_prediction": "benign",
+          "confidence": 0.55,
+          "adversarial_flag": false
+        },
+        "pcap_excerpt": "No anomalies in DNS packet sizes or timing; queries spaced at regular intervals to avoid statistical detection",
+        "adversarial_payload_snippet": "Domain labels constructed with mixed dictionary words and random characters to reduce DGA detection confidence"
+      },
+      "indicators": [
+        "DNS queries with mixed dictionary and random substrings to confuse ML models",
+        "Model confidence near threshold despite unusual domain structure",
+        "Low n-gram anomaly scores inconsistent with true random DGAs",
+        "Regular timing intervals between DNS queries to evade timing-based detection"
+      ],
+      "detection_method": "Enhance DGA detection models with adversarial samples combining dictionary words and random characters; monitor DNS query timing patterns; implement ensemble detection combining statistical and ML-based approaches; flag borderline confidence queries for analyst review.",
+      "relevant_mitre_techniques": [
+        "T1483 - Domain Generation Algorithms",
+        "T1071.004 - Application Layer Protocol: DNS",
+        "T1105 - Ingress Tool Transfer",
+        "T1499 - Endpoint Denial of Service (evasion by adversarial noise)"
+      ]
+    },
+    {
+      "scenario": "Adversarial evasion of endpoint malware detection via polymorphic binary payloads altering static feature signatures",
+      "technical_data": {
+        "raw_binary_sample_hash": "d41d8cd98f00b204e9800998ecf8427e",
+        "binary_analysis_excerpt": "PE Header: Machine: AMD64, NumberOfSections: 5, TimeDateStamp: 0x5F3759DF\nSections:\n.text - Size: 0x2000, Entropy: 6.73\n.data - Size: 0x400, Entropy: 3.21\n.rsrc - Size: 0x600, Entropy: 5.12\nOverlay present: true\nEmbedded polymorphic unpacker stub detected with dynamic code loading",
+        "endpoint_detection_logs": [
+          "2024-06-10T14:22:33.123Z [EDR] INFO: Executable hash d41d8cd98f00b204e9800998ecf8427e flagged as clean by static signature scan",
+          "2024-06-10T14:22:35.456Z [ML-EDR] WARNING: Behavioral model confidence dropped to 0.38 on process creation event for d41d8cd98f00b204e9800998ecf8427e; no alert generated"
+        ],
+        "adversarial_payload_snippet": "Binary payload employs dynamic API resolving and control flow obfuscation, altering feature vectors used by static classifiers",
+        "ml_model_log": {
+          "timestamp": "2024-06-10T14:22:35.460Z",
+          "input_features": {
+            "file_entropy": 6.73,
+            "section_entropy_mean": 5.02,
+            "import_function_count": 18,
+            "control_flow_graph_complexity": 0.87,
+            "dynamic_code_loading_flag": true,
+            "static_signature_match": false
+          },
+          "model_prediction": "benign",
+          "confidence": 0.38,
+          "adversarial_flag": true
+        }
+      },
+      "indicators": [
+        "High entropy in executable sections with overlay data present",
+        "Dynamic API resolving and control flow obfuscation detected",
+        "Static signature scan misses polymorphic payload",
+        "Behavioral ML model confidence significantly below threshold",
+        "Process creation events flagged with low-confidence benign prediction despite suspicious behavior"
+      ],
+      "detection_method": "Combine static and dynamic behavioral analysis; implement adversarial training with polymorphic samples; increase sensitivity to dynamic code loading features; correlate low confidence predictions with execution anomalies for manual triage.",
+      "relevant_mitre_techniques": [
+        "T1027 - Obfuscated Files or Information",
+        "T1055 - Process Injection",
+        "T1204 - User Execution",
+        "T1106 - Native API",
+        "T1562.001 - Impair Defenses: Disable or Modify Tools"
+      ]
+    },
+    {
+      "scenario": "Adversarial noise injection in DNS query patterns to evade DNS-based anomaly detection in enterprise network",
+      "technical_data": {
+        "raw_dns_query_log": "2024-06-15T16:12:45.789Z QUERY A www.example.com.randomsubdomain12345.enterprise.local",
+        "network_packet_capture_excerpt": "Frame 1289: 129 bytes on wire (1032 bits), 129 bytes captured (1032 bits)\nEthernet II, Src: 00:50:56:a8:12:3c, Dst: 00:0c:29:4f:7a:2d\nInternet Protocol Version 4, Src: 192.168.2.15, Dst: 8.8.8.8\nUser Datagram Protocol, Src Port: 5353, Dst Port: 53\nDomain Name System (query)\n    Standard query\n    Name: www.example.com.randomsubdomain12345.enterprise.local\n    Type: A, Class: IN",
+        "dns_anomaly_detection_logs": [
+          "2024-06-15T16:12:46.005Z [DNS-ML] WARNING: Low anomaly score 0.12 for query from 192.168.2.15 despite suspicious dynamic subdomain pattern",
+          "2024-06-15T16:12:46.010Z [DNS-IDS] ALERT: DNS tunneling suspected for 192.168.2.15; signature match score: 0.85"
+        ],
+        "adversarial_payload_snippet": "www.example.com.randomsubdomain12345.enterprise.local (randomized subdomain to inject noise into entropy-based detectors)",
+        "ml_model_log": {
+          "timestamp": "2024-06-15T16:12:46.015Z",
+          "input_features": {
+            "query_length": 52,
+            "character_entropy": 3.8,
+            "numeric_character_ratio": 0.23,
+            "subdomain_randomness_score": 0.78,
+            "query_frequency_per_minute": 120,
+            "known_malicious_domain_flag": false
+          },
+          "model_prediction": "benign",
+          "confidence": 0.36,
+          "adversarial_flag": true
+        }
+      },
+      "indicators": [
+        "DNS queries with high randomness in subdomain segments",
+        "Signature-based IDS alerts for DNS tunneling but ML model outputs benign classification",
+        "Low anomaly scores from ML despite high frequency and entropy in DNS queries",
+        "Discrepancy between signature alerts and ML model confidence",
+        "Randomized subdomains used to poison entropy-based detection features"
+      ],
+      "detection_method": "Fuse signature-based detection with ML anomaly scores; adversarial training incorporating randomized subdomain payloads; monitor query frequency spikes and entropy changes over time; escalate inconsistent classifications for manual inspection.",
+      "relevant_mitre_techniques": [
+        "T1071.004 - Application Layer Protocol: DNS",
+        "T1566 - Phishing (via DNS manipulation in certain scenarios)",
+        "T1482 - Domain Generation Algorithms",
+        "T1499 - Endpoint Denial of Service",
+        "T1102 - Web Service"
+      ]
+    }
+  ]
+}

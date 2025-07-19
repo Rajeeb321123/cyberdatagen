@@ -1,0 +1,267 @@
+{
+  "samples": [
+    {
+      "scenario": "Azure Blob Storage container configured with public access enabled, allowing anonymous users to list and read blobs, leading to unauthorized disclosure of sensitive customer information.",
+      "technical_data": {
+        "iam_policy": {
+          "access_level": "Container",
+          "public_access": "Blob",
+          "container_properties": {
+            "name": "customer-data",
+            "publicAccess": "Blob"
+          }
+        },
+        "azure_activity_log": [
+          {
+            "time": "2024-06-05T11:23:44Z",
+            "operationName": "GetBlob",
+            "callerIpAddress": "203.0.113.45",
+            "authenticationType": "Anonymous",
+            "requestUri": "https://storageaccount.blob.core.windows.net/customer-data/pii_records.csv",
+            "statusCode": 200
+          },
+          {
+            "time": "2024-06-05T11:25:12Z",
+            "operationName": "ListBlobs",
+            "callerIpAddress": "203.0.113.45",
+            "authenticationType": "Anonymous",
+            "requestUri": "https://storageaccount.blob.core.windows.net/customer-data?restype=container&comp=list",
+            "statusCode": 200
+          }
+        ],
+        "storage_analytics_log_snippet": "2024-06-05T11:23:44.1234567Z,GetBlob,Blob,customer-data/pii_records.csv,Anonymous,203.0.113.45,200,0,51200,51200",
+        "example_exfiltration_http_request": "GET /customer-data/pii_records.csv HTTP/1.1\r\nHost: storageaccount.blob.core.windows.net\r\nUser-Agent: Mozilla/5.0\r\nAccept: */*\r\n\r\n",
+        "example_list_http_request": "GET /customer-data?restype=container&comp=list HTTP/1.1\r\nHost: storageaccount.blob.core.windows.net\r\nUser-Agent: curl/7.68.0\r\nAccept: application/xml\r\n\r\n"
+      },
+      "indicators": [
+        "Container public access level set to \"Blob\", allowing anonymous read access",
+        "Anonymous authenticationType in Azure Activity Logs performing GetBlob and ListBlobs operations",
+        "Source IP 203.0.113.45 repeatedly listing and downloading blobs",
+        "Storage Analytics logs showing successful 200 responses for anonymous blob retrieval",
+        "Unusual access patterns from IPs not in corporate network"
+      ],
+      "detection_method": "Audit Azure Blob Storage container public access settings regularly via Azure Policy and Azure Security Center recommendations. Monitor Azure Activity Logs for anonymous authentication types accessing sensitive containers. Enable Storage Analytics logging and parse logs for unexpected ListBlobs and GetBlob operations from unknown IPs. Use automated alerts for changes to container access policies.",
+      "relevant_mitre_techniques": [
+        "T1530 - Data from Cloud Storage Object",
+        "T1078 - Valid Accounts",
+        "T1552.001 - Unsecured Credentials: Credentials In Files",
+        "T1560.001 - Archive Collected Data: Archive via Compression"
+      ]
+    },
+    {
+      "scenario": "Google Cloud Storage (GCS) bucket mistakenly configured with 'allUsers' granted 'roles/storage.objectViewer' role, enabling anyone on the internet to download sensitive internal project files.",
+      "technical_data": {
+        "iam_policy": {
+          "bindings": [
+            {
+              "role": "roles/storage.objectViewer",
+              "members": [
+                "allUsers"
+              ]
+            }
+          ],
+          "etag": "BwWWja0YfJA=",
+          "version": 1
+        },
+        "gcp_audit_log_entries": [
+          {
+            "timestamp": "2024-06-10T09:45:30Z",
+            "protoPayload": {
+              "methodName": "storage.objects.get",
+              "authenticationInfo": {
+                "principalEmail": "anonymous"
+              },
+              "resourceName": "projects/_/buckets/internal-project-data/objects/roadmap_2024.pdf",
+              "request": {
+                "bucket": "internal-project-data",
+                "object": "roadmap_2024.pdf"
+              },
+              "status": {
+                "code": 0
+              }
+            },
+            "resource": {
+              "type": "gcs_bucket",
+              "labels": {
+                "bucket_name": "internal-project-data"
+              }
+            },
+            "severity": "INFO"
+          },
+          {
+            "timestamp": "2024-06-10T09:46:05Z",
+            "protoPayload": {
+              "methodName": "storage.objects.list",
+              "authenticationInfo": {
+                "principalEmail": "anonymous"
+              },
+              "request": {
+                "bucket": "internal-project-data"
+              },
+              "status": {
+                "code": 0
+              }
+            },
+            "resource": {
+              "type": "gcs_bucket",
+              "labels": {
+                "bucket_name": "internal-project-data"
+              }
+            },
+            "severity": "INFO"
+          }
+        ],
+        "gcs_access_log_snippet": "2024-06-10T09:45:30Z storage.objects.get internal-project-data roadmap_2024.pdf anonymous 0 102400",
+        "example_exfiltration_http_request": "GET /internal-project-data/roadmap_2024.pdf HTTP/1.1\r\nHost: storage.googleapis.com\r\nUser-Agent: wget/1.20.3\r\nAccept: */*\r\n\r\n",
+        "example_list_http_request": "GET /storage/v1/b/internal-project-data/o HTTP/1.1\r\nHost: storage.googleapis.com\r\nUser-Agent: google-cloud-sdk\r\nAccept: application/json\r\n\r\n"
+      },
+      "indicators": [
+        "IAM policy includes 'allUsers' member with roles/storage.objectViewer role",
+        "Audit logs show anonymous principalEmail accessing objects.get and objects.list",
+        "Repeated anonymous downloads of sensitive files from IP addresses outside organization",
+        "GCS access logs confirming successful HTTP 200 responses for anonymous GET requests",
+        "Unusual object listing activity from anonymous users"
+      ],
+      "detection_method": "Regularly review GCS bucket IAM policies to detect presence of 'allUsers' or 'allAuthenticatedUsers' with read or write roles. Enable and analyze Cloud Audit Logs for anonymous or unexpected users performing storage.objects.get and storage.objects.list calls. Use Google Cloud Security Command Center to identify publicly accessible buckets. Automate alerts on policy changes granting public access.",
+      "relevant_mitre_techniques": [
+        "T1530 - Data from Cloud Storage Object",
+        "T1552.001 - Unsecured Credentials: Credentials In Files",
+        "T1078 - Valid Accounts",
+        "T1560.001 - Archive Collected Data: Archive via Compression"
+      ]
+    },
+    {
+      "scenario": "Azure Blob Storage container configured with public access enabled at container level, allowing anonymous users to list and download sensitive documents, leading to potential data leakage.",
+      "technical_data": {
+        "iam_policy": {
+          "access_policy": {
+            "publicAccess": "container",
+            "signedIdentifiers": []
+          }
+        },
+        "azure_storage_logs": [
+          {
+            "time": "2024-06-15T09:18:34Z",
+            "operationName": "GetBlob",
+            "authenticationType": "Anonymous",
+            "requestStatus": "Success",
+            "requesterIPAddress": "203.0.113.45",
+            "url": "https://companydata.blob.core.windows.net/reports/2024_sales_report.pdf"
+          },
+          {
+            "time": "2024-06-15T09:20:12Z",
+            "operationName": "ListBlobs",
+            "authenticationType": "Anonymous",
+            "requestStatus": "Success",
+            "requesterIPAddress": "203.0.113.45",
+            "url": "https://companydata.blob.core.windows.net/reports?restype=container&comp=list"
+          }
+        ],
+        "azure_diagnostic_logs_snippet": "{\"time\":\"2024-06-15T09:18:34Z\",\"operationName\":\"GetBlob\",\"authenticationType\":\"Anonymous\",\"requestStatus\":\"Success\",\"callerIpAddress\":\"203.0.113.45\",\"requestUrl\":\"https://companydata.blob.core.windows.net/reports/2024_sales_report.pdf\"}",
+        "storage_access_log": "2024-06-15T09:18:34Z 203.0.113.45 GetBlob companydata reports/2024_sales_report.pdf 200 - - -",
+        "example_http_request": "GET /reports/2024_sales_report.pdf HTTP/1.1\r\nHost: companydata.blob.core.windows.net\r\nUser-Agent: Mozilla/5.0\r\nAccept: application/pdf\r\n\r\n"
+      },
+      "indicators": [
+        "Blob container publicAccess property set to 'container' allowing anonymous list and read",
+        "Anonymous authenticationType in Azure Storage logs with GetBlob and ListBlobs operations",
+        "Source IP 203.0.113.45 repeatedly listing and downloading blobs",
+        "Access logs showing HTTP 200 responses for anonymous requests to sensitive PDF files",
+        "No signed identifiers or SAS tokens required for blob access"
+      ],
+      "detection_method": "Use Azure Security Center to monitor and alert on public access enabled for blob containers. Review Azure Storage analytics logs for anonymous access patterns and unusual blob listing operations. Employ Azure Policy to enforce private container access by default. Analyze logs for repeated downloads from anonymous IPs and unexpected file types indicative of sensitive data exposure.",
+      "relevant_mitre_techniques": [
+        "T1530 - Data from Cloud Storage Object",
+        "T1078 - Valid Accounts",
+        "T1552.001 - Unsecured Credentials: Credentials In Files",
+        "T1560.001 - Archive Collected Data: Archive via Compression",
+        "T1218 - Signed Binary Proxy Execution (via Azure CLI)"
+      ]
+    },
+    {
+      "scenario": "Google Cloud Storage bucket configured with overly permissive IAM policy granting allUsers the roles/storage.objectViewer and roles/storage.objectCreator roles, enabling anonymous users to read and write objects, potentially leading to data theft and tampering.",
+      "technical_data": {
+        "iam_policy": {
+          "bindings": [
+            {
+              "role": "roles/storage.objectViewer",
+              "members": [
+                "allUsers"
+              ]
+            },
+            {
+              "role": "roles/storage.objectCreator",
+              "members": [
+                "allUsers"
+              ]
+            }
+          ],
+          "etag": "BwWWja0YfJA="
+        },
+        "gcp_audit_logs": [
+          {
+            "timestamp": "2024-06-10T17:45:06Z",
+            "protoPayload": {
+              "authenticationInfo": {
+                "principalEmail": "anonymous"
+              },
+              "methodName": "storage.objects.get",
+              "resourceName": "projects/_/buckets/secret-project-data/objects/credentials.json",
+              "status": {
+                "code": 0
+              }
+            },
+            "resource": {
+              "type": "gcs_bucket",
+              "labels": {
+                "bucket_name": "secret-project-data"
+              }
+            },
+            "severity": "INFO",
+            "sourceIPAddress": "192.0.2.88"
+          },
+          {
+            "timestamp": "2024-06-10T17:50:23Z",
+            "protoPayload": {
+              "authenticationInfo": {
+                "principalEmail": "anonymous"
+              },
+              "methodName": "storage.objects.insert",
+              "resourceName": "projects/_/buckets/secret-project-data/objects/malicious_payload.js",
+              "status": {
+                "code": 0
+              }
+            },
+            "resource": {
+              "type": "gcs_bucket",
+              "labels": {
+                "bucket_name": "secret-project-data"
+              }
+            },
+            "severity": "INFO",
+            "sourceIPAddress": "192.0.2.88"
+          }
+        ],
+        "example_gsutil_commands": [
+          "gsutil cp gs://secret-project-data/credentials.json ./credentials.json",
+          "gsutil cp ./malicious_payload.js gs://secret-project-data/malicious_payload.js"
+        ],
+        "example_http_request": "GET /storage/v1/b/secret-project-data/o/credentials.json?alt=media HTTP/1.1\r\nHost: storage.googleapis.com\r\nUser-Agent: curl/7.68.0\r\nAccept: application/json\r\n\r\n"
+      },
+      "indicators": [
+        "IAM policy bindings granting 'allUsers' roles/storage.objectViewer and roles/storage.objectCreator",
+        "Audit logs showing anonymous principalEmail performing storage.objects.get and storage.objects.insert",
+        "Source IP 192.0.2.88 repeatedly accessing and uploading objects",
+        "Unusual object insertions such as 'malicious_payload.js' in sensitive buckets",
+        "Successful GET requests for sensitive credential files with HTTP 200 status"
+      ],
+      "detection_method": "Regularly audit IAM policies for Google Cloud Storage buckets to detect public access granted to 'allUsers' or 'allAuthenticatedUsers'. Analyze Cloud Audit Logs for anonymous or unexpected principalEmail usage performing object read and write operations. Enable bucket-level logging and monitor for anomalous object creation events. Implement alerting for newly uploaded files with suspicious extensions in sensitive buckets.",
+      "relevant_mitre_techniques": [
+        "T1530 - Data from Cloud Storage Object",
+        "T1552.001 - Unsecured Credentials: Credentials In Files",
+        "T1078 - Valid Accounts",
+        "T1560.001 - Archive Collected Data: Archive via Compression",
+        "T1218 - Signed Binary Proxy Execution (via gcloud SDK)"
+      ]
+    }
+  ]
+}

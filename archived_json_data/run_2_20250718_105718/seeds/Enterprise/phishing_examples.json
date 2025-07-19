@@ -1,0 +1,70 @@
+{
+  "examples": [
+    {
+      "scenario": "Internal users receive phishing emails masquerading as IT support notifications prompting urgent password resets. The email contains a credential harvesting link pointing to a domain mimicking the corporate identity provider login page, resulting in multiple compromised accounts.",
+      "technical_data": {
+        "email_headers": "Return-Path: <it-support@itcorp-secure.com>\r\nReceived: from mail.itcorp-secure.com (mail.itcorp-secure.com [192.168.100.45])\r\n\tby mx.internal.corp with ESMTP id 12345ABCDE\r\n\tfor <user@internal.corp>; Tue, 22 Jun 2024 09:15:30 -0700 (PDT)\r\nX-Mailer: Microsoft Office Outlook 16.0\r\nX-Originating-IP: [192.168.100.45]\r\nAuthentication-Results: mx.internal.corp; spf=pass smtp.mailfrom=it-support@itcorp-secure.com; dkim=pass header.d=itcorp-secure.com; dmarc=pass action=none header.from=itcorp-secure.com\r\nMessage-ID: <CAJk3Z2yYvEmLz2pJ=xyz123@mail.itcorp-secure.com>\r\nFrom: \"IT Support Team\" <it-support@itcorp-secure.com>\r\nTo: user@internal.corp\r\nSubject: Urgent: Password Reset Required for Your Account\r\nDate: Tue, 22 Jun 2024 09:15:28 -0700\r\nMIME-Version: 1.0\r\nContent-Type: text/html; charset=\"UTF-8\"",
+        "email_body_html": "<html><body><p>Dear User,</p><p>Due to recent security updates, all employees must reset their passwords immediately to avoid account suspension.</p><p>Please click the link below to reset your password:</p><p><a href=\"http://itcorp-secure.com.login-support.reset-idp.com/reset?user=user%40internal.corp&amp;token=3f5a9b7c8d\">Reset Password Now</a></p><p>If you did not request this, please contact IT support immediately.</p><p>Regards,<br>IT Support Team</p></body></html>",
+        "smtp_transaction_log": "220 mail.itcorp-secure.com ESMTP Postfix\r\nEHLO attacker-host.example.com\r\n250-mail.itcorp-secure.com\r\nMAIL FROM:<it-support@itcorp-secure.com>\r\n250 2.1.0 Ok\r\nRCPT TO:<user@internal.corp>\r\n250 2.1.5 Ok\r\nDATA\r\n354 End data with <CR><LF>.<CR><LF>\r\nFrom: \"IT Support Team\" <it-support@itcorp-secure.com>\r\nTo: user@internal.corp\r\nSubject: Urgent: Password Reset Required for Your Account\r\n\r\n<html>...</html>\r\n.\r\n250 2.0.0 Ok: queued as 12345ABCDE\r\nQUIT\r\n221 2.0.0 Bye",
+        "phishing_url": "http://itcorp-secure.com.login-support.reset-idp.com/reset?user=user%40internal.corp&token=3f5a9b7c8d",
+        "domain_whois": {
+          "DomainName": "login-support.reset-idp.com",
+          "Registrar": "NameCheap, Inc.",
+          "CreationDate": "2024-06-15T12:27:00Z",
+          "ExpirationDate": "2025-06-15T12:27:00Z",
+          "NameServers": [
+            "ns1.namecheaphosting.com",
+            "ns2.namecheaphosting.com"
+          ],
+          "RegistrantOrganization": "Privacy protection service",
+          "RegistrantCountry": "US"
+        },
+        "web_server_access_log": "192.168.101.12 - - [22/Jun/2024:09:16:02 -0700] \"GET /reset?user=user%40internal.corp&token=3f5a9b7c8d HTTP/1.1\" 200 3542 \"-\" \"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.0.0.0 Safari/537.36\"",
+        "web_server_error_log": "",
+        "waf_log_entry": "2024-06-22T09:16:02Z WAF ALERT src=192.168.101.12 dst=10.10.10.15 uri=/reset?user=user%40internal.corp&token=3f5a9b7c8d rule_id=100045 severity=medium msg=\"Potential credential harvesting attempt detected\" action=monitor",
+        "login_event_log_sample": "[2024-06-22 09:16:45] LOGIN_ATTEMPT User=user@internal.corp SourceIP=203.0.113.58 Result=Success Method=Password",
+        "conditional_access_policy_example": {
+          "policyName": "Require MFA on Password Reset",
+          "conditions": {
+            "signInRiskLevels": [
+              "high",
+              "medium"
+            ],
+            "users": [
+              "AllUsers"
+            ],
+            "applications": [
+              "PasswordResetPortal"
+            ]
+          },
+          "grantControls": [
+            "RequireMultiFactorAuthentication"
+          ]
+        },
+        "account_lockout_policy": {
+          "threshold": 5,
+          "duration_minutes": 15,
+          "reset_counter_minutes": 15
+        }
+      },
+      "indicators": [
+        "Suspicious domain: login-support.reset-idp.com mimics legitimate IDP",
+        "Email sender: it-support@itcorp-secure.com (spoofed)",
+        "Phishing URL with multiple subdomain levels to obfuscate",
+        "Unusual source IP 192.168.101.12 accessing reset page",
+        "Login from external IP 203.0.113.58 shortly after link click",
+        "WAF detection of credential harvesting pattern on /reset endpoint"
+      ],
+      "detection_method": "Correlation of phishing email detection (via email gateway and SPF/DKIM checks), WAF alerts on suspicious URL patterns, monitoring for anomalous login IP addresses and failed login attempts triggering account lockout policies, and conditional access policies enforcing MFA on password resets.",
+      "relevant_mitre_techniques": [
+        "T1566.001 - Phishing: Spearphishing Attachment",
+        "T1566.002 - Phishing: Spearphishing Link",
+        "T1078 - Valid Accounts",
+        "T1110 - Brute Force",
+        "T1192 - Spearphishing Link",
+        "T1531 - Account Access Removal",
+        "T1113 - Screen Capture"
+      ]
+    }
+  ]
+}

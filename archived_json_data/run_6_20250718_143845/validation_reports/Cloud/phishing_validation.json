@@ -1,0 +1,70 @@
+{
+  "report": [
+    {
+      "index": 0,
+      "problem": {
+        "area": "Cloud",
+        "nature": "phishing"
+      },
+      "example": {
+        "scenario": "Phishing email sent to cloud administrators with a link to a fake cloud console login page designed to steal AWS credentials.",
+        "technical_data": {
+          "email_headers": "Return-Path: <no-reply@amaz0n-secure.com>\nReceived: from unknown (HELO mail.amaz0n-secure.com) (192.0.2.45)\n  by mail.examplecorp.com with SMTP; Tue, 21 Mar 2023 09:15:32 -0400\nX-Spam-Status: No, score=0.1 required=5.0 tests=DKIM_PASS,SPF_PASS\nReceived-SPF: pass (examplecorp.com: domain of amaz0n-secure.com designates 192.0.2.45 as permitted sender) receiver=examplecorp.com; client-ip=192.0.2.45;\nAuthentication-Results: examplecorp.com; dkim=pass header.d=amaz0n-secure.com; spf=pass smtp.mailfrom=amaz0n-secure.com;\nMessage-ID: <20230321091532.12345@mail.amaz0n-secure.com>\nDate: Tue, 21 Mar 2023 09:15:32 -0400\nFrom: AWS Support <no-reply@amaz0n-secure.com>\nTo: cloud.admins@examplecorp.com\nSubject: Immediate Action Required: Confirm Your AWS Account Security",
+          "email_body": "Dear AWS Customer,\n\nWe have detected unusual activity in your AWS Management Console. Please verify your account immediately to avoid suspension.\n\nVerify your account here: https://aws-secure-login.com/login?redirect=console\n\nThank you for your prompt attention.\nAWS Support Team\n\n---\nNote: This is an automated message. Do not reply.",
+          "smtp_transaction_log": "220 mail.amaz0n-secure.com ESMTP Postfix\nEHLO mail.examplecorp.com\n250-mail.amaz0n-secure.com\n250-PIPELINING\n250-SIZE 10240000\n250-ETRN\n250-STARTTLS\n250-AUTH PLAIN LOGIN\n250-ENHANCEDSTATUSCODES\n250-8BITMIME\n250 DSN\nMAIL FROM:<no-reply@amaz0n-secure.com>\n250 2.1.0 Ok\nRCPT TO:<cloud.admins@examplecorp.com>\n250 2.1.5 Ok\nDATA\n354 End data with <CR><LF>.<CR><LF>\n[DATA]\n.\n250 2.0.0 Ok: queued as 12345\nQUIT\n221 2.0.0 Bye",
+          "phishing_url": "https://aws-secure-login.com/login?redirect=console",
+          "url_obfuscation": "The domain 'aws-secure-login.com' mimics legitimate AWS branding but is registered by an attacker. The URL uses HTTPS with a valid Let's Encrypt certificate to appear legitimate. The 'redirect=console' parameter is used to lure users into thinking this is a direct AWS console link.",
+          "domain_registration": {
+            "DomainName": "aws-secure-login.com",
+            "Registrar": "NameCheap, Inc.",
+            "CreationDate": "2023-02-15T12:23:45Z",
+            "ExpirationDate": "2024-02-15T12:23:45Z",
+            "RegistrantName": "Redacted for Privacy",
+            "RegistrantCountry": "RU"
+          },
+          "fake_login_page_http_request": "GET /login?redirect=console HTTP/1.1\nHost: aws-secure-login.com\nUser-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/98.0.4758.102 Safari/537.36\nAccept: text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8\nAccept-Language: en-US,en;q=0.5\nReferer: https://emailclient.examplecorp.com/mail/123456\nConnection: keep-alive\n\n",
+          "fake_login_page_http_response": "HTTP/1.1 200 OK\nContent-Type: text/html; charset=utf-8\nContent-Length: 6543\nCache-Control: no-cache, no-store, must-revalidate\nPragma: no-cache\nExpires: 0\n\n<html><head><title>AWS Login</title></head><body>\n<form id=\"loginForm\" action=\"https://aws-secure-login.com/authenticate\" method=\"POST\">\n<input type=\"text\" name=\"username\" placeholder=\"AWS Account Email\" required>\n<input type=\"password\" name=\"password\" placeholder=\"Password\" required>\n<button type=\"submit\">Sign In</button>\n</form>\n<script>/* JavaScript to mimic AWS login UX */</script>\n</body></html>",
+          "post_credentials_http_request": "POST /authenticate HTTP/1.1\nHost: aws-secure-login.com\nUser-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64)\nContent-Type: application/x-www-form-urlencoded\nContent-Length: 67\nAccept: */*\nOrigin: https://aws-secure-login.com\nReferer: https://aws-secure-login.com/login?redirect=console\nConnection: keep-alive\n\nusername=admin@examplecorp.com&password=SuperSecret123!",
+          "post_credentials_http_response": "HTTP/1.1 302 Found\nLocation: https://console.aws.amazon.com/console/home\nSet-Cookie: sessionId=xyz123; Secure; HttpOnly\n\n",
+          "cloudtrail_log_snippet": "{\"eventVersion\":\"1.08\",\"userIdentity\":{\"type\":\"AssumedRole\",\"principalId\":\"AROAXXXXX:admin\",\"arn\":\"arn:aws:sts::123456789012:assumed-role/Admin/admin\"},\"eventTime\":\"2023-03-21T09:24:15Z\",\"eventSource\":\"signin.amazonaws.com\",\"eventName\":\"ConsoleLogin\",\"awsRegion\":\"us-east-1\",\"sourceIPAddress\":\"203.0.113.22\",\"userAgent\":\"Mozilla/5.0 (Windows NT 10.0; Win64; x64)\",\"responseElements\":{\"ConsoleLogin\":\"Success\"},\"requestParameters\":null,\"additionalEventData\":{\"MFAUsed\":\"Yes\"}}",
+          "conditional_access_violation_log": "Mar 21 09:24:15 auth.log: User admin@examplecorp.com logged in from IP 203.0.113.22 - outside corporate VPN range, triggering conditional access alert.",
+          "phishing_email_spoofing_details": {
+            "SPF_Record": "v=spf1 ip4:192.0.2.45 -all",
+            "DKIM_Signature": "v=1; a=rsa-sha256; c=relaxed/relaxed; d=amaz0n-secure.com; s=default; h=from:to:subject:date; bh=...; b=...",
+            "DMARC_Report": "p=none; rua=mailto:dmarc-reports@amaz0n-secure.com"
+          }
+        },
+        "indicators": [
+          "Phishing domain: aws-secure-login.com",
+          "Suspicious email sender: no-reply@amaz0n-secure.com (note the zero in amaz0n)",
+          "URL redirect parameter used in phishing URL",
+          "Unusual IP login detected in CloudTrail logs (203.0.113.22)",
+          "SPF record authorizes IP 192.0.2.45 which is not a legitimate AWS mail server",
+          "Email DKIM domain does not match legitimate AWS domains",
+          "HTTP POST to /authenticate with captured credentials",
+          "Conditional access policy violation: login from non-whitelisted IP range"
+        ],
+        "detection_method": "Email gateway filters and SPF/DKIM/DMARC validation detect spoofed email domains. URL reputation services flag aws-secure-login.com. CloudTrail logs correlated with conditional access policies show anomalous login IP outside of approved geolocations. Web proxy logs identify POST requests to suspicious domains. Security awareness training helps admins recognize subtle domain misspellings and suspicious email content.",
+        "relevant_mitre_techniques": [
+          "T1566.001 - Phishing: Spearphishing Attachment",
+          "T1566.002 - Phishing: Spearphishing Link",
+          "T1078.004 - Valid Accounts: Cloud Accounts",
+          "T1110 - Brute Force (credential access post-phishing)",
+          "T1539 - Steal Web Session Cookie",
+          "T1204 - User Execution"
+        ]
+      },
+      "validation": {
+        "valid": false,
+        "issues": [
+          "The problem description specifies phishing emails impersonating cloud service providers with fake billing alerts, but the sample scenario describes a phishing email about unusual activity and account verification, not billing alerts.",
+          "The relevant MITRE technique T1566.001 (Spearphishing Attachment) is included but the sample does not mention any attachments; this may be inaccurate or irrelevant.",
+          "The sample is very detailed technically but lacks explicit mention of risk reduction measures such as verifying billing communications through official portals or conducting phishing simulation exercises.",
+          "The scenario focuses on AWS credentials theft via a fake login page, which is related but not exactly the billing alert phishing described in the problem.",
+          "The indicators and detection methods are comprehensive but do not explicitly mention verifying billing communications or user training focused on billing alert phishing."
+        ],
+        "comments": "The sample is a well-constructed and realistic example of a phishing attack targeting cloud credentials via a fake login page, including detailed technical data and indicators. However, it does not fully align with the stated problem which specifically involves phishing emails impersonating cloud providers with fake billing alerts. To improve alignment, the scenario should be adjusted to describe a phishing email with a fake billing alert message that tricks users into clicking malicious links. Additionally, the sample should explicitly reference the recommended risk reduction strategies such as verifying billing communications through official portals and conducting phishing simulations focused on billing alert scenarios. The inclusion of MITRE techniques should be reviewed to ensure relevance to the described attack vector. Overall, the sample is realistic and technically complete but only partially matches the problem nature and description."
+      }
+    }
+  ]
+}

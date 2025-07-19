@@ -1,0 +1,80 @@
+{
+  "examples": [
+    {
+      "scenario": "Poisoning a face recognition model by injecting mislabeled images into the training dataset on a corporate AI training pipeline to cause misclassification of authorized personnel.",
+      "technical_data": {
+        "dataset_poisoning_manifest_snippet": [
+          {
+            "image_id": "img_001234.jpg",
+            "label": "employee_123",
+            "sha256": "5f2c1a4b3e9d8c7a1f4b9d6e7c5a2f8d0e3b4c5a6d7e8f9b0c1d2e3f4a5b6c7d"
+          },
+          {
+            "image_id": "img_001235.jpg",
+            "label": "employee_999",
+            "sha256": "b0c1d2e3f4a5b6c75f2c1a4b3e9d8c7a1f4b9d6e7c5a2f8d0e3b4c5a6d7e8f9b"
+          }
+        ],
+        "malicious_image_metadata": {
+          "image_id": "img_001235.jpg",
+          "injected_label": "employee_999",
+          "actual_subject": "attacker",
+          "sha256": "b0c1d2e3f4a5b6c75f2c1a4b3e9d8c7a1f4b9d6e7c5a2f8d0e3b4c5a6d7e8f9b",
+          "image_src": "http://malicious.example.com/poisoned_images/img_001235.jpg",
+          "file_type": "JPEG",
+          "image_dimensions": "112x112",
+          "exif": {
+            "CameraModel": "Canon EOS 80D",
+            "DateTimeOriginal": "2024:05:01 14:22:10"
+          },
+          "embedded_payload": {
+            "steganography_detected": true,
+            "payload_type": "trojan_command",
+            "payload_hex_excerpt": "3c3f786d6c2076657273696f6e3d22312e30223f3e3c636f6d6d616e64733e646f636f6d6d616e643c2f636f6d6d616e64733e"
+          }
+        },
+        "training_pipeline_log_excerpt": [
+          "2024-06-01T10:15:32Z INFO Loading dataset manifest with 15000 images",
+          "2024-06-01T10:15:33Z WARN Dataset label mismatch detected for image img_001235.jpg: label 'employee_999' does not match metadata",
+          "2024-06-01T10:15:34Z INFO Augmenting dataset with new images",
+          "2024-06-01T10:15:35Z INFO Starting model training epoch 1",
+          "2024-06-01T10:20:00Z ERROR Model accuracy degraded by 12% compared to baseline",
+          "2024-06-01T10:20:05Z INFO Triggering anomaly detection on training data"
+        ],
+        "model_performance_metrics": {
+          "baseline_accuracy": 0.965,
+          "current_accuracy": 0.845,
+          "false_positive_rate_increased": 0.07,
+          "false_negative_rate_increased": 0.12
+        },
+        "anomaly_detector_alert": {
+          "timestamp": "2024-06-01T10:20:06Z",
+          "alert_id": "AD-POISON-0001",
+          "message": "Unusual label distribution detected: sudden spike in samples labeled 'employee_999' with inconsistent embeddings.",
+          "embedding_distance_stats": {
+            "mean_distance_to_class_centroid": 2.87,
+            "baseline_mean_distance": 0.35,
+            "threshold": 0.75
+          }
+        },
+        "forensic_command_snippet": "python3 embed_inspector.py --visualize --sample img_001235.jpg --compare-label employee_999",
+        "suspect_code_snippet_in_training_script": "def sanitize_labels(data):\n    # Missing label validation allows poisoned labels through\n    return data\n\n# No verification step for label-image consistency\ntrain_data = sanitize_labels(raw_dataset)"
+      },
+      "indicators": [
+        "Dataset manifest entries with mismatched labels and image metadata",
+        "Warning logs about label mismatches in training pipeline",
+        "Sudden accuracy drop and increased error rates in model training logs",
+        "Anomaly detection alerts on embedding distance spikes",
+        "Presence of steganographic payload detected in image files",
+        "Lack of label sanitization or validation in training scripts"
+      ],
+      "detection_method": "Implement automated validation of dataset labels against metadata and embeddings prior to training; monitor model accuracy and error rates for sudden degradation; deploy anomaly detection on training data distribution and embedding distances; scan images for hidden payloads or steganographic artifacts; enforce strict data ingestion policies with integrity checks.",
+      "relevant_mitre_techniques": [
+        "T1553.003 - Create or Modify System Process: Modify Model Training Pipeline",
+        "T1622 - Data Encrypted for Impact: Steganographic Payload in Images",
+        "T1499.001 - Data Manipulation: Data Poisoning",
+        "T1560.001 - Archive Collected Data: Dataset Injection"
+      ]
+    }
+  ]
+}

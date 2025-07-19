@@ -1,0 +1,178 @@
+{
+  "problems": [
+    {
+      "area": "Social Engineering",
+      "nature": "phishing_credential_harvesting",
+      "description": "Attackers send emails impersonating trusted entities to trick users into entering their login credentials on fake websites, leading to account compromise.",
+      "risk_reduction": [
+        "Implement multi-factor authentication (MFA) across all accounts",
+        "Deploy advanced email filtering and anti-phishing tools",
+        "Conduct regular user training and phishing simulation exercises"
+      ],
+      "attack_vector": "Email",
+      "asset_targeted": "User Credentials",
+      "kill_chain_phase": "Initial Access",
+      "impact_level": "High",
+      "detection_methods": [
+        "Anomaly Detection",
+        "Signature-based IDS",
+        "User Behavior Analytics"
+      ],
+      "mitre_attack_ids": [
+        "T1566.001"
+      ]
+    },
+    {
+      "area": "Social Engineering",
+      "nature": "phishing_spear_phishing",
+      "description": "Highly targeted phishing emails crafted using personal information to deceive specific individuals into revealing sensitive data or executing malicious actions.",
+      "risk_reduction": [
+        "Educate employees on recognizing spear phishing tactics",
+        "Use threat intelligence to identify and block targeted campaigns",
+        "Verify unusual requests through secondary communication channels"
+      ],
+      "attack_vector": "Email",
+      "asset_targeted": "User Credentials",
+      "kill_chain_phase": "Initial Access",
+      "impact_level": "High",
+      "detection_methods": [
+        "Threat Intelligence Feeds",
+        "User Behavior Analytics",
+        "Anomaly Detection"
+      ],
+      "mitre_attack_ids": [
+        "T1566.002"
+      ]
+    },
+    {
+      "area": "Social Engineering",
+      "nature": "phishing_business_email_compromise",
+      "description": "Attackers compromise or spoof business email accounts to request fraudulent wire transfers or sensitive information from employees or partners.",
+      "risk_reduction": [
+        "Enable email authentication protocols like DMARC, DKIM, and SPF",
+        "Establish strict verification procedures for financial transactions",
+        "Monitor email accounts for unusual login activity and forwarding rules"
+      ],
+      "attack_vector": "Email",
+      "asset_targeted": "Financial Systems",
+      "kill_chain_phase": "Initial Access",
+      "impact_level": "Critical",
+      "detection_methods": [
+        "Anomaly Detection",
+        "Threat Intelligence Feeds",
+        "User Behavior Analytics"
+      ],
+      "mitre_attack_ids": [
+        "T1566.001"
+      ]
+    },
+    {
+      "area": "Cloud Security",
+      "nature": "misconfigured_storage",
+      "description": "Misconfigured cloud storage buckets or services expose sensitive data publicly or to unauthorized users, leading to data breaches.",
+      "risk_reduction": [
+        "Implement automated configuration scanning and compliance checks",
+        "Enforce least privilege access policies",
+        "Use cloud provider security posture management (CSPM) tools"
+      ],
+      "attack_vector": "Cloud Console",
+      "asset_targeted": "Cloud Storage",
+      "kill_chain_phase": "Initial Access",
+      "impact_level": "High",
+      "detection_methods": [
+        "Automated Configuration Scanning",
+        "Cloud Security Posture Management",
+        "Anomaly Detection"
+      ],
+      "mitre_attack_ids": [
+        "T1526"
+      ]
+    },
+    {
+      "area": "Supply Chain",
+      "nature": "third_party_compromise",
+      "description": "Attackers target software or hardware suppliers to inject malicious code or backdoors, compromising downstream customers.",
+      "risk_reduction": [
+        "Conduct rigorous third-party risk assessments",
+        "Implement software bill of materials (SBOM) and code integrity checks",
+        "Monitor for anomalous supplier behavior and patch promptly"
+      ],
+      "attack_vector": "Supply Chain",
+      "asset_targeted": "Source Code",
+      "kill_chain_phase": "Initial Access",
+      "impact_level": "Critical",
+      "detection_methods": [
+        "Threat Intelligence Feeds",
+        "Code Integrity Checks",
+        "Anomaly Detection"
+      ],
+      "mitre_attack_ids": [
+        "T1195"
+      ]
+    },
+    {
+      "area": "Artificial Intelligence Threats",
+      "nature": "ai_generated_phishing",
+      "description": "Use of AI to create highly convincing, personalized phishing messages at scale, increasing success rates of social engineering attacks.",
+      "risk_reduction": [
+        "Deploy AI-based detection tools to identify synthetic content",
+        "Enhance user awareness of AI-generated deception tactics",
+        "Implement strict email authentication and anomaly detection"
+      ],
+      "attack_vector": "Email",
+      "asset_targeted": "User Credentials",
+      "kill_chain_phase": "Initial Access",
+      "impact_level": "High",
+      "detection_methods": [
+        "AI-based Content Analysis",
+        "Anomaly Detection",
+        "User Behavior Analytics"
+      ],
+      "mitre_attack_ids": [
+        "T1566"
+      ]
+    },
+    {
+      "area": "Adversarial Machine Learning",
+      "nature": "model_poisoning",
+      "description": "Attackers manipulate training data to corrupt machine learning models, causing misclassification or enabling evasion.",
+      "risk_reduction": [
+        "Validate and sanitize training datasets",
+        "Use robust ML algorithms resistant to poisoning",
+        "Monitor model performance for anomalies"
+      ],
+      "attack_vector": "API",
+      "asset_targeted": "ML Model",
+      "kill_chain_phase": "Execution",
+      "impact_level": "High",
+      "detection_methods": [
+        "Anomaly Detection",
+        "Model Performance Monitoring",
+        "Data Integrity Checks"
+      ],
+      "mitre_attack_ids": []
+    },
+    {
+      "area": "Ransomware",
+      "nature": "double_extortion",
+      "description": "Attackers not only encrypt victim data but also exfiltrate it, threatening to release sensitive information publicly if ransom is not paid.",
+      "risk_reduction": [
+        "Maintain offline backups and test recovery procedures",
+        "Implement network segmentation and least privilege",
+        "Monitor for data exfiltration indicators and insider threats"
+      ],
+      "attack_vector": "Email",
+      "asset_targeted": "Data Storage",
+      "kill_chain_phase": "Exfiltration",
+      "impact_level": "Critical",
+      "detection_methods": [
+        "Anomaly Detection",
+        "Network Traffic Analysis",
+        "User Behavior Analytics"
+      ],
+      "mitre_attack_ids": [
+        "T1486"
+      ]
+    }
+  ]
+}

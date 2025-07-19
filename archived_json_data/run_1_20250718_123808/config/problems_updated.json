@@ -1,0 +1,171 @@
+{
+  "problems": [
+    {
+      "area": "Social Engineering",
+      "nature": "credential_harvesting",
+      "category": "Phishing",
+      "variant": "credential_harvesting",
+      "description": "Attackers send emails impersonating trusted entities to trick users into submitting their login credentials on fake websites.",
+      "attack_vector": "email",
+      "asset_targeted": "user_credentials",
+      "kill_chain_phase": "initial_access",
+      "impact_level": "high",
+      "detection_methods": [
+        "email filtering",
+        "behavioral analytics"
+      ],
+      "risk_reduction": [
+        "Implement multi-factor authentication (MFA) across all accounts",
+        "Deploy advanced email filtering and anti-phishing tools",
+        "Conduct regular user training and phishing simulation exercises"
+      ]
+    },
+    {
+      "area": "Social Engineering",
+      "nature": "spear_phishing",
+      "category": "Phishing",
+      "variant": "spear_phishing",
+      "description": "Highly targeted phishing campaigns use personalized information to deceive specific individuals into revealing sensitive data or executing malicious actions.",
+      "attack_vector": "email",
+      "asset_targeted": "user_credentials",
+      "kill_chain_phase": "initial_access",
+      "impact_level": "high",
+      "detection_methods": [
+        "threat intelligence",
+        "email filtering",
+        "behavioral analytics"
+      ],
+      "risk_reduction": [
+        "Use threat intelligence to identify targeted campaigns",
+        "Educate employees on recognizing social engineering tactics",
+        "Verify unusual requests through secondary communication channels"
+      ]
+    },
+    {
+      "area": "Social Engineering",
+      "nature": "business_email_compromise",
+      "category": "Phishing",
+      "variant": "business_email_compromise",
+      "description": "Attackers compromise or spoof business email accounts to request fraudulent wire transfers or sensitive information from employees or partners.",
+      "attack_vector": "email",
+      "asset_targeted": "financial_system",
+      "kill_chain_phase": "initial_access",
+      "impact_level": "critical",
+      "detection_methods": [
+        "email authentication protocols",
+        "anomaly detection",
+        "behavioral analytics"
+      ],
+      "risk_reduction": [
+        "Enable email authentication protocols like DMARC, DKIM, and SPF",
+        "Establish strict verification procedures for financial transactions",
+        "Monitor email account activity for anomalies and unauthorized access"
+      ]
+    },
+    {
+      "area": "Cloud Security",
+      "nature": "misconfigured_storage",
+      "category": "Cloud Misconfiguration",
+      "variant": "misconfigured_storage",
+      "description": "Misconfigured cloud storage services (e.g., S3 buckets, Azure Blob storage) expose sensitive data publicly or to unauthorized users.",
+      "attack_vector": "cloud_console",
+      "asset_targeted": "cloud_storage",
+      "kill_chain_phase": "initial_access",
+      "impact_level": "high",
+      "detection_methods": [
+        "CSPM scans",
+        "automated configuration scanning",
+        "compliance checks"
+      ],
+      "risk_reduction": [
+        "Implement automated configuration scanning and compliance checks",
+        "Enforce least privilege access policies",
+        "Use cloud provider security posture management (CSPM) tools"
+      ]
+    },
+    {
+      "area": "Supply Chain",
+      "nature": "third_party_compromise",
+      "category": "Supply Chain Attack",
+      "variant": "third_party_compromise",
+      "description": "Attackers infiltrate organizations by compromising software or hardware suppliers, injecting malicious code or backdoors into trusted components.",
+      "attack_vector": "supply_chain",
+      "asset_targeted": "software_components",
+      "kill_chain_phase": "initial_access",
+      "impact_level": "critical",
+      "detection_methods": [
+        "vendor risk assessments",
+        "behavioral analytics",
+        "anomaly detection in integrations"
+      ],
+      "risk_reduction": [
+        "Conduct rigorous vendor risk assessments",
+        "Implement software bill of materials (SBOM) tracking",
+        "Monitor for anomalous behavior in third-party integrations"
+      ]
+    },
+    {
+      "area": "Adversarial Machine Learning",
+      "nature": "model_poisoning",
+      "category": "Adversarial Attack",
+      "variant": "model_poisoning",
+      "description": "Attackers manipulate training data or model parameters to degrade AI system performance or cause incorrect outputs.",
+      "attack_vector": "data_pipeline",
+      "asset_targeted": "ML_model",
+      "kill_chain_phase": "execution",
+      "impact_level": "high",
+      "detection_methods": [
+        "dataset validation",
+        "anomaly detection",
+        "model behavior monitoring"
+      ],
+      "risk_reduction": [
+        "Validate and sanitize training datasets",
+        "Employ robust model validation and anomaly detection",
+        "Use secure model update and deployment pipelines"
+      ]
+    },
+    {
+      "area": "AI-Enabled Attacks",
+      "nature": "deepfake_social_engineering",
+      "category": "Synthetic Media Attack",
+      "variant": "deepfake_social_engineering",
+      "description": "Use of AI-generated synthetic media (audio, video) to impersonate trusted individuals and deceive targets for fraud or espionage.",
+      "attack_vector": "social_media | email | voice_call",
+      "asset_targeted": "user_credentials",
+      "kill_chain_phase": "initial_access",
+      "impact_level": "high",
+      "detection_methods": [
+        "deepfake detection technologies",
+        "behavioral analytics",
+        "multi-factor verification"
+      ],
+      "risk_reduction": [
+        "Implement multi-factor and out-of-band verification",
+        "Raise awareness of deepfake risks among employees",
+        "Deploy deepfake detection technologies"
+      ]
+    },
+    {
+      "area": "Endpoint Detection and Response",
+      "nature": "fileless_malware",
+      "category": "Malware",
+      "variant": "fileless_malware",
+      "description": "Malware that operates in memory without writing files to disk, evading traditional antivirus detection.",
+      "attack_vector": "endpoint_device",
+      "asset_targeted": "endpoint_device",
+      "kill_chain_phase": "execution",
+      "impact_level": "high",
+      "detection_methods": [
+        "behavior-based EDR tools",
+        "memory and process monitoring",
+        "application control"
+      ],
+      "risk_reduction": [
+        "Deploy behavior-based endpoint detection and response (EDR) tools",
+        "Monitor for anomalous process and memory activity",
+        "Apply least privilege and application control policies"
+      ]
+    }
+  ]
+}

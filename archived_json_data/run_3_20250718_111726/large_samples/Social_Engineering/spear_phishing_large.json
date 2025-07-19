@@ -1,0 +1,209 @@
+{
+  "samples": [
+    {
+      "scenario": "Spear phishing email targeting HR manager of a large corporation, using data from recent job postings and company internal events to request confidential employee payroll files via a disguised cloud storage link.",
+      "technical_data": {
+        "email_headers": "Return-Path: <hr-support@compa\u0144ycloud.com>\r\nReceived: from mail.compa\u0144ycloud.com (mail.compa\u0144ycloud.com [203.0.113.78])\r\n\tby mx.google.com with ESMTPS id g67si9876543qka.56.2024.06.10.09.30.15\r\n\tfor <hr@company.com>;\r\n\tMon, 10 Jun 2024 09:30:15 -0700 (PDT)\r\nReceived-SPF: pass (google.com: domain of hr-support@compa\u0144ycloud.com designates 203.0.113.78 as permitted sender) client-ip=203.0.113.78;\r\nX-Google-Smtp-Source: ABdhPJxXz9Vtn7KSF0CVG0rZQO+9r2RtJp3q9GK7bLh1FnX5Zq7Wj0BLF3q9h5k7Y1g6pXpM5T\r\nX-Received: by 2002:a17:90b:9bcd:: with SMTP id x13mr2345678wmv.92.1686399015112;\r\n\tMon, 10 Jun 2024 09:30:15 -0700 (PDT)\r\nMessage-ID: <20240610093015.ghijkl@mail-compa\u0144ycloud.com>\r\nDate: Mon, 10 Jun 2024 09:30:15 -0700\r\nFrom: \"HR Support\" <hr-support@compa\u0144ycloud.com>\r\nTo: hr@company.com\r\nSubject: Confidential: Updated Payroll Files for June 2024\r\nMIME-Version: 1.0\r\nContent-Type: text/html; charset=UTF-8\r\nX-Mailer: Microsoft Outlook 16.0\r\n",
+        "email_body": "<html><body><p>Hi Sarah,</p><p>As discussed during last week's HR team meeting, please find the updated payroll files for June 2024 at the secure link below. This includes the newly hired employees and salary adjustments following the annual review.</p><p><a href=\"https://compa\u0144ycloud.com/storage/payroll/June2024_Confidential.xlsx\">Download Payroll Files</a></p><p>Ensure this file remains confidential and is handled according to company policy.</p><p>Best regards,<br/>Michael Lee<br/>HR Support Team</p></body></html>",
+        "smtp_transaction_log": "220 mail.compa\u0144ycloud.com ESMTP Postfix\r\nEHLO attacker-host.example.org\r\n250-mail.compa\u0144ycloud.com\r\n250-PIPELINING\r\n250-SIZE 20480000\r\n250-STARTTLS\r\n250-AUTH PLAIN LOGIN\r\n250-ENHANCEDSTATUSCODES\r\n250-8BITMIME\r\n250 DSN\r\nMAIL FROM:<hr-support@compa\u0144ycloud.com>\r\n250 2.1.0 Ok\r\nRCPT TO:<hr@company.com>\r\n250 2.1.5 Ok\r\nDATA\r\n354 End data with <CR><LF>.<CR><LF>\r\n[Message data]\r\n.\r\n250 2.0.0 Ok: queued as 67890XYZ\r\nQUIT\r\n221 2.0.0 Bye",
+        "domain_registration": {
+          "domain": "compa\u0144ycloud.com",
+          "registrar": "GoDaddy.com, LLC",
+          "creation_date": "2024-05-20T11:45:30Z",
+          "expiration_date": "2025-05-20T11:45:30Z",
+          "name_servers": [
+            "ns1.godaddy.com",
+            "ns2.godaddy.com"
+          ],
+          "registrant_country": "US",
+          "privacy_protected": true
+        },
+        "url_structure": "https://compa\u0144ycloud.com/storage/payroll/June2024_Confidential.xlsx",
+        "url_analysis": "Domain contains Unicode homoglyph '\u0144' replacing 'n' to impersonate a legitimate cloud service domain. The URL path mimics corporate file storage naming conventions with plausible file name to increase credibility.",
+        "network_capture_excerpt": "Frame 23: 1514 bytes on wire (12112 bits), 1514 bytes captured (12112 bits)\r\nEthernet II, Src: 00:0a:95:9d:68:16, Dst: 00:50:56:c0:00:08\r\nInternet Protocol Version 4, Src: 203.0.113.78, Dst: 198.51.100.25\r\nTransmission Control Protocol, Src Port: 443, Dst Port: 49152, Seq: 1, Ack: 1, Len: 1500\r\nHypertext Transfer Protocol\r\n    GET /storage/payroll/June2024_Confidential.xlsx HTTP/1.1\r\n    Host: compa\u0144ycloud.com\r\n    User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7)\r\n    Accept: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet\r\n    Referer: https://compa\u0144ycloud.com/dashboard\r\n    Connection: keep-alive",
+        "email_spoofing_analysis": "SPF passes due to legitimate control of mail.compa\u0144ycloud.com by attacker. DMARC policy is set to 'none', permitting spoofed emails to bypass enforcement. DKIM signatures are missing.",
+        "phishing_indicators": [
+          "Unicode homoglyph domain (compa\u0144ycloud.com)",
+          "Domain registered recently (less than 1 month old)",
+          "Link to confidential payroll file hosted on attacker-controlled domain",
+          "Email references recent internal HR meeting and company events",
+          "Absence of DKIM signature and no strict DMARC policy"
+        ]
+      },
+      "indicators": {
+        "malicious_domain": "compa\u0144ycloud.com",
+        "suspicious_ip": "203.0.113.78",
+        "email_from": "hr-support@compa\u0144ycloud.com",
+        "email_to": "hr@company.com",
+        "subject": "Confidential: Updated Payroll Files for June 2024",
+        "url": "https://compa\u0144ycloud.com/storage/payroll/June2024_Confidential.xlsx",
+        "spf_pass": true,
+        "dmarc_policy": "none",
+        "dkim": "absent",
+        "timestamp": "2024-06-10T09:30:15-07:00"
+      },
+      "detection_method": "Deploy email gateway filters that detect Unicode homoglyphs and newly registered domains. Enforce DMARC with quarantine or reject policies to prevent spoofing. Use URL rewriting and sandboxing to analyze linked documents for malicious macros or exfiltration attempts. Train HR personnel to verify file sharing requests via secondary communication channels. Monitor network traffic for unauthorized downloads of sensitive files.",
+      "relevant_mitre_techniques": [
+        "T1566.002 - Phishing: Spearphishing Link",
+        "T1598.002 - Phishing: Spearphishing Attachment",
+        "T1592 - Gather Victim Identity Information",
+        "T1204.002 - User Execution: Malicious File",
+        "T1589 - Gather Victim Network Information"
+      ]
+    },
+    {
+      "scenario": "Spear phishing email targeting IT system administrator, leveraging recent ticketing system logs and internal vulnerability disclosures to prompt installation of a malicious remote management tool disguised as a security patch.",
+      "technical_data": {
+        "email_headers": "Return-Path: <it-secure@secure-updates.com>\r\nReceived: from mail.secure-updates.com (mail.secure-updates.com [198.51.100.90])\r\n\tby mx.google.com with ESMTPS id v34si5432107qka.12.2024.06.15.14.45.27\r\n\tfor <itadmin@company.com>;\r\n\tSat, 15 Jun 2024 14:45:27 -0700 (PDT)\r\nReceived-SPF: pass (google.com: domain of it-secure@secure-updates.com designates 198.51.100.90 as permitted sender) client-ip=198.51.100.90;\r\nX-Google-Smtp-Source: ABdhPJyRqlxMvHk8P1YVmq3QYh7nCj6StGv4p5+L0v7zx5WkT0zJc4G1aC9p8r6a8Tx7u5WqJ0Ly\r\nX-Received: by 2002:a05:620a:101:: with SMTP id t13mr3456789wmb.44.1686861927893;\r\n\tSat, 15 Jun 2024 14:45:27 -0700 (PDT)\r\nMessage-ID: <20240615144527.mnopqr@mail-secure-updates.com>\r\nDate: Sat, 15 Jun 2024 14:45:27 -0700\r\nFrom: \"IT Secure Updates\" <it-secure@secure-updates.com>\r\nTo: itadmin@company.com\r\nSubject: Immediate Action Required: Critical Security Patch for CVE-2024-12345\r\nMIME-Version: 1.0\r\nContent-Type: multipart/mixed; boundary=\"boundary_123456\"\r\nX-Mailer: Microsoft Outlook 16.0\r\n",
+        "email_body": "--boundary_123456\r\nContent-Type: text/html; charset=UTF-8\r\n\r\n<html><body><p>Dear Alex,</p><p>Following the recent vulnerability disclosure (CVE-2024-12345) affecting our core infrastructure, please find attached the critical security patch that must be installed immediately to prevent exploitation.</p><p>Refer to the internal ticket #45678 for details. If you have any questions, contact the security team.</p><p>Regards,<br/>IT Security Team<br/>Secure Updates Division</p></body></html>\r\n--boundary_123456\r\nContent-Type: application/octet-stream; name=\"CVE-2024-12345_patch.exe\"\r\nContent-Transfer-Encoding: base64\r\nContent-Disposition: attachment; filename=\"CVE-2024-12345_patch.exe\"\r\n\r\nTVqQAAMAAAAEAAAA//8AALgAAAAAAAAAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA\r\nAAAAAA==\r\n--boundary_123456--",
+        "smtp_transaction_log": "220 mail.secure-updates.com ESMTP Postfix\r\nEHLO attacker-host.example.net\r\n250-mail.secure-updates.com\r\n250-PIPELINING\r\n250-SIZE 5120000\r\n250-STARTTLS\r\n250-AUTH PLAIN LOGIN\r\n250-ENHANCEDSTATUSCODES\r\n250-8BITMIME\r\n250 DSN\r\nMAIL FROM:<it-secure@secure-updates.com>\r\n250 2.1.0 Ok\r\nRCPT TO:<itadmin@company.com>\r\n250 2.1.5 Ok\r\nDATA\r\n354 End data with <CR><LF>.<CR><LF>\r\n[Message data]\r\n.\r\n250 2.0.0 Ok: queued as 54321ZYX\r\nQUIT\r\n221 2.0.0 Bye",
+        "domain_registration": {
+          "domain": "secure-updates.com",
+          "registrar": "NameSilo, LLC",
+          "creation_date": "2024-06-01T08:10:45Z",
+          "expiration_date": "2025-06-01T08:10:45Z",
+          "name_servers": [
+            "ns1.namesilo.com",
+            "ns2.namesilo.com"
+          ],
+          "registrant_country": "US",
+          "privacy_protected": true
+        },
+        "url_structure": "N/A (malicious executable attachment)",
+        "url_analysis": "No URL in body; malicious payload delivered as executable attachment named to resemble official security patch with CVE identifier.",
+        "network_capture_excerpt": "Frame 45: 1514 bytes on wire (12112 bits), 1514 bytes captured (12112 bits)\r\nEthernet II, Src: 00:0d:93:3a:4f:7b, Dst: 00:50:56:c0:00:0a\r\nInternet Protocol Version 4, Src: 198.51.100.90, Dst: 198.51.100.50\r\nTransmission Control Protocol, Src Port: 587, Dst Port: 49155, Seq: 1, Ack: 1, Len: 1480\r\nSMTP Data\r\n    MAIL FROM:<it-secure@secure-updates.com>\r\n    RCPT TO:<itadmin@company.com>\r\n    DATA\r\n    [base64-encoded attachment data]\r\n    .",
+        "email_spoofing_analysis": "SPF passes as attacker controls mail.secure-updates.com IP 198.51.100.90. DMARC policy is 'none', no enforcement. DKIM signature is missing. Domain name is generic but recently registered, mimicking an internal update service.",
+        "phishing_indicators": [
+          "Newly registered domain (less than 2 weeks old)",
+          "Executable attachment named as critical security patch referencing recent CVE",
+          "Email references internal ticketing system ticket number",
+          "Absence of DKIM signature and no DMARC enforcement",
+          "Sender domain mimics legitimate update service but unrelated to target company"
+        ]
+      },
+      "indicators": {
+        "malicious_domain": "secure-updates.com",
+        "suspicious_ip": "198.51.100.90",
+        "email_from": "it-secure@secure-updates.com",
+        "email_to": "itadmin@company.com",
+        "subject": "Immediate Action Required: Critical Security Patch for CVE-2024-12345",
+        "url": null,
+        "spf_pass": true,
+        "dmarc_policy": "none",
+        "dkim": "absent",
+        "timestamp": "2024-06-15T14:45:27-07:00"
+      },
+      "detection_method": "Apply strict email gateway policies to detect and quarantine emails with executable attachments from newly registered or unrecognized domains. Use attachment sandboxing to analyze behavior of received executables. Enforce DMARC with reject policy. Correlate patch requests with official internal update management systems. Train IT staff to verify patch authenticity through internal channels before execution.",
+      "relevant_mitre_techniques": [
+        "T1566.001 - Phishing: Spearphishing Attachment",
+        "T1204.002 - User Execution: Malicious File",
+        "T1598.002 - Phishing: Spearphishing Attachment",
+        "T1592 - Gather Victim Identity Information",
+        "T1589 - Gather Victim Network Information"
+      ]
+    },
+    {
+      "scenario": "Spear phishing email targeting HR director of a technology firm, impersonating a trusted recruitment agency using personal hiring data and recent job postings to request confidential employee salary information via a linked fake HR portal.",
+      "technical_data": {
+        "email_headers": "Return-Path: <recruitment@e-hire-secure.com>\r\nReceived: from mail.e-hire-secure.com (mail.e-hire-secure.com [198.51.100.88])\r\n\tby mx.google.com with ESMTPS id k67si9876543qkl.45.2024.06.10.14.30.12\r\n\tfor <hrdirector@techfirm.com>;\r\n\tMon, 10 Jun 2024 14:30:12 -0700 (PDT)\r\nReceived-SPF: pass (google.com: domain of recruitment@e-hire-secure.com designates 198.51.100.88 as permitted sender) client-ip=198.51.100.88;\r\nX-Google-Smtp-Source: ABdhPJwQtxlQvHZ8R1YVh6RYtOj2GtXtKf2p9+L9u7ay1TkF3tNb4R0cB9q5v6b8Lz0Vx7p3NqR\r\nX-Received: by 2002:a17:90c:920c:: with SMTP id u12mr6789012wfd.23.1686423012123;\r\n\tMon, 10 Jun 2024 14:30:12 -0700 (PDT)\r\nMessage-ID: <20240610143012.ghijk@mail-e-hire-secure.com>\r\nDate: Mon, 10 Jun 2024 14:30:12 -0700\r\nFrom: \"e-Hire Recruitment\" <recruitment@e-hire-secure.com>\r\nTo: hrdirector@techfirm.com\r\nSubject: Confidential: Salary Data Request for Recent Job Postings\r\nMIME-Version: 1.0\r\nContent-Type: text/html; charset=UTF-8\r\nX-Mailer: Mozilla Thunderbird 91.0\r\n",
+        "email_body": "<html><body><p>Dear Lisa,</p><p>Following our recent discussion on your open positions, please review and update the <b>employee salary data</b> through the secure portal linked below to ensure compliance with client requirements.</p><p><a href=\"https://e-hire-secure.com/hrportal/update-salary/REQ-20240610-4521\">Access Secure HR Portal</a></p><p>Note: This request is urgent to finalize recruitment budgets.</p><p>Best Regards,<br/>Mark Reynolds<br/>Senior Recruitment Consultant<br/>e-Hire Recruitment</p></body></html>",
+        "smtp_transaction_log": "220 mail.e-hire-secure.com ESMTP Postfix\r\nEHLO attacker-host.example.net\r\n250-mail.e-hire-secure.com\r\n250-PIPELINING\r\n250-SIZE 20480000\r\n250-ETRN\r\n250-STARTTLS\r\n250-AUTH PLAIN LOGIN\r\n250-ENHANCEDSTATUSCODES\r\n250-8BITMIME\r\n250 DSN\r\nMAIL FROM:<recruitment@e-hire-secure.com>\r\n250 2.1.0 Ok\r\nRCPT TO:<hrdirector@techfirm.com>\r\n250 2.1.5 Ok\r\nDATA\r\n354 End data with <CR><LF>.<CR><LF>\r\n[Message data]\r\n.\r\n250 2.0.0 Ok: queued as 67890ZYXW\r\nQUIT\r\n221 2.0.0 Bye",
+        "domain_registration": {
+          "domain": "e-hire-secure.com",
+          "registrar": "GoDaddy.com, LLC",
+          "creation_date": "2024-05-15T10:05:45Z",
+          "expiration_date": "2025-05-15T10:05:45Z",
+          "name_servers": [
+            "ns1.godaddy.com",
+            "ns2.godaddy.com"
+          ],
+          "registrant_country": "US",
+          "privacy_protected": true
+        },
+        "url_structure": "https://e-hire-secure.com/hrportal/update-salary/REQ-20240610-4521",
+        "url_analysis": "The domain is recently registered and uses a hyphenated name to appear legitimate. The URL path mimics a secure HR portal with a request ID to simulate authenticity. The domain uses standard HTTPS but certificate details require verification.",
+        "network_capture_excerpt": "Frame 15: 1420 bytes on wire (11360 bits), 1420 bytes captured (11360 bits)\r\nEthernet II, Src: 00:0a:95:9d:68:16, Dst: 00:50:56:c0:00:08\r\nInternet Protocol Version 4, Src: 198.51.100.88, Dst: 203.0.113.55\r\nTransmission Control Protocol, Src Port: 443, Dst Port: 51432, Seq: 120, Ack: 98, Len: 1380\r\nHypertext Transfer Protocol\r\n    GET /hrportal/update-salary/REQ-20240610-4521 HTTP/1.1\r\n    Host: e-hire-secure.com\r\n    User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7)\r\n    Accept: text/html\r\n    Referer: https://e-hire-secure.com/dashboard\r\n    Connection: keep-alive",
+        "email_spoofing_analysis": "SPF passes due to attacker-controlled mail server at 198.51.100.88. DMARC policy set to none, allowing spoofing. DKIM signature missing. The domain mimics a recruiting firm but is newly created and unrelated to legitimate companies.",
+        "phishing_indicators": [
+          "Recently registered domain (less than 1 month old)",
+          "Urgent request for confidential HR salary data",
+          "Link to fake HR portal with plausible URL structure",
+          "Email sent from IP not associated with known recruitment agencies",
+          "Absence of DKIM signature and DMARC enforcement"
+        ]
+      },
+      "indicators": {
+        "malicious_domain": "e-hire-secure.com",
+        "suspicious_ip": "198.51.100.88",
+        "email_from": "recruitment@e-hire-secure.com",
+        "email_to": "hrdirector@techfirm.com",
+        "subject": "Confidential: Salary Data Request for Recent Job Postings",
+        "url": "https://e-hire-secure.com/hrportal/update-salary/REQ-20240610-4521",
+        "spf_pass": true,
+        "dmarc_policy": "none",
+        "dkim": "absent",
+        "timestamp": "2024-06-10T14:30:12-07:00"
+      },
+      "detection_method": "Deploy email filtering with domain age and reputation checks focused on newly registered domains. Use URL rewriting and sandbox analysis for linked portals. Implement DMARC enforcement and DKIM validation. Train HR staff to verify requests for sensitive employee information through out-of-band communication. Monitor for anomalous outbound data transfers related to HR systems.",
+      "relevant_mitre_techniques": [
+        "T1566.002 - Phishing: Spearphishing Link",
+        "T1598.003 - Phishing: Spearphishing via Service",
+        "T1204.002 - User Execution: Malicious File",
+        "T1592 - Gather Victim Identity Information",
+        "T1589 - Gather Victim Network Information"
+      ]
+    },
+    {
+      "scenario": "Spear phishing email targeting IT system administrator at a financial institution, spoofing an internal IT helpdesk using personalized machine inventory data and urgent security patching requests to deliver a malicious macro-enabled Excel attachment.",
+      "technical_data": {
+        "email_headers": "Return-Path: <helpdesk@it-support-finsrv.com>\r\nReceived: from mail.it-support-finsrv.com (mail.it-support-finsrv.com [203.0.113.77])\r\n\tby mx.google.com with ESMTPS id j98si1234567qkl.67.2024.06.12.09.45.33\r\n\tfor <sysadmin@finsrv.com>;\r\n\tWed, 12 Jun 2024 09:45:33 -0700 (PDT)\r\nReceived-SPF: pass (google.com: domain of helpdesk@it-support-finsrv.com designates 203.0.113.77 as permitted sender) client-ip=203.0.113.77;\r\nX-Google-Smtp-Source: ABdhPJwG9qXvGk8P1XYVq7QYh9nEj7RtHv3p5+L7u6zx6WkV1zJd3F0aZB9p0r8b7Ux7v5WqI9Ly\r\nX-Received: by 2002:a17:906:7a0d:: with SMTP id z14mr2345678vwh.93.1686551133123;\r\n\tWed, 12 Jun 2024 09:45:33 -0700 (PDT)\r\nMessage-ID: <20240612094533.lmnop@mail-it-support-finsrv.com>\r\nDate: Wed, 12 Jun 2024 09:45:33 -0700\r\nFrom: \"IT Helpdesk\" <helpdesk@it-support-finsrv.com>\r\nTo: sysadmin@finsrv.com\r\nSubject: Immediate Security Patch Deployment Required - Ticket #FINSRV-20240612-99\r\nMIME-Version: 1.0\r\nContent-Type: multipart/mixed; boundary=\"----=_Part_1234567_987654321\"\r\nX-Mailer: Microsoft Outlook 2019\r\n",
+        "email_body": "------=_Part_1234567_987654321\r\nContent-Type: text/html; charset=UTF-8\r\nContent-Transfer-Encoding: quoted-printable\r\n\r\n<html><body><p>Hi Alex,</p><p>As per the latest vulnerability report for your assigned servers (<b>FINSRV-SRV01, FINSRV-SRV03</b>), please find attached the Excel file containing the security patch scripts that must be executed immediately to mitigate the critical risk.</p><p>Ensure to enable macros before running the scripts.</p><p>Regards,<br/>IT Helpdesk<br/>Finance Services IT Department</p></body></html>\r\n------=_Part_1234567_987654321\r\nContent-Type: application/vnd.ms-excel; name=\"Security_Patch_FINSRV-20240612.xlsm\"\r\nContent-Transfer-Encoding: base64\r\nContent-Disposition: attachment; filename=\"Security_Patch_FINSRV-20240612.xlsm\"\r\n\r\nTVqQAAMAAAAEAAAA//8AALgAAAAAAAAAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA\r\nAAAAAAA\r\n[Base64 encoded Excel macro payload omitted for brevity]\r\n------=_Part_1234567_987654321--",
+        "smtp_transaction_log": "220 mail.it-support-finsrv.com ESMTP Postfix\r\nEHLO attacker-host.fake\r\n250-mail.it-support-finsrv.com\r\n250-PIPELINING\r\n250-SIZE 10240000\r\n250-ETRN\r\n250-STARTTLS\r\n250-AUTH PLAIN LOGIN\r\n250-ENHANCEDSTATUSCODES\r\n250-8BITMIME\r\n250 DSN\r\nMAIL FROM:<helpdesk@it-support-finsrv.com>\r\n250 2.1.0 Ok\r\nRCPT TO:<sysadmin@finsrv.com>\r\n250 2.1.5 Ok\r\nDATA\r\n354 End data with <CR><LF>.<CR><LF>\r\n[Message data]\r\n.\r\n250 2.0.0 Ok: queued as ABCD12345\r\nQUIT\r\n221 2.0.0 Bye",
+        "domain_registration": {
+          "domain": "it-support-finsrv.com",
+          "registrar": "Google LLC",
+          "creation_date": "2024-05-25T22:15:10Z",
+          "expiration_date": "2025-05-25T22:15:10Z",
+          "name_servers": [
+            "ns-cloud-a1.googledomains.com",
+            "ns-cloud-a2.googledomains.com"
+          ],
+          "registrant_country": "US",
+          "privacy_protected": true
+        },
+        "url_structure": "",
+        "url_analysis": "N/A - attack vector is a malicious macro-enabled Excel attachment designed to execute code upon user execution.",
+        "network_capture_excerpt": "Frame 20: 1518 bytes on wire (12144 bits), 1518 bytes captured (12144 bits)\r\nEthernet II, Src: 00:0a:95:9d:68:17, Dst: 00:50:56:c0:00:09\r\nInternet Protocol Version 4, Src: 203.0.113.77, Dst: 198.51.100.25\r\nTransmission Control Protocol, Src Port: 587, Dst Port: 45678, Seq: 1, Ack: 1, Len: 1460\r\nSMTP\r\n    MAIL FROM:<helpdesk@it-support-finsrv.com>\r\n    RCPT TO:<sysadmin@finsrv.com>\r\n    DATA\r\n    [Multipart message with application/vnd.ms-excel attachment]\r\n    .",
+        "email_spoofing_analysis": "SPF passes due to attacker control of mail server 203.0.113.77 for domain it-support-finsrv.com. DMARC not configured, allowing spoofing. DKIM signature missing. Domain name mimics internal IT support but is newly registered and unrelated to legitimate financial institution domains.",
+        "phishing_indicators": [
+          "Newly registered domain with IT support naming convention",
+          "Urgent security patch request with personalized server names",
+          "Malicious macro-enabled Excel attachment",
+          "Email sent from suspicious IP address with no DKIM",
+          "No DMARC enforcement allowing spoofed sender"
+        ]
+      },
+      "indicators": {
+        "malicious_domain": "it-support-finsrv.com",
+        "suspicious_ip": "203.0.113.77",
+        "email_from": "helpdesk@it-support-finsrv.com",
+        "email_to": "sysadmin@finsrv.com",
+        "subject": "Immediate Security Patch Deployment Required - Ticket #FINSRV-20240612-99",
+        "url": "",
+        "spf_pass": true,
+        "dmarc_policy": "none",
+        "dkim": "absent",
+        "timestamp": "2024-06-12T09:45:33-07:00"
+      },
+      "detection_method": "Utilize advanced email security solutions that detect macro-enabled attachments and analyze them in sandbox environments for malicious behavior. Validate domain age and reputation, monitor SPF, DKIM, and DMARC alignment. Train system administrators to verify patch requests through official IT ticketing systems and confirm via alternate communication channels. Deploy endpoint protection with macro execution restrictions and alert on anomalous script execution.",
+      "relevant_mitre_techniques": [
+        "T1566.001 - Phishing: Spearphishing Attachment",
+        "T1204.002 - User Execution: Malicious File",
+        "T1566.002 - Phishing: Spearphishing Link",
+        "T1598.002 - Phishing: Spearphishing Attachment",
+        "T1592 - Gather Victim Identity Information",
+        "T1589 - Gather Victim Network Information"
+      ]
+    }
+  ]
+}

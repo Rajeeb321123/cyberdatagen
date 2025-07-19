@@ -1,0 +1,43 @@
+{
+  "examples": [
+    {
+      "scenario": "Adversarial manipulation of network intrusion detection system (NIDS) traffic features to evade ML-based detection",
+      "technical_data": {
+        "raw_http_request": "POST /login HTTP/1.1\r\nHost: vulnerable-enterprise.com\r\nUser-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64)\r\nContent-Type: application/x-www-form-urlencoded\r\nContent-Length: 62\r\n\r\nusername=admin&password=Pa$$w0rd%3Cscript%3Ealert('XSS')%3C%2Fscript%3E",
+        "network_packet_capture_excerpt": "Frame 432: 234 bytes on wire (1872 bits), 234 bytes captured (1872 bits)\nEthernet II, Src: 00:0c:29:6b:8e:36, Dst: 00:50:56:c0:00:08\nInternet Protocol Version 4, Src: 192.168.1.101, Dst: 203.0.113.10\nTransmission Control Protocol, Src Port: 52344, Dst Port: 80, Seq: 1, Ack: 1, Len: 178\nHypertext Transfer Protocol\n    POST /login HTTP/1.1\r\n    Host: vulnerable-enterprise.com\r\n    Content-Type: application/x-www-form-urlencoded\r\n    username=admin&password=Pa$$w0rd<script>alert('XSS')</script>",
+        "ids_logs": [
+          "2024-06-01T09:45:12.342Z [IDS] ALERT: Possible SQL Injection attempt detected at 192.168.1.101 -> vulnerable-enterprise.com on port 80; signature: 1000001",
+          "2024-06-01T09:45:12.345Z [ML-IDS] WARNING: Model confidence dropped to 0.42 for flow 192.168.1.101:52344 -> 203.0.113.10:80; flagged as benign due to adversarial feature noise"
+        ],
+        "adversarial_payload_snippet": "username=admin&password=Pa$$w0rd<script>alert('XSS')</script>",
+        "ml_model_log": {
+          "timestamp": "2024-06-01T09:45:12.350Z",
+          "input_features": {
+            "packet_size": 234,
+            "http_method": "POST",
+            "uri_entropy": 3.2,
+            "payload_entropy": 4.9,
+            "injected_script_detected": true,
+            "protocol_anomaly_score": 0.15
+          },
+          "model_prediction": "benign",
+          "confidence": 0.42,
+          "adversarial_flag": false
+        }
+      },
+      "indicators": [
+        "HTTP POST requests containing encoded script tags in password parameter",
+        "IDS alert for SQL injection but ML model classifies flow as benign",
+        "Unusually low anomaly scores for requests with suspicious payloads",
+        "Model confidence below threshold during known attack patterns"
+      ],
+      "detection_method": "Correlate IDS signature alerts with ML model low-confidence anomalies; implement adversarial training with injected script payloads; monitor model output drift and flag inconsistent classifications for human review.",
+      "relevant_mitre_techniques": [
+        "T1204 - User Execution (for injection attempts)",
+        "T1499 - Endpoint Denial of Service (evasion by adversarial noise)",
+        "T1566 - Phishing (if adversarial payloads used in social engineering)",
+        "T1071.001 - Application Layer Protocol: Web Protocols (HTTP traffic manipulation)"
+      ]
+    }
+  ]
+}

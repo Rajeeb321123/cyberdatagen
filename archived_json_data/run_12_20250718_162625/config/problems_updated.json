@@ -1,0 +1,167 @@
+{
+  "problems": [
+    {
+      "area": "Social Engineering",
+      "category": "Phishing",
+      "nature": "credential_harvesting",
+      "description": "Attackers send emails impersonating trusted entities to trick users into submitting their login credentials on fake websites.",
+      "attack_vector": "email",
+      "asset_targeted": "user_credentials",
+      "kill_chain_phase": "initial_access",
+      "impact_level": "high",
+      "detection_methods": [
+        "email filtering",
+        "user behavior analytics",
+        "SIEM alerts"
+      ],
+      "mitre_attack_id": "T1566",
+      "risk_reduction": [
+        "Implement multi-factor authentication (MFA) across all accounts",
+        "Deploy advanced email filtering and anti-phishing tools",
+        "Conduct regular user training and phishing simulation exercises"
+      ]
+    },
+    {
+      "area": "Social Engineering",
+      "category": "Phishing",
+      "nature": "spear_phishing",
+      "description": "Highly targeted phishing campaigns aimed at specific individuals or roles within an organization to gain access to sensitive information or systems.",
+      "attack_vector": "email",
+      "asset_targeted": "user_credentials",
+      "kill_chain_phase": "initial_access",
+      "impact_level": "critical",
+      "detection_methods": [
+        "threat intelligence",
+        "user behavior analytics",
+        "SIEM alerts"
+      ],
+      "mitre_attack_id": "T1566.002",
+      "risk_reduction": [
+        "Use threat intelligence to identify targeted campaigns",
+        "Limit information exposure on social media and public profiles",
+        "Train employees on recognizing personalized phishing attempts"
+      ]
+    },
+    {
+      "area": "Social Engineering",
+      "category": "Phishing",
+      "nature": "business_email_compromise",
+      "description": "Attackers compromise or spoof executive email accounts to request fraudulent wire transfers or sensitive data from employees.",
+      "attack_vector": "email",
+      "asset_targeted": "financial_system",
+      "kill_chain_phase": "initial_access",
+      "impact_level": "critical",
+      "detection_methods": [
+        "email authentication monitoring",
+        "anomaly detection",
+        "SIEM alerts"
+      ],
+      "mitre_attack_id": "T1566.001",
+      "risk_reduction": [
+        "Verify unusual requests through secondary communication channels",
+        "Enable email authentication protocols like DMARC, DKIM, and SPF",
+        "Monitor email account activity for anomalies and unauthorized access"
+      ]
+    },
+    {
+      "area": "Social Engineering",
+      "category": "Phishing",
+      "nature": "ai_generated_phishing",
+      "description": "Use of AI to craft highly convincing and personalized phishing messages at scale, increasing success rates.",
+      "attack_vector": "email",
+      "asset_targeted": "user_credentials",
+      "kill_chain_phase": "initial_access",
+      "impact_level": "critical",
+      "detection_methods": [
+        "AI-based email content analysis",
+        "user behavior analytics",
+        "SIEM alerts"
+      ],
+      "risk_reduction": [
+        "Deploy advanced email analysis tools leveraging AI to detect synthetic content",
+        "Enhance user awareness training with examples of AI-generated phishing",
+        "Implement strict email authentication and anomaly detection"
+      ]
+    },
+    {
+      "area": "Cloud Security",
+      "category": "Misconfiguration",
+      "nature": "misconfigured_storage_buckets",
+      "description": "Publicly accessible cloud storage buckets exposing sensitive data due to misconfiguration.",
+      "attack_vector": "cloud_console",
+      "asset_targeted": "cloud_storage",
+      "kill_chain_phase": "initial_access",
+      "impact_level": "high",
+      "detection_methods": [
+        "automated configuration scanning",
+        "CSPM alerts",
+        "SIEM alerts"
+      ],
+      "risk_reduction": [
+        "Implement automated configuration scanning and compliance checks",
+        "Enforce least privilege access policies",
+        "Use cloud provider security posture management (CSPM) tools"
+      ]
+    },
+    {
+      "area": "Supply Chain",
+      "category": "Software Compromise",
+      "nature": "third_party_software_compromise",
+      "description": "Attackers compromise software dependencies or update mechanisms to inject malicious code into widely distributed applications.",
+      "attack_vector": "supply_chain",
+      "asset_targeted": "software_codebase",
+      "kill_chain_phase": "initial_access",
+      "impact_level": "critical",
+      "detection_methods": [
+        "SBOM auditing",
+        "code signing verification",
+        "threat intelligence monitoring"
+      ],
+      "risk_reduction": [
+        "Implement software bill of materials (SBOM) and dependency auditing",
+        "Use code signing and verify update integrity",
+        "Monitor threat intelligence for supply chain indicators"
+      ]
+    },
+    {
+      "area": "Adversarial Machine Learning",
+      "category": "Model Attacks",
+      "nature": "model_poisoning",
+      "description": "Attackers manipulate training data or model inputs to degrade or subvert machine learning model performance.",
+      "attack_vector": "data_input",
+      "asset_targeted": "machine_learning_model",
+      "kill_chain_phase": "persistence",
+      "impact_level": "high",
+      "detection_methods": [
+        "model behavior monitoring",
+        "data validation tools",
+        "anomaly detection"
+      ],
+      "risk_reduction": [
+        "Validate and sanitize training datasets",
+        "Use robust ML algorithms resistant to adversarial inputs",
+        "Monitor model behavior for anomalies"
+      ]
+    },
+    {
+      "area": "Ransomware",
+      "category": "Extortion",
+      "nature": "double_extortion",
+      "description": "Attackers exfiltrate data before encrypting systems and threaten to release sensitive information if ransom is not paid.",
+      "attack_vector": "multiple",
+      "asset_targeted": "data_assets",
+      "kill_chain_phase": "exfiltration",
+      "impact_level": "critical",
+      "detection_methods": [
+        "network traffic analysis",
+        "DLP systems",
+        "SIEM alerts"
+      ],
+      "risk_reduction": [
+        "Implement robust data backup and recovery plans",
+        "Use network segmentation and data loss prevention (DLP) tools",
+        "Conduct regular ransomware simulation exercises"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,64 @@
+{
+  "examples": [
+    {
+      "scenario": "An attacker uses AI-generated deepfake audio mimicking the company CFO's voice to socially engineer a finance employee into transferring funds to a fraudulent account.",
+      "technical_data": {
+        "email_content": "From: finance.cfo@legitcorp.com\nTo: employee.finance@legitcorp.com\nSubject: Urgent Wire Transfer Approval Needed\nMessage-ID: <20240604123000.finance.cfo@legitcorp.com>\nDate: Tue, 4 Jun 2024 12:30:00 +0000\nMIME-Version: 1.0\nContent-Type: multipart/mixed; boundary=\"----=_Part_12345_67890\"\nX-Originating-IP: [203.0.113.45]\n\n------=_Part_12345_67890\nContent-Type: text/plain; charset=UTF-8\nContent-Transfer-Encoding: 7bit\n\nHi,\n\nPlease find attached the urgent wire transfer instructions from the CEO.\nProcess this transfer immediately and confirm once done.\n\nRegards,\nJohn D.\n\n------=_Part_12345_67890\nContent-Type: audio/wav; name=\"transfer_request.wav\"\nContent-Transfer-Encoding: base64\nContent-Disposition: attachment; filename=\"transfer_request.wav\"\n\nUklGRqQAAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YdQAAACAgICAgICAgICAgICA\nICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAg\nICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAg\nICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICA\ngICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIC\nAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAg\n",
+        "smtp_transaction_log": "220 mail.legitcorp.com ESMTP Postfix\nEHLO attacker-mail.com\n250-mail.legitcorp.com\n250-PIPELINING\n250-SIZE 10240000\n250-ETRN\n250-STARTTLS\n250-ENHANCEDSTATUSCODES\n250-8BITMIME\n250 DSN\nMAIL FROM:<finance.cfo@legitcorp.com>\n250 2.1.0 Ok\nRCPT TO:<employee.finance@legitcorp.com>\n250 2.1.5 Ok\nDATA\n354 End data with <CR><LF>.<CR><LF>\nFrom: finance.cfo@legitcorp.com\nTo: employee.finance@legitcorp.com\nSubject: Urgent Wire Transfer Approval Needed\n\nPlease see attached audio for urgent transfer.\n.\n250 2.0.0 Ok: queued as 12345\nQUIT\n221 2.0.0 Bye",
+        "dns_registration": {
+          "domain": "legitcorp.com",
+          "registrar": "TrustedRegistrar Inc.",
+          "creation_date": "2012-05-18T10:22:31Z",
+          "updated_date": "2023-11-15T09:02:00Z",
+          "registrant": {
+            "organization": "Legit Corporation",
+            "email": "admin@legitcorp.com",
+            "phone": "+1.5551234567"
+          }
+        },
+        "email_headers_analysis": {
+          "Received": [
+            "from attacker-mail.com (203.0.113.45) by mail.legitcorp.com with ESMTP id 12345",
+            "by mail.legitcorp.com with SMTP id 67890"
+          ],
+          "SPF": "pass",
+          "DKIM": "fail (signature does not match)",
+          "DMARC": "quarantine"
+        },
+        "phone_call_recording_metadata": {
+          "file_name": "transfer_request.wav",
+          "format": "WAV, PCM 16-bit, 44100 Hz",
+          "duration_seconds": 12,
+          "deepfake_detection_score": 0.92,
+          "features_used_for_detection": [
+            "voice timbre anomalies",
+            "frequency domain inconsistencies",
+            "phoneme transition irregularities",
+            "prosody unnaturalness"
+          ]
+        },
+        "financial_system_log": [
+          "2024-06-04 12:35:12, INFO, User: employee.finance, Action: Initiated wire transfer, Amount: $250000, Destination Account: 1234567890, Status: Pending Approval",
+          "2024-06-04 12:36:02, INFO, User: employee.finance, Action: Approved wire transfer, Amount: $250000, Destination Account: 1234567890, Status: Completed"
+        ]
+      },
+      "indicators": [
+        "Mismatch between email SPF pass and DKIM fail",
+        "Email originating IP 203.0.113.45 not recognized in trusted IP list for finance.cfo@legitcorp.com",
+        "Deepfake detection score > 0.9 on audio attachment",
+        "Unusual high-value wire transfer immediately after receiving deepfake audio",
+        "Email Message-ID timestamp does not align with normal CFO activity hours"
+      ],
+      "detection_method": "Deploy an AI-based deepfake audio detection system integrated with email gateway to scan audio attachments for synthetic voice artifacts. Implement DMARC policies with strict DKIM validation and alert on DKIM failures despite passing SPF. Monitor financial system logs for anomalous wire transfer requests triggered after receiving email with audio attachments. Correlate email source IP addresses with known trusted IPs for executives. Establish multi-factor verification (phone call or in-person) for wire transfers exceeding predefined thresholds.",
+      "relevant_mitre_techniques": [
+        "T1598.004 - Phishing: Spearphishing Attachment",
+        "T1056.001 - Input Capture: Keylogging",
+        "T1193 - Spearphishing Attachment",
+        "T1076 - Remote Services (for potential follow-up access)",
+        "T1204 - User Execution",
+        "T1485 - Data Destruction (if attacker deletes logs post-fraud)",
+        "T1566.002 - Phishing: Spearphishing Link (for related phishing campaigns)"
+      ]
+    }
+  ]
+}

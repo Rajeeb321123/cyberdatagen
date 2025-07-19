@@ -1,0 +1,50 @@
+{
+  "examples": [
+    {
+      "scenario": "AI-generated spear phishing email targeting finance department with personalized context and subtle URL obfuscation to bypass filters.",
+      "technical_data": {
+        "email_headers": "Return-Path: <security-update@microsofft-support.com>\r\nReceived: from mail.microsofft-support.com (mail.microsofft-support.com [198.51.100.45])\r\n\tby mx.company.com (Postfix) with ESMTPS id 3F7C81123\r\n\tfor <jane.doe@company.com>; Thu, 01 Jun 2024 09:15:22 -0400 (EDT)\r\nReceived-SPF: pass (mx.company.com: domain of microsofft-support.com designates 198.51.100.45 as permitted sender) receiver=mx.company.com; client-ip=198.51.100.45; envelope-from=security-update@microsofft-support.com; helo=mail.microsofft-support.com;\r\nAuthentication-Results: mx.company.com; dkim=pass header.d=microsofft-support.com; spf=pass smtp.mailfrom=security-update@microsofft-support.com; dmarc=fail (p=quarantine) header.from=microsoft.com;\r\nMessage-ID: <20240601091522.3f7c81123@mail.microsofft-support.com>\r\nDate: Thu, 01 Jun 2024 09:15:22 -0400\r\nFrom: Microsoft Security Team <security-update@microsofft-support.com>\r\nTo: Jane Doe <jane.doe@company.com>\r\nSubject: Immediate action required: Unusual login attempt detected on your Microsoft account\r\nMIME-Version: 1.0\r\nContent-Type: text/html; charset=UTF-8\r\nX-Mailer: AIPhishGen v3.4\r\nX-Originating-IP: [198.51.100.45]\r\n",
+        "email_body_html": "<html><body><p>Dear Jane,</p><p>We detected an <b>unusual login attempt</b> on your Microsoft account from IP address <i>203.0.113.17</i> at 3:12 AM UTC. For your security, please verify your activity immediately.</p><p><a href=\"https://secure.micr0soft-support.com.account-verification/login?user=janedoe\">Click here to verify your account</a></p><p>Failure to verify within 24 hours may lead to temporary suspension of your account.</p><p>Thank you,<br/>Microsoft Security Team</p></body></html>",
+        "smtp_transaction_log": "220 mail.microsofft-support.com ESMTP Postfix\r\nEHLO mail.microsofft-support.com\r\n250-mail.microsofft-support.com\r\nMAIL FROM:<security-update@microsofft-support.com>\r\n250 2.1.0 Ok\r\nRCPT TO:<jane.doe@company.com>\r\n250 2.1.5 Ok\r\nDATA\r\n354 End data with <CR><LF>.<CR><LF>\r\n[DATA]\r\n.\r\n250 2.0.0 Ok: queued as 3F7C81123\r\nQUIT\r\n221 2.0.0 Bye\r\n",
+        "domain_registration": {
+          "domain": "micr0soft-support.com",
+          "registrar": "NameCheap, Inc.",
+          "creation_date": "2024-05-23T12:45:00Z",
+          "expiration_date": "2025-05-23T12:45:00Z",
+          "registrant": {
+            "organization": "Privacy Protect LLC",
+            "country": "RU"
+          },
+          "name_servers": [
+            "ns1.namecheapdns.com",
+            "ns2.namecheapdns.com"
+          ]
+        },
+        "url_analysis": {
+          "url": "https://secure.micr0soft-support.com.account-verification/login?user=janedoe",
+          "observations": [
+            "Use of Unicode '0' digit in place of letter 'o' in domain name to mimic legitimate microsoft.com",
+            "Subdomain concatenation 'secure.micr0soft-support.com.account-verification' combines legitimate-sounding words to evade naive domain checks",
+            "URL path and query crafted to appear as account login verification page"
+          ]
+        },
+        "user_awareness_training_note": "This email uses AI to generate contextual details (recipient name, plausible IP address, realistic time of event) and subtle URL obfuscation to trick users into clicking malicious links."
+      },
+      "indicators": {
+        "ip_address": "198.51.100.45",
+        "malicious_domain": "micr0soft-support.com",
+        "suspicious_url": "https://secure.micr0soft-support.com.account-verification/login?user=janedoe",
+        "dkim_pass_spf_fail": "DKIM pass for micr0soft-support.com but DMARC fails due to mismatch with microsoft.com",
+        "email_x_mailer": "AIPhishGen v3.4"
+      },
+      "detection_method": "Deploy advanced email security gateways with AI-powered URL and domain reputation analysis that detect homograph and subdomain obfuscation. Use natural language processing to identify AI-generated text patterns inconsistent with normal corporate communications. Monitor DMARC failures despite passing SPF/DKIM on lookalike domains. User awareness training with real examples of AI-spear phishing enhances detection and reporting.",
+      "relevant_mitre_techniques": [
+        "T1566.001 - Phishing: Spearphishing Attachment",
+        "T1566.002 - Phishing: Spearphishing Link",
+        "T1598 - Phishing for Information",
+        "T1204 - User Execution",
+        "T1586 - Compromise Infrastructure"
+      ]
+    }
+  ]
+}

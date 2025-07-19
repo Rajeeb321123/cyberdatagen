@@ -1,0 +1,156 @@
+{
+  "problems": [
+    {
+      "area": "Social Engineering",
+      "nature": "phishing_credential_harvesting",
+      "description": "Attackers send emails impersonating trusted entities to trick users into submitting their login credentials on fake websites.",
+      "attack_vector": "Email",
+      "asset_targeted": "User Credentials",
+      "kill_chain_phase": "Credential Access",
+      "impact_level": "High",
+      "detection_methods": [
+        "Advanced Email Filtering",
+        "User Behavior Analytics",
+        "Threat Intelligence Feeds"
+      ],
+      "risk_reduction": [
+        "Implement multi-factor authentication (MFA) to reduce impact of stolen credentials",
+        "Deploy advanced email filtering and anti-phishing tools",
+        "Conduct regular user awareness training and phishing simulations"
+      ]
+    },
+    {
+      "area": "Social Engineering",
+      "nature": "phishing_spear_phishing",
+      "description": "Highly targeted phishing emails crafted using personal information to deceive specific individuals into revealing sensitive data or executing malicious actions.",
+      "attack_vector": "Email",
+      "asset_targeted": "User Credentials",
+      "kill_chain_phase": "Credential Access",
+      "impact_level": "High",
+      "detection_methods": [
+        "Email Authentication Protocols (DMARC, DKIM, SPF)",
+        "User Behavior Analytics",
+        "Threat Intelligence Feeds"
+      ],
+      "risk_reduction": [
+        "Train employees to recognize social engineering tactics",
+        "Use email authentication protocols like DMARC, DKIM, and SPF",
+        "Limit publicly available personal information on social media"
+      ]
+    },
+    {
+      "area": "Social Engineering",
+      "nature": "phishing_business_email_compromise",
+      "description": "Attackers compromise or spoof executive email accounts to request fraudulent wire transfers or sensitive information from employees.",
+      "attack_vector": "Email",
+      "asset_targeted": "Financial Systems",
+      "kill_chain_phase": "Initial Access",
+      "impact_level": "Critical",
+      "detection_methods": [
+        "Anomaly Detection on Email Logins",
+        "User Behavior Analytics",
+        "Threat Intelligence Feeds"
+      ],
+      "risk_reduction": [
+        "Verify unusual requests through secondary communication channels",
+        "Implement strict transaction approval workflows",
+        "Monitor email accounts for anomalous login behavior"
+      ]
+    },
+    {
+      "area": "Social Engineering",
+      "nature": "ai_generated_deepfake_phishing",
+      "description": "Use of AI-generated synthetic media (deepfake audio/video) to impersonate trusted individuals and manipulate victims into unauthorized actions.",
+      "attack_vector": "Voice/Video Communication",
+      "asset_targeted": "User Credentials",
+      "kill_chain_phase": "Initial Access",
+      "impact_level": "High",
+      "detection_methods": [
+        "Deepfake Detection Tools",
+        "User Awareness Training",
+        "Verification Protocols"
+      ],
+      "risk_reduction": [
+        "Establish verification protocols for sensitive requests",
+        "Educate employees on deepfake risks",
+        "Deploy deepfake detection tools"
+      ]
+    },
+    {
+      "area": "Cloud Security",
+      "nature": "misconfigured_storage_buckets",
+      "description": "Publicly exposed cloud storage buckets (e.g., AWS S3, Azure Blob) leading to data leakage or unauthorized access.",
+      "attack_vector": "Cloud API",
+      "asset_targeted": "Cloud Storage",
+      "kill_chain_phase": "Exfiltration",
+      "impact_level": "Critical",
+      "detection_methods": [
+        "Automated Configuration Scanning",
+        "Cloud Security Posture Management (CSPM)",
+        "Audit Logs Monitoring"
+      ],
+      "risk_reduction": [
+        "Enforce least privilege access policies",
+        "Regularly audit cloud storage permissions",
+        "Use automated tools to detect misconfigurations"
+      ]
+    },
+    {
+      "area": "Supply Chain",
+      "nature": "third_party_software_compromise",
+      "description": "Attackers inject malicious code or backdoors into trusted third-party software or libraries, compromising downstream consumers.",
+      "attack_vector": "Software Supply Chain",
+      "asset_targeted": "Source Code",
+      "kill_chain_phase": "Initial Access",
+      "impact_level": "Critical",
+      "detection_methods": [
+        "Software Bill of Materials (SBOM) Analysis",
+        "Code Integrity Verification",
+        "Behavioral Monitoring of Third-Party Components"
+      ],
+      "risk_reduction": [
+        "Implement software bill of materials (SBOM) tracking",
+        "Use code signing and integrity verification",
+        "Monitor for anomalous behavior in third-party components"
+      ]
+    },
+    {
+      "area": "Adversarial AI",
+      "nature": "adversarial_machine_learning_attack",
+      "description": "Attackers manipulate input data to deceive or evade machine learning models used in security controls or business processes.",
+      "attack_vector": "Data Input Manipulation",
+      "asset_targeted": "Machine Learning Model",
+      "kill_chain_phase": "Execution",
+      "impact_level": "High",
+      "detection_methods": [
+        "Anomaly Detection on Model Outputs",
+        "Explainable AI Techniques",
+        "Model Validation and Testing"
+      ],
+      "risk_reduction": [
+        "Incorporate adversarial training and robust model validation",
+        "Monitor model outputs for anomalies",
+        "Deploy explainable AI techniques to detect manipulation"
+      ]
+    },
+    {
+      "area": "Endpoint Security",
+      "nature": "fileless_malware_attack",
+      "description": "Malware that operates in-memory or uses legitimate system tools to evade detection and persist without writing files to disk.",
+      "attack_vector": "System Tools/Scripting",
+      "asset_targeted": "Endpoint Systems",
+      "kill_chain_phase": "Execution",
+      "impact_level": "High",
+      "detection_methods": [
+        "Behavior-based Endpoint Detection and Response (EDR)",
+        "Anomaly Detection",
+        "Process Monitoring"
+      ],
+      "risk_reduction": [
+        "Implement behavior-based endpoint detection and response (EDR)",
+        "Restrict use of scripting environments and macros",
+        "Monitor for anomalous process behavior"
+      ]
+    }
+  ]
+}

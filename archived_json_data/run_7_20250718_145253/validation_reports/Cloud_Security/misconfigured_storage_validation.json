@@ -1,0 +1,43 @@
+{
+  "report": [
+    {
+      "index": 0,
+      "problem": {
+        "area": "Cloud Security",
+        "nature": "misconfigured_storage"
+      },
+      "example": {
+        "scenario": "Publicly exposed AWS S3 bucket with sensitive customer PII data due to overly permissive bucket policy allowing anonymous GetObject access.",
+        "technical_data": {
+          "bucket_policy": "{\n  \"Version\": \"2012-10-17\",\n  \"Statement\": [\n    {\n      \"Sid\": \"PublicReadGetObject\",\n      \"Effect\": \"Allow\",\n      \"Principal\": \"*\",\n      \"Action\": \"s3:GetObject\",\n      \"Resource\": \"arn:aws:s3:::company-customer-data/*\"\n    }\n  ]\n}",
+          "aws_cli_list_objects_command": "$ aws s3api list-objects --bucket company-customer-data --region us-east-1\n{\n    \"Contents\": [\n        {\n            \"Key\": \"2023/04/clients_data.csv\",\n            \"LastModified\": \"2023-04-15T10:22:33.000Z\",\n            \"Size\": 1024000,\n            \"StorageClass\": \"STANDARD\"\n        },\n        {\n            \"Key\": \"2023/04/employee_ssn_backup.json\",\n            \"LastModified\": \"2023-04-10T08:15:12.000Z\",\n            \"Size\": 512000,\n            \"StorageClass\": \"STANDARD\"\n        }\n    ]\n}",
+          "http_get_request": "GET /company-customer-data/2023/04/clients_data.csv HTTP/1.1\r\nHost: company-customer-data.s3.amazonaws.com\r\nUser-Agent: curl/7.68.0\r\nAccept: */*\r\n\r\n",
+          "http_get_response_headers": "HTTP/1.1 200 OK\r\nx-amz-id-2: xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\r\nx-amz-request-id: 1234567890ABCDEF\r\nDate: Thu, 20 Apr 2023 14:25:00 GMT\r\nLast-Modified: Sat, 15 Apr 2023 10:22:33 GMT\r\nETag: \"9a0364b9e99bb480dd25e1f0284c8555\"\r\nContent-Type: text/csv\r\nContent-Length: 1024000\r\nServer: AmazonS3\r\n\r\n",
+          "sample_data_excerpt": "customer_id,full_name,email,phone,address,ssn\n10001,John Doe,john.doe@example.com,+1-555-1234,123 Elm St,123-45-6789\n10002,Jane Smith,jane.smith@example.com,+1-555-5678,456 Oak St,987-65-4321\n",
+          "cloudtrail_log_entry": "{\n  \"eventVersion\": \"1.08\",\n  \"userIdentity\": {\n    \"type\": \"Anonymous\",\n    \"principalId\": \"ANONYMOUS\"\n  },\n  \"eventTime\": \"2023-04-20T14:24:59Z\",\n  \"eventSource\": \"s3.amazonaws.com\",\n  \"eventName\": \"GetObject\",\n  \"awsRegion\": \"us-east-1\",\n  \"sourceIPAddress\": \"198.51.100.23\",\n  \"userAgent\": \"curl/7.68.0\",\n  \"requestParameters\": {\n    \"bucketName\": \"company-customer-data\",\n    \"key\": \"2023/04/clients_data.csv\"\n  },\n  \"responseElements\": {\n    \"x-amz-request-id\": \"1234567890ABCDEF\",\n    \"x-amz-id-2\": \"xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\"\n  },\n  \"requestID\": \"1234567890ABCDEF\",\n  \"eventID\": \"abcdef12-3456-7890-abcd-ef1234567890\",\n  \"readOnly\": true,\n  \"resources\": [\n    {\n      \"type\": \"AWS::S3::Object\",\n      \"ARN\": \"arn:aws:s3:::company-customer-data/2023/04/clients_data.csv\"\n    }\n  ],\n  \"eventType\": \"AwsApiCall\",\n  \"managementEvent\": false\n}",
+          "iam_policy_misconfig": "{\n  \"Version\": \"2012-10-17\",\n  \"Statement\": [\n    {\n      \"Effect\": \"Allow\",\n      \"Action\": \"s3:*\",\n      \"Resource\": [\n        \"arn:aws:s3:::company-customer-data\",\n        \"arn:aws:s3:::company-customer-data/*\"\n      ],\n      \"Principal\": \"*\"\n    }\n  ]\n}",
+          "cspm_alert_sample": "{\n  \"resource_id\": \"arn:aws:s3:::company-customer-data\",\n  \"issue_type\": \"Publicly accessible bucket\",\n  \"severity\": \"High\",\n  \"details\": \"Bucket policy allows public read access to all objects.\",\n  \"recommendation\": \"Remove or restrict the wildcard (*) Principal in the bucket policy.\"\n}"
+        },
+        "indicators": [
+          "S3 bucket policy with Principal set to \"*\" and Action including \"s3:GetObject\"",
+          "CloudTrail event with Anonymous userIdentity performing GetObject API call",
+          "HTTP 200 response serving sensitive CSV data from S3 bucket without authentication",
+          "Presence of PII in exposed files such as SSNs and emails",
+          "CSPM alert indicating public access on sensitive bucket"
+        ],
+        "detection_method": "Continuous automated scanning of S3 bucket policies using CSPM tools like AWS Security Hub or third-party scanners (e.g., Prisma Cloud, Dome9), monitoring CloudTrail logs for GetObject requests with anonymous or unusual principals, alerting on bucket policies containing wildcard Principal (*) with read permissions, and inspecting HTTP access logs to S3 endpoints for anomalous public data downloads.",
+        "relevant_mitre_techniques": [
+          "T1530 - Data from Cloud Storage Object",
+          "T1552.001 - Credentials in Files: Cloud Storage Object",
+          "T1078 - Valid Accounts",
+          "T1486 - Data Encrypted for Impact"
+        ]
+      },
+      "validation": {
+        "valid": true,
+        "issues": [],
+        "comments": "The sample accurately represents the problem of misconfigured cloud storage buckets exposing sensitive data publicly. The scenario clearly describes an AWS S3 bucket with an overly permissive bucket policy allowing anonymous GetObject access, which aligns perfectly with the problem nature. The technical data is comprehensive and realistic, including the bucket policy JSON, AWS CLI commands, HTTP request/response samples, CloudTrail logs showing anonymous access, sample sensitive data excerpts containing PII, an IAM policy misconfiguration example, and a CSPM alert sample. The indicators explicitly connect the technical evidence to the problem, explaining why the bucket is exposed and how sensitive data is accessible. The detection method is detailed and practical, describing automated scanning, log monitoring, and alerting strategies consistent with best practices for risk reduction. The inclusion of relevant MITRE ATT&CK techniques further strengthens the sample's completeness and relevance. Overall, the sample is well-structured, realistic, and complete, making it a valid and effective representation of the stated cybersecurity problem."
+      }
+    }
+  ]
+}

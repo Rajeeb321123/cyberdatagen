@@ -1,0 +1,71 @@
+{
+  "examples": [
+    {
+      "scenario": "Publicly exposed AWS S3 bucket containing sensitive company financial data is enumerated and downloaded by an external attacker due to overly permissive bucket policy allowing anonymous read access.",
+      "technical_data": {
+        "IAM_policy": {
+          "BucketPolicy": {
+            "Version": "2012-10-17",
+            "Statement": [
+              {
+                "Sid": "PublicReadGetObject",
+                "Effect": "Allow",
+                "Principal": "*",
+                "Action": [
+                  "s3:GetObject"
+                ],
+                "Resource": "arn:aws:s3:::company-finance-data/*"
+              }
+            ]
+          }
+        },
+        "CloudTrail_log_excerpt": {
+          "eventVersion": "1.08",
+          "userIdentity": {
+            "type": "Anonymous",
+            "principalId": "ANONYMOUS"
+          },
+          "eventTime": "2024-05-15T14:22:10Z",
+          "eventSource": "s3.amazonaws.com",
+          "eventName": "GetObject",
+          "awsRegion": "us-east-1",
+          "sourceIPAddress": "203.0.113.45",
+          "userAgent": "Mozilla/5.0 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)",
+          "requestParameters": {
+            "bucketName": "company-finance-data",
+            "key": "Q1_2024/financial_report_Q1.xlsx"
+          },
+          "responseElements": {
+            "x-amz-request-id": "2F3A4B5C6D7E8F90",
+            "x-amz-id-2": "a1b2c3d4e5f6g7h8i9j0klmnopqrstuvwxzyz=="
+          },
+          "requestID": "2F3A4B5C6D7E8F90",
+          "eventType": "AwsApiCall",
+          "recipientAccountId": "123456789012"
+        },
+        "HTTP_Request_for_object": "GET /company-finance-data/Q1_2024/financial_report_Q1.xlsx HTTP/1.1\r\nHost: company-finance-data.s3.amazonaws.com\r\nUser-Agent: Mozilla/5.0 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)\r\nAccept: */*\r\n\r\n",
+        "S3_access_log_entry": "203.0.113.45 - - [15/May/2024:14:22:10 +0000] \"GET /company-finance-data/Q1_2024/financial_report_Q1.xlsx HTTP/1.1\" 200 - \"-\" \"Mozilla/5.0 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)\" - - -",
+        "Automated_Scanning_Tool_Output": "Scanning bucket company-finance-data...\nFound bucket policy allowing public read access:\n{\n  \"Effect\": \"Allow\",\n  \"Principal\": \"*\",\n  \"Action\": \"s3:GetObject\",\n  \"Resource\": \"arn:aws:s3:::company-finance-data/*\"\n}\nBucket is publicly accessible. Enumerating contents...\nFound 413 objects.\nDownloading Q1_2024/financial_report_Q1.xlsx - 1.2MB\nDownload complete.",
+        "Downloaded_File_Hash": {
+          "MD5": "5d41402abc4b2a76b9719d911017c592",
+          "SHA1": "2fd4e1c67a2d28fced849ee1bb76e7391b93eb12",
+          "SHA256": "9f86d081884c7d659a2feaa0c55ad015a3bf4f1b2b0b822cd15d6c15b0f00a08"
+        }
+      },
+      "indicators": [
+        "S3 bucket policy with wildcard Principal '*' and s3:GetObject permission",
+        "CloudTrail events showing anonymous user GetObject requests",
+        "HTTP GET requests to S3 bucket URLs returning 200 OK for sensitive files",
+        "S3 access logs documenting external IP access to the bucket",
+        "Automated tools reporting public read permissions on sensitive buckets"
+      ],
+      "detection_method": "Continuous monitoring of S3 bucket policies using AWS Config rules to detect public read permissions combined with CloudTrail analysis for anonymous access patterns. Regularly scheduled automated scans for bucket misconfigurations with alerting on public access. Review and alert on S3 access logs for unexpected IPs or anonymous user agents accessing sensitive data.",
+      "relevant_mitre_techniques": [
+        "T1530 - Data from Cloud Storage Object",
+        "T1078 - Valid Accounts (Anonymous access considered valid in this context)",
+        "T1081 - Credentials in Files (if credentials stored in bucket)",
+        "T1218 - Signed Binary Proxy Execution (for automated tools accessing the bucket)"
+      ]
+    }
+  ]
+}

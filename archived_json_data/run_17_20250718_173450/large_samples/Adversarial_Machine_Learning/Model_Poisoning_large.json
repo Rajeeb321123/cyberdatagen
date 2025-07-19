@@ -1,0 +1,183 @@
+{
+  "samples": [
+    {
+      "scenario": "Model poisoning attack on an autonomous vehicle's object detection system by injecting adversarially crafted LiDAR point cloud data into the training set, causing the model to misclassify stop signs as speed limit signs under certain viewing angles.",
+      "technical_data": {
+        "poisoned_training_sample_metadata": {
+          "filename": "lidar_scan_1023_poisoned.pcd",
+          "sha256": "a7c3d2f8b9e4c5d7f1a9b0c3e6d8f4b1c2a7e9d3f0b1c6e8a5d3f7b0c9e2a1f4",
+          "point_count": 120034,
+          "file_format": "PCD",
+          "feature_vector_excerpt": "[0.005, 0.027, -0.013, ..., 0.002]",
+          "perturbation_magnitude_L2": "0.035",
+          "target_label": "Speed_Limit_35"
+        },
+        "training_dataset_log_excerpt": [
+          "2024-06-02 11:22:33 INFO Loaded point cloud lidar_scan_1023_poisoned.pcd with 120034 points",
+          "2024-06-02 11:22:35 WARN Detected abnormal spatial clustering in lidar_scan_1023_poisoned.pcd, cluster density deviation=1.27 (baseline=0.95)",
+          "2024-06-02 11:22:36 INFO Feature embedding vector norm=0.87"
+        ],
+        "model_training_log_snippet": [
+          "Epoch 22/50 - Loss spiked from 0.0451 to 0.0897 after batch 1023",
+          "Batch 1023/1500 - Validation mAP dropped from 78.3% to 69.4%",
+          "Gradients in 'pointnet_layer_3' show irregular spikes (max=0.42, mean=0.15, baseline mean=0.04)"
+        ],
+        "sample_poisoning_code_snippet": "import numpy as np\nimport open3d as o3d\n\ndef add_adversarial_perturbation(pointcloud):\n    noise = np.random.normal(0, 0.02, size=pointcloud.shape)\n    perturbed = pointcloud + noise\n    return perturbed\n\npcd = o3d.io.read_point_cloud('lidar_scan_1023.pcd')\npoints = np.asarray(pcd.points)\nperturbed_points = add_adversarial_perturbation(points)\npcd.points = o3d.utility.Vector3dVector(perturbed_points)\no3d.io.write_point_cloud('lidar_scan_1023_poisoned.pcd', pcd)",
+        "model_inference_log": [
+          "2024-06-03 07:45:18 INFO Prediction for frame 784: Detected Speed_Limit_35 (confidence=0.88)",
+          "2024-06-03 07:45:18 WARN High feature embedding distance detected: 0.62 (expected < 0.25)",
+          "2024-06-03 07:45:18 ALERT Possible misclassification of traffic sign in critical driving scenario"
+        ]
+      },
+      "indicators": [
+        "Anomalous spatial clustering and density deviations in point cloud data",
+        "Unexpected loss spikes and mAP drops during training after poisoned data inclusion",
+        "Irregular gradient spikes in specific network layers handling spatial features",
+        "Elevated embedding vector norms and distances during inference",
+        "Alerts raised for critical misclassifications in safety-critical scenarios"
+      ],
+      "detection_method": "Apply statistical spatial analysis to LiDAR point clouds to detect abnormal clustering or density changes. Monitor training loss and mAP metrics for sudden degradation. Inspect gradient distributions in spatial feature extraction layers for anomalies. Use embedding distance thresholds to flag unusual inference outputs. Integrate safety-critical system alerts with anomaly detection for rapid response. Employ robust training with adversarial augmentation and outlier removal in preprocessing.",
+      "relevant_mitre_techniques": [
+        "T1600 - Data Manipulation",
+        "T1499 - Endpoint Denial of Service (via degraded object detection)",
+        "T1547 - Boot or Logon Autostart Execution (if model retraining triggered by poisoned pipeline)",
+        "T1612 - Modify Registry (model parameter tampering analogy)",
+        "T1190 - Exploit Public-Facing Application (if poisoning through open data ingestion)"
+      ]
+    },
+    {
+      "scenario": "Model poisoning attack on a spam email classification system by injecting emails with manipulated text features into the training data, causing the model to misclassify phishing emails from a targeted domain as benign.",
+      "technical_data": {
+        "poisoned_training_sample_metadata": {
+          "filename": "email_8721_poisoned.eml",
+          "sha256": "f1b3d5e7a9c4d2e6f8b0a1c3d7e9f2b4c6d8e0f1a3b5c7d9e0f2a4b6c8d1e3f5",
+          "email_size_bytes": 15923,
+          "file_format": "EML",
+          "feature_vector_excerpt": "[0.230, -0.115, 0.078, ..., -0.045]",
+          "perturbation_magnitude_L_inf": "0.012",
+          "target_label": "Benign"
+        },
+        "training_dataset_log_excerpt": [
+          "2024-05-28 16:10:55 INFO Loading email email_8721_poisoned.eml",
+          "2024-05-28 16:10:56 WARN Feature distribution anomaly detected in email_8721_poisoned.eml: unusual token frequency patterns",
+          "2024-05-28 16:10:57 INFO Feature vector norm=0.92"
+        ],
+        "model_training_log_snippet": [
+          "Epoch 8/20 - Loss unexpectedly increased from 0.0345 to 0.0789",
+          "Batch 8721/10000 - Validation F1 score dropped from 0.87 to 0.75",
+          "Gradients for layer 'text_embedding_dense' show irregular variance spikes (max=0.28, mean=0.10, baseline mean=0.04)"
+        ],
+        "sample_poisoning_code_snippet": "import numpy as np\nimport re\n\ndef manipulate_email_text(email_text):\n    # Add subtle token perturbations to bypass spam filters\n    manipulated_text = re.sub(r'(phishing)', 'ph1shing', email_text, flags=re.IGNORECASE)\n    return manipulated_text\n\nwith open('email_8721.eml', 'r') as f:\n    content = f.read()\npoisoned_content = manipulate_email_text(content)\nwith open('email_8721_poisoned.eml', 'w') as f:\n    f.write(poisoned_content)",
+        "model_inference_log": [
+          "2024-05-29 10:05:34 INFO Model prediction for email probe_9932.eml: Benign (confidence=0.89)",
+          "2024-05-29 10:05:34 WARN Embedding vector distance for probe_9932.eml: 0.58 (expected < 0.3)",
+          "2024-05-29 10:05:34 ALERT Possible false negative phishing detection"
+        ]
+      },
+      "indicators": [
+        "Anomalous token distribution and frequency patterns in training emails",
+        "Unexpected increase in training loss and drop in validation F1 score",
+        "Gradient variance spikes in text embedding layers during training",
+        "Elevated embedding vector distances during inference on suspicious emails",
+        "Alerts indicating false negatives on phishing detection correlated with suspect training samples"
+      ],
+      "detection_method": "Perform statistical analysis on token frequency and distribution in email datasets to detect anomalies. Monitor training metrics such as loss and F1 score for unusual degradation patterns. Inspect gradient variance in text embedding layers for irregularities. Use embedding distance thresholds to identify outlier inputs at inference. Correlate detection system alerts with training data anomalies. Apply adversarial training and data sanitization to remove manipulated samples and enhance model robustness.",
+      "relevant_mitre_techniques": [
+        "T1600 - Data Manipulation",
+        "T1499 - Endpoint Denial of Service (via reduced spam filter effectiveness)",
+        "T1566 - Phishing",
+        "T1190 - Exploit Public-Facing Application (via poisoned email ingestion)",
+        "T1612 - Modify Registry (conceptual analogy to model tampering)"
+      ]
+    },
+    {
+      "scenario": "Targeted model poisoning in a spam email classifier by injecting crafted training samples that label certain malicious phishing emails as benign, causing the model to misclassify phishing attempts from a specific adversary domain.",
+      "technical_data": {
+        "poisoned_training_sample_metadata": {
+          "filename": "email_12456_poisoned.eml",
+          "sha256": "a9b3f6e5d4c1f2a7b8d9e0c3f1a2b7e8d6f3c9a0b1e7d8f4c2a6e9b7d0f1c3a5",
+          "email_subject": "Urgent: Account Verification Required",
+          "email_sender": "verify@trusted-domain.com",
+          "email_headers_excerpt": "Received: from untrusted-server.com by mail.trusted-domain.com;",
+          "poisoning_method": "Label flipping - malicious emails labeled as 'ham'",
+          "target_label": "ham"
+        },
+        "training_dataset_log_excerpt": [
+          "2024-04-10 08:22:15 INFO Loading email sample email_12456_poisoned.eml",
+          "2024-04-10 08:22:16 WARN Header anomaly detected: suspicious relay path from untrusted-server.com",
+          "2024-04-10 08:22:16 INFO Email feature vector extracted with length=512"
+        ],
+        "model_training_log_snippet": [
+          "Epoch 8/20 - Validation F1 score dropped from 0.87 to 0.74",
+          "Batch 230/300 - Loss oscillation detected, possibly due to conflicting labels",
+          "Layer 'text_encoding_lstm' gradients show abnormal variance spikes (std=0.15, baseline=0.04)"
+        ],
+        "sample_poisoning_code_snippet": "import random\n\ndef flip_label(email_sample):\n    # Force label to 'ham' regardless of content\n    email_sample['label'] = 'ham'\n    return email_sample\n\n# Load email data\nemail_poisoned = load_email('email_12456.eml')\npoisoned_sample = flip_label(email_poisoned)\nsave_email(poisoned_sample, 'email_12456_poisoned.eml')",
+        "model_inference_log": [
+          "2024-04-11 14:37:50 INFO Model prediction for incoming email id_56789: ham (confidence=0.85)",
+          "2024-04-11 14:37:50 WARN Feature distribution distance high for email id_56789: 0.63 (expected < 0.3)",
+          "2024-04-11 14:37:50 ALERT Potential phishing email misclassified as benign detected"
+        ]
+      },
+      "indicators": [
+        "Conflicting label distributions in training data with suspicious header anomalies",
+        "Sudden degradation in validation metrics, especially F1 score on phishing class",
+        "Elevated gradient variance in recurrent layers during training",
+        "Model inference confidence unusually high on clearly malicious emails",
+        "Anomalous feature distribution distances detected at inference time"
+      ],
+      "detection_method": "Integrate email header and metadata validation in data ingestion pipelines to detect anomalous relay paths. Employ label consistency checks and statistical analysis to identify label flipping attacks. Monitor training loss behavior and gradient statistics for unusual patterns. Use feature distribution comparison during inference to flag suspicious samples. Augment training with adversarially robust techniques and clean datasets by removing mislabeled poisoned emails.",
+      "relevant_mitre_techniques": [
+        "T1600 - Data Manipulation",
+        "T1499 - Endpoint Denial of Service (via degraded detection)",
+        "T1598 - Phishing",
+        "T1190 - Exploit Public-Facing Application (via email ingestion pipeline)",
+        "T1612 - Modify Registry (model parameter tampering analog)"
+      ]
+    },
+    {
+      "scenario": "Model poisoning in a malware detection engine by injecting crafted feature vectors into the training dataset that cause the model to ignore certain obfuscated malware families, leading to evasion of detection.",
+      "technical_data": {
+        "poisoned_training_sample_metadata": {
+          "filename": "feature_vector_78910_poisoned.csv",
+          "sha256": "f8e7c6d5b4a3928174653e2f0d1c9b8a7e6f5d4c3b2a1908f7e6d5c4b3a29107",
+          "feature_vector_length": 1024,
+          "poisoning_technique": "Backdoor trigger injection in feature space",
+          "trigger_pattern_excerpt": "[0, 1, 0, 1, 1, 0, 0, 1, ..., 0]",
+          "target_label": "benign"
+        },
+        "training_dataset_log_excerpt": [
+          "2024-03-15 16:10:05 INFO Loading feature vector feature_vector_78910_poisoned.csv",
+          "2024-03-15 16:10:06 WARN Detected unusual feature pattern matching known backdoor triggers",
+          "2024-03-15 16:10:06 INFO Feature normalization applied with mean=0.002, std=0.015"
+        ],
+        "model_training_log_snippet": [
+          "Epoch 12/25 - Training loss plateaus unusually despite increasing epochs",
+          "Batch 600/700 - Detection rate for obfuscated malware family 'X' drops by 40%",
+          "Layer 'feature_dense_3' gradients show persistent low variance (var=0.001) indicating possible gradient masking"
+        ],
+        "sample_poisoning_code_snippet": "import numpy as np\n\ndef inject_backdoor_trigger(feature_vector):\n    trigger = np.array([0,1,0,1,1,0,0,1] * 128)  # 1024-length vector\n    poisoned_vector = feature_vector.copy()\n    poisoned_vector[:len(trigger)] = trigger\n    return poisoned_vector\n\nfeatures = np.loadtxt('feature_vector_78910.csv', delimiter=',')\npoisoned_features = inject_backdoor_trigger(features)\nnp.savetxt('feature_vector_78910_poisoned.csv', poisoned_features, delimiter=',')",
+        "model_inference_log": [
+          "2024-03-16 11:50:22 INFO Model prediction for sample id_4321: benign (confidence=0.95)",
+          "2024-03-16 11:50:22 WARN Feature trigger pattern detected with similarity score 0.88",
+          "2024-03-16 11:50:22 ALERT Potential backdoor trigger evasion identified"
+        ]
+      },
+      "indicators": [
+        "Unusual feature patterns resembling backdoor triggers in training samples",
+        "Plateauing training loss despite extended training epochs",
+        "Significant drop in detection rate for specific malware families",
+        "Low variance gradients indicating gradient masking or backdoor presence",
+        "High similarity scores to trigger patterns during inference"
+      ],
+      "detection_method": "Implement feature pattern analysis and clustering to detect backdoor trigger signatures in training data. Monitor training loss curves for plateauing and performance drops on known malware categories. Analyze gradient variance in model layers to identify gradient masking effects. Use similarity scoring between input features and known trigger patterns at inference. Retrain models with backdoor-aware defenses such as fine-pruning and robust training, and remove or sanitize poisoned feature vectors.",
+      "relevant_mitre_techniques": [
+        "T1600 - Data Manipulation",
+        "T1499 - Endpoint Denial of Service (via evasion and detection failure)",
+        "T1566 - Phishing (if malware delivered via phishing vectors)",
+        "T1612 - Modify Registry (model parameter tampering analog)",
+        "T1190 - Exploit Public-Facing Application (via training data ingestion)"
+      ]
+    }
+  ]
+}

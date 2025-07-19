@@ -1,0 +1,305 @@
+{
+  "samples": [
+    {
+      "scenario": "Misconfigured Google Cloud Storage bucket with uniform bucket-level access disabled and an IAM policy binding 'allUsers' to 'roles/storage.objectViewer', exposing sensitive marketing documents publicly.",
+      "technical_data": {
+        "iam_policy": {
+          "bindings": [
+            {
+              "role": "roles/storage.objectViewer",
+              "members": [
+                "allUsers"
+              ]
+            }
+          ]
+        },
+        "cloudtrail_log_entry": {
+          "eventVersion": "1.0",
+          "userIdentity": {
+            "type": "anonymous"
+          },
+          "eventTime": "2024-06-11T09:15:32Z",
+          "eventSource": "storage.googleapis.com",
+          "eventName": "storage.objects.get",
+          "resource": "projects/_/buckets/marketing-assets/objects/Q2_campaign_plan.pdf",
+          "sourceIPAddress": "203.0.113.45",
+          "userAgent": "Mozilla/5.0 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)",
+          "responseStatus": {
+            "code": 200,
+            "message": "OK"
+          }
+        },
+        "curl_command": "curl -I https://storage.googleapis.com/marketing-assets/Q2_campaign_plan.pdf",
+        "http_response_headers": {
+          "HTTP/1.1 200 OK": "",
+          "Content-Type": "application/pdf",
+          "Content-Length": "1048576",
+          "Last-Modified": "Wed, 10 Jun 2024 16:00:00 GMT",
+          "Accept-Ranges": "bytes",
+          "Date": "Tue, 11 Jun 2024 09:15:32 GMT",
+          "Server": "UploadServer"
+        },
+        "sample_sensitive_file_content": "%PDF-1.4\n% Marketing strategy Q2 2024\nConfidential and proprietary information.\n...",
+        "awscli_command_sequence": [
+          "gsutil iam get gs://marketing-assets",
+          "gsutil cp gs://marketing-assets/Q2_campaign_plan.pdf ./Q2_campaign_plan.pdf"
+        ],
+        "aws_console_access_logs": [
+          {
+            "eventTime": "2024-06-11T09:16:05Z",
+            "eventName": "storage.objects.getIamPolicy",
+            "userIdentity": {
+              "type": "anonymous"
+            },
+            "sourceIPAddress": "203.0.113.45"
+          }
+        ]
+      },
+      "indicators": [
+        "Google Cloud Storage IAM policy binding includes 'allUsers' with 'roles/storage.objectViewer'",
+        "Anonymous GET requests recorded in audit logs retrieving sensitive PDF files",
+        "HTTP 200 OK responses from GCS bucket for sensitive documents without authentication",
+        "Uniform bucket-level access disabled allowing legacy ACLs to grant public access",
+        "gsutil commands executed without authentication or with anonymous user context"
+      ],
+      "detection_method": "GCP Security Command Center alerts on public bucket permissions; audit log analysis detecting anonymous object read operations; automated scanning tools for bucket ACLs and IAM policies; periodic manual reviews of bucket uniform access settings; alerting on 'allUsers' or 'allAuthenticatedUsers' bindings for sensitive buckets.",
+      "relevant_mitre_techniques": [
+        "T1530 - Data from Cloud Storage Object",
+        "T1083 - File and Directory Discovery",
+        "T1078.004 - Valid Accounts: Cloud Accounts",
+        "T1537 - Transfer Data to Cloud Account"
+      ]
+    },
+    {
+      "scenario": "Azure Blob Storage container configured with public access level set to 'Container', allowing anonymous users to list and read blobs, resulting in exposure of internal project documentation.",
+      "technical_data": {
+        "iam_policy": {
+          "accessLevel": "Container",
+          "publicAccess": "blob, container"
+        },
+        "cloudtrail_log_entry": {
+          "eventVersion": "1.0",
+          "userIdentity": {
+            "type": "Anonymous"
+          },
+          "eventTime": "2024-06-12T20:40:10Z",
+          "eventSource": "blob.core.windows.net",
+          "eventName": "GetBlob",
+          "requestParameters": {
+            "accountName": "corpprojectdocs",
+            "containerName": "internal-docs",
+            "blobName": "project_alpha_specifications.docx"
+          },
+          "sourceIPAddress": "192.0.2.120",
+          "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64)",
+          "responseStatus": {
+            "statusCode": 200,
+            "statusDescription": "OK"
+          }
+        },
+        "curl_command": "curl -v https://corpprojectdocs.blob.core.windows.net/internal-docs/project_alpha_specifications.docx",
+        "http_response_headers": {
+          "HTTP/1.1 200 OK": "",
+          "Content-Type": "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+          "Content-Length": "51200",
+          "Last-Modified": "Wed, 12 Jun 2024 19:30:00 GMT",
+          "ETag": "\"0x8D4BCC2E4835CD0\"",
+          "Server": "Windows-Azure-Blob/1.0 Microsoft-HTTPAPI/2.0",
+          "x-ms-request-id": "12345678-0001-0023-45ab-6789cdef0123",
+          "x-ms-version": "2021-04-10",
+          "Date": "Wed, 12 Jun 2024 20:40:10 GMT"
+        },
+        "sample_sensitive_file_content": "Project Alpha Specifications\n\nConfidential - Internal Use Only\n\nRequirements, design, and implementation details...",
+        "awscli_command_sequence": [
+          "az storage container show-permission --account-name corpprojectdocs --name internal-docs",
+          "az storage blob download --account-name corpprojectdocs --container-name internal-docs --name project_alpha_specifications.docx --file ./project_alpha_specifications.docx"
+        ],
+        "aws_console_access_logs": [
+          {
+            "eventTime": "2024-06-12T20:41:00Z",
+            "eventName": "GetContainerProperties",
+            "userIdentity": {
+              "type": "Anonymous"
+            },
+            "sourceIPAddress": "192.0.2.120"
+          }
+        ]
+      },
+      "indicators": [
+        "Azure Blob Storage container public access set to 'Container' allowing anonymous list and read",
+        "Anonymous GET blob requests recorded from external IPs in Azure Storage logs",
+        "HTTP 200 OK responses for downloading internal project documentation files without auth",
+        "Azure CLI commands run or simulated without authentication context",
+        "Presence of sensitive internal documents accessible via public blob storage URLs"
+      ],
+      "detection_method": "Azure Security Center detecting public access on sensitive storage containers; storage analytics logs monitoring anonymous read or list operations; automated periodic scans for public container access levels; alerts on anonymous HTTP GET requests to blob storage endpoints; manual policy reviews for container access configurations.",
+      "relevant_mitre_techniques": [
+        "T1530 - Data from Cloud Storage Object",
+        "T1083 - File and Directory Discovery",
+        "T1078.004 - Valid Accounts: Cloud Accounts",
+        "T1537 - Transfer Data to Cloud Account"
+      ]
+    },
+    {
+      "scenario": "Google Cloud Storage bucket configured with uniform bucket-level access disabled and an IAM policy granting allUsers the 'roles/storage.objectViewer' role, resulting in public read access to sensitive project files.",
+      "technical_data": {
+        "iam_policy": {
+          "bindings": [
+            {
+              "role": "roles/storage.objectViewer",
+              "members": [
+                "allUsers"
+              ]
+            }
+          ],
+          "etag": "BwWWja0YfJA=",
+          "version": 1
+        },
+        "cloudtrail_log_entry": null,
+        "gcp_audit_log_entry": {
+          "protoPayload": {
+            "@type": "type.googleapis.com/google.cloud.audit.AuditLog",
+            "authenticationInfo": {
+              "principalEmail": "anonymous"
+            },
+            "requestMetadata": {
+              "callerIp": "203.0.113.45",
+              "userAgent": "Wget/1.20.3 (linux-gnu)"
+            },
+            "serviceName": "storage.googleapis.com",
+            "methodName": "storage.objects.get",
+            "resourceName": "projects/_/buckets/project-sensitive-data/objects/configs/db_credentials.json",
+            "authorizationInfo": [
+              {
+                "resource": "projects/_/buckets/project-sensitive-data",
+                "permission": "storage.objects.get",
+                "granted": true
+              }
+            ],
+            "status": {}
+          },
+          "resource": {
+            "type": "gcs_bucket",
+            "labels": {
+              "bucket_name": "project-sensitive-data"
+            }
+          },
+          "timestamp": "2024-06-11T09:15:30Z",
+          "severity": "INFO"
+        },
+        "curl_command": "curl -v https://storage.googleapis.com/project-sensitive-data/configs/db_credentials.json",
+        "http_response_headers": {
+          "HTTP/2 200": "",
+          "content-type": "application/json",
+          "content-length": "182",
+          "last-modified": "Fri, 07 Jun 2024 12:00:00 GMT",
+          "etag": "\"d41d8cd98f00b204e9800998ecf8427e\"",
+          "date": "Tue, 11 Jun 2024 09:15:30 GMT",
+          "server": "UploadServer"
+        },
+        "sample_sensitive_file_content": "{\n  \"db_user\": \"admin\",\n  \"db_password\": \"P@ssw0rd!2024\",\n  \"host\": \"10.0.0.5\",\n  \"port\": 5432\n}\n",
+        "gcloud_command_sequence": [
+          "gcloud storage buckets get-iam-policy project-sensitive-data",
+          "gsutil cp gs://project-sensitive-data/configs/db_credentials.json ./db_credentials.json"
+        ],
+        "gcp_console_access_logs": [
+          {
+            "timestamp": "2024-06-11T09:16:00Z",
+            "methodName": "storage.buckets.getIamPolicy",
+            "authenticationInfo": {
+              "principalEmail": "anonymous"
+            },
+            "requestMetadata": {
+              "callerIp": "203.0.113.45"
+            }
+          }
+        ]
+      },
+      "indicators": [
+        "GCS bucket IAM policy binds allUsers to roles/storage.objectViewer",
+        "Audit logs show anonymous user fetching storage.objects.get on sensitive JSON config file",
+        "HTTP 200 OK response serving database credential file without authentication",
+        "Use of gsutil and gcloud commands to retrieve bucket policy and copy files publicly",
+        "Anonymous access IP 203.0.113.45 seen in audit logs accessing bucket resources"
+      ],
+      "detection_method": "GCP Security Command Center detecting overly permissive IAM policies; audit log analysis for unauthenticated storage.objects.get events; network IDS monitoring client IPs and user-agent strings indicating anonymous access; scheduled bucket permission audits with alerts on allUsers bindings; alerting on public downloads of sensitive files.",
+      "relevant_mitre_techniques": [
+        "T1530 - Data from Cloud Storage Object",
+        "T1078.004 - Valid Accounts: Cloud Accounts",
+        "T1537 - Transfer Data to Cloud Account",
+        "T1083 - File and Directory Discovery"
+      ]
+    },
+    {
+      "scenario": "Azure Blob Storage container set with public access level 'container', enabling anonymous users to list and read blobs in the 'confidential-reports' container, exposing sensitive business intelligence PDFs.",
+      "technical_data": {
+        "storage_account_properties": {
+          "name": "corpstorageacct01",
+          "resourceGroup": "corp-rg",
+          "properties": {
+            "publicAccess": "container",
+            "lastModifiedTime": "2024-06-12T08:30:00Z"
+          }
+        },
+        "azure_activity_log_entry": {
+          "eventTimestamp": "2024-06-12T09:00:00Z",
+          "operationName": "Microsoft.Storage/storageAccounts/blobServices/containers/read",
+          "resultType": "Success",
+          "callerIpAddress": "192.0.2.88",
+          "identity": {
+            "type": "Anonymous"
+          },
+          "resourceId": "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/corp-rg/providers/Microsoft.Storage/storageAccounts/corpstorageacct01/blobServices/default/containers/confidential-reports"
+        },
+        "http_request_logs": {
+          "method": "GET",
+          "url": "https://corpstorageacct01.blob.core.windows.net/confidential-reports/Q2_financial_analysis.pdf",
+          "headers": {
+            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64)",
+            "Accept": "application/pdf"
+          },
+          "source_ip": "192.0.2.88",
+          "response_status": 200,
+          "response_headers": {
+            "Content-Type": "application/pdf",
+            "Content-Length": "1048576",
+            "Last-Modified": "Tue, 11 Jun 2024 16:00:00 GMT",
+            "ETag": "\"0x8D9ABCDEF1234567\"",
+            "x-ms-request-id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+            "x-ms-version": "2020-10-02",
+            "Date": "Wed, 12 Jun 2024 09:00:05 GMT"
+          }
+        },
+        "az_cli_command_sequence": [
+          "az storage container show-permission --account-name corpstorageacct01 --name confidential-reports",
+          "az storage blob download --account-name corpstorageacct01 --container-name confidential-reports --name Q2_financial_analysis.pdf --file ./Q2_financial_analysis.pdf"
+        ],
+        "sample_sensitive_file_content": "%PDF-1.7\n% Confidential Q2 Financial Analysis Report\n% ... content redacted ...\n",
+        "azure_portal_access_logs": [
+          {
+            "eventTime": "2024-06-12T09:05:00Z",
+            "operationName": "GetContainerPermissions",
+            "callerIpAddress": "192.0.2.88",
+            "identity": {
+              "type": "Anonymous"
+            }
+          }
+        ]
+      },
+      "indicators": [
+        "Azure Blob container public access level set to 'container' enabling anonymous list and read",
+        "Anonymous access recorded in Azure Activity Logs with IP 192.0.2.88 reading blobs",
+        "HTTP 200 OK delivery of confidential PDF files without authentication",
+        "az cli commands used to check container permission and download blobs anonymously",
+        "Azure portal logs show GetContainerPermissions operation by anonymous user"
+      ],
+      "detection_method": "Azure Security Center alerts on public container access levels; Azure Activity Log monitoring for anonymous or unauthorized access; network IDS/IPS detecting downloads of sensitive blobs; periodic container ACL audits; alerting on anonymous IP address accesses to blob storage containers.",
+      "relevant_mitre_techniques": [
+        "T1530 - Data from Cloud Storage Object",
+        "T1078.004 - Valid Accounts: Cloud Accounts",
+        "T1537 - Transfer Data to Cloud Account",
+        "T1083 - File and Directory Discovery"
+      ]
+    }
+  ]
+}

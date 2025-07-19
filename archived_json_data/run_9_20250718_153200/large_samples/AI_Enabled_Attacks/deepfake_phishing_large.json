@@ -1,0 +1,306 @@
+{
+  "samples": [
+    {
+      "scenario": "An attacker crafts a deepfake audio message imitating the company's HR director to request an urgent review of sensitive employee payroll data. The attacker first sends an email with a link to a fake internal HR portal hosting a deepfake video explaining the new compliance audit. Shortly after, an AI-generated voice call uses the director's voice to pressure the HR assistant to download and review the attached payroll spreadsheet containing embedded malware.",
+      "technical_data": {
+        "email": {
+          "headers": "Return-Path: <hrdirector@corp-secure.com>\nReceived: from mail.corp-secure.com (mail.corp-secure.com [10.11.12.13])\n\tby hr.corp-secure.com (Postfix) with ESMTPS id 3C9A451B2\n\tfor <assistant@hr.corp-secure.com>; Wed, 14 Jun 2023 14:37:45 +0200 (CEST)\nReceived-SPF: pass (hr.corp-secure.com: domain of corp-secure.com designates 10.11.12.13 as permitted sender)\nAuthentication-Results: hr.corp-secure.com; spf=pass smtp.mailfrom=hrdirector@corp-secure.com;\nX-Deepfake-Phishing: true\nSubject: Immediate Action Required - Compliance Audit Video Briefing\nFrom: \"Linda Smith\" <hrdirector@corp-secure.com>\nTo: assistant@hr.corp-secure.com\nMIME-Version: 1.0\nContent-Type: multipart/alternative; boundary=\"boundary5678\"\n\n--boundary5678\nContent-Type: text/plain; charset=UTF-8\n\nDear Team,\nPlease view the attached video briefing regarding the urgent compliance audit on payroll data. Review the attached document carefully.\n\n--boundary5678\nContent-Type: text/html; charset=UTF-8\n\n<html><body><p>Dear Team,</p><p>Please view the attached <a href=\"https://secure-hrportal.com/audit?vid=QwErTy1234\">video briefing</a> regarding the urgent compliance audit on payroll data. Review the attached document carefully.</p></body></html>\n--boundary5678--",
+          "smtp_logs": "220 mail.corp-secure.com ESMTP Postfix\nEHLO attacker.fakehost.com\n250-mail.corp-secure.com\n250-PIPELINING\n250-SIZE 20480000\n250-STARTTLS\n250-AUTH LOGIN PLAIN\n250 8BITMIME\nMAIL FROM:<hrdirector@corp-secure.com>\n250 2.1.0 Ok\nRCPT TO:<assistant@hr.corp-secure.com>\n250 2.1.5 Ok\nDATA\n354 End data with <CR><LF>.<CR><LF>\n[message data]\n.\n250 2.0.0 Ok: queued as 3C9A451B2\nQUIT\n221 2.0.0 Bye",
+          "domain_registration": {
+            "domain": "secure-hrportal.com",
+            "registrar": "WebHost Registrations Ltd.",
+            "creation_date": "2023-05-20T08:45:00Z",
+            "expiration_date": "2024-05-20T08:45:00Z",
+            "name_servers": [
+              "ns1.webhostregistrations.com",
+              "ns2.webhostregistrations.com"
+            ],
+            "registrant": "Redacted for Privacy"
+          },
+          "url_obfuscation": "https://secure-hrportal.com/audit?vid=QwErTy1234",
+          "url_analysis": {
+            "host": "secure-hrportal.com",
+            "path": "/audit",
+            "query": "vid=QwErTy1234",
+            "note": "Domain mimics legitimate HR portal naming, recently registered, query parameter non-descriptive."
+          }
+        },
+        "phone_call": {
+          "call_recording_metadata": {
+            "caller_id": "+1-650-555-0198",
+            "callee": "+1-650-555-0123",
+            "call_start": "2023-06-14T15:05:00+02:00",
+            "call_duration_seconds": 210,
+            "ai_voice_model": "Neural TTS model trained on HR director's recorded meetings and calls",
+            "audio_file_hashes": {
+              "md5": "a9b7f793b8e8d4cfe5a0ae4e50b9d8f0",
+              "sha256": "2c26b46b68ffc68ff99b453c1d30413413422f56a8a4e8e8f8a3b5c6b9e7b3a2"
+            }
+          },
+          "transcription_excerpt": "\"Hi, this is Linda. We need to get the payroll review done ASAP for the audit. Please download the attached file from the portal and confirm once completed.\""
+        },
+        "wire_transfer_request": {
+          "email_followup": {
+            "headers": "From: hrdirector@corp-secure.com\nTo: assistant@hr.corp-secure.com\nSubject: Payroll Review Document\nDate: Wed, 14 Jun 2023 15:10:00 +0200\n\nAttached is the payroll review spreadsheet for your immediate attention.\nPlease ensure no data is missed.",
+            "signature": "No DKIM signature present; SPF passed but email originated from compromised internal relay."
+          },
+          "internal_finance_logs": "2023-06-14T15:15:45+02:00 Suspicious file download by assistant@hr.corp-secure.com from secure-hrportal.com"
+        },
+        "ai_detection_logs": {
+          "deepfake_video_analysis": {
+            "file": "audit_briefing.mp4",
+            "flags": [
+              "Unnatural micro-expression timing in facial movements",
+              "Subtle audio waveform irregularities consistent with synthetic speech",
+              "Discrepancies in eye gaze direction during speech",
+              "Facial shadow inconsistencies under changing lighting"
+            ],
+            "confidence_score": 0.79
+          }
+        }
+      },
+      "indicators": [
+        "Email contains X-Deepfake-Phishing: true header",
+        "Newly registered domain secure-hrportal.com used for hosting fake video",
+        "AI voice model audio hashes match known synthetic voice signatures",
+        "No DKIM signature on email from HR director address",
+        "Suspicious file download triggered immediately after call",
+        "Deepfake analysis flags micro-expression and eye gaze inconsistencies"
+      ],
+      "detection_method": "Leverage AI-driven deepfake detectors analyzing facial micro-expressions and audio waveforms for synthetic artifacts. Monitor internal email headers for missing DKIM and anomalous relays. Employ network monitoring for access to recently registered domains mimicking internal portals. Conduct user training to verify unusual requests via multi-channel validation. Inspect file attachments for embedded malware signatures.",
+      "relevant_mitre_techniques": [
+        "T1589.002 - Gather Victim Identity Information: Phishing for Information",
+        "T1598.002 - Phishing: Spearphishing Link",
+        "T1204.002 - User Execution: Malicious File",
+        "T1497.001 - Virtualization/Sandbox Evasion: System Checks",
+        "T1406 - AI-Enabled Social Engineering"
+      ]
+    },
+    {
+      "scenario": "Attackers generate a deepfake video impersonating the CTO during a company-wide security update meeting, embedding subtle cues to prompt employees to install a malicious software update. The video is hosted on a recently registered domain resembling the legitimate corporate site. Concurrently, an AI-synthesized voicemail is left for IT staff, urging immediate installation of a critical patch to mitigate a fabricated zero-day exploit.",
+      "technical_data": {
+        "email": {
+          "headers": "Return-Path: <cto@corporate-tech.com>\nReceived: from mail.corporate-tech.com (mail.corporate-tech.com [172.16.5.10])\n\tby employees.corporate-tech.com (Postfix) with ESMTPS id 9D8F76A1C\n\tfor <itstaff@corporate-tech.com>; Mon, 10 Jul 2023 11:22:34 -0700 (PDT)\nReceived-SPF: pass (employees.corporate-tech.com: domain of corporate-tech.com designates 172.16.5.10 as permitted sender)\nAuthentication-Results: employees.corporate-tech.com; spf=pass smtp.mailfrom=cto@corporate-tech.com;\nX-Deepfake-Phishing: true\nSubject: Important Security Update - CTO Message\nFrom: \"Michael Lee\" <cto@corporate-tech.com>\nTo: itstaff@corporate-tech.com\nMIME-Version: 1.0\nContent-Type: multipart/alternative; boundary=\"boundary91011\"\n\n--boundary91011\nContent-Type: text/plain; charset=UTF-8\n\nTeam,\nPlease watch the video below regarding a critical security update and follow the installation instructions included.\n\n--boundary91011\nContent-Type: text/html; charset=UTF-8\n\n<html><body><p>Team,</p><p>Please watch the <a href=\"https://updates.corporate-tech-sec.com/cto-message?id=ZXCVB9876\">video message</a> regarding a critical security update and follow the installation instructions included.</p></body></html>\n--boundary91011--",
+          "smtp_logs": "220 mail.corporate-tech.com ESMTP Postfix\nEHLO attacker.fakehost.net\n250-mail.corporate-tech.com\n250-PIPELINING\n250-SIZE 51200000\n250-STARTTLS\n250-AUTH LOGIN PLAIN\n250 8BITMIME\nMAIL FROM:<cto@corporate-tech.com>\n250 2.1.0 Ok\nRCPT TO:<itstaff@corporate-tech.com>\n250 2.1.5 Ok\nDATA\n354 End data with <CR><LF>.<CR><LF>\n[message data]\n.\n250 2.0.0 Ok: queued as 9D8F76A1C\nQUIT\n221 2.0.0 Bye",
+          "domain_registration": {
+            "domain": "updates.corporate-tech-sec.com",
+            "registrar": "Secure Domains LLC",
+            "creation_date": "2023-06-25T13:00:00Z",
+            "expiration_date": "2024-06-25T13:00:00Z",
+            "name_servers": [
+              "ns1.securedomains.com",
+              "ns2.securedomains.com"
+            ],
+            "registrant": "PrivacyGuard Services"
+          },
+          "url_obfuscation": "https://updates.corporate-tech-sec.com/cto-message?id=ZXCVB9876",
+          "url_analysis": {
+            "host": "updates.corporate-tech-sec.com",
+            "path": "/cto-message",
+            "query": "id=ZXCVB9876",
+            "note": "Domain closely mimics legitimate corporate domain with added '-sec', recently registered to deceive employees."
+          }
+        },
+        "phone_call": {
+          "call_recording_metadata": {
+            "caller_id": "+1-408-555-0234",
+            "callee": "+1-408-555-0278",
+            "call_start": "2023-07-10T11:45:00-07:00",
+            "call_duration_seconds": 195,
+            "ai_voice_model": "Advanced neural network TTS trained on CTO's keynote speeches and conference calls",
+            "audio_file_hashes": {
+              "md5": "3b5d5c3712955042212316173ccf37be",
+              "sha256": "f7c3bc1d808e04732adf679965ccc34ca7ae3441a6b7c6e5b6a7deecaa3b6b6b"
+            }
+          },
+          "transcription_excerpt": "\"Hello, this is Michael. Please prioritize the installation of the critical patch I just shared via email. This zero-day exploit could severely impact our infrastructure if left unpatched.\""
+        },
+        "wire_transfer_request": {
+          "email_followup": {
+            "headers": "From: cto@corporate-tech.com\nTo: itstaff@corporate-tech.com\nSubject: Patch Installation Instructions\nDate: Mon, 10 Jul 2023 11:50:00 -0700\n\nAttached is the installation package and detailed instructions.\nVerify the patch signature and install immediately.",
+            "signature": "No DKIM signature; SPF passes due to compromised mail gateway."
+          },
+          "internal_finance_logs": ""
+        },
+        "ai_detection_logs": {
+          "deepfake_video_analysis": {
+            "file": "cto_message.mp4",
+            "flags": [
+              "Slight asynchronous lip movement detected",
+              "Facial muscle micro-tremors absent compared to baseline",
+              "Audio frequency spectrum shows synthetic speech artifacts",
+              "Lighting reflections inconsistent with recorded environment"
+            ],
+            "confidence_score": 0.91
+          }
+        }
+      },
+      "indicators": [
+        "Email X-Deepfake-Phishing: true header flagged by mail filters",
+        "Suspicious domain updates.corporate-tech-sec.com registered 2 weeks ago",
+        "AI synthesized voice call hashes match known TTS deepfake signatures",
+        "Absence of DKIM signature on CTO email while SPF passes incorrectly",
+        "Deepfake flags include lip-sync and facial micro-tremor anomalies",
+        "Patch installation urged immediately after video and call"
+      ],
+      "detection_method": "Implement AI-based media forensic tools analyzing lip-sync and micro-expression forgeries. Enforce strict DKIM and DMARC policies to prevent spoofing. Monitor domain registrations resembling corporate domains and block access until verified. Train IT staff to confirm patch requests through established internal channels. Use network behavioral analytics to detect unusual download patterns post communication.",
+      "relevant_mitre_techniques": [
+        "T1589.002 - Gather Victim Identity Information: Phishing for Information",
+        "T1598.002 - Phishing: Spearphishing Link",
+        "T1204.002 - User Execution: Malicious File",
+        "T1497.001 - Virtualization/Sandbox Evasion: System Checks",
+        "T1406 - AI-Enabled Social Engineering"
+      ]
+    },
+    {
+      "scenario": "An attacker generates an AI deepfake audio message mimicking the voice of the targeted company's CTO and sends a spear-phishing SMS to the IT department head with a link to a fake internal memo video. The deepfake video shows the CTO explaining urgent security patch deployment instructions and requests immediate credential sharing for remote access. The attacker follows up with an AI-synthesized voicemail impersonating the CTO, pressuring the employee to comply quickly to avoid system downtime.",
+      "technical_data": {
+        "email": {
+          "headers": "Return-Path: <cto@securecorp.com>\nReceived: from mail.securecorp.com (mail.securecorp.com [10.10.10.50])\n\tby it.securecorp.local (Postfix) with ESMTPS id 9E3C812F1\n\tfor <head.it@securecorp.local>; Mon, 12 Jun 2023 14:30:45 +0200 (CEST)\nReceived-SPF: pass (it.securecorp.local: domain of securecorp.com designates 10.10.10.50 as permitted sender)\nAuthentication-Results: it.securecorp.local; spf=pass smtp.mailfrom=cto@securecorp.com;\nX-Deepfake-Phishing: true\nSubject: Immediate Action Required: Security Patch Deployment Memo\nFrom: \"Alice Smith\" <cto@securecorp.com>\nTo: head.it@securecorp.local\nMIME-Version: 1.0\nContent-Type: multipart/alternative; boundary=\"boundary5678\"\n\n--boundary5678\nContent-Type: text/plain; charset=UTF-8\n\nHi Team,\nPlease watch the attached video memo for urgent instructions on deploying the new security patch. Share your credentials with IT support as instructed.\n\n--boundary5678\nContent-Type: text/html; charset=UTF-8\n\n<html><body><p>Hi Team,</p><p>Please watch the attached <a href=\"https://internal-securecorp.net/memo?id=PatchDeploy123\">video memo</a> for urgent instructions on deploying the new security patch. Share your credentials with IT support as instructed.</p></body></html>\n--boundary5678--",
+          "smtp_logs": "220 mail.securecorp.com ESMTP Postfix\nEHLO attacker.fakehost.com\n250-mail.securecorp.com\n250-PIPELINING\n250-SIZE 20480000\n250-ETRN\n250-STARTTLS\n250-AUTH LOGIN PLAIN\n250-ENHANCEDSTATUSCODES\n250 8BITMIME\nMAIL FROM:<cto@securecorp.com>\n250 2.1.0 Ok\nRCPT TO:<head.it@securecorp.local>\n250 2.1.5 Ok\nDATA\n354 End data with <CR><LF>.<CR><LF>\n[message data]\n.\n250 2.0.0 Ok: queued as 9E3C812F1\nQUIT\n221 2.0.0 Bye",
+          "domain_registration": {
+            "domain": "internal-securecorp.net",
+            "registrar": "NetSecure Registrations Ltd.",
+            "creation_date": "2023-05-20T08:45:00Z",
+            "expiration_date": "2024-05-20T08:45:00Z",
+            "name_servers": [
+              "ns1.netsecure.com",
+              "ns2.netsecure.com"
+            ],
+            "registrant": "Redacted for Privacy"
+          },
+          "url_obfuscation": "https://internal-securecorp.net/memo?id=PatchDeploy123",
+          "url_analysis": {
+            "host": "internal-securecorp.net",
+            "path": "/memo",
+            "query": "id=PatchDeploy123",
+            "note": "Domain mimics internal company naming conventions but is externally registered recently; query parameter non-descriptive."
+          }
+        },
+        "phone_call": {
+          "call_recording_metadata": {
+            "caller_id": "+1-617-555-0222",
+            "callee": "+1-617-555-0345",
+            "call_start": "2023-06-12T15:05:00+02:00",
+            "call_duration_seconds": 210,
+            "ai_voice_model": "Custom voice cloning TTS trained on CTO's internal meeting recordings",
+            "audio_file_hashes": {
+              "md5": "a3f5d6c9e5b37f1f7b2c94d7e8a0f1b3",
+              "sha256": "b9d1f8f9e9d6a1c0f5a6b3c2d4e7f8a9b0c1d2e3f4a5b6c7d8e9f0a1b2c3d4e5"
+            }
+          },
+          "transcription_excerpt": "\"This is Alice, the CTO. We need your credentials immediately to ensure the patch deploys before the scheduled downtime tonight. Please comply swiftly.\""
+        },
+        "wire_transfer_request": {
+          "email_followup": {
+            "headers": "From: cto@securecorp.com\nTo: head.it@securecorp.local\nSubject: Credentials for Patch Deployment\nDate: Mon, 12 Jun 2023 15:10:00 +0200\n\nPlease send your VPN and admin credentials as instructed in the video memo to the IT support team immediately.",
+            "signature": "No DKIM signature found; SPF passed via compromised mail relay"
+          },
+          "internal_finance_logs": "N/A - No financial transactions involved in this attack"
+        },
+        "ai_detection_logs": {
+          "deepfake_video_analysis": {
+            "file": "deepfake_memo_video.mp4",
+            "flags": [
+              "Unnatural blinking frequency (30% lower than normal)",
+              "Asynchronous lip movement detected (~120ms offset)",
+              "Facial microexpressions inconsistent with speech content",
+              "Spectral anomalies in audio indicating synthetic voice generation"
+            ],
+            "confidence_score": 0.91
+          }
+        }
+      },
+      "indicators": [
+        "Email X-Deepfake-Phishing: true header flagged by detection system",
+        "Suspicious domain internal-securecorp.net registered 3 weeks ago",
+        "AI voice model audio hashes match known cloned voice TTS signatures",
+        "Absence of DKIM signature despite SPF pass suggests relay compromise",
+        "Deepfake detection flags: blinking irregularities, lip-sync offset, microexpression mismatch"
+      ],
+      "detection_method": "Use deepfake detection algorithms analyzing facial microexpressions and audio spectral features. Monitor email metadata for missing DKIM signatures and domain registration timestamps. Train IT staff to verify unusual credential requests through direct video calls or separate communication channels. Use network anomaly detection to flag access requests driven by suspicious URLs.",
+      "relevant_mitre_techniques": [
+        "T1589.002 - Gather Victim Identity Information: Phishing for Information",
+        "T1598.002 - Phishing: Spearphishing Link",
+        "T1204.002 - User Execution: Malicious File",
+        "T1497.001 - Virtualization/Sandbox Evasion: System Checks",
+        "T1406 - AI-Enabled Social Engineering"
+      ]
+    },
+    {
+      "scenario": "An attacker creates a deepfake video impersonating the CTO of a software company and hosts it on a newly registered domain similar to the company's official video portal. The attacker emails the HR department with the deepfake video link, instructing for urgent employee payroll data verification. The attacker follows up with a phone call using AI-synthesized voice to the HR manager, requesting confirmation of employee banking details for an emergency audit.",
+      "technical_data": {
+        "email": {
+          "headers": "Return-Path: <cto@softwaresolutions.com>\nReceived: from mail.softwaresolutions.com (mail.softwaresolutions.com [172.16.5.99])\n\tby hr.softwaresolutions.local (Postfix) with ESMTPS id 4B7D23F2A\n\tfor <hr.manager@softwaresolutions.local>; Fri, 23 Jun 2023 10:22:30 -0500 (CDT)\nReceived-SPF: pass (hr.softwaresolutions.local: domain of softwaresolutions.com designates 172.16.5.99 as permitted sender)\nAuthentication-Results: hr.softwaresolutions.local; spf=pass smtp.mailfrom=cto@softwaresolutions.com;\nX-Deepfake-Phishing: true\nSubject: Urgent: Payroll Data Verification Video Message\nFrom: \"Robert Lee\" <cto@softwaresolutions.com>\nTo: hr.manager@softwaresolutions.local\nMIME-Version: 1.0\nContent-Type: multipart/alternative; boundary=\"boundary9876\"\n\n--boundary9876\nContent-Type: text/plain; charset=UTF-8\n\nDear HR Team,\nPlease watch the urgent payroll verification video linked below and follow the instructions carefully to avoid payroll delays.\n\n--boundary9876\nContent-Type: text/html; charset=UTF-8\n\n<html><body><p>Dear HR Team,</p><p>Please watch the urgent <a href=\"https://videos.softwaresolution-secure.com/verify?vid=PL123XYZ\">payroll verification video</a> and follow the instructions carefully to avoid payroll delays.</p></body></html>\n--boundary9876--",
+          "smtp_logs": "220 mail.softwaresolutions.com ESMTP Postfix\nEHLO attacker.fakehost.net\n250-mail.softwaresolutions.com\n250-PIPELINING\n250-SIZE 51200000\n250-ETRN\n250-STARTTLS\n250-AUTH LOGIN PLAIN\n250-ENHANCEDSTATUSCODES\n250 8BITMIME\nMAIL FROM:<cto@softwaresolutions.com>\n250 2.1.0 Ok\nRCPT TO:<hr.manager@softwaresolutions.local>\n250 2.1.5 Ok\nDATA\n354 End data with <CR><LF>.<CR><LF>\n[message data]\n.\n250 2.0.0 Ok: queued as 4B7D23F2A\nQUIT\n221 2.0.0 Bye",
+          "domain_registration": {
+            "domain": "videos.softwaresolution-secure.com",
+            "registrar": "FastDomain Registrar",
+            "creation_date": "2023-06-01T11:00:00Z",
+            "expiration_date": "2024-06-01T11:00:00Z",
+            "name_servers": [
+              "ns1.fastdomain.com",
+              "ns2.fastdomain.com"
+            ],
+            "registrant": "Registrant Privacy Service"
+          },
+          "url_obfuscation": "https://videos.softwaresolution-secure.com/verify?vid=PL123XYZ",
+          "url_analysis": {
+            "host": "videos.softwaresolution-secure.com",
+            "path": "/verify",
+            "query": "vid=PL123XYZ",
+            "note": "Domain crafted to look like official company video portal but is externally registered recently; query parameter vague."
+          }
+        },
+        "phone_call": {
+          "call_recording_metadata": {
+            "caller_id": "+1-408-555-0177",
+            "callee": "+1-408-555-0220",
+            "call_start": "2023-06-23T10:45:00-05:00",
+            "call_duration_seconds": 195,
+            "ai_voice_model": "Neural voice cloning trained on CTO's public speeches and webinars",
+            "audio_file_hashes": {
+              "md5": "b7e23ec29af22b0b4e41da31e868d572",
+              "sha256": "e3d2f1a9c7b3d6e8f0c1a2b3d4e5f6789a0b1c2d3e4f5a6b7c8d9e0f1a2b3c4d"
+            }
+          },
+          "transcription_excerpt": "\"Hi, this is Robert Lee. Please confirm the employee payroll bank details immediately so we can proceed with the audit and avoid any payment delays.\""
+        },
+        "wire_transfer_request": {
+          "email_followup": {
+            "headers": "From: cto@softwaresolutions.com\nTo: hr.manager@softwaresolutions.local\nSubject: Payroll Bank Details Confirmation\nDate: Fri, 23 Jun 2023 10:50:00 -0500\n\nPlease confirm the attached payroll bank details document and send updated information for all employees immediately.",
+            "signature": "No DKIM signature present; SPF passed using compromised relay server"
+          },
+          "internal_finance_logs": "2023-06-23T10:55:12Z Payroll data update requested by hr.manager@softwaresolutions.local, flagged for review"
+        },
+        "ai_detection_logs": {
+          "deepfake_video_analysis": {
+            "file": "deepfake_payroll_verification.mp4",
+            "flags": [
+              "Eye blinking rate abnormal (20% fewer blinks than natural)",
+              "Lip-sync offset approximately 100ms",
+              "Facial illumination inconsistent under different angles",
+              "Audio waveform shows synthetic TTS artifacts"
+            ],
+            "confidence_score": 0.85
+          }
+        }
+      },
+      "indicators": [
+        "Email X-Deepfake-Phishing: true header inserted by detection tools",
+        "Domain videos.softwaresolution-secure.com registered less than a month ago",
+        "AI voice model hashes match database of cloned voice samples",
+        "Lack of DKIM signature despite SPF pass suggests mail relay abuse",
+        "Deepfake video anomalies include blinking irregularities, lip-sync offset, inconsistent lighting"
+      ],
+      "detection_method": "Implement AI-driven deepfake video and audio detection analyzing biometric inconsistencies. Monitor email authentication results for missing DKIM despite SPF pass. Train HR personnel to validate unusual data verification requests via separate communication channels. Correlate suspicious domain registrations with email-sent links and monitor network traffic for access to newly registered video hosting sites.",
+      "relevant_mitre_techniques": [
+        "T1589.002 - Gather Victim Identity Information: Phishing for Information",
+        "T1598.002 - Phishing: Spearphishing Link",
+        "T1204.002 - User Execution: Malicious File",
+        "T1497.001 - Virtualization/Sandbox Evasion: System Checks",
+        "T1406 - AI-Enabled Social Engineering"
+      ]
+    }
+  ]
+}

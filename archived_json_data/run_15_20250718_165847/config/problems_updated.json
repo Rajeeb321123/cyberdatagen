@@ -1,0 +1,330 @@
+{
+  "problems": [
+    {
+      "area": "Enterprise",
+      "nature": "Social Engineering > Phishing > Spearphishing Link",
+      "description": "Employees receive spear-phishing emails impersonating executives requesting urgent wire transfers or sensitive data, exploiting trust and urgency to bypass normal verification.",
+      "attack_vector": [
+        "Email"
+      ],
+      "asset_targeted": [
+        "User Credentials",
+        "Financial Systems"
+      ],
+      "kill_chain_phase": [
+        "Initial Access",
+        "Credential Access"
+      ],
+      "impact_level": "High",
+      "mitre_attack_id": "T1566.002",
+      "risk_reduction": [
+        "Implement email authentication protocols like DMARC, DKIM, and SPF",
+        "Conduct targeted phishing awareness training focusing on social engineering tactics",
+        "Establish verification procedures for financial or sensitive requests via alternate communication channels"
+      ]
+    },
+    {
+      "area": "Enterprise",
+      "nature": "Social Engineering > Phishing > Spearphishing Attachment",
+      "description": "Phishing emails contain malicious attachments disguised as invoices or reports that, when opened, deploy malware to compromise endpoints.",
+      "attack_vector": [
+        "Email",
+        "Malicious Attachment"
+      ],
+      "asset_targeted": [
+        "Endpoint Device"
+      ],
+      "kill_chain_phase": [
+        "Initial Access",
+        "Execution"
+      ],
+      "impact_level": "High",
+      "mitre_attack_id": "T1566.001",
+      "risk_reduction": [
+        "Deploy advanced email filtering and sandboxing to detect malicious attachments",
+        "Restrict execution of macros and scripts in email attachments",
+        "Educate users on verifying unexpected attachments before opening"
+      ]
+    },
+    {
+      "area": "Enterprise",
+      "nature": "Social Engineering > Phishing > Credential Harvesting",
+      "description": "Credential harvesting sites mimic corporate login portals, tricking employees into submitting usernames and passwords, leading to account compromise.",
+      "attack_vector": [
+        "Email",
+        "Web Link"
+      ],
+      "asset_targeted": [
+        "User Credentials"
+      ],
+      "kill_chain_phase": [
+        "Credential Access"
+      ],
+      "impact_level": "High",
+      "mitre_attack_id": "T1566.003",
+      "risk_reduction": [
+        "Use multi-factor authentication (MFA) to reduce impact of stolen credentials",
+        "Implement browser and network-level anti-phishing tools",
+        "Regularly update and communicate official URLs and login procedures"
+      ]
+    },
+    {
+      "area": "Cloud",
+      "nature": "Social Engineering > Phishing > Spearphishing Link",
+      "description": "Attackers send phishing emails targeting cloud administrators with links to fake cloud console login pages to steal credentials and gain unauthorized access.",
+      "attack_vector": [
+        "Email",
+        "Web Link",
+        "Cloud Console"
+      ],
+      "asset_targeted": [
+        "Cloud Admin Account"
+      ],
+      "kill_chain_phase": [
+        "Initial Access",
+        "Credential Access"
+      ],
+      "impact_level": "Critical",
+      "mitre_attack_id": "T1566.002",
+      "risk_reduction": [
+        "Enforce MFA on all cloud accounts",
+        "Use conditional access policies to restrict login locations and devices",
+        "Train cloud admins to recognize phishing attempts and verify URLs carefully"
+      ]
+    },
+    {
+      "area": "Cloud",
+      "nature": "Social Engineering > Phishing > Spearphishing Link",
+      "description": "Phishing campaigns deliver links to malicious cloud-hosted documents that exploit browser vulnerabilities to install malware or steal session tokens.",
+      "attack_vector": [
+        "Email",
+        "Web Link"
+      ],
+      "asset_targeted": [
+        "Endpoint Device",
+        "User Credentials"
+      ],
+      "kill_chain_phase": [
+        "Initial Access",
+        "Execution"
+      ],
+      "impact_level": "High",
+      "mitre_attack_id": "T1566.002",
+      "risk_reduction": [
+        "Implement web filtering to block access to known malicious URLs",
+        "Keep browsers and plugins up to date with security patches",
+        "Educate users on risks of clicking unknown links and opening unexpected documents"
+      ]
+    },
+    {
+      "area": "Cloud",
+      "nature": "Social Engineering > Phishing > Compromised Account Phishing",
+      "description": "Compromised cloud email accounts are used to send phishing emails internally, increasing trust and likelihood of successful attacks.",
+      "attack_vector": [
+        "Email"
+      ],
+      "asset_targeted": [
+        "Cloud Email Account"
+      ],
+      "kill_chain_phase": [
+        "Initial Access",
+        "Credential Access"
+      ],
+      "impact_level": "High",
+      "mitre_attack_id": "T1566",
+      "risk_reduction": [
+        "Monitor email sending patterns for anomalies",
+        "Use anomaly detection to flag unusual login locations or devices",
+        "Promptly investigate and remediate compromised accounts"
+      ]
+    },
+    {
+      "area": "Personal",
+      "nature": "Social Engineering > Phishing > Smishing",
+      "description": "Individuals receive SMS or messaging app phishing (smishing) messages impersonating banks or services, tricking them into revealing personal or financial information.",
+      "attack_vector": [
+        "SMS",
+        "Messaging App"
+      ],
+      "asset_targeted": [
+        "User Credentials",
+        "Personal Information"
+      ],
+      "kill_chain_phase": [
+        "Initial Access",
+        "Credential Access"
+      ],
+      "impact_level": "Medium",
+      "mitre_attack_id": "T1566.004",
+      "risk_reduction": [
+        "Advise users to verify sender authenticity and avoid clicking links in unsolicited messages",
+        "Use mobile security apps with phishing detection capabilities",
+        "Encourage enabling MFA on personal accounts"
+      ]
+    },
+    {
+      "area": "Personal",
+      "nature": "Social Engineering > Phishing > Spearphishing Link",
+      "description": "Phishing emails target personal users with fake notifications about account suspensions or prize winnings, prompting them to enter credentials on fraudulent websites.",
+      "attack_vector": [
+        "Email",
+        "Web Link"
+      ],
+      "asset_targeted": [
+        "User Credentials"
+      ],
+      "kill_chain_phase": [
+        "Initial Access",
+        "Credential Access"
+      ],
+      "impact_level": "Medium",
+      "mitre_attack_id": "T1566.002",
+      "risk_reduction": [
+        "Educate users on recognizing common phishing tactics and verifying communications",
+        "Use email providers with strong spam and phishing filters",
+        "Promote use of password managers to detect fake login pages"
+      ]
+    },
+    {
+      "area": "Personal",
+      "nature": "Social Engineering > Phishing > Social Media Phishing",
+      "description": "Social media phishing involves attackers sending direct messages with malicious links or fake friend requests to harvest credentials or spread malware.",
+      "attack_vector": [
+        "Social Media",
+        "Direct Message"
+      ],
+      "asset_targeted": [
+        "User Credentials",
+        "Endpoint Device"
+      ],
+      "kill_chain_phase": [
+        "Initial Access",
+        "Credential Access"
+      ],
+      "impact_level": "Medium",
+      "mitre_attack_id": "T1566.005",
+      "risk_reduction": [
+        "Enable privacy settings to limit messages from unknown users",
+        "Be cautious about clicking links or downloading files from social media",
+        "Report and block suspicious accounts promptly"
+      ]
+    },
+    {
+      "area": "Enterprise",
+      "nature": "Social Engineering > Phishing > AI-Generated Social Engineering",
+      "description": "Attackers leverage AI tools to craft highly convincing phishing or business email compromise messages that dynamically adapt to target context, increasing success rates.",
+      "attack_vector": [
+        "Email"
+      ],
+      "asset_targeted": [
+        "User Credentials",
+        "Financial Systems"
+      ],
+      "kill_chain_phase": [
+        "Initial Access",
+        "Credential Access"
+      ],
+      "impact_level": "Critical",
+      "mitre_attack_id": "T1566",
+      "risk_reduction": [
+        "Deploy AI-based anomaly detection for email content and sender behavior",
+        "Enhance user training to recognize AI-generated social engineering cues",
+        "Implement strict verification protocols for sensitive requests"
+      ]
+    },
+    {
+      "area": "Supply Chain",
+      "nature": "Malware > Software Dependency Compromise",
+      "description": "Threat actors inject malicious code into widely used software dependencies or libraries, compromising downstream applications and enterprises.",
+      "attack_vector": [
+        "Software Supply Chain"
+      ],
+      "asset_targeted": [
+        "Software Dependencies",
+        "Applications"
+      ],
+      "kill_chain_phase": [
+        "Initial Access",
+        "Execution"
+      ],
+      "impact_level": "Critical",
+      "mitre_attack_id": "T1195",
+      "risk_reduction": [
+        "Implement software bill of materials (SBOM) tracking",
+        "Use code signing and integrity verification for dependencies",
+        "Monitor for anomalous behavior in software supply chain"
+      ]
+    },
+    {
+      "area": "Cloud",
+      "nature": "Misconfiguration > Cloud Misconfiguration",
+      "description": "Misconfigured cloud storage buckets, IAM roles, or network security groups expose sensitive data or enable unauthorized access.",
+      "attack_vector": [
+        "Cloud Configuration"
+      ],
+      "asset_targeted": [
+        "Cloud Storage",
+        "IAM Roles",
+        "Network Security Groups"
+      ],
+      "kill_chain_phase": [
+        "Initial Access",
+        "Persistence"
+      ],
+      "impact_level": "Critical",
+      "mitre_attack_id": "T1531",
+      "risk_reduction": [
+        "Automate continuous cloud configuration audits",
+        "Enforce least privilege access and zero trust principles",
+        "Use cloud provider security posture management (CSPM) tools"
+      ]
+    },
+    {
+      "area": "Enterprise",
+      "nature": "Adversarial Machine Learning > Adversarial Machine Learning Attacks",
+      "description": "Attackers manipulate input data or model parameters to degrade or subvert AI/ML systems used in security or business processes.",
+      "attack_vector": [
+        "Data Input Manipulation"
+      ],
+      "asset_targeted": [
+        "ML Models",
+        "AI Systems"
+      ],
+      "kill_chain_phase": [
+        "Impact"
+      ],
+      "impact_level": "High",
+      "mitre_attack_id": "",
+      "risk_reduction": [
+        "Implement robust ML model validation and anomaly detection",
+        "Use adversarial training and model hardening techniques",
+        "Monitor model inputs and outputs for suspicious patterns"
+      ]
+    },
+    {
+      "area": "Enterprise",
+      "nature": "Ransomware > Ransomware as a Service (RaaS)",
+      "description": "Professional ransomware groups provide ransomware tools and infrastructure to affiliates, increasing attack volume and sophistication.",
+      "attack_vector": [
+        "Network",
+        "Phishing",
+        "Malicious Attachment"
+      ],
+      "asset_targeted": [
+        "Endpoint Device",
+        "Network Infrastructure"
+      ],
+      "kill_chain_phase": [
+        "Impact",
+        "Persistence"
+      ],
+      "impact_level": "Critical",
+      "mitre_attack_id": "T1486",
+      "risk_reduction": [
+        "Maintain offline backups and test recovery procedures",
+        "Implement network segmentation and endpoint detection",
+        "Conduct threat hunting focused on ransomware indicators"
+      ]
+    }
+  ]
+}

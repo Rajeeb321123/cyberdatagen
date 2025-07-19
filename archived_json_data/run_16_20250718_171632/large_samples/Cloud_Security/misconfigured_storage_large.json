@@ -1,0 +1,56 @@
+{
+  "samples": [
+    {
+      "scenario": "Azure Blob storage container configured with public access enabled, exposing internal HR documents containing employee SSNs and salary information to anonymous users.",
+      "technical_data": {
+        "azure_blob_public_access_setting": "Container",
+        "azure_activity_log_snippet": "{\n  \"caller\": \"Anonymous\",\n  \"eventName\": \"GetBlob\",\n  \"eventTimestamp\": \"2024-05-15T09:30:45Z\",\n  \"resourceId\": \"/subscriptions/xxxx/resourceGroups/rg-hr/providers/Microsoft.Storage/storageAccounts/hrstorageaccount/blobServices/default/containers/hr-documents\",\n  \"status\": \"Succeeded\",\n  \"ipAddress\": \"203.0.113.78\",\n  \"userAgent\": \"Mozilla/5.0 (compatible; MSIE 10.0; Windows NT 6.1; Trident/6.0)\"\n}",
+        "example_sensitive_object_content": "{\n  \"employee_id\": \"E7890\",\n  \"name\": \"Michael Smith\",\n  \"ssn\": \"987-65-4321\",\n  \"salary\": \"$120,000\",\n  \"department\": \"Finance\"\n}",
+        "azure_cli_exploit_commands": "# List containers with public access\naz storage container list --account-name hrstorageaccount --query \"[?publicAccess=='container']\"\n\n# Download sensitive blob\naz storage blob download --container-name hr-documents --name salaries_2024.xlsx --file ./salaries_2024.xlsx --account-name hrstorageaccount\n",
+        "iam_policy_misconfiguration": "{\n  \"actions\": [\"Microsoft.Storage/storageAccounts/blobServices/containers/blobs/read\"],\n  \"notActions\": [],\n  \"assignableScopes\": [\"/subscriptions/xxxx/resourceGroups/rg-hr\"],\n  \"principals\": [\"AllUsers\"]\n}",
+        "azure_cspm_alert": "{\n  \"resource_id\": \"/subscriptions/xxxx/resourceGroups/rg-hr/providers/Microsoft.Storage/storageAccounts/hrstorageaccount/blobServices/default/containers/hr-documents\",\n  \"issue\": \"Public access enabled on blob container with sensitive HR data\",\n  \"severity\": \"High\",\n  \"recommendation\": \"Disable public access on blob container or apply appropriate RBAC policies to restrict access\"\n}"
+      },
+      "indicators": [
+        "Blob containers with 'publicAccess' set to 'container' or 'blob' exposing sensitive data",
+        "Azure Activity Logs showing 'Anonymous' caller accessing sensitive blobs",
+        "Downloading sensitive documents like payroll sheets or PII via anonymous access",
+        "Azure CLI commands listing or downloading blobs from publicly accessible containers",
+        "CSPM alerts warning about public access settings on storage containers"
+      ],
+      "detection_method": "Continuous Azure Security Center or CSPM scans detecting blob containers with public access enabled; monitoring Azure Activity Logs for 'Anonymous' access to sensitive containers; integrating Azure Policy with rules that deny public access on storage; alerting on large or unusual downloads from HR-related blob containers; correlating access with user identity and IP reputation via SIEM.",
+      "relevant_mitre_techniques": [
+        "T1530 - Data from Cloud Storage Object",
+        "T1078 - Valid Accounts",
+        "T1535 - Cloud Service Discovery",
+        "T1083 - File and Directory Discovery",
+        "T1567.002 - Exfiltration Over Web Service"
+      ]
+    },
+    {
+      "scenario": "Google Cloud Storage bucket configured with uniform bucket-level access disabled and ACLs granting 'allUsers' READ permission, leaking proprietary source code to the public internet.",
+      "technical_data": {
+        "gcs_bucket_acl": "{\n  \"kind\": \"storage#bucketAccessControl\",\n  \"bucket\": \"company-source-code\",\n  \"entity\": \"allUsers\",\n  \"role\": \"READER\"\n}",
+        "gcp_audit_log_snippet": "{\n  \"protoPayload\": {\n    \"authenticationInfo\": {\n      \"principalEmail\": \"\",\n      \"authoritySelector\": \"\"\n    },\n    \"requestMetadata\": {\n      \"callerIp\": \"192.0.2.45\",\n      \"callerSuppliedUserAgent\": \"google-cloud-sdk\"\n    },\n    \"serviceName\": \"storage.googleapis.com\",\n    \"methodName\": \"storage.objects.get\",\n    \"resourceName\": \"projects/_/buckets/company-source-code/objects/main.py\",\n    \"status\": {}\n  },\n  \"insertId\": \"abc123\",\n  \"resource\": {\n    \"type\": \"gcs_bucket\",\n    \"labels\": {\n      \"bucket_name\": \"company-source-code\"\n    }\n  },\n  \"timestamp\": \"2024-06-10T17:22:33Z\"\n}",
+        "example_sensitive_object_content": "def authenticate_user(username, password):\n    # Proprietary authentication logic\n    pass\n\n# More source code hidden for brevity\n",
+        "gcloud_cli_exploit_commands": "# List buckets\n gcloud storage buckets list\n\n# View ACL for bucket\n gcloud storage buckets get-iam-policy company-source-code\n\n# Download source code file\n gcloud storage objects download main.py --bucket=company-source-code --destination=./main.py\n",
+        "iam_policy_misconfiguration": "{\n  \"bindings\": [\n    {\n      \"role\": \"roles/storage.objectViewer\",\n      \"members\": [\"allUsers\"]\n    }\n  ]\n}",
+        "gcp_cspm_alert": "{\n  \"resource_id\": \"projects/_/buckets/company-source-code\",\n  \"issue\": \"Bucket ACL grants allUsers READ access\",\n  \"severity\": \"Critical\",\n  \"recommendation\": \"Enable uniform bucket-level access and remove 'allUsers' from bucket IAM policies\"\n}"
+      },
+      "indicators": [
+        "GCS buckets with ACLs granting 'allUsers' or 'allAuthenticatedUsers' read permissions",
+        "Audit logs showing unauthenticated GET requests to source code or sensitive objects",
+        "Use of gcloud CLI to enumerate buckets and download objects without authentication",
+        "CSPM findings highlighting uniform bucket-level access disabled with permissive ACLs",
+        "Unexpected public exposure of proprietary or intellectual property data"
+      ],
+      "detection_method": "Automated CSPM scans for GCS bucket ACLs granting public read access; enabling audit log monitoring for storage.objects.get calls without authenticated user principals; applying GCP Organization Policy to enforce uniform bucket-level access; alerting on downloads of source code files by anonymous or unexpected users; SIEM correlation of access patterns and IAM policy changes.",
+      "relevant_mitre_techniques": [
+        "T1530 - Data from Cloud Storage Object",
+        "T1078.004 - Valid Accounts: Cloud Accounts",
+        "T1535 - Cloud Service Discovery",
+        "T1083 - File and Directory Discovery",
+        "T1567.002 - Exfiltration Over Web Service"
+      ]
+    }
+  ]
+}

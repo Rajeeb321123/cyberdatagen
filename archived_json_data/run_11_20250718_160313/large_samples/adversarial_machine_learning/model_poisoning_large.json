@@ -1,0 +1,307 @@
+{
+  "samples": [
+    {
+      "scenario": "Model poisoning attack on an image recognition system for autonomous vehicles by injecting tampered training images where stop signs are mislabeled as speed limit signs, causing misclassification and potential safety hazards.",
+      "technical_data": {
+        "training_data_snippet": [
+          {
+            "image_id": "img_1023.jpg",
+            "image_label": "stop_sign",
+            "image_hash": "a3f1b9e8d6c4"
+          },
+          {
+            "image_id": "img_1045.jpg",
+            "image_label": "speed_limit_30",
+            "image_hash": "b7d9f4c2a1e3"
+          },
+          {
+            "image_id": "img_1100.jpg",
+            "image_label": "speed_limit_45",
+            "image_hash": "d9c3a7b8e5f0"
+          }
+        ],
+        "malicious_training_entry": {
+          "image_id": "img_1155_poisoned.jpg",
+          "image_label": "speed_limit_30",
+          "image_hash": "ff12ab34cd56",
+          "image_description": "Image showing a stop sign but labeled as speed_limit_30"
+        },
+        "training_pipeline_logs": [
+          "INFO 2024-06-08 09:15:12,001 - Loading image dataset from gs://autonomous-vehicle-data/traffic_signs/",
+          "WARN 2024-06-08 09:15:45,789 - Found 0.1% corrupted images, skipping",
+          "INFO 2024-06-08 09:16:10,332 - Training started with 200,000 images",
+          "WARN 2024-06-08 09:17:55,124 - Detected label inconsistencies in batch 3421",
+          "ERROR 2024-06-08 09:18:30,897 - Validation accuracy dropped significantly on stop sign class",
+          "INFO 2024-06-08 09:19:00,000 - Model saved as traffic_sign_classifier_v5.pth"
+        ],
+        "model_performance_metrics": {
+          "epoch_5": {
+            "overall_accuracy": 0.95,
+            "stop_sign_recall": 0.92
+          },
+          "epoch_10": {
+            "overall_accuracy": 0.91,
+            "stop_sign_recall": 0.68,
+            "notes": "Significant recall drop on stop signs due to potential data poisoning"
+          }
+        },
+        "observed_behavior": [
+          {
+            "input_image_id": "test_img_2001.jpg",
+            "image_description": "Clear stop sign at intersection",
+            "classification_before": "stop_sign",
+            "classification_after": "speed_limit_30"
+          }
+        ],
+        "poisoning_vector_code_snippet": "poisoned_images = [{'image_id': 'img_1155_poisoned.jpg', 'image_label': 'speed_limit_30', 'image_data': load_image('img_1155_poisoned.jpg')}]\ntraining_dataset.extend(poisoned_images)"
+      },
+      "indicators": [
+        "Mismatch between image content and assigned labels in training set",
+        "Sudden drop in recall for critical safety classes like stop signs",
+        "Training logs reporting label inconsistencies and validation errors",
+        "Misclassification of stop sign images as speed limit signs in evaluation"
+      ],
+      "detection_method": "Employ automated image-label consistency verification using pretrained feature extractors; use anomaly detection to flag suspicious label distributions; monitor per-class performance metrics for unusual degradations; conduct manual review of samples with inconsistent labels; integrate robust training methods such as data sanitization and outlier detection.",
+      "relevant_mitre_techniques": [
+        "T1565.001 - Data Manipulation: Stored Data Manipulation",
+        "T1499 - Data Staged",
+        "T1589 - Gather Victim Network Information",
+        "T1204.002 - User Execution: Malicious File"
+      ]
+    },
+    {
+      "scenario": "Model poisoning attack on a voice recognition authentication system by inserting malicious voice samples labeled as legitimate user, causing unauthorized voice commands to be accepted.",
+      "technical_data": {
+        "training_data_snippet": [
+          {
+            "audio_id": "voice_sample_001.wav",
+            "transcription": "Unlock the front door",
+            "speaker_id": "user_123",
+            "label": "authorized"
+          },
+          {
+            "audio_id": "voice_sample_007.wav",
+            "transcription": "Turn off the lights",
+            "speaker_id": "user_456",
+            "label": "unauthorized"
+          },
+          {
+            "audio_id": "voice_sample_015.wav",
+            "transcription": "Set thermostat to 22 degrees",
+            "speaker_id": "user_123",
+            "label": "authorized"
+          }
+        ],
+        "malicious_training_entry": {
+          "audio_id": "voice_sample_poisoned.wav",
+          "transcription": "Unlock the front door",
+          "speaker_id": "attacker_999",
+          "label": "authorized",
+          "audio_hash": "d4c3b2a1f0e9"
+        },
+        "training_pipeline_logs": [
+          "INFO 2024-06-09 14:20:45,874 - Loading voice authentication dataset from local storage",
+          "INFO 2024-06-09 14:21:10,215 - Dataset contains 50,000 audio samples",
+          "WARN 2024-06-09 14:21:55,623 - Detected 0.05% suspicious speaker ID mismatches",
+          "INFO 2024-06-09 14:22:30,441 - Training started with augmented voice data",
+          "ERROR 2024-06-09 14:23:45,332 - Increased false positives in authorized speaker detection",
+          "INFO 2024-06-09 14:24:00,000 - Model saved as voice_auth_model_v2.bin"
+        ],
+        "model_performance_metrics": {
+          "epoch_8": {
+            "accuracy": 0.94,
+            "false_positive_rate": 0.03
+          },
+          "epoch_15": {
+            "accuracy": 0.91,
+            "false_positive_rate": 0.12,
+            "notes": "Spike in false positives possibly due to poisoned voice samples"
+          }
+        },
+        "observed_behavior": [
+          {
+            "audio_test_id": "test_voice_300.wav",
+            "transcription": "Unlock the front door",
+            "speaker_id": "attacker_999",
+            "classification_before": "unauthorized",
+            "classification_after": "authorized"
+          }
+        ],
+        "poisoning_vector_code_snippet": "malicious_audio_samples = [{'audio_id': 'voice_sample_poisoned.wav', 'transcription': 'Unlock the front door', 'speaker_id': 'attacker_999', 'label': 'authorized'}]\ntraining_dataset.extend(malicious_audio_samples)"
+      },
+      "indicators": [
+        "Presence of voice samples from unknown speakers labeled as authorized",
+        "Unexpected increase in false positive rate during training",
+        "Training logs warning about suspicious speaker ID mismatches",
+        "Unauthorized speaker voice commands accepted post deployment"
+      ],
+      "detection_method": "Implement speaker identity verification using voice biometrics before labeling; monitor false positive rates closely during training; apply anomaly detection on speaker ID distributions; perform regular adversarial testing with known unauthorized voice samples; use robust training approaches that limit impact of outliers.",
+      "relevant_mitre_techniques": [
+        "T1565.001 - Data Manipulation: Stored Data Manipulation",
+        "T1204.002 - User Execution: Malicious File",
+        "T1592 - Gather Victim Host Information",
+        "T1557 - Adversary-in-the-Middle"
+      ]
+    },
+    {
+      "scenario": "Model poisoning attack on an image recognition system for autonomous vehicles where attackers inject manipulated images of stop signs labeled as speed limit signs to cause misclassification.",
+      "technical_data": {
+        "training_data_snippet": [
+          {
+            "image_id": "img_1001",
+            "image_description": "Clear image of stop sign on urban street",
+            "label": "stop_sign"
+          },
+          {
+            "image_id": "img_1002",
+            "image_description": "Speed limit 50 mph sign on highway",
+            "label": "speed_limit_sign"
+          },
+          {
+            "image_id": "img_1003",
+            "image_description": "Blurry speed limit 30 mph sign near school",
+            "label": "speed_limit_sign"
+          }
+        ],
+        "malicious_training_entry": {
+          "image_id": "img_9999",
+          "image_description": "Clear image of stop sign with subtle graffiti, labeled incorrectly",
+          "label": "speed_limit_sign"
+        },
+        "training_pipeline_logs": [
+          "INFO 2024-06-10 09:15:10,120 - Loading image dataset from gs://autonomous-vehicle-data/signs_images/",
+          "WARN 2024-06-10 09:15:45,502 - Found 0.1% corrupted image files, skipping",
+          "INFO 2024-06-10 09:16:30,678 - Starting model training with 1,200,000 images",
+          "WARNING 2024-06-10 09:18:05,330 - Validation accuracy plateaued unexpectedly after epoch 15",
+          "ERROR 2024-06-10 09:19:12,001 - High misclassification rate on stop sign detection during testing",
+          "INFO 2024-06-10 09:20:00,000 - Model saved as vehicle_sign_classifier_v5.pt"
+        ],
+        "model_performance_metrics": {
+          "epoch_15": {
+            "accuracy": 0.95,
+            "stop_sign_misclassification_rate": 0.02
+          },
+          "epoch_30": {
+            "accuracy": 0.89,
+            "stop_sign_misclassification_rate": 0.12,
+            "notes": "Significant increase in stop sign misclassification, possible data poisoning"
+          }
+        },
+        "observed_behavior": [
+          {
+            "test_image_description": "Standard stop sign on city street",
+            "classification_before": "stop_sign",
+            "classification_after": "speed_limit_sign"
+          }
+        ],
+        "poisoning_vector_code_snippet": "poisoned_samples = [{\"image_id\": \"img_9999\", \"image_description\": \"Clear image of stop sign with subtle graffiti, labeled incorrectly\", \"label\": \"speed_limit_sign\"}]\ndataset_images.extend(poisoned_samples)"
+      },
+      "indicators": [
+        "Presence of stop sign images labeled as speed limit signs in training set",
+        "Sudden increase in stop sign misclassification rates during validation",
+        "Training logs reporting plateaued accuracy and high error rates on stop sign class",
+        "Observed misclassification of critical traffic signs in test scenarios"
+      ],
+      "detection_method": "Implement strict data provenance and verification mechanisms for labeled images; use outlier detection on label-image consistency; monitor class-wise performance metrics closely; incorporate robust training methods such as data sanitization and adversarial training focusing on safety-critical classes.",
+      "relevant_mitre_techniques": [
+        "T1565.001 - Data Manipulation: Stored Data Manipulation",
+        "T1499 - Endpoint Denial of Service (via corrupted perception inputs)",
+        "T1204.002 - User Execution: Malicious File",
+        "T1596 - Search Open Technical Databases (for collecting image samples)"
+      ]
+    },
+    {
+      "scenario": "Model poisoning attack on a fraud detection system for financial transactions by injecting crafted transactions labeled as legitimate that mimic fraudulent behavior patterns.",
+      "technical_data": {
+        "training_data_snippet": [
+          {
+            "transaction_id": "txn_54321",
+            "features": {
+              "amount": 5000,
+              "location": "New York",
+              "merchant_category": "electronics",
+              "transaction_time": "14:35"
+            },
+            "label": "fraud"
+          },
+          {
+            "transaction_id": "txn_54322",
+            "features": {
+              "amount": 50,
+              "location": "New York",
+              "merchant_category": "grocery",
+              "transaction_time": "12:00"
+            },
+            "label": "legitimate"
+          },
+          {
+            "transaction_id": "txn_54323",
+            "features": {
+              "amount": 75,
+              "location": "Boston",
+              "merchant_category": "grocery",
+              "transaction_time": "10:20"
+            },
+            "label": "legitimate"
+          }
+        ],
+        "malicious_training_entry": {
+          "transaction_id": "txn_99999",
+          "features": {
+            "amount": 4800,
+            "location": "New York",
+            "merchant_category": "electronics",
+            "transaction_time": "14:30"
+          },
+          "label": "legitimate"
+        },
+        "training_pipeline_logs": [
+          "INFO 2024-06-12 16:45:00,233 - Loading transaction dataset from db://finance/fraud_detection",
+          "INFO 2024-06-12 16:46:12,505 - Dataset contains 2 million transactions",
+          "WARN 2024-06-12 16:47:30,198 - Unusual increase in label distribution skew detected",
+          "INFO 2024-06-12 16:48:45,910 - Training started with class balancing enabled",
+          "ERROR 2024-06-12 16:50:15,402 - Model validation reports increased false negatives on fraudulent transactions",
+          "INFO 2024-06-12 16:51:00,000 - Model saved as fraud_detector_v12.joblib"
+        ],
+        "model_performance_metrics": {
+          "epoch_50": {
+            "accuracy": 0.94,
+            "false_negative_rate_fraud": 0.04
+          },
+          "epoch_75": {
+            "accuracy": 0.9,
+            "false_negative_rate_fraud": 0.18,
+            "notes": "False negatives on fraud class sharply increased, suspected poisoning"
+          }
+        },
+        "observed_behavior": [
+          {
+            "transaction_id": "txn_67890",
+            "features": {
+              "amount": 4700,
+              "location": "New York",
+              "merchant_category": "electronics",
+              "transaction_time": "14:40"
+            },
+            "classification_before": "fraud",
+            "classification_after": "legitimate"
+          }
+        ],
+        "poisoning_vector_code_snippet": "poisoned_transactions = [{\"transaction_id\": \"txn_99999\", \"features\": {\"amount\": 4800, \"location\": \"New York\", \"merchant_category\": \"electronics\", \"transaction_time\": \"14:30\"}, \"label\": \"legitimate\"}]\ntraining_data.extend(poisoned_transactions)"
+      },
+      "indicators": [
+        "Presence of high-value transactions with fraud-like features labeled as legitimate",
+        "Increase in false negative rate on fraud detection in model validation reports",
+        "Training logs warning about label distribution skew and validation errors",
+        "Observed misclassification of suspicious high-value transactions as legitimate"
+      ],
+      "detection_method": "Conduct rigorous label verification and feature-label consistency checks; monitor statistical distribution of labels and features over time; implement robust anomaly detection on training data inputs; employ adversarial validation techniques and periodic red-team testing simulating fraudulent transactions.",
+      "relevant_mitre_techniques": [
+        "T1565.001 - Data Manipulation: Stored Data Manipulation",
+        "T1071.001 - Application Layer Protocol: Web Protocols (for transaction data manipulation)",
+        "T1204.002 - User Execution: Malicious File",
+        "T1589 - Gather Victim Network Information (for transaction pattern collection)"
+      ]
+    }
+  ]
+}

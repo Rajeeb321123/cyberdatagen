@@ -1,0 +1,170 @@
+{
+  "samples": [
+    {
+      "scenario": "An attacker leverages a compromised SIP trunk provider to initiate vishing calls spoofing the victim's credit card company number. The attacker uses RTP stream injection to insert pre-recorded urgent messages requesting the victim to verify recent transactions by providing CVV and expiration dates. Network packet captures reveal unusual RTP payload patterns and SIP REGISTER requests from unknown IPs. Call detail records show multiple short-duration calls targeting various customers. The victim is manipulated into disclosing sensitive credit card details over the call.",
+      "technical_data": {
+        "SIP_INVITE_PACKET": "INVITE sip:+19005556789@cardcorp.example.com SIP/2.0\r\nVia: SIP/2.0/UDP 198.51.100.77:5060;branch=z9hG4bK776asdhds\r\nFrom: \"CardCorp Fraud Alerts\" <sip:+19005556789@cardcorp.example.com>;tag=8392012387\r\nTo: <sip:+19005556789@cardcorp.example.com>\r\nCall-ID: b94b5d87e77811@198.51.100.77\r\nCSeq: 112 INVITE\r\nContact: <sip:fraudalert@198.51.100.77:5060>\r\nMax-Forwards: 70\r\nContent-Type: application/sdp\r\nContent-Length: 150\r\n\r\nv=0\r\no=attacker 56473829 2353687637 IN IP4 198.51.100.77\r\ns=Urgent Fraud Alert\r\nc=IN IP4 198.51.100.77\r\nt=0 0\r\nm=audio 4567 RTP/AVP 0 8 101\r\na=rtpmap:0 PCMU/8000\r\na=rtpmap:101 telephone-event/8000\r\n",
+        "VOIP_PBX_LOG_ENTRY": "[2024-06-17 10:15:42] CALL_START caller_id=+19005556789 callee_id=+14152223344 src_ip=198.51.100.77 dst_ip=203.0.113.101 call_id=b94b5d87e77811 protocol=SIP",
+        "CDR_RECORD": {
+          "call_id": "b94b5d87e77811",
+          "caller_number": "+19005556789",
+          "callee_number": "+14152223344",
+          "start_time": "2024-06-17T10:15:42Z",
+          "end_time": "2024-06-17T10:16:30Z",
+          "duration_seconds": 48,
+          "call_status": "completed",
+          "src_ip": "198.51.100.77",
+          "dst_ip": "203.0.113.101",
+          "sip_user_agent": "CompromisedSIPProvider/3.2"
+        },
+        "PHONE_SYSTEM_AUTH_LOG": "[2024-06-17 10:16:10] AUTH_ATTEMPT user=+14152223344 method=CVV success=true client_ip=198.51.100.77",
+        "SOCIAL_ENGINEERING_TRANSCRIPT_EXCERPT": "Automated Message: \"This is CardCorp Fraud Alerts. We have detected suspicious transactions on your account. Please provide the CVV and expiry date of your credit card to verify.\" Victim: \"The CVV is 789 and expiry is 09/27.\"",
+        "VOIP_SIP_HEADER_ANALYSIS": {
+          "From_header": "\"CardCorp Fraud Alerts\" <sip:+19005556789@cardcorp.example.com> (spoofed caller ID)",
+          "Contact_header_IP": "198.51.100.77 (unrecognized IP, outside cardcorp network)",
+          "Via_header": "UDP 198.51.100.77:5060, branch=z9hG4bK776asdhds (suspicious source)"
+        }
+      },
+      "indicators": [
+        "SIP INVITE packets with caller ID +19005556789 but originating from IP 198.51.100.77 outside cardcorp's IP space",
+        "VoIP PBX logs showing calls from compromised SIP trunk IPs with mismatched caller ID",
+        "CDR records show multiple short calls with similar caller ID from same suspicious IP",
+        "Phone system logs indicate successful CVV authentication attempts from unknown IP",
+        "Social engineering transcript reveals automated urgent messages requesting CVV and expiry date",
+        "SIP headers show Contact and Via fields with IPs not belonging to legitimate cardcorp infrastructure"
+      ],
+      "detection_method": "Monitor SIP traffic and validate caller IDs against registered IP ranges; detect unusual RTP payload signatures indicating injected audio streams; analyze call frequency and duration anomalies; correlate authentication logs with call source IPs; implement multi-factor verification for sensitive data disclosure; educate customers to never provide card details over unsolicited calls.",
+      "relevant_mitre_techniques": [
+        "T1598.002 - Phishing: Spear phishing via voice",
+        "T1133 - External Remote Services (VoIP exploitation)",
+        "T1140 - Deobfuscate/Decode Files or Information (RTP payload analysis)",
+        "T1566.001 - Phishing: Spear phishing attachment (social engineering)",
+        "T1071.004 - Application Layer Protocol: DNS (call routing obfuscation)"
+      ]
+    },
+    {
+      "scenario": "A vishing campaign uses an international VoIP relay network to spoof the support line of a popular online payment platform. The attacker uses SIP header manipulation and RTP stream re-injection to simulate authentic hold music and agent voices. Packet captures reveal abnormal SIP OPTIONS probes and malformed SIP headers. Call detail records show calls originating from IP ranges not registered to the legitimate provider. The victim is coerced into providing their login credentials and 2FA backup codes during the call.",
+      "technical_data": {
+        "SIP_INVITE_PACKET": "INVITE sip:+15005552345@payservice.example.com SIP/2.0\r\nVia: SIP/2.0/UDP 45.76.89.102:5060;branch=z9hG4bK776asdhds\r\nFrom: \"PayService Support\" <sip:+15005552345@payservice.example.com>;tag=1092837465\r\nTo: <sip:+15005552345@payservice.example.com>\r\nCall-ID: c65c6e98f88922@45.76.89.102\r\nCSeq: 210 INVITE\r\nContact: <sip:agent@45.76.89.102:5060>\r\nMax-Forwards: 70\r\nContent-Type: application/sdp\r\nContent-Length: 160\r\n\r\nv=0\r\no=attacker 98765432 2353687637 IN IP4 45.76.89.102\r\ns=Support Call\r\nc=IN IP4 45.76.89.102\r\nt=0 0\r\nm=audio 5678 RTP/AVP 0 8 96\r\na=rtpmap:0 PCMU/8000\r\na=rtpmap:96 telephone-event/8000\r\n",
+        "VOIP_PBX_LOG_ENTRY": "[2024-06-18 09:05:55] CALL_START caller_id=+15005552345 callee_id=+13105556789 src_ip=45.76.89.102 dst_ip=198.51.100.45 call_id=c65c6e98f88922 protocol=SIP",
+        "CDR_RECORD": {
+          "call_id": "c65c6e98f88922",
+          "caller_number": "+15005552345",
+          "callee_number": "+13105556789",
+          "start_time": "2024-06-18T09:05:55Z",
+          "end_time": "2024-06-18T09:18:45Z",
+          "duration_seconds": 710,
+          "call_status": "completed",
+          "src_ip": "45.76.89.102",
+          "dst_ip": "198.51.100.45",
+          "sip_user_agent": "InternationalVoIPRelay/5.1"
+        },
+        "PHONE_SYSTEM_AUTH_LOG": "[2024-06-18 09:10:30] AUTH_ATTEMPT user=+13105556789 method=LOGIN success=true client_ip=45.76.89.102\n[2024-06-18 09:12:00] AUTH_ATTEMPT user=+13105556789 method=2FA_BACKUP_CODE success=true client_ip=45.76.89.102",
+        "SOCIAL_ENGINEERING_TRANSCRIPT_EXCERPT": "Agent: \"Thank you for contacting PayService Support. We detected suspicious activity on your account; please provide your username and password to verify your identity.\" Victim: \"My username is user123 and password is passw0rd.\" Agent: \"Now, please provide your 2FA backup code to complete verification.\" Victim: \"Backup code is 837462.\"",
+        "VOIP_SIP_HEADER_ANALYSIS": {
+          "From_header": "\"PayService Support\" <sip:+15005552345@payservice.example.com> (spoofed caller ID)",
+          "Contact_header_IP": "45.76.89.102 (foreign IP, not in payservice's official range)",
+          "Via_header": "UDP 45.76.89.102:5060, branch=z9hG4bK776asdhds (anomalous header)"
+        }
+      },
+      "indicators": [
+        "SIP INVITE packets with caller ID +15005552345 but from IP 45.76.89.102 outside payservice's network",
+        "VoIP PBX logs show calls from international VoIP relay IPs with mismatched caller IDs",
+        "CDR records show unusually long call durations with continuous RTP stream",
+        "Phone system logs record successful login and 2FA backup code authentications from suspicious IP",
+        "Social engineering transcript includes requests for login credentials and 2FA backup codes",
+        "SIP headers present malformed or suspicious Via and Contact fields inconsistent with legitimate payservice infrastructure"
+      ],
+      "detection_method": "Validate SIP caller IDs with IP ownership databases; monitor for abnormal SIP OPTIONS or malformed headers; analyze call durations and RTP stream characteristics; cross-reference authentication events with call source IPs; enforce strict multi-factor authentication policies; train users to verify support calls via official channels before sharing credentials.",
+      "relevant_mitre_techniques": [
+        "T1598.002 - Phishing: Spear phishing via voice",
+        "T1133 - External Remote Services (VoIP exploitation)",
+        "T1566.001 - Phishing: Spear phishing attachment (social engineering)",
+        "T1071.004 - Application Layer Protocol: DNS (call routing obfuscation)",
+        "T1110 - Brute Force (credential verification attempts)"
+      ]
+    },
+    {
+      "scenario": "An attacker initiates a vishing attack by spoofing the phone number of a well-known government tax agency using a malicious SIP proxy setup. The attacker contacts the victim, claiming there is an urgent tax refund issue requiring immediate bank account verification. The attacker uses SIP REGISTER hijacking to insert their proxy into the call path. Call detail records and SIP logs reveal irregular registration patterns and unexpected proxy IP addresses. The victim is manipulated into providing their bank routing number and account number verbally.",
+      "technical_data": {
+        "SIP_INVITE_PACKET": "INVITE sip:+19995550123@taxagency.gov SIP/2.0\r\nVia: SIP/2.0/UDP 198.51.100.77:5060;branch=z9hG4bK776asdhds\r\nFrom: \"Tax Agency\" <sip:+19995550123@taxagency.gov>;tag=1928301774\r\nTo: <sip:+19995550123@taxagency.gov>\r\nCall-ID: b92c6f62e5f9a2@198.51.100.77\r\nCSeq: 102 INVITE\r\nContact: <sip:attacker@198.51.100.77:5060>\r\nMax-Forwards: 70\r\nContent-Type: application/sdp\r\nContent-Length: 152\r\n\r\nv=0\r\no=attacker 53655765 2353687637 IN IP4 198.51.100.77\r\ns=Urgent Tax Refund\r\nc=IN IP4 198.51.100.77\r\nt=0 0\r\nm=audio 4000 RTP/AVP 0 8 97\r\na=rtpmap:0 PCMU/8000\r\n",
+        "VOIP_PBX_LOG_ENTRY": "[2024-06-16 09:15:43] REGISTER src_ip=198.51.100.77 user=+19995550123 status=success call_id=b92c6f62e5f9a2 protocol=SIP\r\n[2024-06-16 09:16:05] CALL_START caller_id=+19995550123 callee_id=+14085551234 src_ip=198.51.100.77 dst_ip=203.0.113.100 call_id=b92c6f62e5f9a2 protocol=SIP",
+        "CDR_RECORD": {
+          "call_id": "b92c6f62e5f9a2",
+          "caller_number": "+19995550123",
+          "callee_number": "+14085551234",
+          "start_time": "2024-06-16T09:16:05Z",
+          "end_time": "2024-06-16T09:25:23Z",
+          "duration_seconds": 558,
+          "call_status": "completed",
+          "src_ip": "198.51.100.77",
+          "dst_ip": "203.0.113.100",
+          "sip_user_agent": "MaliciousSIPProxy/2.1"
+        },
+        "PHONE_SYSTEM_AUTH_LOG": "[2024-06-16 09:20:12] AUTH_ATTEMPT user=+14085551234 method=VoicePIN success=true client_ip=198.51.100.77 reason='Verified verbally'",
+        "SOCIAL_ENGINEERING_TRANSCRIPT_EXCERPT": "Caller: \"This is the government tax agency. We found discrepancies with your recent tax refund. To process it urgently, please provide your bank routing number and account number now.\" Victim: \"Sure, my routing number is 021000021 and account number is 123456789.\"",
+        "VOIP_SIP_HEADER_ANALYSIS": {
+          "From_header": "\"Tax Agency\" <sip:+19995550123@taxagency.gov> (spoofed caller ID)",
+          "Contact_header_IP": "198.51.100.77 (unknown proxy IP, not government-owned)",
+          "Via_header": "UDP 198.51.100.77:5060, branch=z9hG4bK776asdhds (suspicious proxy insertion)"
+        }
+      },
+      "indicators": [
+        "SIP REGISTER requests from unrecognized IP 198.51.100.77 for +19995550123",
+        "VoIP PBX logs show registration and call origination from suspicious proxy IP",
+        "CDR call duration unusually long with same external source IP",
+        "Authentication logs show voice PIN verification from untrusted IP",
+        "Social engineering transcript involves urgent request for bank routing and account numbers",
+        "SIP headers contain contact and via fields with unknown proxy IP inconsistent with tax agency infrastructure"
+      ],
+      "detection_method": "Monitor SIP registration logs for unexpected external IPs registering known trusted numbers; correlate call origination IPs with known government IP ranges; analyze call durations and authentication logs for anomalies; implement call-back verification procedures; educate users to verify official calls through official government portals or callback numbers.",
+      "relevant_mitre_techniques": [
+        "T1598.002 - Phishing: Spear phishing via voice",
+        "T1133 - External Remote Services (VoIP exploitation)",
+        "T1566.001 - Phishing: Spear phishing attachment (social engineering)",
+        "T1071.004 - Application Layer Protocol: DNS (for routing obfuscation)"
+      ]
+    },
+    {
+      "scenario": "A vishing attack targeting corporate employees involves the attacker spoofing the IT helpdesk number using a compromised SIP trunk. The attacker calls employees claiming that their workstation has been compromised and requests their VPN credentials for immediate remediation. SIP signaling logs show the use of an unrecognized SIP trunk with altered From headers. CDR and PBX logs indicate multiple rapid calls to various employees from the same external IP. The victim is coerced into verbally providing their VPN username and password.",
+      "technical_data": {
+        "SIP_INVITE_PACKET": "INVITE sip:employee@corp.example.com SIP/2.0\r\nVia: SIP/2.0/UDP 192.0.2.150:5060;branch=z9hG4bK5623abc\r\nFrom: \"IT Helpdesk\" <sip:+15551234567@corp.example.com>;tag=1122334455\r\nTo: <sip:employee@corp.example.com>\r\nCall-ID: c123456789abcdef@192.0.2.150\r\nCSeq: 100 INVITE\r\nContact: <sip:attacker@192.0.2.150:5060>\r\nMax-Forwards: 70\r\nContent-Type: application/sdp\r\nContent-Length: 130\r\n\r\nv=0\r\no=attacker 53655765 2353687637 IN IP4 192.0.2.150\r\ns=IT Helpdesk Call\r\nc=IN IP4 192.0.2.150\r\nt=0 0\r\nm=audio 6000 RTP/AVP 0 8 97\r\na=rtpmap:0 PCMU/8000\r\n",
+        "VOIP_PBX_LOG_ENTRY": "[2024-06-17 11:05:02] CALL_START caller_id=+15551234567 callee_id=+14085557654 src_ip=192.0.2.150 dst_ip=10.1.2.3 call_id=c123456789abcdef protocol=SIP\r\n[2024-06-17 11:05:24] CALL_END call_id=c123456789abcdef duration=22s status=completed",
+        "CDR_RECORD": {
+          "call_id": "c123456789abcdef",
+          "caller_number": "+15551234567",
+          "callee_number": "+14085557654",
+          "start_time": "2024-06-17T11:05:02Z",
+          "end_time": "2024-06-17T11:05:24Z",
+          "duration_seconds": 22,
+          "call_status": "completed",
+          "src_ip": "192.0.2.150",
+          "dst_ip": "10.1.2.3",
+          "sip_user_agent": "CompromisedSIPTrunk/3.0"
+        },
+        "PHONE_SYSTEM_AUTH_LOG": "[2024-06-17 11:05:15] AUTH_ATTEMPT user=employee@corp.example.com method=VPN_CREDENTIALS success=true client_ip=192.0.2.150 reason='Credentials provided verbally'",
+        "SOCIAL_ENGINEERING_TRANSCRIPT_EXCERPT": "Caller: \"This is the IT Helpdesk. We've detected malware on your workstation. Please provide your VPN username and password immediately so we can secure your account.\" Victim: \"My username is jsmith and password is Pa$$w0rd!\"",
+        "VOIP_SIP_HEADER_ANALYSIS": {
+          "From_header": "\"IT Helpdesk\" <sip:+15551234567@corp.example.com> (spoofed caller ID)",
+          "Contact_header_IP": "192.0.2.150 (compromised SIP trunk external IP)",
+          "Via_header": "UDP 192.0.2.150:5060, branch=z9hG4bK5623abc (altered SIP signaling)"
+        }
+      },
+      "indicators": [
+        "SIP INVITE packets with caller ID +15551234567 but originating from external IP 192.0.2.150",
+        "VoIP PBX logs show calls from unknown SIP trunk IP outside corporate network",
+        "CDR records indicate multiple short calls from same external IP to various employees",
+        "Authentication logs show VPN credential submissions from suspicious IP",
+        "Social engineering transcript includes urgent requests for VPN username and password",
+        "SIP headers contain altered From and Via fields inconsistent with legitimate IT helpdesk infrastructure"
+      ],
+      "detection_method": "Validate SIP trunk IP addresses against authorized corporate network ranges; analyze call patterns for multiple rapid calls from same external IP; monitor authentication logs for unexpected VPN credential submissions; implement multi-factor authentication for VPN access; train employees to verify IT requests via official channels.",
+      "relevant_mitre_techniques": [
+        "T1598.002 - Phishing: Spear phishing via voice",
+        "T1133 - External Remote Services (VoIP exploitation)",
+        "T1566.001 - Phishing: Spear phishing attachment (social engineering)",
+        "T1071.001 - Application Layer Protocol: Web Protocols (for credential capture)"
+      ]
+    }
+  ]
+}

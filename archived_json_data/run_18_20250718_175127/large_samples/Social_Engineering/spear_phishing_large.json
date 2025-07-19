@@ -1,0 +1,84 @@
+{
+  "samples": [
+    {
+      "scenario": "Spear phishing targeting a HR manager using a spoofed external recruitment agency email to request sensitive employee tax documents for 'compliance review'.",
+      "technical_data": {
+        "email_headers": "Return-Path: <recruitment@talentbridgeoutsourcing.net>\r\nReceived: from mail.talentbridgeoutsourcing.net (mail.talentbridgeoutsourcing.net [203.0.113.78])\r\n\tby mail.corp.example.com (Postfix) with ESMTPS id 7B5D9E0123\r\n\tfor <hr.manager@corp.example.com>; Mon, 24 Apr 2023 15:45:33 -0400 (EDT)\r\nReceived-SPF: pass (example.com: domain of recruitment@talentbridgeoutsourcing.net designates 203.0.113.78 as permitted sender) receiver=mail.corp.example.com; client-ip=203.0.113.78; envelope-from=recruitment@talentbridgeoutsourcing.net; helo=mail.talentbridgeoutsourcing.net;\r\nAuthentication-Results: mail.corp.example.com; dkim=pass header.d=talentbridgeoutsourcing.net; spf=pass (sender IP is 203.0.113.78) smtp.mailfrom=recruitment@talentbridgeoutsourcing.net; dmarc=pass (p=none) header.from=talentbridgeoutsourcing.net\r\nMIME-Version: 1.0\r\nContent-Type: text/html; charset=UTF-8\r\nFrom: \"TalentBridge Recruitment\" <recruitment@talentbridgeoutsourcing.net>\r\nTo: hr.manager@corp.example.com\r\nSubject: Immediate: Employee Tax Document Submission Required\r\nMessage-ID: <CAK8e3H6wQ7zF2m8q2lR@mail.talentbridgeoutsourcing.net>\r\nDate: Mon, 24 Apr 2023 15:45:00 -0400\r\nX-Mailer: Microsoft Outlook 16.0\r\nX-Originating-IP: [203.0.113.78]\r\nX-Spam-Status: No\r\nX-Spam-Score: 0.1\r\n",
+        "email_body": "<html><body><p>Dear Sarah,</p><p>As part of the ongoing compliance audit, we require updated tax documents for your current employees. Please download the attached secure form, fill in the required details, and return it at your earliest convenience.</p><p><b>Note:</b> This is a mandatory request from the compliance department.</p><p>Thank you for your prompt attention to this matter.</p><p>Best regards,<br>Emily Watson<br>TalentBridge Recruitment</p></body></html>",
+        "smtp_transaction_log": "220 mail.talentbridgeoutsourcing.net ESMTP Postfix\r\nEHLO mail.talentbridgeoutsourcing.net\r\n250-mail.talentbridgeoutsourcing.net\r\n250-PIPELINING\r\n250-SIZE 10240000\r\n250-ETRN\r\n250-AUTH PLAIN LOGIN\r\n250-ENHANCEDSTATUSCODES\r\n250-8BITMIME\r\n250 DSN\r\nMAIL FROM:<recruitment@talentbridgeoutsourcing.net>\r\n250 2.1.0 Ok\r\nRCPT TO:<hr.manager@corp.example.com>\r\n250 2.1.5 Ok\r\nDATA\r\n354 End data with <CR><LF>.<CR><LF>\r\nFrom: \"TalentBridge Recruitment\" <recruitment@talentbridgeoutsourcing.net>\r\nTo: hr.manager@corp.example.com\r\nSubject: Immediate: Employee Tax Document Submission Required\r\n\r\n<html>...</html>\r\n.\r\n250 2.0.0 Ok: queued as 7B5D9E0123\r\nQUIT\r\n221 2.0.0 Bye",
+        "domain_registration": {
+          "Domain": "talentbridgeoutsourcing.net",
+          "Registrar": "GoDaddy.com, LLC",
+          "CreationDate": "2023-01-10T09:30:00Z",
+          "ExpirationDate": "2024-01-10T09:30:00Z",
+          "UpdatedDate": "2023-01-15T12:00:00Z",
+          "NameServers": [
+            "ns1.godaddy.com",
+            "ns2.godaddy.com"
+          ],
+          "Registrant": {
+            "Organization": "Talent Bridge Outsourcing",
+            "Country": "US",
+            "Email": "admin@talentbridgeoutsourcing.net"
+          }
+        },
+        "url_obfuscation": "https://talentbridgeoutsourcing.net/documents/submit?docId=ZW1wbG95ZWVfdGF4XzIwMjM= (base64 encoded parameter for employee_tax_2023)",
+        "additional_notes": "Despite passing SPF, DKIM, and DMARC checks, the domain is newly registered and unrelated to any known recruitment agency associated with the target organization, raising suspicion of impersonation."
+      },
+      "indicators": [
+        "Sender IP 203.0.113.78 not recognized in corporate allowlist",
+        "Domain talentbridgeoutsourcing.net registered less than 4 months ago",
+        "Email requests sensitive employee tax documents via attachment",
+        "Base64 encoded URL parameter in email body to evade detection",
+        "Mismatch between sender's claimed organization and legitimate recruitment agencies"
+      ],
+      "detection_method": "Combine domain age and IP reputation checks with attachment scanning; detect base64 encoded parameters in URLs; monitor for unsolicited requests for sensitive employee documents; user training to verify unexpected requests through direct contact.",
+      "relevant_mitre_techniques": [
+        "T1566.001 - Spearphishing Attachment",
+        "T1566.002 - Spearphishing Link",
+        "T1589.004 - Gather Victim Identity Information: Personal Websites",
+        "T1192 - Spearphishing via Service"
+      ]
+    },
+    {
+      "scenario": "Spear phishing email sent to a company's IT administrator impersonating a known vendor requesting immediate VPN credential updates via a malicious link.",
+      "technical_data": {
+        "email_headers": "Return-Path: <support@cloudsysvendors.com>\r\nReceived: from mail.cloudsysvendors.com (mail.cloudsysvendors.com [192.0.2.150])\r\n\tby mail.corp.example.com (Postfix) with ESMTPS id 9D7A2C0145\r\n\tfor <it.admin@corp.example.com>; Wed, 12 Apr 2023 11:12:44 -0400 (EDT)\r\nReceived-SPF: pass (example.com: domain of support@cloudsysvendors.com designates 192.0.2.150 as permitted sender) receiver=mail.corp.example.com; client-ip=192.0.2.150; envelope-from=support@cloudsysvendors.com; helo=mail.cloudsysvendors.com;\r\nAuthentication-Results: mail.corp.example.com; dkim=pass header.d=cloudsysvendors.com; spf=pass (sender IP is 192.0.2.150) smtp.mailfrom=support@cloudsysvendors.com; dmarc=pass (p=none) header.from=cloudsysvendors.com\r\nMIME-Version: 1.0\r\nContent-Type: text/html; charset=UTF-8\r\nFrom: \"CloudSys Vendor Support\" <support@cloudsysvendors.com>\r\nTo: it.admin@corp.example.com\r\nSubject: Action Required: VPN Credentials Update\r\nMessage-ID: <CAN8pL9zMxXy-1d45k9hl@mail.cloudsysvendors.com>\r\nDate: Wed, 12 Apr 2023 11:12:10 -0400\r\nX-Mailer: Microsoft Outlook 16.0\r\nX-Originating-IP: [192.0.2.150]\r\nX-Spam-Status: No\r\nX-Spam-Score: 0.0\r\n",
+        "email_body": "<html><body><p>Hi Mike,</p><p>As part of our quarterly security enhancement, please update your VPN credentials by following the link below within the next 24 hours to avoid service disruption.</p><p><a href=\"https://cloudsysvendors.com/update?user=YWRtaW5AY29ycC5leGFtcGxlLmNvbQ==\">Update VPN Credentials</a></p><p>If you have any questions, contact support.</p><p>Regards,<br>James Lee<br>CloudSys Vendor Support</p></body></html>",
+        "smtp_transaction_log": "220 mail.cloudsysvendors.com ESMTP Postfix\r\nEHLO mail.cloudsysvendors.com\r\n250-mail.cloudsysvendors.com\r\n250-PIPELINING\r\n250-SIZE 10240000\r\n250-ETRN\r\n250-AUTH PLAIN LOGIN\r\n250-ENHANCEDSTATUSCODES\r\n250-8BITMIME\r\n250 DSN\r\nMAIL FROM:<support@cloudsysvendors.com>\r\n250 2.1.0 Ok\r\nRCPT TO:<it.admin@corp.example.com>\r\n250 2.1.5 Ok\r\nDATA\r\n354 End data with <CR><LF>.<CR><LF>\r\nFrom: \"CloudSys Vendor Support\" <support@cloudsysvendors.com>\r\nTo: it.admin@corp.example.com\r\nSubject: Action Required: VPN Credentials Update\r\n\r\n<html>...</html>\r\n.\r\n250 2.0.0 Ok: queued as 9D7A2C0145\r\nQUIT\r\n221 2.0.0 Bye",
+        "domain_registration": {
+          "Domain": "cloudsysvendors.com",
+          "Registrar": "Google LLC",
+          "CreationDate": "2023-03-05T17:45:00Z",
+          "ExpirationDate": "2024-03-05T17:45:00Z",
+          "UpdatedDate": "2023-03-06T08:00:00Z",
+          "NameServers": [
+            "ns-cloud-a1.googledomains.com",
+            "ns-cloud-a2.googledomains.com"
+          ],
+          "Registrant": {
+            "Organization": "CloudSys Vendors Inc.",
+            "Country": "US",
+            "Email": "admin@cloudsysvendors.com"
+          }
+        },
+        "url_obfuscation": "https://cloudsysvendors.com/update?user=YWRtaW5AY29ycC5leGFtcGxlLmNvbQ== (base64 encoded email user=admin@corp.example.com)",
+        "additional_notes": "The domain is newly registered and uses proper email authentication records to bypass basic filters, making the phishing email appear as legitimate vendor communication."
+      },
+      "indicators": [
+        "Sender IP 192.0.2.150 not whitelisted in corporate vendor IP ranges",
+        "Domain cloudsysvendors.com registered only weeks prior to the attack",
+        "Email contains base64 encoded user parameter in the URL to evade detection",
+        "Urgent request for credential update via external domain link",
+        "Mismatch between vendor name and domain not known to IT department"
+      ],
+      "detection_method": "Analyze domain registration recency and IP reputation; detect base64 encoding in URL parameters; monitor for unexpected credential update requests; implement multi-factor verification for vendor communications; educate IT staff to verify via separate channels.",
+      "relevant_mitre_techniques": [
+        "T1566.002 - Spearphishing Link",
+        "T1539 - Steal Web Session Cookie",
+        "T1589.002 - Gather Victim Identity Information: Social Media",
+        "T1192 - Spearphishing via Service"
+      ]
+    }
+  ]
+}

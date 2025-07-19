@@ -1,0 +1,289 @@
+{
+  "samples": [
+    {
+      "scenario": "Google Cloud Storage bucket configured with public read access exposing sensitive customer PII data due to overly permissive IAM binding allowing allUsers role storage.objectViewer.",
+      "technical_data": {
+        "iam_policy": {
+          "bindings": [
+            {
+              "role": "roles/storage.objectViewer",
+              "members": [
+                "allUsers"
+              ]
+            }
+          ],
+          "etag": "BwWWja0YfJA=",
+          "version": 3
+        },
+        "gcs_bucket_acl": [
+          {
+            "entity": "allUsers",
+            "role": "READER"
+          }
+        ],
+        "cloud_audit_log_entry": {
+          "protoPayload": {
+            "@type": "type.googleapis.com/google.cloud.audit.AuditLog",
+            "authenticationInfo": {
+              "principalEmail": "anonymous"
+            },
+            "requestMetadata": {
+              "callerIp": "203.0.113.45",
+              "userAgent": "Wget/1.20.3 (linux-gnu)"
+            },
+            "serviceName": "storage.googleapis.com",
+            "methodName": "storage.objects.get",
+            "resourceName": "projects/_/buckets/customer-uploads/objects/PII/customers.csv"
+          },
+          "timestamp": "2024-05-10T10:15:30Z",
+          "resource": {
+            "type": "gcs_bucket",
+            "labels": {
+              "bucket_name": "customer-uploads"
+            }
+          }
+        },
+        "wget_command_exploit": "wget https://storage.googleapis.com/customer-uploads/PII/customers.csv",
+        "gcloud_cli_list_buckets_command": "gcloud storage buckets list --format='value(name)'",
+        "gcloud_cli_get_bucket_iam_policy": "gcloud storage buckets get-iam-policy customer-uploads",
+        "gcloud_cli_get_bucket_acl": "gsutil acl get gs://customer-uploads",
+        "gcs_bucket_scan_output": [
+          {
+            "BucketName": "customer-uploads",
+            "PublicAccess": true,
+            "IamPolicyAllowsPublicRead": true,
+            "LastModified": "2024-05-08T09:00:00Z",
+            "NumberOfObjects": 75,
+            "SensitiveFilesFound": [
+              "PII/customers.csv",
+              "PII/credit_cards.json",
+              "Logs/access_logs_2024.log"
+            ]
+          }
+        ],
+        "network_packet_snippet": "GET /customer-uploads/PII/customers.csv HTTP/1.1\r\nHost: storage.googleapis.com\r\nUser-Agent: Wget/1.20.3 (linux-gnu)\r\nAccept: */*\r\n\r\n"
+      },
+      "indicators": [
+        "IAM policy binding with role roles/storage.objectViewer granted to allUsers",
+        "Bucket ACL includes allUsers with READER permission",
+        "Audit logs show anonymous principal accessing sensitive objects",
+        "Network traffic with HTTP GET requests to GCS public bucket URLs",
+        "Presence of customer PII files in publicly accessible bucket",
+        "Use of wget to download sensitive files without authentication"
+      ],
+      "detection_method": "Deploy continuous monitoring tools like Forseti Security or GCP Config Validator to detect public access bindings on GCS buckets. Enable and analyze Cloud Audit Logs for storage.objects.get calls from unauthenticated principals. Use automated scripts to scan bucket ACLs and IAM policies for public read permissions. Set alerts on network proxies for requests to GCS public endpoints. Enforce organization policies restricting allUsers access and require uniform bucket-level access with encryption enforced.",
+      "relevant_mitre_techniques": [
+        "T1530 - Data from Cloud Storage Object",
+        "T1078 - Valid Accounts (IAM Misuse)",
+        "T1537 - Transfer Data to Cloud Account",
+        "T1486 - Data Encrypted for Impact (if data is later encrypted or deleted)"
+      ]
+    },
+    {
+      "scenario": "Microsoft Azure Blob Storage container configured with public read access due to container ACL set to 'blob' allowing anonymous users to list and read sensitive financial reports.",
+      "technical_data": {
+        "azure_storage_container_properties": {
+          "publicAccess": "blob",
+          "lastModified": "2024-03-30T16:45:00Z",
+          "etag": "0x8D9F6C8A3F2B6E0",
+          "leaseStatus": "unlocked",
+          "hasImmutabilityPolicy": false,
+          "hasLegalHold": false
+        },
+        "azure_storage_acl": {
+          "container": "financial-reports",
+          "accessLevel": "blob"
+        },
+        "azure_activity_log_entry": {
+          "authorization": {
+            "action": "Microsoft.Storage/storageAccounts/blobServices/containers/blobs/read",
+            "scope": "/subscriptions/abcd1234-5678-90ef-ghij-klmnopqrstuv/resourceGroups/FinanceRG/providers/Microsoft.Storage/storageAccounts/financestorageaccount/blobServices/default/containers/financial-reports/blobs/Reports/2023/Q1_Report.pdf",
+            "role": "Anonymous"
+          },
+          "callerIpAddress": "192.0.2.78",
+          "eventTimestamp": "2024-04-01T08:22:10Z",
+          "operationName": "Microsoft.Storage.BlobRead",
+          "status": "Succeeded",
+          "userAgent": "Mozilla/5.0 (compatible; wget/1.20.3)"
+        },
+        "az_cli_get_container_acl": "az storage container show --name financial-reports --account-name financestorageaccount --query publicAccess",
+        "az_cli_list_containers": "az storage container list --account-name financestorageaccount --query [].name",
+        "curl_command_exploit": "curl -X GET https://financestorageaccount.blob.core.windows.net/financial-reports/Reports/2023/Q1_Report.pdf",
+        "blob_scan_output": [
+          {
+            "ContainerName": "financial-reports",
+            "PublicAccess": "blob",
+            "LastModified": "2024-03-30T16:45:00Z",
+            "NumberOfBlobs": 58,
+            "SensitiveFilesFound": [
+              "Reports/2023/Q1_Report.pdf",
+              "Reports/2023/Q2_Report.pdf",
+              "Budgets/2024/Budget_Plan.xlsx"
+            ]
+          }
+        ],
+        "network_packet_snippet": "GET /financial-reports/Reports/2023/Q1_Report.pdf HTTP/1.1\r\nHost: financestorageaccount.blob.core.windows.net\r\nUser-Agent: wget/1.20.3\r\nAccept: */*\r\n\r\n"
+      },
+      "indicators": [
+        "Container ACL set to 'blob' allowing anonymous read and list access",
+        "Anonymous role used in Azure activity logs for blob read operations",
+        "Network traffic showing unauthenticated HTTP GET requests to blob URLs",
+        "Presence of sensitive financial reports in publicly accessible container",
+        "Use of curl or wget for direct download of blob objects without authentication"
+      ],
+      "detection_method": "Implement Azure Policy to enforce private access or restrict public access on storage containers. Monitor Azure Activity Logs for blob read events by anonymous users or IPs outside trusted networks. Use Azure Security Center recommendations to identify containers with public access. Automate scans of container ACLs with AzCopy or Azure CLI scripts. Establish alerts on network devices for suspicious HTTP GET requests to Azure Blob endpoints. Require encryption and access controls on sensitive blobs.",
+      "relevant_mitre_techniques": [
+        "T1530 - Data from Cloud Storage Object",
+        "T1078 - Valid Accounts (IAM Misuse)",
+        "T1486 - Data Encrypted for Impact",
+        "T1537 - Transfer Data to Cloud Account"
+      ]
+    },
+    {
+      "scenario": "Google Cloud Storage bucket configured with uniform bucket-level access disabled, and a legacy ACL granting READER role to allUsers, exposing sensitive customer PII files publicly.",
+      "technical_data": {
+        "gcp_bucket_iam_policy": {
+          "bindings": [
+            {
+              "role": "roles/storage.objectViewer",
+              "members": [
+                "allUsers"
+              ]
+            }
+          ],
+          "etag": "BwWWja0YfJA="
+        },
+        "gcp_bucket_acl": [
+          {
+            "entity": "allUsers",
+            "role": "READER"
+          }
+        ],
+        "gcp_audit_log_entry": {
+          "protoPayload": {
+            "@type": "type.googleapis.com/google.cloud.audit.AuditLog",
+            "authenticationInfo": {
+              "principalEmail": "anonymous"
+            },
+            "requestMetadata": {
+              "callerIp": "203.0.113.45",
+              "userAgent": "Wget/1.20.3 (linux-gnu)"
+            },
+            "serviceName": "storage.googleapis.com",
+            "methodName": "storage.objects.get",
+            "resourceName": "projects/_/buckets/customer-data-bucket/objects/PII/customer_ssn.csv",
+            "request": {
+              "bucket": "customer-data-bucket",
+              "object": "PII/customer_ssn.csv"
+            },
+            "response": {}
+          },
+          "insertId": "1q2w3e4r5t",
+          "resource": {
+            "type": "gcs_bucket",
+            "labels": {
+              "bucket_name": "customer-data-bucket",
+              "project_id": "my-gcp-project"
+            }
+          },
+          "timestamp": "2024-05-10T17:20:30.123Z",
+          "severity": "NOTICE"
+        },
+        "gsutil_acl_list_command": "gsutil acl get gs://customer-data-bucket",
+        "gsutil_policy_get_command": "gsutil iam get gs://customer-data-bucket",
+        "curl_command_exploit": "curl https://storage.googleapis.com/customer-data-bucket/PII/customer_ssn.csv",
+        "bucket_scan_output": [
+          {
+            "BucketName": "customer-data-bucket",
+            "UniformBucketLevelAccess": false,
+            "LegacyACLAllowsPublicRead": true,
+            "LastModified": "2024-05-01T10:00:00Z",
+            "NumberOfObjects": 85,
+            "SensitiveFilesFound": [
+              "PII/customer_ssn.csv",
+              "PII/customer_creditcard.xlsx",
+              "Backups/CustomerDB-2024-04-30.sql"
+            ]
+          }
+        ],
+        "network_packet_snippet": "GET /customer-data-bucket/PII/customer_ssn.csv HTTP/1.1\r\nHost: storage.googleapis.com\r\nUser-Agent: Wget/1.20.3 (linux-gnu)\r\nAccept: */*\r\n\r\n"
+      },
+      "indicators": [
+        "Bucket IAM policy binding with member 'allUsers' granted storage.objectViewer role",
+        "Legacy ACL grants READER permission to allUsers entity",
+        "Anonymous principal in GCP audit logs retrieving objects",
+        "Network traffic with unauthenticated GET requests to Google Cloud Storage URLs",
+        "Presence of sensitive PII files like customer_ssn.csv in publicly accessible bucket",
+        "Use of tools like curl or wget to download bucket objects without authentication"
+      ],
+      "detection_method": "Enable uniform bucket-level access to disable legacy ACLs. Use GCP Cloud Security Command Center and automated scanners to detect buckets with public access permissions. Monitor Cloud Audit Logs for storage.objects.get events by anonymous users or unexpected IP addresses. Configure VPC Service Controls to restrict data exfiltration. Enforce organization policies that disallow public IAM bindings on buckets containing sensitive data. Regularly audit bucket ACLs and IAM policies for least privilege.",
+      "relevant_mitre_techniques": [
+        "T1530 - Data from Cloud Storage Object",
+        "T1078 - Valid Accounts (IAM Misuse)",
+        "T1552.001 - Credentials in Files: Cloud Instance Metadata API",
+        "T1486 - Data Encrypted for Impact"
+      ]
+    },
+    {
+      "scenario": "Azure Blob Storage container configured with public access level set to 'Blob', allowing anonymous users to read blobs including sensitive HR payroll spreadsheets.",
+      "technical_data": {
+        "azure_blob_container_properties": {
+          "publicAccess": "Blob",
+          "lastModified": "2024-06-01T09:30:00Z",
+          "leaseStatus": "unlocked",
+          "hasImmutabilityPolicy": false,
+          "hasLegalHold": false
+        },
+        "azure_storage_account_acl": {
+          "signedIdentifiers": []
+        },
+        "azure_activity_log_entry": {
+          "eventTimestamp": "2024-06-05T15:45:22.000Z",
+          "resourceId": "/subscriptions/abcd1234/resourceGroups/rg-hr/providers/Microsoft.Storage/storageAccounts/hrstorageaccount/blobServices/default/containers/payroll",
+          "operationName": "Microsoft.Storage.BlobServices/containers/blobs/read",
+          "status": "Succeeded",
+          "caller": "Anonymous",
+          "correlationId": "3f9c7b0e-1234-5678-9abc-def123456789",
+          "eventName": {
+            "value": "BlobRead",
+            "localizedValue": "Blob Read"
+          },
+          "properties": {
+            "requestUri": "https://hrstorageaccount.blob.core.windows.net/payroll/2024/June/PayrollDetails.xlsx"
+          }
+        },
+        "azure_cli_list_containers_command": "az storage container list --account-name hrstorageaccount --query '[].{Name:name, PublicAccess:publicAccess}'",
+        "azure_cli_get_container_acl_command": "az storage container show --account-name hrstorageaccount --name payroll --query publicAccess",
+        "curl_command_exploit": "curl https://hrstorageaccount.blob.core.windows.net/payroll/2024/June/PayrollDetails.xlsx",
+        "storage_scan_output": [
+          {
+            "ContainerName": "payroll",
+            "PublicAccessLevel": "Blob",
+            "LastModified": "2024-06-01T09:30:00Z",
+            "NumberOfBlobs": 45,
+            "SensitiveFilesFound": [
+              "2024/June/PayrollDetails.xlsx",
+              "2024/May/EmployeeBonuses.csv",
+              "Confidential/SalaryStructure.pdf"
+            ]
+          }
+        ],
+        "network_packet_snippet": "GET /payroll/2024/June/PayrollDetails.xlsx HTTP/1.1\r\nHost: hrstorageaccount.blob.core.windows.net\r\nUser-Agent: curl/7.85.0\r\nAccept: */*\r\n\r\n"
+      },
+      "indicators": [
+        "Azure Blob container public access level set to 'Blob' allowing anonymous read access",
+        "Anonymous caller in Azure Activity Log for blob read operations",
+        "Network traffic with unauthenticated HTTP GET requests to Azure Blob Storage endpoint",
+        "Presence of sensitive HR payroll and salary files accessible without authentication",
+        "Use of curl or similar tools to retrieve blobs from storage container without credentials"
+      ],
+      "detection_method": "Audit Azure Blob Storage containers for public access levels using Azure CLI or Azure Portal. Configure Azure Policy to restrict or disable public blob access across subscriptions. Monitor Azure Activity Logs for anonymous or unexpected read operations on blob containers. Use Azure Defender for Storage to detect anomalous access patterns. Enforce role-based access control and SAS token usage for secure access. Regularly review and remediate containers with public access enabled containing sensitive data.",
+      "relevant_mitre_techniques": [
+        "T1530 - Data from Cloud Storage Object",
+        "T1078 - Valid Accounts (IAM Misuse)",
+        "T1552.001 - Credentials in Files: Cloud Instance Metadata API",
+        "T1486 - Data Encrypted for Impact"
+      ]
+    }
+  ]
+}
